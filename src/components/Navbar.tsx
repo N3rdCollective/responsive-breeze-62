@@ -53,6 +53,12 @@ const Navbar = () => {
             >
               News
             </Link>
+            <Link 
+              to="/contact" 
+              className={`${isActive('/contact') ? 'text-primary font-medium' : 'text-gray-600'} hover:text-gray-900`}
+            >
+              Contact
+            </Link>
             <Button variant="default" size="sm">
               Listen Live
             </Button>
