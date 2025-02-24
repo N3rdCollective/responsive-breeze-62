@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const StaffLogin = () => {
   const [email, setEmail] = useState("");
@@ -66,6 +67,15 @@ const StaffLogin = () => {
                 Login
               </Button>
             </form>
+
+            <div className="mt-4 text-center">
+              <Link 
+                to="/staff-panel" 
+                className="text-sm text-gray-500 hover:text-gray-800 transition-colors"
+              >
+                Demo: Skip Login
+              </Link>
+            </div>
           </div>
         </div>
       </div>
