@@ -112,27 +112,27 @@ const Hero = () => {
         }}
         onError={handleImageError}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-gray-50/90 to-white/90 dark:from-[#333333]/90 dark:to-black/90" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#F5F5F5]/90 to-white/90 dark:from-[#333333]/90 dark:to-black/90" />
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
-        <span className="inline-block mb-4 px-4 py-1 rounded-full bg-black/5 dark:bg-[#666666]/20 text-sm font-medium tracking-wide animate-fadeIn text-gray-900 dark:text-[#FFD700]">
+        <span className="inline-block mb-4 px-4 py-1 rounded-full bg-[#666666]/10 dark:bg-[#666666]/20 text-sm font-medium tracking-wide animate-fadeIn text-[#666666] dark:text-[#FFD700]">
           {greeting}
         </span>
-        <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight animate-fadeIn [animation-delay:200ms] text-gray-900 dark:text-[#FFD700]">
+        <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight animate-fadeIn [animation-delay:200ms] text-black dark:text-[#FFD700]">
           Experience the Power of Sound
         </h1>
-        <p className="text-lg md:text-xl text-gray-600 dark:text-[#666666] mb-8 max-w-2xl mx-auto animate-fadeIn [animation-delay:400ms]">
+        <p className="text-lg md:text-xl text-[#666666] dark:text-[#666666] mb-8 max-w-2xl mx-auto animate-fadeIn [animation-delay:400ms]">
           Join us on a journey through music, stories, and connections that move you.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fadeIn [animation-delay:600ms]">
           <Button
-            className="bg-black dark:bg-[#FFD700] dark:text-black text-white hover:bg-gray-800 dark:hover:bg-[#FFD700]/90 px-8 py-6 text-lg"
+            className="bg-[#FFD700] text-black hover:bg-[#FFD700]/90 dark:bg-[#FFD700] dark:text-black dark:hover:bg-[#FFD700]/90 px-8 py-6 text-lg"
           >
             Listen Live
           </Button>
           <Button
             variant="outline"
-            className="border-2 px-8 py-6 text-lg dark:border-[#FFD700] dark:text-[#FFD700] hover:bg-black/5 dark:hover:bg-[#FFD700]/10"
+            className="border-2 border-[#FFD700] text-[#666666] hover:bg-[#FFD700]/10 px-8 py-6 text-lg dark:border-[#FFD700] dark:text-[#FFD700] dark:hover:bg-[#FFD700]/10"
           >
             View Schedule
           </Button>
