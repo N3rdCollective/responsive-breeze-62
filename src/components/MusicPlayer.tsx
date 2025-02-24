@@ -44,7 +44,7 @@ const MusicPlayer = () => {
             </div>
             <div className="hidden sm:block">
               <h4 className="text-sm font-medium text-black dark:text-[#FFD700]">Currently Playing</h4>
-              <p className="text-xs text-[#666666] dark:text-[#666666]">Artist Name</p>
+              <p className="text-xs text-white dark:text-white">Artist Name</p>
             </div>
           </div>
 
@@ -54,14 +54,14 @@ const MusicPlayer = () => {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="text-[#666666] hover:text-[#FFD700] dark:text-[#666666] dark:hover:text-[#FFD700]"
+                className="text-white hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700]"
               >
                 <Shuffle size={20} />
               </Button>
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="text-[#666666] hover:text-[#FFD700] dark:text-[#666666] dark:hover:text-[#FFD700]"
+                className="text-white hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700]"
               >
                 <SkipBack size={20} />
               </Button>
@@ -76,20 +76,20 @@ const MusicPlayer = () => {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="text-[#666666] hover:text-[#FFD700] dark:text-[#666666] dark:hover:text-[#FFD700]"
+                className="text-white hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700]"
               >
                 <SkipForward size={20} />
               </Button>
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="text-[#666666] hover:text-[#FFD700] dark:text-[#666666] dark:hover:text-[#FFD700]"
+                className="text-white hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700]"
               >
                 <Repeat size={20} />
               </Button>
             </div>
             <div className="w-full flex items-center space-x-2">
-              <span className="text-xs text-[#666666] dark:text-[#666666] w-10 text-right">0:00</span>
+              <span className="text-xs text-white dark:text-white w-10 text-right">0:00</span>
               <Slider
                 value={progress}
                 onValueChange={handleProgressChange}
@@ -97,7 +97,7 @@ const MusicPlayer = () => {
                 step={1}
                 className="w-full"
               />
-              <span className="text-xs text-[#666666] dark:text-[#666666] w-10">3:45</span>
+              <span className="text-xs text-white dark:text-white w-10">3:45</span>
             </div>
           </div>
 
@@ -106,7 +106,7 @@ const MusicPlayer = () => {
             <Button 
               variant="ghost" 
               size="icon" 
-              className="text-[#666666] hover:text-[#FFD700] dark:text-[#666666] dark:hover:text-[#FFD700] hidden sm:inline-flex"
+              className="text-white hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] hidden sm:inline-flex"
             >
               <VolumeIcon />
             </Button>
