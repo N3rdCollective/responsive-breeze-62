@@ -15,19 +15,19 @@ const greetings: GreetingData = {
     morning: "Good Morning",
     afternoon: "Good Afternoon",
     evening: "Good Evening",
-    slang: ["Hey dude", "What's up", "Howdy", "Yo"]
+    slang: ["Hella", "That's fire", "No cap", "Bet", "It's lit", "Facts"]
   },
   "US-NY": {
     morning: "Good Morning",
     afternoon: "Good Afternoon",
     evening: "Good Evening",
-    slang: ["Yo", "Hey", "What's good", "How you doin'"]
+    slang: ["Yerrr", "No cap", "On God", "Facts", "Mad", "Deadass"]
   },
   "US-TX": {
     morning: "Good Morning",
     afternoon: "Good Afternoon",
     evening: "Good Evening",
-    slang: ["Howdy", "Hey y'all", "What's up y'all"]
+    slang: ["Fixin' to", "Y'all", "Bless your heart", "All hat, no cattle"]
   },
   "default": {
     morning: "Good Morning",
@@ -86,7 +86,7 @@ const Greeting = () => {
 
   if (loading) {
     return (
-      <div className="bg-gray-50 py-8">
+      <div className="bg-gray-50 py-8 mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-xl text-gray-600">Loading greeting...</p>
@@ -97,7 +97,7 @@ const Greeting = () => {
   }
 
   return (
-    <div className="bg-gray-50 py-8">
+    <div className="bg-gray-50 py-8 mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">{greeting}</h2>
