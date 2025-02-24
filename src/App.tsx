@@ -13,6 +13,7 @@ import Contact from "./pages/Contact";
 import Careers from "./pages/Careers";
 import StaffLogin from "./pages/StaffLogin";
 import StaffPanel from "./pages/StaffPanel";
+import Schedule from "./pages/Schedule";
 import NotFound from "./pages/NotFound";
 import MusicPlayer from "./components/MusicPlayer";
 
@@ -34,7 +35,7 @@ const App = () => (
             <Route path="/careers" element={<Careers />} />
             <Route path="/staff-login" element={<StaffLogin />} />
             <Route path="/staff-panel" element={<StaffPanel />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/schedule" element={<Schedule />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <MusicPlayer />
