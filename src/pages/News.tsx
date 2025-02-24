@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 
 const News = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <Navbar />
       <main className="pt-16">
         {/* Hero Section */}
-        <section className="relative bg-gray-900 text-white py-24">
+        <section className="relative bg-muted text-foreground py-24">
           <div className="absolute inset-0">
             <img
               src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81"
@@ -19,8 +19,8 @@ const News = () => {
           </div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl">
-              <h1 className="text-4xl font-bold mb-4">Latest News</h1>
-              <p className="text-xl text-gray-300">
+              <h1 className="text-4xl font-bold mb-4 text-foreground">Latest News</h1>
+              <p className="text-xl text-muted-foreground">
                 Stay updated with the latest happenings in music, entertainment, and local events
               </p>
             </div>
@@ -40,8 +40,8 @@ const News = () => {
               </div>
               <div>
                 <span className="text-primary font-semibold">Breaking News</span>
-                <h2 className="text-3xl font-bold mt-2 mb-4">Major Music Festival Announced</h2>
-                <p className="text-gray-600 mb-6">
+                <h2 className="text-3xl font-bold mt-2 mb-4 text-foreground">Major Music Festival Announced</h2>
+                <p className="text-muted-foreground mb-6">
                   Get ready for the biggest music event of the year! Our radio station is proud to announce
                   an incredible lineup featuring both local talents and international stars.
                 </p>
@@ -72,7 +72,7 @@ const News = () => {
               ].map((article, index) => (
                 <article 
                   key={index}
-                  className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
+                  className="bg-card rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
                 >
                   <img
                     src={article.image}
@@ -80,9 +80,9 @@ const News = () => {
                     className="w-full h-48 object-cover"
                   />
                   <div className="p-6">
-                    <p className="text-sm text-gray-500 mb-2">{article.date}</p>
-                    <h3 className="text-xl font-bold mb-3">{article.title}</h3>
-                    <p className="text-gray-600 mb-4">{article.excerpt}</p>
+                    <p className="text-sm text-muted-foreground mb-2">{article.date}</p>
+                    <h3 className="text-xl font-bold mb-3 text-card-foreground">{article.title}</h3>
+                    <p className="text-muted-foreground mb-4">{article.excerpt}</p>
                     <Button variant="outline">Read Article</Button>
                   </div>
                 </article>
@@ -92,17 +92,17 @@ const News = () => {
         </section>
 
         {/* Newsletter Section */}
-        <section className="bg-gray-50 py-16">
+        <section className="bg-muted py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-bold mb-4">Stay Updated</h2>
-            <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+            <h2 className="text-3xl font-bold mb-4 text-foreground">Stay Updated</h2>
+            <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
               Subscribe to our newsletter to receive the latest news and updates directly in your inbox.
             </p>
             <form className="max-w-md mx-auto flex gap-4">
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="flex-1 px-4 py-2 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
               <Button type="submit">Subscribe</Button>
             </form>
