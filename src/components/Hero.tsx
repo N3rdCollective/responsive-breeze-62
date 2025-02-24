@@ -9,6 +9,7 @@ type GreetingData = {
     evening: string;
     slang: string[];
     skyline?: string;
+    placeholderSkyline?: string;
   }
 };
 
@@ -18,34 +19,39 @@ const greetings: GreetingData = {
     afternoon: "Good Afternoon",
     evening: "Good Evening",
     slang: ["Hella", "That's fire", "No cap", "Bet", "It's lit", "Facts"],
-    skyline: "https://images.unsplash.com/photo-1449034446853-66c86144b0ad?q=80&w=2070" // Los Angeles skyline
+    skyline: "https://images.unsplash.com/photo-1449034446853-66c86144b0ad?q=80&w=2070", // Los Angeles skyline
+    placeholderSkyline: "/placeholder.svg"
   },
   "US-NY": {
     morning: "Good Morning",
     afternoon: "Good Afternoon",
     evening: "Good Evening",
     slang: ["Yerrr", "No cap", "On God", "Facts", "Mad", "Deadass"],
-    skyline: "https://images.unsplash.com/photo-1582785513054-82f50669f74d?q=80&w=2071" // NYC skyline
+    skyline: "https://images.unsplash.com/photo-1582785513054-82f50669f74d?q=80&w=2071", // NYC skyline
+    placeholderSkyline: "/placeholder.svg"
   },
   "US-TX": {
     morning: "Good Morning",
     afternoon: "Good Afternoon",
     evening: "Good Evening",
     slang: ["Fixin' to", "Y'all", "Bless your heart", "All hat, no cattle"],
-    skyline: "https://images.unsplash.com/photo-1545194445-dddb59838230?q=80&w=2070" // Dallas skyline
+    skyline: "https://images.unsplash.com/photo-1545194445-dddb59838230?q=80&w=2070", // Dallas skyline
+    placeholderSkyline: "/placeholder.svg"
   },
   "default": {
     morning: "Good Morning",
     afternoon: "Good Afternoon",
     evening: "Good Evening",
     slang: ["Hello", "Hi", "Welcome"],
-    skyline: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=2070" // Default skyline
+    skyline: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=2070", // Default skyline
+    placeholderSkyline: "/placeholder.svg"
   }
 };
 
 const Hero = () => {
   const [location, setLocation] = useState<string>("default");
   const [greeting, setGreeting] = useState<string>("");
+  const [imageError, setImageError] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -89,7 +95,11 @@ const Hero = () => {
 
   const getSkylineImage = () => {
     const locationData = greetings[location] || greetings.default;
-    return locationData.skyline;
+    return imageError ? locationData.placeholderSkyline : locationData.skyline;
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
   };
 
   return (
@@ -100,6 +110,7 @@ const Hero = () => {
           backgroundImage: `url('${getSkylineImage()}')`,
           opacity: 0.3
         }}
+        onError={handleImageError}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-gray-50/90 to-white/90 dark:from-gray-900/90 dark:to-gray-800/90" />
       
