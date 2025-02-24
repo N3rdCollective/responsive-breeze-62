@@ -27,7 +27,7 @@ const fetchSchedule = async () => {
     throw new Error("Failed to fetch schedule");
   }
   const data: ScheduleResponse = await response.json();
-  return data.data; // Return the array inside the data property
+  return data.data;
 };
 
 const Schedule = () => {
@@ -52,7 +52,7 @@ const Schedule = () => {
           <h1 className="text-4xl font-bold text-black dark:text-[#FFD700] mb-8">Radio Schedule</h1>
           
           {isLoading && (
-            <div className="text-center text-white dark:text-white">Loading schedule...</div>
+            <div className="text-center text-black dark:text-white">Loading schedule...</div>
           )}
 
           {error && (
@@ -79,15 +79,15 @@ const Schedule = () => {
                       <CardHeader className="p-0">
                         <CardTitle className="flex justify-between items-center">
                           <span className="text-black dark:text-[#FFD700]">{item.playlist.name}</span>
-                          <span className="text-sm text-white dark:text-white">
+                          <span className="text-black dark:text-white">
                             {formatTime(item.start)} - {formatTime(item.end)}
                           </span>
                         </CardTitle>
-                        <p className="text-sm text-white dark:text-white mt-2">
+                        <p className="text-black dark:text-white mt-2">
                           {formatDate(item.start)}
                         </p>
                         {item.playlist.artist && (
-                          <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
+                          <p className="text-gray-600 dark:text-gray-300 mt-2">
                             Hosted by: {item.playlist.artist}
                           </p>
                         )}
