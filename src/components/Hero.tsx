@@ -93,13 +93,15 @@ const Hero = () => {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
-      <div className="absolute inset-0 overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-10 dark:opacity-5 transition-opacity duration-500"
-          style={{ backgroundImage: `url('${getSkylineImage()}')` }}
-        />
-      </div>
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <div 
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ 
+          backgroundImage: `url('${getSkylineImage()}')`,
+          opacity: 0.3
+        }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-gray-50/90 to-white/90 dark:from-gray-900/90 dark:to-gray-800/90" />
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
         <span className="inline-block mb-4 px-4 py-1 rounded-full bg-black/5 dark:bg-white/5 text-sm font-medium tracking-wide animate-fadeIn">
