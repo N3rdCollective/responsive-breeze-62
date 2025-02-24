@@ -53,6 +53,12 @@ const Navbar = () => {
               Personalities
             </Link>
             <Link 
+              to="/schedule" 
+              className={`${isActive('/schedule') ? 'text-primary font-medium' : 'text-gray-600 dark:text-gray-300'} hover:text-gray-900 dark:hover:text-white`}
+            >
+              Schedule
+            </Link>
+            <Link 
               to="/about" 
               className={`${isActive('/about') ? 'text-primary font-medium' : 'text-gray-600 dark:text-gray-300'} hover:text-gray-900 dark:hover:text-white`}
             >
