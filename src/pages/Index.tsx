@@ -2,15 +2,15 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Footer from "@/components/Footer";
-import MusicPlayer from "@/components/MusicPlayer";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-white pb-16">
+    <div className="min-h-screen bg-white">
       <Navbar />
       <Hero />
-      <Footer />
-      <MusicPlayer />
+      <div className="mb-20">
+        <Footer />
+      </div>
     </div>
   );
 };

@@ -10,7 +10,9 @@ const Personalities = () => {
       <div className="pt-16">
         <PersonalitiesSection />
       </div>
-      <Footer />
+      <div className="mb-20">
+        <Footer />
+      </div>
     </div>
   );
 };
