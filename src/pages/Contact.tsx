@@ -31,13 +31,13 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       <div className="max-w-2xl mx-auto px-4 pt-24 pb-16">
         <div className="space-y-6">
           <div className="space-y-2 text-center">
             <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl">Contact Us</h1>
-            <p className="text-gray-500 dark:text-gray-400">
+            <p className="text-muted-foreground">
               Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
             </p>
           </div>
@@ -51,6 +51,7 @@ const Contact = () => {
                 placeholder="Enter your name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                className="bg-background border-border"
                 required
               />
             </div>
@@ -64,6 +65,7 @@ const Contact = () => {
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="bg-background border-border"
                 required
               />
             </div>
@@ -76,7 +78,7 @@ const Contact = () => {
                 placeholder="Enter your message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="min-h-[150px]"
+                className="min-h-[150px] bg-background border-border"
                 required
               />
             </div>
