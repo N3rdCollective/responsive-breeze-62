@@ -30,6 +30,17 @@ const fetchSchedule = async () => {
   return data.data;
 };
 
+// Function to get high quality artwork URL
+const getHighQualityArtwork = (url: string | null) => {
+  if (!url) return null;
+  
+  // Remove any existing size parameters if they exist
+  const baseUrl = url.split('?')[0];
+  
+  // Add parameters for high quality
+  return `${baseUrl}?quality=100&width=800&height=800`;
+};
+
 const Schedule = () => {
   const { data: schedule, isLoading, error } = useQuery({
     queryKey: ["schedule"],
@@ -69,9 +80,15 @@ const Schedule = () => {
                     {item.playlist.artwork && (
                       <div className="flex-shrink-0">
                         <img 
-                          src={item.playlist.artwork} 
+                          src={getHighQualityArtwork(item.playlist.artwork)} 
                           alt={item.playlist.name}
-                          className="w-32 h-32 rounded-md object-cover"
+                          className="w-32 h-32 rounded-md object-cover shadow-lg"
+                          loading="lazy"
+                          onError={(e) => {
+                            // Fallback to original URL if high quality version fails
+                            const target = e.target as HTMLImageElement;
+                            target.src = item.playlist.artwork || '';
+                          }}
                         />
                       </div>
                     )}
