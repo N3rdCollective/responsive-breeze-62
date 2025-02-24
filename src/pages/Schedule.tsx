@@ -6,11 +6,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format, parseISO } from "date-fns";
 
 interface ScheduleItem {
-  date: string;
-  start_time: string;
-  end_time: string;
-  name: string;
-  description: string;
+  start: string;
+  end: string;
+  playlist: {
+    name: string;
+    colour: string;
+    artist: string;
+    title: string;
+    artwork: string | null;
+  };
+}
+
+interface ScheduleResponse {
+  data: ScheduleItem[];
 }
 
 const fetchSchedule = async () => {
@@ -18,7 +26,8 @@ const fetchSchedule = async () => {
   if (!response.ok) {
     throw new Error("Failed to fetch schedule");
   }
-  return response.json();
+  const data: ScheduleResponse = await response.json();
+  return data.data; // Return the array inside the data property
 };
 
 const Schedule = () => {
@@ -31,8 +40,8 @@ const Schedule = () => {
     return format(parseISO(timeString), "h:mm a");
   };
 
-  const formatDate = (dateString: string) => {
-    return format(parseISO(dateString), "EEEE, MMMM d");
+  const formatDate = (timeString: string) => {
+    return format(parseISO(timeString), "EEEE, MMMM d");
   };
 
   return (
@@ -58,16 +67,27 @@ const Schedule = () => {
                 <Card key={index} className="bg-[#F5F5F5] dark:bg-[#333333] border-[#666666]/20 dark:border-white/10">
                   <CardHeader>
                     <CardTitle className="flex justify-between items-center">
-                      <span className="text-black dark:text-[#FFD700]">{item.name}</span>
+                      <span className="text-black dark:text-[#FFD700]">{item.playlist.name}</span>
                       <span className="text-sm text-white dark:text-white">
-                        {formatTime(item.start_time)} - {formatTime(item.end_time)}
+                        {formatTime(item.start)} - {formatTime(item.end)}
                       </span>
                     </CardTitle>
-                    <p className="text-sm text-white dark:text-white">{formatDate(item.date)}</p>
+                    <p className="text-sm text-white dark:text-white">
+                      {formatDate(item.start)}
+                    </p>
+                    {item.playlist.artist && (
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        Hosted by: {item.playlist.artist}
+                      </p>
+                    )}
                   </CardHeader>
-                  {item.description && (
+                  {item.playlist.artwork && (
                     <CardContent>
-                      <p className="text-white dark:text-white">{item.description}</p>
+                      <img 
+                        src={item.playlist.artwork} 
+                        alt={item.playlist.name}
+                        className="w-16 h-16 rounded-md object-cover"
+                      />
                     </CardContent>
                   )}
                 </Card>
