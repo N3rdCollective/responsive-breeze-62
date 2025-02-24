@@ -65,31 +65,35 @@ const Schedule = () => {
             <div className="space-y-6">
               {schedule.map((item: ScheduleItem, index: number) => (
                 <Card key={index} className="bg-[#F5F5F5] dark:bg-[#333333] border-[#666666]/20 dark:border-white/10">
-                  <CardHeader>
-                    <CardTitle className="flex justify-between items-center">
-                      <span className="text-black dark:text-[#FFD700]">{item.playlist.name}</span>
-                      <span className="text-sm text-white dark:text-white">
-                        {formatTime(item.start)} - {formatTime(item.end)}
-                      </span>
-                    </CardTitle>
-                    <p className="text-sm text-white dark:text-white">
-                      {formatDate(item.start)}
-                    </p>
-                    {item.playlist.artist && (
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        Hosted by: {item.playlist.artist}
-                      </p>
+                  <div className="flex items-start p-6 gap-6">
+                    {item.playlist.artwork && (
+                      <div className="flex-shrink-0">
+                        <img 
+                          src={item.playlist.artwork} 
+                          alt={item.playlist.name}
+                          className="w-32 h-32 rounded-md object-cover"
+                        />
+                      </div>
                     )}
-                  </CardHeader>
-                  {item.playlist.artwork && (
-                    <CardContent>
-                      <img 
-                        src={item.playlist.artwork} 
-                        alt={item.playlist.name}
-                        className="w-16 h-16 rounded-md object-cover"
-                      />
-                    </CardContent>
-                  )}
+                    <div className="flex-grow">
+                      <CardHeader className="p-0">
+                        <CardTitle className="flex justify-between items-center">
+                          <span className="text-black dark:text-[#FFD700]">{item.playlist.name}</span>
+                          <span className="text-sm text-white dark:text-white">
+                            {formatTime(item.start)} - {formatTime(item.end)}
+                          </span>
+                        </CardTitle>
+                        <p className="text-sm text-white dark:text-white mt-2">
+                          {formatDate(item.start)}
+                        </p>
+                        {item.playlist.artist && (
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
+                            Hosted by: {item.playlist.artist}
+                          </p>
+                        )}
+                      </CardHeader>
+                    </div>
+                  </div>
                 </Card>
               ))}
             </div>
