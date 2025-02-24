@@ -16,10 +16,10 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-600 hover:text-black transition-colors">Home</a></li>
-              <li><a href="#personalities" className="text-gray-600 hover:text-black transition-colors">Personalities</a></li>
-              <li><a href="#about" className="text-gray-600 hover:text-black transition-colors">About</a></li>
-              <li><a href="#news" className="text-gray-600 hover:text-black transition-colors">News</a></li>
+              <li><a href="/" className="text-gray-600 hover:text-black transition-colors">Home</a></li>
+              <li><a href="/personalities" className="text-gray-600 hover:text-black transition-colors">Personalities</a></li>
+              <li><a href="/about" className="text-gray-600 hover:text-black transition-colors">About</a></li>
+              <li><a href="/news" className="text-gray-600 hover:text-black transition-colors">News</a></li>
             </ul>
           </div>
           
@@ -35,7 +35,7 @@ const Footer = () => {
           
           <div>
             <h3 className="text-lg font-semibold mb-4">Follow Us</h3>
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 mb-4">
               <a href="#" className="text-gray-600 hover:text-black transition-colors">
                 <Facebook className="h-6 w-6" />
               </a>
@@ -48,6 +48,9 @@ const Footer = () => {
               <a href="#" className="text-gray-600 hover:text-black transition-colors">
                 <Youtube className="h-6 w-6" />
               </a>
+            </div>
+            <div>
+              <a href="/staff-login" className="text-sm text-gray-500 hover:text-black transition-colors">Staff Login</a>
             </div>
           </div>
         </div>

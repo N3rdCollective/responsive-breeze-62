@@ -10,6 +10,7 @@ import News from "./pages/News";
 import Personalities from "./pages/Personalities";
 import Contact from "./pages/Contact";
 import Careers from "./pages/Careers";
+import StaffLogin from "./pages/StaffLogin";
 import NotFound from "./pages/NotFound";
 import MusicPlayer from "./components/MusicPlayer";
 
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/personalities" element={<Personalities />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/careers" element={<Careers />} />
+          <Route path="/staff-login" element={<StaffLogin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
