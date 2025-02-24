@@ -72,8 +72,15 @@ const Schedule = () => {
   // Filter schedule items by day
   const getScheduleForDay = (day: string) => {
     if (!schedule) return [];
+    const today = new Date();
+    
     return schedule.filter(item => {
       const itemDate = parseISO(item.start);
+      // For the current day, only show today's shows
+      if (day === currentDay) {
+        return isSameDay(itemDate, today);
+      }
+      // For other days, show all shows on that day of the week
       return format(itemDate, 'EEEE') === day;
     });
   };
@@ -113,7 +120,7 @@ const Schedule = () => {
                 <TabsContent key={day} value={day} className="space-y-6">
                   {getScheduleForDay(day).length === 0 ? (
                     <div className="text-center py-8 text-black dark:text-white">
-                      No shows scheduled for {day}
+                      No shows scheduled for {day === currentDay ? "today" : day}
                     </div>
                   ) : (
                     getScheduleForDay(day).map((item: ScheduleItem, index: number) => (
