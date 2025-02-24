@@ -14,13 +14,6 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleClick = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? "bg-white/90 backdrop-blur-md shadow-sm" : "bg-transparent"}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -35,12 +28,9 @@ const Navbar = () => {
             <a href="/" className="text-gray-600 hover:text-gray-900">
               Home
             </a>
-            <button 
-              onClick={() => handleClick('personalities')} 
-              className="text-gray-600 hover:text-gray-900"
-            >
+            <a href="/personalities" className="text-gray-600 hover:text-gray-900">
               Personalities
-            </button>
+            </a>
             <a href="/about" className="text-gray-600 hover:text-gray-900">
               About
             </a>
