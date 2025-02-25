@@ -16,7 +16,7 @@ import StaffRegistration from "@/pages/StaffRegistration";
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="system" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <Router>
         <Routes>
           <Route path="/" element={<Index />} />
