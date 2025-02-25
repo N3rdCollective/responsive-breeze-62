@@ -84,12 +84,11 @@ const Hero = () => {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      <div 
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ 
-          backgroundImage: `url('/lovable-uploads/1541ab2b-b997-4951-9cd0-19bacdb2ac24.png')`,
-          opacity: 0.8
-        }}
+      <img 
+        src="/lovable-uploads/1541ab2b-b997-4951-9cd0-19bacdb2ac24.png"
+        alt="Times Square at night"
+        className="absolute inset-0 w-full h-full object-cover object-center"
+        style={{ opacity: 0.8 }}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/70" />
       
