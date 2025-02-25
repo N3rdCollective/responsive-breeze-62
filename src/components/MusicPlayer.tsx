@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import { PlayerControls } from "@/components/player/PlayerControls";
@@ -75,106 +74,115 @@ const MusicPlayer = () => {
   );
 
   // Full featured view
-  const FullFeaturedView = () => (
-    <div className={`
-      max-w-7xl mx-auto px-4 h-full
-      ${isFullscreen ? 'flex flex-col justify-between py-8' : 'h-full'}
-    `}>
+  const FullFeaturedView = () => {
+    const isMobile = window.innerWidth < 768;
+    
+    return (
       <div className={`
-        h-full
-        ${isFullscreen 
-          ? 'flex flex-col justify-between' 
-          : 'flex items-center justify-between'
-        }
+        max-w-7xl mx-auto px-4 h-full
+        ${isFullscreen ? 'flex flex-col justify-between py-8' : 'h-full'}
       `}>
-        {/* Mobile Fullscreen Toggle */}
-        <div className="md:hidden absolute right-4 top-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleFullscreen}
-            className="text-muted-foreground hover:text-primary"
-          >
-            {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
-          </Button>
-        </div>
-
-        {/* Album Art and Track Info */}
         <div className={`
-          flex items-center
+          h-full
           ${isFullscreen 
-            ? 'flex-col justify-center flex-grow space-y-8' 
-            : 'space-x-4 w-[30%]'
+            ? 'flex flex-col justify-between' 
+            : 'flex items-center justify-between'
           }
         `}>
-          <div className={`
-            ${isFullscreen ? 'w-64 h-64' : 'w-14 h-14'} 
-            rounded-md overflow-hidden shadow-lg
-          `}>
-            <AspectRatio ratio={1/1} className="relative">
-              <img
-                src={metadata.artwork}
-                alt="Album Art"
-                className="object-cover w-full h-full"
-                onError={(e) => {
-                  e.currentTarget.src = "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05";
-                }}
-              />
-            </AspectRatio>
+          {/* Mobile Fullscreen Toggle */}
+          <div className="md:hidden absolute right-4 top-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleFullscreen}
+              className="text-muted-foreground hover:text-primary"
+            >
+              {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+            </Button>
           </div>
+
+          {/* Album Art and Track Info */}
           <div className={`
-            ${isFullscreen ? 'text-center' : ''} 
-            flex-1 min-w-0
+            flex items-center
+            ${isFullscreen 
+              ? 'flex-col justify-center flex-grow space-y-8' 
+              : 'space-x-4 w-[30%]'
+            }
           `}>
-            <div className="group relative">
-              <h4 className={`
-                font-medium text-foreground truncate
-                ${isFullscreen ? 'text-2xl mb-3' : 'text-sm'}
-              `}>
-                {metadata.title}
-              </h4>
-              {metadata.artist && (
-                <p className={`
-                  text-muted-foreground truncate
-                  ${isFullscreen ? 'text-lg' : 'text-xs'}
+            <div className={`
+              ${isFullscreen ? 'w-64 h-64' : 'w-14 h-14'} 
+              rounded-md overflow-hidden shadow-lg
+            `}>
+              <AspectRatio ratio={1/1} className="relative">
+                <img
+                  src={metadata.artwork}
+                  alt="Album Art"
+                  className="object-cover w-full h-full"
+                  onError={(e) => {
+                    e.currentTarget.src = "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05";
+                  }}
+                />
+              </AspectRatio>
+            </div>
+            <div className={`
+              ${isFullscreen ? 'text-center' : ''} 
+              flex-1 min-w-0
+            `}>
+              <div className="group relative">
+                <h4 className={`
+                  font-medium text-foreground truncate
+                  ${isFullscreen ? 'text-2xl mb-3' : 'text-sm'}
                 `}>
-                  {metadata.artist}
-                </p>
-              )}
+                  {metadata.title}
+                </h4>
+                {metadata.artist && (
+                  <p className={`
+                    text-muted-foreground truncate
+                    ${isFullscreen ? 'text-lg' : 'text-xs'}
+                  `}>
+                    {metadata.artist}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Player Controls */}
-        <div className={`
-          ${isFullscreen 
-            ? 'w-full max-w-lg mx-auto mb-8' 
-            : 'w-[40%] max-w-md'
-          }
-        `}>
-          <PlayerControls 
-            isPlaying={isPlaying} 
-            togglePlayPause={handlePlayPause} 
-          />
-        </div>
+          {/* Player Controls */}
+          <div className={`
+            ${isFullscreen 
+              ? 'w-full max-w-lg mx-auto mb-8' 
+              : 'w-[40%] max-w-md'
+            }
+          `}>
+            <PlayerControls 
+              isPlaying={isPlaying} 
+              togglePlayPause={handlePlayPause}
+              volume={isFullscreen && isMobile ? volume : undefined}
+              onVolumeChange={isFullscreen && isMobile ? handleVolumeChange : undefined}
+              showVolumeSlider={isFullscreen && isMobile}
+            />
+          </div>
 
-        {/* Volume Control */}
-        <div className={`
-          ${isFullscreen 
-            ? 'w-full max-w-md mx-auto mb-4' 
-            : 'w-[30%] flex justify-end'
-          }
-        `}>
-          <VolumeControl
-            volume={volume}
-            isMuted={isMuted}
-            onVolumeChange={handleVolumeChange}
-            onToggleMute={toggleMute}
-          />
+          {/* Volume Control - Hide in mobile fullscreen */}
+          {(!isFullscreen || !isMobile) && (
+            <div className={`
+              ${isFullscreen 
+                ? 'w-full max-w-md mx-auto mb-4' 
+                : 'w-[30%] flex justify-end'
+              }
+            `}>
+              <VolumeControl
+                volume={volume}
+                isMuted={isMuted}
+                onVolumeChange={handleVolumeChange}
+                onToggleMute={toggleMute}
+              />
+            </div>
+          )}
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className={`
