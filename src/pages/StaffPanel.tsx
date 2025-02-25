@@ -11,11 +11,6 @@ const StaffPanel = () => {
   const { toast } = useToast();
 
   const handleEditPage = (page: string) => {
-    if (page === "Home") {
-      navigate("/edit-home");
-      return;
-    }
-    
     toast({
       title: `Edit ${page}`,
       description: `In a full implementation, this would open the editor for the ${page} page.`,

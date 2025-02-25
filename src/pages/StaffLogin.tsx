@@ -1,3 +1,4 @@
+
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -82,18 +83,12 @@ const StaffLogin = () => {
               </Button>
             </form>
 
-            <div className="mt-4 text-center space-y-2">
+            <div className="mt-4 text-center">
               <Link 
                 to="/staff-panel" 
-                className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors block"
+                className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
               >
                 Demo: Skip Login
-              </Link>
-              <Link 
-                to="/staff-register" 
-                className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors block"
-              >
-                Need an account? Register
               </Link>
             </div>
           </div>
