@@ -38,7 +38,7 @@ export const Personalities = () => {
               className="group bg-card text-card-foreground rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 animate-fadeIn border border-border"
               style={{ animationDelay: `${index * 200}ms` }}
             >
-              <div className="relative w-full pt-[75%]">
+              <div className="relative w-full pt-[100%]">
                 <img
                   src={personality.image}
                   alt={personality.name}
