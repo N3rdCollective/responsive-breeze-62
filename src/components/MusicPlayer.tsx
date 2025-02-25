@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import { PlayerControls } from "@/components/player/PlayerControls";
 import { VolumeControl } from "@/components/player/VolumeControl";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const MusicPlayer = () => {
   const {
@@ -21,8 +22,17 @@ const MusicPlayer = () => {
         <div className="flex items-center justify-between">
           {/* Currently Playing */}
           <div className="flex items-center space-x-4 w-1/4">
-            <div className="w-12 h-12 bg-muted rounded">
-              {/* Album art would go here */}
+            <div className="w-12 h-12 bg-muted rounded-md overflow-hidden">
+              <AspectRatio ratio={1/1} className="relative">
+                <img
+                  src={metadata.artwork}
+                  alt="Album Art"
+                  className="object-cover w-full h-full"
+                  onError={(e) => {
+                    e.currentTarget.src = "/placeholder.svg";
+                  }}
+                />
+              </AspectRatio>
             </div>
             <div className="hidden sm:block overflow-hidden">
               <div className="group relative w-48">

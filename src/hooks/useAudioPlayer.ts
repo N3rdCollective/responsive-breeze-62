@@ -9,7 +9,10 @@ export const useAudioPlayer = () => {
   const [volume, setVolume] = useState([50]);
   const [isMuted, setIsMuted] = useState(false);
   const [previousVolume, setPreviousVolume] = useState([50]);
-  const [metadata, setMetadata] = useState<StreamMetadata>({ title: "Rappin' Lounge Radio" });
+  const [metadata, setMetadata] = useState<StreamMetadata>({ 
+    title: "Rappin' Lounge Radio",
+    artwork: "/placeholder.svg"
+  });
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const metadataIntervalRef = useRef<number>();
   const { toast } = useToast();
@@ -26,7 +29,8 @@ export const useAudioPlayer = () => {
           if (data.data) {
             setMetadata({
               title: data.data.title || "Rappin' Lounge Radio",
-              artist: data.data.artist
+              artist: data.data.artist,
+              artwork: data.data.artwork_url || "/placeholder.svg"
             });
             console.log("New metadata:", data.data);
           }
