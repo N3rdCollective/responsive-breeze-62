@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 
@@ -51,26 +52,17 @@ const Hero = () => {
   const [location, setLocation] = useState<string>("default");
   const [greeting, setGreeting] = useState<string>("");
   const [imageError, setImageError] = useState<boolean>(false);
-  const [locationError, setLocationError] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchLocation = async () => {
       try {
         const response = await fetch('https://ipapi.co/json/');
-        if (!response.ok) {
-          throw new Error('Location service unavailable');
-        }
         const data = await response.json();
         if (data.region_code && data.country_code) {
-          const locationKey = `${data.country_code}-${data.region_code}`;
-          if (greetings[locationKey]) {
-            setLocation(locationKey);
-          }
+          setLocation(`${data.country_code}-${data.region_code}`);
         }
       } catch (error) {
         console.log('Error fetching location:', error);
-        setLocationError(true);
-        setLocation("default");
       }
     };
 
@@ -108,13 +100,12 @@ const Hero = () => {
 
   const handleImageError = () => {
     setImageError(true);
-    console.log('Image failed to load, using placeholder');
   };
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 bg-cover bg-center"
         style={{ 
           backgroundImage: `url('${getSkylineImage()}')`,
           opacity: 0.6
