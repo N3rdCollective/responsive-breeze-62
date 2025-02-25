@@ -17,12 +17,18 @@ import {
 
 const STREAM_URL = "https://streaming.live365.com/a73297";
 
+interface StreamMetadata {
+  title: string;
+  artist?: string;
+}
+
 const MusicPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState([50]);
   const [progress, setProgress] = useState([0]);
   const [isMuted, setIsMuted] = useState(false);
   const [previousVolume, setPreviousVolume] = useState([50]);
+  const [metadata, setMetadata] = useState<StreamMetadata>({ title: "Rappin' Lounge Radio" });
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
 
@@ -30,10 +36,26 @@ const MusicPlayer = () => {
     audioRef.current = new Audio(STREAM_URL);
     audioRef.current.volume = volume[0] / 100;
 
+    const audio = audioRef.current;
+
+    const handleMetadata = (event: Event) => {
+      const mediaElement = event.target as HTMLMediaElement;
+      if ('mediaSession' in navigator && navigator.mediaSession.metadata) {
+        const title = navigator.mediaSession.metadata.title;
+        const artist = navigator.mediaSession.metadata.artist;
+        setMetadata({ title: title || "Rappin' Lounge Radio", artist });
+      }
+    };
+
+    // Some streams send metadata through media events
+    audio.addEventListener('loadedmetadata', handleMetadata);
+    audio.addEventListener('playing', handleMetadata);
+
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
+      audio.removeEventListener('loadedmetadata', handleMetadata);
+      audio.removeEventListener('playing', handleMetadata);
+      if (audio) {
+        audio.pause();
       }
     };
   }, []);
@@ -54,7 +76,7 @@ const MusicPlayer = () => {
           });
         });
         toast({
-          description: "Now streaming Rappin' Lounge Radio",
+          description: `Now streaming: ${metadata.title}`,
         });
       }
       setIsPlaying(!isPlaying);
@@ -107,8 +129,10 @@ const MusicPlayer = () => {
               {/* Album art would go here */}
             </div>
             <div className="hidden sm:block">
-              <h4 className="text-sm font-medium text-primary">Rappin' Lounge Radio</h4>
-              <p className="text-xs text-muted-foreground">Live Stream</p>
+              <h4 className="text-sm font-medium text-primary truncate">{metadata.title}</h4>
+              <p className="text-xs text-muted-foreground">
+                {metadata.artist || "Live Stream"}
+              </p>
             </div>
           </div>
 
@@ -160,7 +184,7 @@ const MusicPlayer = () => {
               <span className="text-xs text-muted-foreground w-10 text-right">LIVE</span>
               <Slider
                 value={progress}
-                onValueChange={handleProgressChange}
+                onValueChange={setProgress}
                 max={100}
                 step={1}
                 className="w-full"
@@ -178,7 +202,8 @@ const MusicPlayer = () => {
               className="text-muted-foreground hover:text-primary hidden sm:inline-flex"
               onClick={toggleMute}
             >
-              <VolumeIcon />
+              {volume[0] === 0 || isMuted ? <VolumeX size={20} /> : 
+               volume[0] < 50 ? <Volume1 size={20} /> : <Volume2 size={20} />}
             </Button>
             <div className="w-24 hidden sm:block">
               <Slider
