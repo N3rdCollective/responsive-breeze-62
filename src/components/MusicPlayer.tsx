@@ -29,7 +29,7 @@ const MusicPlayer = () => {
                   alt="Album Art"
                   className="object-cover w-full h-full"
                   onError={(e) => {
-                    e.currentTarget.src = "/placeholder.svg";
+                    e.currentTarget.src = "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05";
                   }}
                 />
               </AspectRatio>

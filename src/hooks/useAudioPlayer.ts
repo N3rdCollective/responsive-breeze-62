@@ -11,7 +11,7 @@ export const useAudioPlayer = () => {
   const [previousVolume, setPreviousVolume] = useState([50]);
   const [metadata, setMetadata] = useState<StreamMetadata>({ 
     title: "Rappin' Lounge Radio",
-    artwork: "/placeholder.svg"
+    artwork: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05"
   });
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const metadataIntervalRef = useRef<number>();
@@ -30,7 +30,7 @@ export const useAudioPlayer = () => {
             setMetadata({
               title: data.data.title || "Rappin' Lounge Radio",
               artist: data.data.artist,
-              artwork: data.data.artwork_url || "/placeholder.svg"
+              artwork: data.data.artwork_url || "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05"
             });
             console.log("New metadata:", data.data);
           }
