@@ -18,17 +18,34 @@ const MusicPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState([50]);
   const [progress, setProgress] = useState([0]);
+  const [isMuted, setIsMuted] = useState(false);
+  const [previousVolume, setPreviousVolume] = useState([50]);
 
   const handleVolumeChange = (newVolume: number[]) => {
     setVolume(newVolume);
+    setPreviousVolume(newVolume);
+    if (newVolume[0] > 0) {
+      setIsMuted(false);
+    }
   };
 
   const handleProgressChange = (newProgress: number[]) => {
     setProgress(newProgress);
   };
 
+  const toggleMute = () => {
+    if (isMuted) {
+      setVolume(previousVolume);
+      setIsMuted(false);
+    } else {
+      setPreviousVolume(volume);
+      setVolume([0]);
+      setIsMuted(true);
+    }
+  };
+
   const VolumeIcon = () => {
-    if (volume[0] === 0) return <VolumeX size={20} />;
+    if (volume[0] === 0 || isMuted) return <VolumeX size={20} />;
     if (volume[0] < 50) return <Volume1 size={20} />;
     return <Volume2 size={20} />;
   };
@@ -44,7 +61,7 @@ const MusicPlayer = () => {
             </div>
             <div className="hidden sm:block">
               <h4 className="text-sm font-medium text-black dark:text-[#FFD700]">Currently Playing</h4>
-              <p className="text-xs text-white dark:text-white">Artist Name</p>
+              <p className="text-xs text-black dark:text-white">Artist Name</p>
             </div>
           </div>
 
@@ -54,14 +71,14 @@ const MusicPlayer = () => {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="text-white hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700]"
+                className="text-black hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700]"
               >
                 <Shuffle size={20} />
               </Button>
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="text-white hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700]"
+                className="text-black hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700]"
               >
                 <SkipBack size={20} />
               </Button>
@@ -76,20 +93,20 @@ const MusicPlayer = () => {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="text-white hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700]"
+                className="text-black hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700]"
               >
                 <SkipForward size={20} />
               </Button>
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="text-white hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700]"
+                className="text-black hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700]"
               >
                 <Repeat size={20} />
               </Button>
             </div>
             <div className="w-full flex items-center space-x-2">
-              <span className="text-xs text-white dark:text-white w-10 text-right">0:00</span>
+              <span className="text-xs text-black dark:text-white w-10 text-right">0:00</span>
               <Slider
                 value={progress}
                 onValueChange={handleProgressChange}
@@ -97,7 +114,7 @@ const MusicPlayer = () => {
                 step={1}
                 className="w-full"
               />
-              <span className="text-xs text-white dark:text-white w-10">3:45</span>
+              <span className="text-xs text-black dark:text-white w-10">3:45</span>
             </div>
           </div>
 
@@ -106,17 +123,20 @@ const MusicPlayer = () => {
             <Button 
               variant="ghost" 
               size="icon" 
-              className="text-white hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] hidden sm:inline-flex"
+              className="text-black hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] hidden sm:inline-flex"
+              onClick={toggleMute}
             >
               <VolumeIcon />
             </Button>
-            <Slider
-              value={volume}
-              onValueChange={handleVolumeChange}
-              max={100}
-              step={1}
-              className="w-24 hidden sm:block"
-            />
+            <div className="w-24 hidden sm:block">
+              <Slider
+                value={volume}
+                onValueChange={handleVolumeChange}
+                max={100}
+                step={1}
+                className="w-full"
+              />
+            </div>
           </div>
         </div>
       </div>
