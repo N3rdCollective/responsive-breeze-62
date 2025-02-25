@@ -25,8 +25,8 @@ export const Personalities = () => {
     <section className="py-24 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold tracking-tight text-foreground mb-4">Meet Our Team</h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <h2 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-foreground mb-4">Meet Our Team</h2>
+          <p className="text-xl text-gray-700 dark:text-muted-foreground max-w-2xl mx-auto">
             Get to know the voices that make our station unique and bring you the best in music and entertainment.
           </p>
         </div>
@@ -46,12 +46,12 @@ export const Personalities = () => {
                 />
               </div>
               <div className="p-8">
-                <h3 className="text-2xl font-semibold text-foreground mb-2">{personality.name}</h3>
-                <p className="text-lg text-primary mb-4 font-medium">{personality.role}</p>
-                <p className="text-muted-foreground mb-6 line-clamp-3">{personality.bio}</p>
+                <h3 className="text-2xl font-semibold text-gray-900 dark:text-foreground mb-2">{personality.name}</h3>
+                <p className="text-lg text-[#FFD700] mb-4 font-medium">{personality.role}</p>
+                <p className="text-gray-700 dark:text-muted-foreground mb-6 line-clamp-3">{personality.bio}</p>
                 <a 
                   href={`/personalities/${personality.name.toLowerCase().replace(' ', '-')}`}
-                  className="inline-flex items-center text-sm font-semibold text-primary hover:text-primary/80 transition-colors group-hover:translate-x-1 duration-300"
+                  className="inline-flex items-center text-sm font-semibold text-[#FFD700] hover:text-[#FFD700]/80 transition-colors group-hover:translate-x-1 duration-300"
                 >
                   Learn more 
                   <svg className="w-4 h-4 ml-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
