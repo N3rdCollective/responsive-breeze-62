@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -57,13 +56,8 @@ const Schedule = () => {
     return format(parseISO(timeString), "h:mm a");
   };
 
-  const formatDate = (timeString: string) => {
-    return format(parseISO(timeString), "EEEE, d"); // Removed month from the format
-  };
-
   const currentDay = DAYS_OF_WEEK[new Date().getDay()];
 
-  // Modified to prevent duplicate shows
   const getScheduleForDay = (day: string) => {
     if (!schedule) return [];
     const today = new Date();
@@ -85,7 +79,6 @@ const Schedule = () => {
       return isInCurrentWeek && format(itemDate, 'EEEE') === day;
     });
 
-    // Remove duplicates based on start time and show name
     const uniqueShows = filteredShows.reduce((acc, current) => {
       const isDuplicate = acc.some(show => 
         show.playlist.name === current.playlist.name && 
@@ -163,9 +156,6 @@ const Schedule = () => {
                                   {formatTime(item.start)} - {formatTime(item.end)}
                                 </span>
                               </CardTitle>
-                              <p className="text-black dark:text-white mt-2">
-                                {formatDate(item.start)}
-                              </p>
                               {item.playlist.artist && (
                                 <p className="text-gray-600 dark:text-gray-300 mt-2">
                                   Hosted by: {item.playlist.artist}
