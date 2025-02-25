@@ -4,12 +4,14 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const { togglePlayPause, isPlaying } = useAudioPlayer();
 
   useEffect(() => {
     setMounted(true);
@@ -72,6 +74,7 @@ const Navbar = () => {
             <Button 
               variant="default" 
               size="sm"
+              onClick={togglePlayPause}
               className={`
                 ${isScrolled 
                   ? "bg-[#FFD700] text-black hover:bg-[#FFD700]/90" 
@@ -79,7 +82,7 @@ const Navbar = () => {
                 dark:bg-[#FFD700] dark:text-black dark:hover:bg-[#FFD700]/90
               `}
             >
-              Listen Live
+              {isPlaying ? "Pause" : "Listen Live"}
             </Button>
             {mounted && (
               <Button
