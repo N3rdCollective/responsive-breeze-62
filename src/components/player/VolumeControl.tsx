@@ -17,17 +17,17 @@ export const VolumeControl = ({
   onToggleMute 
 }: VolumeControlProps) => {
   return (
-    <div className="flex items-center space-x-2 w-1/4 justify-end">
+    <div className="flex items-center space-x-2 w-full sm:w-36 justify-end">
       <Button 
         variant="ghost" 
         size="icon" 
-        className="text-muted-foreground hover:text-primary hidden sm:inline-flex"
+        className="text-muted-foreground hover:text-primary"
         onClick={onToggleMute}
       >
         {volume[0] === 0 || isMuted ? <VolumeX size={20} /> : 
          volume[0] < 50 ? <Volume1 size={20} /> : <Volume2 size={20} />}
       </Button>
-      <div className="w-24 hidden sm:block">
+      <div className="w-24">
         <Slider
           value={volume}
           onValueChange={onVolumeChange}

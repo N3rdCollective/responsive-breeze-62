@@ -1,5 +1,5 @@
 
-import { useState } from "react"; // Added missing import
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { 
@@ -20,7 +20,7 @@ export const PlayerControls = ({ isPlaying, togglePlayPause }: PlayerControlsPro
   const [progress] = useState([0]);
 
   return (
-    <div className="flex flex-col items-center w-2/4">
+    <div className="flex flex-col items-center w-full">
       <div className="flex items-center space-x-4 mb-1">
         <Button 
           variant="ghost" 
@@ -41,7 +41,7 @@ export const PlayerControls = ({ isPlaying, togglePlayPause }: PlayerControlsPro
         <Button 
           variant="default" 
           size="icon" 
-          className="rounded-full bg-[#FFD700] hover:bg-[#FFD700]/90 text-black"
+          className="rounded-full bg-[#FFD700] hover:bg-[#FFD700]/90 text-black shadow-lg"
           onClick={togglePlayPause}
         >
           {isPlaying ? <Pause size={20} /> : <Play size={20} />}

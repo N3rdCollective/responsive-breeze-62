@@ -19,9 +19,8 @@ const MusicPlayer = () => {
     toggleMute
   } = useAudioPlayer();
 
-  // Update fullscreen state when playback starts
   useEffect(() => {
-    if (isPlaying && window.innerWidth < 768) { // 768px is the 'md' breakpoint in Tailwind
+    if (isPlaying && window.innerWidth < 768) {
       setIsFullscreen(true);
     }
   }, [isPlaying]);
@@ -41,20 +40,21 @@ const MusicPlayer = () => {
     <div className={`
       fixed transition-all duration-300 bg-background border-t border-border shadow-lg z-50
       ${isFullscreen 
-        ? 'top-0 left-0 right-0 bottom-0 h-screen' 
-        : 'bottom-0 left-0 right-0'
+        ? 'top-0 left-0 right-0 bottom-0 h-screen bg-gradient-to-b from-background to-background/80 backdrop-blur-lg' 
+        : 'bottom-0 left-0 right-0 h-20'
       }
     `}>
       <div className={`
-        max-w-7xl mx-auto px-4 
+        max-w-7xl mx-auto px-4 h-full
         ${isFullscreen 
-          ? 'h-full flex flex-col justify-between py-8' 
-          : 'py-3'
+          ? 'flex flex-col justify-between py-8' 
+          : 'h-full'
         }
       `}>
         <div className={`
+          h-full
           ${isFullscreen 
-            ? 'flex flex-col h-full' 
+            ? 'flex flex-col justify-between' 
             : 'flex items-center justify-between'
           }
         `}>
@@ -72,15 +72,15 @@ const MusicPlayer = () => {
 
           {/* Album Art and Track Info */}
           <div className={`
-            flex 
+            flex items-center
             ${isFullscreen 
-              ? 'flex-col items-center justify-center flex-grow space-y-6' 
-              : 'items-center space-x-4 w-1/4'
+              ? 'flex-col justify-center flex-grow space-y-8' 
+              : 'space-x-4 w-[30%]'
             }
           `}>
             <div className={`
-              ${isFullscreen ? 'w-64 h-64' : 'w-12 h-12'} 
-              bg-muted rounded-md overflow-hidden
+              ${isFullscreen ? 'w-64 h-64' : 'w-14 h-14'} 
+              rounded-md overflow-hidden shadow-lg
             `}>
               <AspectRatio ratio={1/1} className="relative">
                 <img
@@ -94,22 +94,20 @@ const MusicPlayer = () => {
               </AspectRatio>
             </div>
             <div className={`
-              ${isFullscreen ? 'text-center' : 'hidden sm:block'} 
-              overflow-hidden
+              ${isFullscreen ? 'text-center' : ''} 
+              flex-1 min-w-0
             `}>
-              <div className="group relative w-48">
+              <div className="group relative">
                 <h4 className={`
-                  font-medium text-primary whitespace-nowrap 
-                  group-hover:animate-[marquee_10s_linear_infinite]
-                  ${isFullscreen ? 'text-xl mb-2' : 'text-sm'}
+                  font-medium text-foreground truncate
+                  ${isFullscreen ? 'text-2xl mb-3' : 'text-sm'}
                 `}>
                   {metadata.title}
                 </h4>
                 {metadata.artist && (
                   <p className={`
-                    text-muted-foreground whitespace-nowrap 
-                    group-hover:animate-[marquee_10s_linear_infinite]
-                    ${isFullscreen ? 'text-base' : 'text-xs'}
+                    text-muted-foreground truncate
+                    ${isFullscreen ? 'text-lg' : 'text-xs'}
                   `}>
                     {metadata.artist}
                   </p>
@@ -120,7 +118,10 @@ const MusicPlayer = () => {
 
           {/* Player Controls */}
           <div className={`
-            ${isFullscreen ? 'w-full max-w-md mx-auto' : 'w-2/4'}
+            ${isFullscreen 
+              ? 'w-full max-w-lg mx-auto mb-8' 
+              : 'w-[40%] max-w-md'
+            }
           `}>
             <PlayerControls 
               isPlaying={isPlaying} 
@@ -130,7 +131,10 @@ const MusicPlayer = () => {
 
           {/* Volume Control */}
           <div className={`
-            ${isFullscreen ? 'w-full max-w-md mx-auto mt-6' : ''}
+            ${isFullscreen 
+              ? 'w-full max-w-md mx-auto mb-4' 
+              : 'w-[30%] flex justify-end'
+            }
           `}>
             <VolumeControl
               volume={volume}
