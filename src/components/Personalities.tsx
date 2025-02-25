@@ -38,11 +38,11 @@ export const Personalities = () => {
               className="group bg-card text-card-foreground rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 animate-fadeIn border border-border"
               style={{ animationDelay: `${index * 200}ms` }}
             >
-              <div className="aspect-w-4 aspect-h-3 overflow-hidden">
+              <div className="relative w-full pt-[75%]">
                 <img
                   src={personality.image}
                   alt={personality.name}
-                  className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-300"
+                  className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
               <div className="p-8">
