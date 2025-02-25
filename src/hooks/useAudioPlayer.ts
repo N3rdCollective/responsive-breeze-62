@@ -30,7 +30,7 @@ export const useAudioPlayer = () => {
             setMetadata({
               title: data.data.title || "Rappin' Lounge Radio",
               artist: data.data.artist,
-              artwork: data.data.artwork_url || "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05"
+              artwork: data.data.artwork_urls?.large || data.data.artwork_urls?.standard || "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05"
             });
             console.log("New metadata:", data.data);
           }
