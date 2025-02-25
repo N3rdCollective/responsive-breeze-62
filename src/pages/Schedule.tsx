@@ -1,10 +1,9 @@
-
 import { useQuery } from "@tanstack/react-query";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, compareAsc } from "date-fns";
 
 interface ScheduleItem {
   start: string;
@@ -78,7 +77,9 @@ const Schedule = () => {
       return acc;
     }, [] as ScheduleItem[]);
 
-    return uniqueShows;
+    return uniqueShows.sort((a, b) => {
+      return compareAsc(parseISO(a.start), parseISO(b.start));
+    });
   };
 
   return (
