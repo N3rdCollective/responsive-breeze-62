@@ -34,7 +34,7 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <Link to="/" className="text-xl font-bold text-gray-900 dark:text-[#FFD700]">
+            <Link to="/" className="text-xl font-bold text-white dark:text-[#FFD700]">
               Radio Station
             </Link>
           </div>
@@ -42,37 +42,37 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-8">
             <Link 
               to="/" 
-              className={`${isActive('/') ? 'text-gray-900 dark:text-[#FFD700] font-medium' : 'text-gray-600 dark:text-white'} hover:text-gray-900 dark:hover:text-[#FFD700]`}
+              className={`${isActive('/') ? 'text-[#FFD700]' : 'text-white'} hover:text-[#FFD700]`}
             >
               Home
             </Link>
             <Link 
               to="/personalities" 
-              className={`${isActive('/personalities') ? 'text-gray-900 dark:text-[#FFD700] font-medium' : 'text-gray-600 dark:text-white'} hover:text-gray-900 dark:hover:text-[#FFD700]`}
+              className={`${isActive('/personalities') ? 'text-[#FFD700]' : 'text-white'} hover:text-[#FFD700]`}
             >
               Personalities
             </Link>
             <Link 
               to="/schedule" 
-              className={`${isActive('/schedule') ? 'text-gray-900 dark:text-[#FFD700] font-medium' : 'text-gray-600 dark:text-white'} hover:text-gray-900 dark:hover:text-[#FFD700]`}
+              className={`${isActive('/schedule') ? 'text-[#FFD700]' : 'text-white'} hover:text-[#FFD700]`}
             >
               Schedule
             </Link>
             <Link 
               to="/about" 
-              className={`${isActive('/about') ? 'text-gray-900 dark:text-[#FFD700] font-medium' : 'text-gray-600 dark:text-white'} hover:text-gray-900 dark:hover:text-[#FFD700]`}
+              className={`${isActive('/about') ? 'text-[#FFD700]' : 'text-white'} hover:text-[#FFD700]`}
             >
               About
             </Link>
             <Link 
               to="/news" 
-              className={`${isActive('/news') ? 'text-gray-900 dark:text-[#FFD700] font-medium' : 'text-gray-600 dark:text-white'} hover:text-gray-900 dark:hover:text-[#FFD700]`}
+              className={`${isActive('/news') ? 'text-[#FFD700]' : 'text-white'} hover:text-[#FFD700]`}
             >
               News
             </Link>
             <Link 
               to="/contact" 
-              className={`${isActive('/contact') ? 'text-gray-900 dark:text-[#FFD700] font-medium' : 'text-gray-600 dark:text-white'} hover:text-gray-900 dark:hover:text-[#FFD700]`}
+              className={`${isActive('/contact') ? 'text-[#FFD700]' : 'text-white'} hover:text-[#FFD700]`}
             >
               Contact
             </Link>
@@ -88,7 +88,7 @@ const Navbar = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-                className="text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-[#FFD700]"
+                className="text-white hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700]"
               >
                 {theme === "light" ? (
                   <Moon className="h-5 w-5" />
