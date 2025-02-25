@@ -109,7 +109,7 @@ const Hero = () => {
           </Button>
           <Button
             variant="outline"
-            className="border-2 border-[#FFD700] text-white hover:bg-[#FFD700]/10 px-8 py-6 text-lg dark:border-[#FFD700] dark:text-white dark:hover:bg-[#FFD700]/10"
+            className="border-2 border-[#FFD700] text-[#FFD700] hover:bg-[#FFD700] hover:text-black px-8 py-6 text-lg dark:border-[#FFD700] dark:text-white dark:hover:bg-[#FFD700]/10"
           >
             View Schedule
           </Button>
