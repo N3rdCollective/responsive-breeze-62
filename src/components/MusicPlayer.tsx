@@ -1,10 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { useAudioPlayer } from "@/hooks/useAudioPlayer";
-import { PlayerControls } from "@/components/player/PlayerControls";
-import { VolumeControl } from "@/components/player/VolumeControl";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Button } from "@/components/ui/button";
-import { Maximize2, Minimize2, Play, Pause } from "lucide-react";
+import { MinimizedPlayer } from "./player/MinimizedPlayer";
+import { FullscreenPlayer } from "./player/FullscreenPlayer";
 
 const MusicPlayer = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -35,166 +33,6 @@ const MusicPlayer = () => {
     }
   };
 
-  // Simple mobile view
-  const SimpleMobileView = () => (
-    <div className="flex items-center justify-between px-4 h-full">
-      <div className="flex items-center gap-3">
-        <Button 
-          variant="default" 
-          size="icon" 
-          className="rounded-full bg-[#FFD700] hover:bg-[#FFD700]/90 text-black shadow-lg"
-          onClick={handlePlayPause}
-        >
-          {isPlaying ? <Pause size={20} /> : <Play size={20} />}
-        </Button>
-        <div className="max-w-[150px]">
-          <p className="text-sm font-medium truncate">{metadata.title}</p>
-          {metadata.artist && (
-            <p className="text-xs text-muted-foreground truncate">{metadata.artist}</p>
-          )}
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <VolumeControl
-          volume={volume}
-          isMuted={isMuted}
-          onVolumeChange={handleVolumeChange}
-          onToggleMute={toggleMute}
-        />
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleFullscreen}
-          className="text-muted-foreground hover:text-primary"
-        >
-          <Maximize2 size={20} />
-        </Button>
-      </div>
-    </div>
-  );
-
-  // Full featured view
-  const FullFeaturedView = () => {
-    const isMobile = window.innerWidth < 768;
-    
-    return (
-      <div className={`
-        max-w-7xl mx-auto px-4 h-full
-        ${isFullscreen ? 'flex flex-col justify-between py-8' : 'h-full'}
-      `}>
-        <div className={`
-          h-full
-          ${isFullscreen 
-            ? 'flex flex-col justify-between' 
-            : 'flex items-center justify-between'
-          }
-        `}>
-          {/* Mobile Fullscreen Toggle */}
-          <div className="md:hidden absolute right-4 top-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleFullscreen}
-              className="text-muted-foreground hover:text-primary"
-            >
-              {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
-            </Button>
-          </div>
-
-          {/* Album Art and Track Info */}
-          <div className={`
-            flex items-center
-            ${isFullscreen 
-              ? 'flex-col justify-center flex-grow space-y-12' 
-              : 'space-x-4 w-[30%]'
-            }
-          `}>
-            <div className={`
-              ${isFullscreen ? 'w-72 h-72 md:w-96 md:h-96' : 'w-14 h-14'} 
-              rounded-2xl overflow-hidden shadow-2xl transition-all duration-300
-              ${isFullscreen ? 'shadow-black/50' : ''}
-            `}>
-              <AspectRatio ratio={1/1} className="relative bg-black/20">
-                <img
-                  src={metadata.artwork}
-                  alt="Album Art"
-                  className={`
-                    object-cover w-full h-full
-                    ${isFullscreen ? 'scale-105' : ''}
-                  `}
-                  onError={(e) => {
-                    e.currentTarget.src = "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05";
-                  }}
-                />
-              </AspectRatio>
-            </div>
-            <div className={`
-              ${isFullscreen ? 'text-center space-y-3' : ''} 
-              flex-1 min-w-0
-            `}>
-              <div className="group relative">
-                <h4 className={`
-                  font-medium truncate
-                  ${isFullscreen 
-                    ? 'text-3xl md:text-4xl text-white mb-4' 
-                    : 'text-sm text-foreground'
-                  }
-                `}>
-                  {metadata.title}
-                </h4>
-                {metadata.artist && (
-                  <p className={`
-                    truncate
-                    ${isFullscreen 
-                      ? 'text-xl md:text-2xl text-white/60' 
-                      : 'text-xs text-muted-foreground'
-                    }
-                  `}>
-                    {metadata.artist}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Player Controls */}
-          <div className={`
-            ${isFullscreen 
-              ? 'w-full max-w-xl mx-auto mb-8' 
-              : 'w-[40%] max-w-md'
-            }
-          `}>
-            <PlayerControls 
-              isPlaying={isPlaying} 
-              togglePlayPause={handlePlayPause}
-              volume={isFullscreen && isMobile ? volume : undefined}
-              onVolumeChange={isFullscreen && isMobile ? handleVolumeChange : undefined}
-              showVolumeSlider={isFullscreen && isMobile}
-              isFullscreen={isFullscreen}
-            />
-          </div>
-
-          {/* Volume Control - Hide in mobile fullscreen */}
-          {(!isFullscreen || !isMobile) && (
-            <div className={`
-              ${isFullscreen 
-                ? 'w-full max-w-md mx-auto mb-4' 
-                : 'w-[30%] flex justify-end'
-              }
-            `}>
-              <VolumeControl
-                volume={volume}
-                isMuted={isMuted}
-                onVolumeChange={handleVolumeChange}
-                onToggleMute={toggleMute}
-              />
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className={`
       fixed transition-all duration-300 border-t border-border shadow-lg z-50
@@ -204,8 +42,27 @@ const MusicPlayer = () => {
       }
     `}>
       {(!isFullscreen && window.innerWidth < 768) 
-        ? <SimpleMobileView /> 
-        : <FullFeaturedView />
+        ? <MinimizedPlayer 
+            isPlaying={isPlaying}
+            volume={volume}
+            isMuted={isMuted}
+            metadata={metadata}
+            togglePlayPause={handlePlayPause}
+            handleVolumeChange={handleVolumeChange}
+            toggleMute={toggleMute}
+            toggleFullscreen={toggleFullscreen}
+          /> 
+        : <FullscreenPlayer 
+            isPlaying={isPlaying}
+            volume={volume}
+            isMuted={isMuted}
+            metadata={metadata}
+            togglePlayPause={handlePlayPause}
+            handleVolumeChange={handleVolumeChange}
+            toggleMute={toggleMute}
+            toggleFullscreen={toggleFullscreen}
+            isFullscreen={isFullscreen}
+          />
       }
     </div>
   );
