@@ -87,20 +87,20 @@ const Hero = () => {
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{ 
-          backgroundImage: `url('/placeholder.svg')`,
-          opacity: 0.6
+          backgroundImage: `url('/lovable-uploads/1541ab2b-b997-4951-9cd0-19bacdb2ac24.png')`,
+          opacity: 0.8
         }}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#F5F5F5]/70 to-white/70 dark:from-[#333333]/80 dark:to-black/80" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/70" />
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
-        <span className="inline-block mb-4 px-4 py-1 rounded-full bg-[#666666]/10 dark:bg-[#666666]/20 text-sm font-medium tracking-wide animate-fadeIn text-[#666666] dark:text-[#FFD700]">
+        <span className="inline-block mb-4 px-4 py-1 rounded-full bg-[#666666]/10 dark:bg-[#666666]/20 text-sm font-medium tracking-wide animate-fadeIn text-white">
           {greeting}
         </span>
-        <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight animate-fadeIn [animation-delay:200ms] text-black dark:text-[#FFD700]">
+        <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight animate-fadeIn [animation-delay:200ms] text-white">
           Experience the Power of Sound
         </h1>
-        <p className="text-lg md:text-xl text-[#666666] dark:text-[#FFD700]/90 mb-8 max-w-2xl mx-auto animate-fadeIn [animation-delay:400ms]">
+        <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto animate-fadeIn [animation-delay:400ms]">
           Join us on a journey through music, stories, and connections that move you.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fadeIn [animation-delay:600ms]">
@@ -111,7 +111,7 @@ const Hero = () => {
           </Button>
           <Button
             variant="outline"
-            className="border-2 border-[#FFD700] text-[#666666] hover:bg-[#FFD700]/10 px-8 py-6 text-lg dark:border-[#FFD700] dark:text-[#FFD700] dark:hover:bg-[#FFD700]/10"
+            className="border-2 border-[#FFD700] text-white hover:bg-[#FFD700]/10 px-8 py-6 text-lg dark:border-[#FFD700] dark:text-white dark:hover:bg-[#FFD700]/10"
           >
             View Schedule
           </Button>
