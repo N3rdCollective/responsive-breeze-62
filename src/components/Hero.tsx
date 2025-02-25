@@ -88,8 +88,8 @@ const Hero = () => {
         src="/lovable-uploads/2d39862c-be68-49df-afe5-b212fd22bfbe.png"
         alt="Times Square at night with vibrant blue and purple neon lights"
         className="absolute inset-0 w-full h-full object-cover object-center"
-        style={{ opacity: 0.8 }}
       />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/40" />
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
         <span className="inline-block mb-4 px-4 py-1 rounded-full bg-[#666666]/10 dark:bg-[#666666]/20 text-sm font-medium tracking-wide animate-fadeIn text-white">
