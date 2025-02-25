@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import { PlayerControls } from "@/components/player/PlayerControls";
 import { VolumeControl } from "@/components/player/VolumeControl";
@@ -19,8 +19,22 @@ const MusicPlayer = () => {
     toggleMute
   } = useAudioPlayer();
 
+  // Update fullscreen state when playback starts
+  useEffect(() => {
+    if (isPlaying && window.innerWidth < 768) { // 768px is the 'md' breakpoint in Tailwind
+      setIsFullscreen(true);
+    }
+  }, [isPlaying]);
+
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
+  };
+
+  const handlePlayPause = () => {
+    togglePlayPause();
+    if (!isPlaying && window.innerWidth < 768) {
+      setIsFullscreen(true);
+    }
   };
 
   return (
@@ -110,7 +124,7 @@ const MusicPlayer = () => {
           `}>
             <PlayerControls 
               isPlaying={isPlaying} 
-              togglePlayPause={togglePlayPause} 
+              togglePlayPause={handlePlayPause} 
             />
           </div>
 
