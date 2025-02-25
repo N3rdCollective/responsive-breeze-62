@@ -85,8 +85,8 @@ const Hero = () => {
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
       <img 
-        src="/lovable-uploads/1541ab2b-b997-4951-9cd0-19bacdb2ac24.png"
-        alt="Times Square at night"
+        src="/placeholder.svg"
+        alt="Background"
         className="absolute inset-0 w-full h-full object-cover object-center"
         style={{ opacity: 0.8 }}
       />
