@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format, parseISO, isSameDay } from "date-fns";
+import { format, parseISO, isSameDay, startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
 
 interface ScheduleItem {
   start: string;
@@ -73,15 +73,25 @@ const Schedule = () => {
   const getScheduleForDay = (day: string) => {
     if (!schedule) return [];
     const today = new Date();
+    const weekStart = startOfWeek(today);
+    const weekEnd = endOfWeek(today);
     
     return schedule.filter(item => {
       const itemDate = parseISO(item.start);
+      
+      // First, check if the show is within the current week
+      const isInCurrentWeek = isWithinInterval(itemDate, {
+        start: weekStart,
+        end: weekEnd
+      });
+
       // For the current day, only show today's shows
       if (day === currentDay) {
         return isSameDay(itemDate, today);
       }
-      // For other days, show all shows on that day of the week
-      return format(itemDate, 'EEEE') === day;
+
+      // For other days, show shows on that day but only from the current week
+      return isInCurrentWeek && format(itemDate, 'EEEE') === day;
     });
   };
 
@@ -120,7 +130,7 @@ const Schedule = () => {
                 <TabsContent key={day} value={day} className="space-y-6">
                   {getScheduleForDay(day).length === 0 ? (
                     <div className="text-center py-8 text-black dark:text-white">
-                      No shows scheduled for {day === currentDay ? "today" : day}
+                      No shows scheduled for {day === currentDay ? "today" : day} this week
                     </div>
                   ) : (
                     getScheduleForDay(day).map((item: ScheduleItem, index: number) => (
