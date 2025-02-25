@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 
@@ -43,7 +42,7 @@ const greetings: GreetingData = {
     afternoon: "Good Afternoon",
     evening: "Good Evening",
     slang: ["Hello", "Hi", "Welcome"],
-    skyline: "https://images.unsplash.com/photo-1582785513054-82f50669f74d?q=80&w=2071", // Using NYC skyline as default
+    skyline: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=2070", // Default skyline
     placeholderSkyline: "/placeholder.svg"
   }
 };
