@@ -40,7 +40,7 @@ const Navbar = () => {
                 ? "text-gray-900 dark:text-[#FFD700]" 
                 : "text-white dark:text-[#FFD700]"
             }`}>
-              Radio Station
+              Rappin' Lounge
             </Link>
           </div>
 
