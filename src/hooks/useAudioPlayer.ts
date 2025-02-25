@@ -23,12 +23,12 @@ export const useAudioPlayer = () => {
         const response = await fetch(METADATA_URL);
         if (response.ok) {
           const data = await response.json();
-          if (data.now_playing) {
+          if (data.data) {
             setMetadata({
-              title: data.now_playing.title || "Rappin' Lounge Radio",
-              artist: data.now_playing.artist
+              title: data.data.title || "Rappin' Lounge Radio",
+              artist: data.data.artist
             });
-            console.log("New metadata:", data.now_playing);
+            console.log("New metadata:", data.data);
           }
         }
       } catch (error) {
