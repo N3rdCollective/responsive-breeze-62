@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 const STREAM_URL = "https://streaming.live365.com/a73297";
+const METADATA_URL = "https://api.live365.com/station/a73297"; // Metadata endpoint
 
 interface StreamMetadata {
   title: string;
@@ -30,32 +31,44 @@ const MusicPlayer = () => {
   const [previousVolume, setPreviousVolume] = useState([50]);
   const [metadata, setMetadata] = useState<StreamMetadata>({ title: "Rappin' Lounge Radio" });
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const metadataIntervalRef = useRef<number>();
   const { toast } = useToast();
 
   useEffect(() => {
     audioRef.current = new Audio(STREAM_URL);
     audioRef.current.volume = volume[0] / 100;
 
-    const audio = audioRef.current;
-
-    const handleMetadata = (event: Event) => {
-      const mediaElement = event.target as HTMLMediaElement;
-      if ('mediaSession' in navigator && navigator.mediaSession.metadata) {
-        const title = navigator.mediaSession.metadata.title;
-        const artist = navigator.mediaSession.metadata.artist;
-        setMetadata({ title: title || "Rappin' Lounge Radio", artist });
+    const fetchMetadata = async () => {
+      try {
+        const response = await fetch(METADATA_URL);
+        if (response.ok) {
+          const data = await response.json();
+          // Update depending on the actual API response structure
+          if (data.now_playing) {
+            setMetadata({
+              title: data.now_playing.title || "Rappin' Lounge Radio",
+              artist: data.now_playing.artist
+            });
+            console.log("New metadata:", data.now_playing);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching metadata:", error);
       }
     };
 
-    // Some streams send metadata through media events
-    audio.addEventListener('loadedmetadata', handleMetadata);
-    audio.addEventListener('playing', handleMetadata);
+    // Initial fetch
+    fetchMetadata();
+
+    // Set up polling interval (every 30 seconds)
+    metadataIntervalRef.current = window.setInterval(fetchMetadata, 30000);
 
     return () => {
-      audio.removeEventListener('loadedmetadata', handleMetadata);
-      audio.removeEventListener('playing', handleMetadata);
-      if (audio) {
-        audio.pause();
+      if (metadataIntervalRef.current) {
+        clearInterval(metadataIntervalRef.current);
+      }
+      if (audioRef.current) {
+        audioRef.current.pause();
       }
     };
   }, []);
@@ -94,10 +107,6 @@ const MusicPlayer = () => {
     }
   };
 
-  const handleProgressChange = (newProgress: number[]) => {
-    setProgress(newProgress);
-  };
-
   const toggleMute = () => {
     if (audioRef.current) {
       if (isMuted) {
@@ -111,12 +120,6 @@ const MusicPlayer = () => {
         setIsMuted(true);
       }
     }
-  };
-
-  const VolumeIcon = () => {
-    if (volume[0] === 0 || isMuted) return <VolumeX size={20} />;
-    if (volume[0] < 50) return <Volume1 size={20} />;
-    return <Volume2 size={20} />;
   };
 
   return (
