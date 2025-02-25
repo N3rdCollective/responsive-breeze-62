@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Minimize2 } from "lucide-react";
+import { Minimize2, Music2 } from "lucide-react";
 import { PlayerControls } from "./PlayerControls";
 import { VolumeControl } from "./VolumeControl";
 import { StreamMetadata } from "@/types/player";
@@ -44,11 +44,16 @@ export const FullscreenPlayer = ({
           >
             <Minimize2 size={24} />
           </Button>
+          <div className="flex items-center gap-2">
+            <Music2 size={20} className="text-white/60" />
+            <span className="text-sm font-medium text-white/60">Radio</span>
+          </div>
+          <div className="w-10" /> {/* Spacer for alignment */}
         </div>
 
         {/* Album Art and Track Info */}
-        <div className="flex flex-col items-center justify-center flex-grow space-y-12">
-          <div className="w-72 h-72 md:w-96 md:h-96 rounded-2xl overflow-hidden shadow-2xl shadow-black/50">
+        <div className="flex flex-col items-center justify-center flex-grow">
+          <div className="w-72 h-72 md:w-96 md:h-96 rounded-2xl overflow-hidden shadow-2xl shadow-black/50 mb-16">
             <AspectRatio ratio={1/1} className="relative bg-black/20">
               <img
                 src={metadata.artwork}
@@ -60,22 +65,35 @@ export const FullscreenPlayer = ({
               />
             </AspectRatio>
           </div>
-          <div className="text-center space-y-3 w-full max-w-lg px-4">
-            <div className="group relative">
-              <h4 className="font-medium truncate text-3xl md:text-4xl text-white mb-4 hover:underline cursor-pointer">
-                {metadata.title}
-              </h4>
-              {metadata.artist && (
-                <p className="truncate text-xl md:text-2xl text-white/60 hover:text-white hover:underline cursor-pointer transition-colors">
-                  {metadata.artist}
-                </p>
-              )}
+          <div className="w-full max-w-lg px-4 animate-fadeIn">
+            <div className="relative">
+              <div className="text-center flex flex-col gap-2">
+                <h4 className="font-semibold text-2xl md:text-3xl text-white tracking-tight hover:underline cursor-pointer line-clamp-2">
+                  {metadata.title}
+                </h4>
+                {metadata.artist && (
+                  <p className="text-base md:text-lg text-white/60 hover:text-white hover:underline cursor-pointer transition-colors">
+                    {metadata.artist}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
         {/* Bottom Controls Section */}
-        <div className="space-y-6 w-full max-w-xl mx-auto">
+        <div className="space-y-8 w-full max-w-xl mx-auto">
+          {/* Progress Bar */}
+          <div className="px-1">
+            <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+              <div className="w-full h-full bg-white/20 rounded-full" />
+            </div>
+            <div className="flex justify-between mt-1">
+              <span className="text-xs text-white/40">LIVE</span>
+              <span className="text-xs text-white/40">24/7</span>
+            </div>
+          </div>
+
           {/* Player Controls */}
           <div className="w-full">
             <PlayerControls 
