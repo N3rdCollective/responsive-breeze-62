@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format, parseISO, isSameDay, startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 interface ScheduleItem {
   start: string;
@@ -62,37 +62,10 @@ const Schedule = () => {
   const getScheduleForDay = (day: string) => {
     if (!schedule) return [];
     
-    // Modified this section to properly handle Sunday shows
-    const today = new Date();
-    const weekStart = startOfWeek(today, { weekStartsOn: 0 }); // Explicitly set week to start on Sunday
-    const weekEnd = endOfWeek(today, { weekStartsOn: 0 });
-    
     const filteredShows = schedule.filter(item => {
       const itemDate = parseISO(item.start);
-      
-      const isInCurrentWeek = isWithinInterval(itemDate, {
-        start: weekStart,
-        end: weekEnd
-      });
-
-      // Add console.log to debug the filtering
-      console.log({
-        day,
-        itemDay: format(itemDate, 'EEEE'),
-        isInCurrentWeek,
-        isTodayAndCurrent: day === currentDay && isSameDay(itemDate, today),
-        isMatchingDay: format(itemDate, 'EEEE') === day
-      });
-
-      if (day === currentDay) {
-        return isSameDay(itemDate, today);
-      }
-
-      return isInCurrentWeek && format(itemDate, 'EEEE') === day;
+      return format(itemDate, 'EEEE') === day;
     });
-
-    // Add console.log to see the filtered shows
-    console.log(`Filtered shows for ${day}:`, filteredShows);
 
     const uniqueShows = filteredShows.reduce((acc, current) => {
       const isDuplicate = acc.some(show => 
@@ -104,9 +77,6 @@ const Schedule = () => {
       }
       return acc;
     }, [] as ScheduleItem[]);
-
-    // Add console.log to see the final unique shows
-    console.log(`Unique shows for ${day}:`, uniqueShows);
 
     return uniqueShows;
   };
@@ -146,7 +116,7 @@ const Schedule = () => {
                 <TabsContent key={day} value={day} className="space-y-6">
                   {getScheduleForDay(day).length === 0 ? (
                     <div className="text-center py-8 text-black dark:text-white">
-                      No shows scheduled for {day === currentDay ? "today" : day} this week
+                      No shows scheduled for {day}
                     </div>
                   ) : (
                     getScheduleForDay(day).map((item: ScheduleItem, index: number) => (
