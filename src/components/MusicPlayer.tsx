@@ -1,7 +1,8 @@
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { useToast } from "@/components/ui/use-toast";
 import { 
   Play, 
   Pause, 
@@ -14,16 +15,58 @@ import {
   Shuffle
 } from "lucide-react";
 
+const STREAM_URL = "https://streaming.live365.com/a73297";
+
 const MusicPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState([50]);
   const [progress, setProgress] = useState([0]);
   const [isMuted, setIsMuted] = useState(false);
   const [previousVolume, setPreviousVolume] = useState([50]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    audioRef.current = new Audio(STREAM_URL);
+    audioRef.current.volume = volume[0] / 100;
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  const togglePlayPause = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+        toast({
+          description: "Stream paused",
+        });
+      } else {
+        audioRef.current.play().catch((error) => {
+          console.error("Playback failed:", error);
+          toast({
+            variant: "destructive",
+            description: "Failed to start playback. Please try again.",
+          });
+        });
+        toast({
+          description: "Now streaming Rappin' Lounge Radio",
+        });
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
 
   const handleVolumeChange = (newVolume: number[]) => {
     setVolume(newVolume);
     setPreviousVolume(newVolume);
+    if (audioRef.current) {
+      audioRef.current.volume = newVolume[0] / 100;
+    }
     if (newVolume[0] > 0) {
       setIsMuted(false);
     }
@@ -34,13 +77,17 @@ const MusicPlayer = () => {
   };
 
   const toggleMute = () => {
-    if (isMuted) {
-      setVolume(previousVolume);
-      setIsMuted(false);
-    } else {
-      setPreviousVolume(volume);
-      setVolume([0]);
-      setIsMuted(true);
+    if (audioRef.current) {
+      if (isMuted) {
+        audioRef.current.volume = previousVolume[0] / 100;
+        setVolume(previousVolume);
+        setIsMuted(false);
+      } else {
+        setPreviousVolume(volume);
+        audioRef.current.volume = 0;
+        setVolume([0]);
+        setIsMuted(true);
+      }
     }
   };
 
@@ -60,8 +107,8 @@ const MusicPlayer = () => {
               {/* Album art would go here */}
             </div>
             <div className="hidden sm:block">
-              <h4 className="text-sm font-medium text-black dark:text-[#FFD700]">Currently Playing</h4>
-              <p className="text-xs text-black dark:text-white">Artist Name</p>
+              <h4 className="text-sm font-medium text-black dark:text-[#FFD700]">Rappin' Lounge Radio</h4>
+              <p className="text-xs text-black dark:text-white">Live Stream</p>
             </div>
           </div>
 
@@ -72,6 +119,7 @@ const MusicPlayer = () => {
                 variant="ghost" 
                 size="icon" 
                 className="text-black hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700]"
+                disabled
               >
                 <Shuffle size={20} />
               </Button>
@@ -79,6 +127,7 @@ const MusicPlayer = () => {
                 variant="ghost" 
                 size="icon" 
                 className="text-black hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700]"
+                disabled
               >
                 <SkipBack size={20} />
               </Button>
@@ -86,7 +135,7 @@ const MusicPlayer = () => {
                 variant="default" 
                 size="icon" 
                 className="rounded-full bg-[#FFD700] hover:bg-[#FFD700]/90 text-black"
-                onClick={() => setIsPlaying(!isPlaying)}
+                onClick={togglePlayPause}
               >
                 {isPlaying ? <Pause size={20} /> : <Play size={20} />}
               </Button>
@@ -94,6 +143,7 @@ const MusicPlayer = () => {
                 variant="ghost" 
                 size="icon" 
                 className="text-black hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700]"
+                disabled
               >
                 <SkipForward size={20} />
               </Button>
@@ -101,20 +151,22 @@ const MusicPlayer = () => {
                 variant="ghost" 
                 size="icon" 
                 className="text-black hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700]"
+                disabled
               >
                 <Repeat size={20} />
               </Button>
             </div>
             <div className="w-full flex items-center space-x-2">
-              <span className="text-xs text-black dark:text-white w-10 text-right">0:00</span>
+              <span className="text-xs text-black dark:text-white w-10 text-right">LIVE</span>
               <Slider
                 value={progress}
                 onValueChange={handleProgressChange}
                 max={100}
                 step={1}
                 className="w-full"
+                disabled
               />
-              <span className="text-xs text-black dark:text-white w-10">3:45</span>
+              <span className="text-xs text-black dark:text-white w-10">24/7</span>
             </div>
           </div>
 
