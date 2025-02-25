@@ -24,11 +24,17 @@ const MusicPlayer = () => {
             <div className="w-12 h-12 bg-muted rounded">
               {/* Album art would go here */}
             </div>
-            <div className="hidden sm:block">
-              <h4 className="text-sm font-medium text-primary truncate">{metadata.title}</h4>
-              <p className="text-xs text-muted-foreground">
-                {metadata.artist || "Live Stream"}
-              </p>
+            <div className="hidden sm:block overflow-hidden">
+              <div className="group relative w-48">
+                <h4 className="text-sm font-medium text-primary whitespace-nowrap group-hover:animate-[marquee_10s_linear_infinite]">
+                  {metadata.title}
+                </h4>
+                {metadata.artist && (
+                  <p className="text-xs text-muted-foreground whitespace-nowrap group-hover:animate-[marquee_10s_linear_infinite]">
+                    {metadata.artist}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
