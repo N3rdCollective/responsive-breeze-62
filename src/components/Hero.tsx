@@ -121,7 +121,7 @@ const Hero = () => {
         <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight animate-fadeIn [animation-delay:200ms] text-black dark:text-[#FFD700]">
           Experience the Power of Sound
         </h1>
-        <p className="text-lg md:text-xl text-[#666666] dark:text-[#666666] mb-8 max-w-2xl mx-auto animate-fadeIn [animation-delay:400ms]">
+        <p className="text-lg md:text-xl text-[#666666] dark:text-[#FFD700]/90 mb-8 max-w-2xl mx-auto animate-fadeIn [animation-delay:400ms]">
           Join us on a journey through music, stories, and connections that move you.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fadeIn [animation-delay:600ms]">
