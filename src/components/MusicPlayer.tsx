@@ -105,19 +105,23 @@ const MusicPlayer = () => {
           <div className={`
             flex items-center
             ${isFullscreen 
-              ? 'flex-col justify-center flex-grow space-y-8' 
+              ? 'flex-col justify-center flex-grow space-y-12' 
               : 'space-x-4 w-[30%]'
             }
           `}>
             <div className={`
-              ${isFullscreen ? 'w-64 h-64' : 'w-14 h-14'} 
-              rounded-md overflow-hidden shadow-lg
+              ${isFullscreen ? 'w-72 h-72 md:w-96 md:h-96' : 'w-14 h-14'} 
+              rounded-2xl overflow-hidden shadow-2xl transition-all duration-300
+              ${isFullscreen ? 'shadow-black/50' : ''}
             `}>
-              <AspectRatio ratio={1/1} className="relative">
+              <AspectRatio ratio={1/1} className="relative bg-black/20">
                 <img
                   src={metadata.artwork}
                   alt="Album Art"
-                  className="object-cover w-full h-full"
+                  className={`
+                    object-cover w-full h-full
+                    ${isFullscreen ? 'scale-105' : ''}
+                  `}
                   onError={(e) => {
                     e.currentTarget.src = "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05";
                   }}
@@ -125,20 +129,26 @@ const MusicPlayer = () => {
               </AspectRatio>
             </div>
             <div className={`
-              ${isFullscreen ? 'text-center' : ''} 
+              ${isFullscreen ? 'text-center space-y-3' : ''} 
               flex-1 min-w-0
             `}>
               <div className="group relative">
                 <h4 className={`
-                  font-medium text-foreground truncate
-                  ${isFullscreen ? 'text-2xl mb-3' : 'text-sm'}
+                  font-medium truncate
+                  ${isFullscreen 
+                    ? 'text-3xl md:text-4xl text-white mb-4' 
+                    : 'text-sm text-foreground'
+                  }
                 `}>
                   {metadata.title}
                 </h4>
                 {metadata.artist && (
                   <p className={`
-                    text-muted-foreground truncate
-                    ${isFullscreen ? 'text-lg' : 'text-xs'}
+                    truncate
+                    ${isFullscreen 
+                      ? 'text-xl md:text-2xl text-white/60' 
+                      : 'text-xs text-muted-foreground'
+                    }
                   `}>
                     {metadata.artist}
                   </p>
@@ -150,7 +160,7 @@ const MusicPlayer = () => {
           {/* Player Controls */}
           <div className={`
             ${isFullscreen 
-              ? 'w-full max-w-lg mx-auto mb-8' 
+              ? 'w-full max-w-xl mx-auto mb-8' 
               : 'w-[40%] max-w-md'
             }
           `}>
@@ -160,6 +170,7 @@ const MusicPlayer = () => {
               volume={isFullscreen && isMobile ? volume : undefined}
               onVolumeChange={isFullscreen && isMobile ? handleVolumeChange : undefined}
               showVolumeSlider={isFullscreen && isMobile}
+              isFullscreen={isFullscreen}
             />
           </div>
 
@@ -186,10 +197,10 @@ const MusicPlayer = () => {
 
   return (
     <div className={`
-      fixed transition-all duration-300 bg-background border-t border-border shadow-lg z-50
+      fixed transition-all duration-300 border-t border-border shadow-lg z-50
       ${isFullscreen 
-        ? 'top-0 left-0 right-0 bottom-0 h-screen bg-gradient-to-b from-background to-background/80 backdrop-blur-lg' 
-        : 'bottom-0 left-0 right-0 h-16 md:h-20'
+        ? 'top-0 left-0 right-0 bottom-0 h-screen bg-gradient-to-b from-background to-background/95 backdrop-blur-xl' 
+        : 'bottom-0 left-0 right-0 h-16 md:h-20 bg-background'
       }
     `}>
       {(!isFullscreen && window.innerWidth < 768) 

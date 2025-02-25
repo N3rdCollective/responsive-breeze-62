@@ -17,6 +17,7 @@ interface PlayerControlsProps {
   volume?: number[];
   onVolumeChange?: (value: number[]) => void;
   showVolumeSlider?: boolean;
+  isFullscreen?: boolean;
 }
 
 export const PlayerControls = ({ 
@@ -24,20 +25,21 @@ export const PlayerControls = ({
   togglePlayPause,
   volume,
   onVolumeChange,
-  showVolumeSlider = false
+  showVolumeSlider = false,
+  isFullscreen = false
 }: PlayerControlsProps) => {
   const [progress] = useState([0]);
 
   return (
     <div className="flex flex-col items-center w-full">
-      <div className="flex items-center space-x-4 mb-1">
+      <div className={`flex items-center ${isFullscreen ? 'space-x-8' : 'space-x-4'} mb-1`}>
         <Button 
           variant="ghost" 
           size="icon" 
           className="text-muted-foreground hover:text-primary"
           disabled
         >
-          <Shuffle size={20} />
+          <Shuffle size={isFullscreen ? 24 : 20} />
         </Button>
         <Button 
           variant="ghost" 
@@ -45,15 +47,24 @@ export const PlayerControls = ({
           className="text-muted-foreground hover:text-primary"
           disabled
         >
-          <SkipBack size={20} />
+          <SkipBack size={isFullscreen ? 24 : 20} />
         </Button>
         <Button 
-          variant="default" 
-          size="icon" 
-          className="rounded-full bg-[#FFD700] hover:bg-[#FFD700]/90 text-black shadow-lg"
+          variant={isFullscreen ? "ghost" : "default"}
+          size={isFullscreen ? "lg" : "icon"}
+          className={`
+            rounded-full transition-all duration-300
+            ${isFullscreen 
+              ? 'h-16 w-16 bg-white/10 hover:bg-white/20 text-white' 
+              : 'bg-[#FFD700] hover:bg-[#FFD700]/90 text-black shadow-lg'
+            }
+          `}
           onClick={togglePlayPause}
         >
-          {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+          {isPlaying ? 
+            <Pause size={isFullscreen ? 32 : 20} /> : 
+            <Play size={isFullscreen ? 32 : 20} className={isFullscreen ? "ml-1" : ""} />
+          }
         </Button>
         <Button 
           variant="ghost" 
@@ -61,7 +72,7 @@ export const PlayerControls = ({
           className="text-muted-foreground hover:text-primary"
           disabled
         >
-          <SkipForward size={20} />
+          <SkipForward size={isFullscreen ? 24 : 20} />
         </Button>
         <Button 
           variant="ghost" 
@@ -69,7 +80,7 @@ export const PlayerControls = ({
           className="text-muted-foreground hover:text-primary"
           disabled
         >
-          <Repeat size={20} />
+          <Repeat size={isFullscreen ? 24 : 20} />
         </Button>
       </div>
       <div className="w-full flex items-center space-x-2">
