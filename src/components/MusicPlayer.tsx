@@ -36,23 +36,41 @@ const MusicPlayer = () => {
     }
   };
 
-  // Simple mobile view when not playing or minimized
+  // Simple mobile view
   const SimpleMobileView = () => (
     <div className="flex items-center justify-between px-4 h-full">
-      <Button 
-        variant="default" 
-        size="icon" 
-        className="rounded-full bg-[#FFD700] hover:bg-[#FFD700]/90 text-black shadow-lg"
-        onClick={handlePlayPause}
-      >
-        {isPlaying ? <Pause size={20} /> : <Play size={20} />}
-      </Button>
-      <VolumeControl
-        volume={volume}
-        isMuted={isMuted}
-        onVolumeChange={handleVolumeChange}
-        onToggleMute={toggleMute}
-      />
+      <div className="flex items-center gap-3">
+        <Button 
+          variant="default" 
+          size="icon" 
+          className="rounded-full bg-[#FFD700] hover:bg-[#FFD700]/90 text-black shadow-lg"
+          onClick={handlePlayPause}
+        >
+          {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+        </Button>
+        <div className="max-w-[150px]">
+          <p className="text-sm font-medium truncate">{metadata.title}</p>
+          {metadata.artist && (
+            <p className="text-xs text-muted-foreground truncate">{metadata.artist}</p>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <VolumeControl
+          volume={volume}
+          isMuted={isMuted}
+          onVolumeChange={handleVolumeChange}
+          onToggleMute={toggleMute}
+        />
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleFullscreen}
+          className="text-muted-foreground hover:text-primary"
+        >
+          <Maximize2 size={20} />
+        </Button>
+      </div>
     </div>
   );
 
@@ -166,7 +184,7 @@ const MusicPlayer = () => {
         : 'bottom-0 left-0 right-0 h-16 md:h-20'
       }
     `}>
-      {(!isPlaying && !isFullscreen && window.innerWidth < 768) 
+      {(!isFullscreen && window.innerWidth < 768) 
         ? <SimpleMobileView /> 
         : <FullFeaturedView />
       }
