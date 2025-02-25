@@ -1,9 +1,10 @@
+
 import { useQuery } from "@tanstack/react-query";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format, parseISO, compareAsc } from "date-fns";
+import { format, parseISO, compareAsc, parse } from "date-fns";
 
 interface ScheduleItem {
   start: string;
@@ -56,6 +57,13 @@ const Schedule = () => {
     return format(parseISO(timeString), "h:mm a");
   };
 
+  const getTimeForSorting = (timeString: string) => {
+    // Extract just the time portion from the ISO string
+    const timeOnly = format(parseISO(timeString), 'HH:mm');
+    // Create a base date with this time for comparison
+    return parse(timeOnly, 'HH:mm', new Date());
+  };
+
   const currentDay = DAYS_OF_WEEK[new Date().getDay()];
 
   const getScheduleForDay = (day: string) => {
@@ -77,8 +85,11 @@ const Schedule = () => {
       return acc;
     }, [] as ScheduleItem[]);
 
+    // Sort shows by start time, handling 24-hour time properly
     return uniqueShows.sort((a, b) => {
-      return compareAsc(parseISO(a.start), parseISO(b.start));
+      const timeA = getTimeForSorting(a.start);
+      const timeB = getTimeForSorting(b.start);
+      return timeA.getTime() - timeB.getTime();
     });
   };
 
