@@ -37,7 +37,7 @@ const MusicPlayer = () => {
     <div className={`
       fixed transition-all duration-300 border-t border-border shadow-lg z-50
       ${isFullscreen 
-        ? 'top-0 left-0 right-0 bottom-0 h-screen bg-gradient-to-b from-background to-background/95 backdrop-blur-xl' 
+        ? 'top-0 left-0 right-0 bottom-0 h-screen bg-gradient-to-b from-background via-background/95 to-background/90 backdrop-blur-2xl' 
         : 'bottom-0 left-0 right-0 h-16 md:h-20 bg-background'
       }
     `}>
