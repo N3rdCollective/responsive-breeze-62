@@ -31,14 +31,9 @@ const fetchSchedule = async () => {
   return data.data;
 };
 
-// Function to get high quality artwork URL
 const getHighQualityArtwork = (url: string | null) => {
   if (!url) return null;
-  
-  // Remove any existing size parameters if they exist
   const baseUrl = url.split('?')[0];
-  
-  // Add parameters for high quality
   return `${baseUrl}?quality=100&width=800&height=800`;
 };
 
@@ -63,36 +58,46 @@ const Schedule = () => {
   };
 
   const formatDate = (timeString: string) => {
-    return format(parseISO(timeString), "EEEE, MMMM d");
+    return format(parseISO(timeString), "EEEE, d"); // Removed month from the format
   };
 
-  // Get current day for default tab
   const currentDay = DAYS_OF_WEEK[new Date().getDay()];
 
-  // Filter schedule items by day
+  // Modified to prevent duplicate shows
   const getScheduleForDay = (day: string) => {
     if (!schedule) return [];
     const today = new Date();
     const weekStart = startOfWeek(today);
     const weekEnd = endOfWeek(today);
     
-    return schedule.filter(item => {
+    const filteredShows = schedule.filter(item => {
       const itemDate = parseISO(item.start);
       
-      // First, check if the show is within the current week
       const isInCurrentWeek = isWithinInterval(itemDate, {
         start: weekStart,
         end: weekEnd
       });
 
-      // For the current day, only show today's shows
       if (day === currentDay) {
         return isSameDay(itemDate, today);
       }
 
-      // For other days, show shows on that day but only from the current week
       return isInCurrentWeek && format(itemDate, 'EEEE') === day;
     });
+
+    // Remove duplicates based on start time and show name
+    const uniqueShows = filteredShows.reduce((acc, current) => {
+      const isDuplicate = acc.some(show => 
+        show.playlist.name === current.playlist.name && 
+        formatTime(show.start) === formatTime(current.start)
+      );
+      if (!isDuplicate) {
+        acc.push(current);
+      }
+      return acc;
+    }, [] as ScheduleItem[]);
+
+    return uniqueShows;
   };
 
   return (
