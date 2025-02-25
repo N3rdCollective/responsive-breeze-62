@@ -108,11 +108,11 @@ const Hero = () => {
         className="absolute inset-0 bg-cover bg-center"
         style={{ 
           backgroundImage: `url('${getSkylineImage()}')`,
-          opacity: 0.3
+          opacity: 0.6
         }}
         onError={handleImageError}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#F5F5F5]/90 to-white/90 dark:from-[#333333]/90 dark:to-black/90" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#F5F5F5]/70 to-white/70 dark:from-[#333333]/80 dark:to-black/80" />
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
         <span className="inline-block mb-4 px-4 py-1 rounded-full bg-[#666666]/10 dark:bg-[#666666]/20 text-sm font-medium tracking-wide animate-fadeIn text-[#666666] dark:text-[#FFD700]">
