@@ -14,13 +14,13 @@ const News = () => {
             <img
               src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81"
               alt="Newsroom"
-              className="w-full h-full object-cover opacity-40"
+              className="w-full h-full object-cover opacity-30"
             />
           </div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl">
               <h1 className="text-4xl font-bold mb-4 text-foreground">Latest News</h1>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-xl font-medium text-foreground bg-background/50 backdrop-blur-sm p-4 rounded-lg inline-block">
                 Stay updated with the latest happenings in music, entertainment, and local events
               </p>
             </div>
