@@ -1,8 +1,9 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { StreamMetadata } from "@/types/player";
 import { STREAM_URL, METADATA_URL } from "@/constants/stream";
+
+let audioInstance: HTMLAudioElement | null = null;
 
 export const useAudioPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -13,13 +14,21 @@ export const useAudioPlayer = () => {
     title: "Rappin' Lounge Radio",
     artwork: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05"
   });
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const metadataIntervalRef = useRef<number>();
   const { toast } = useToast();
 
   useEffect(() => {
-    audioRef.current = new Audio(STREAM_URL);
-    audioRef.current.volume = volume[0] / 100;
+    if (!audioInstance) {
+      audioInstance = new Audio(STREAM_URL);
+      audioInstance.volume = volume[0] / 100;
+    }
+
+    const audioRef = audioInstance;
+
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+    audioRef.addEventListener('play', handlePlay);
+    audioRef.addEventListener('pause', handlePause);
 
     const fetchMetadata = async () => {
       try {
@@ -47,21 +56,20 @@ export const useAudioPlayer = () => {
       if (metadataIntervalRef.current) {
         clearInterval(metadataIntervalRef.current);
       }
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
+      audioRef.removeEventListener('play', handlePlay);
+      audioRef.removeEventListener('pause', handlePause);
     };
   }, []);
 
   const togglePlayPause = () => {
-    if (audioRef.current) {
+    if (audioInstance) {
       if (isPlaying) {
-        audioRef.current.pause();
+        audioInstance.pause();
         toast({
           description: "Stream paused",
         });
       } else {
-        audioRef.current.play().catch((error) => {
+        audioInstance.play().catch((error) => {
           console.error("Playback failed:", error);
           toast({
             variant: "destructive",
@@ -72,15 +80,14 @@ export const useAudioPlayer = () => {
           description: `Now streaming: ${metadata.title}`,
         });
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
   const handleVolumeChange = (newVolume: number[]) => {
     setVolume(newVolume);
     setPreviousVolume(newVolume);
-    if (audioRef.current) {
-      audioRef.current.volume = newVolume[0] / 100;
+    if (audioInstance) {
+      audioInstance.volume = newVolume[0] / 100;
     }
     if (newVolume[0] > 0) {
       setIsMuted(false);
@@ -88,14 +95,14 @@ export const useAudioPlayer = () => {
   };
 
   const toggleMute = () => {
-    if (audioRef.current) {
+    if (audioInstance) {
       if (isMuted) {
-        audioRef.current.volume = previousVolume[0] / 100;
+        audioInstance.volume = previousVolume[0] / 100;
         setVolume(previousVolume);
         setIsMuted(false);
       } else {
         setPreviousVolume(volume);
-        audioRef.current.volume = 0;
+        audioInstance.volume = 0;
         setVolume([0]);
         setIsMuted(true);
       }
