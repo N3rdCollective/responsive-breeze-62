@@ -39,10 +39,10 @@ const MusicPlayer = () => {
   if (isMobile) {
     return (
       <div className={`
-        fixed transition-all duration-300 border-t border-border shadow-lg z-50
+        fixed transition-all duration-300 z-50
         ${isFullscreen 
-          ? 'top-0 left-0 right-0 bottom-0 h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-background via-background/95 to-background/90 backdrop-blur-2xl' 
-          : 'bottom-0 left-0 right-0 h-16 bg-background'
+          ? 'top-0 left-0 right-0 bottom-0 h-screen' 
+          : 'bottom-0 left-0 right-0 h-16 bg-background border-t border-border'
         }
       `}>
         {!isFullscreen 
