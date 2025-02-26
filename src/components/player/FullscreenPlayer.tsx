@@ -44,8 +44,8 @@ export const FullscreenPlayer = ({
   return (
     <div className={`h-full flex flex-col justify-between py-8 px-6 ${
       theme === 'dark' 
-        ? 'bg-gradient-to-b from-background via-background/95 to-background/90 text-white'
-        : 'bg-gradient-to-b from-background via-card to-muted text-foreground'
+        ? 'bg-gradient-to-b from-[#1A1F2C] to-[#121520] text-white'
+        : 'bg-gradient-to-b from-[#F1F0FB] to-[#E6E4F0] text-foreground'
     }`}>
       <div className="flex-1 flex items-center justify-center">
         <div className="w-[85vw] h-[85vw] max-w-[400px] max-h-[400px] rounded-lg overflow-hidden shadow-lg">
