@@ -62,7 +62,7 @@ export const FullscreenPlayer = ({
       </Button>
 
       <div className="flex-1 flex items-center justify-center">
-        <div className="w-[85vw] h-[85vw] max-w-[400px] max-h-[400px] rounded-lg overflow-hidden shadow-lg">
+        <div className="w-[85vw] h-[85vw] max-w-[400px] max-h-[400px] rounded-2xl overflow-hidden shadow-lg">
           <AspectRatio ratio={1/1}>
             <img
               src={metadata.artwork}
