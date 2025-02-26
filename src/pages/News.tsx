@@ -33,7 +33,7 @@ const News = () => {
             <article className="grid md:grid-cols-2 gap-12 items-center mb-16">
               <div className="rounded-lg overflow-hidden">
                 <img
-                  src="https://images.unsplash.com/photo-1488590528505-98d2b4aba04b"
+                  src="https://images.unsplash.com/photo-1598653222000-6b7b7a552625"
                   alt="Breaking News"
                   className="w-full h-64 object-cover"
                 />
