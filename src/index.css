@@ -15,30 +15,30 @@
     --popover: 0 0% 100%;
     --popover-foreground: 215 25% 20%;
     
-    /* Primary brand colors */
+    /* Primary brand colors - using the gold accent from homepage */
     --primary: 45 100% 50%;
     --primary-foreground: 215 25% 20%;
     
-    /* Secondary & Accent colors */
-    --secondary: 210 40% 96.1%;
+    /* Secondary & Accent colors - matching homepage theme */
+    --secondary: 215 25% 98%;
     --secondary-foreground: 215 25% 20%;
-    --accent: 210 40% 96.1%;
+    --accent: 215 25% 98%;
     --accent-foreground: 215 25% 20%;
     
     /* UI feedback colors */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     
-    /* Neutral tones */
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215 25% 35%;
+    /* Neutral tones - adjusted for consistency */
+    --muted: 215 25% 97%;
+    --muted-foreground: 215 25% 40%;
     
-    /* Border & Input colors */
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 215 25% 27%;
+    /* Border & Input colors - matching homepage styling */
+    --border: 215 25% 93%;
+    --input: 215 25% 93%;
+    --ring: 215 25% 30%;
     
-    /* Border radius */
+    /* Border radius - consistent with homepage */
     --radius: 0.75rem;
   }
  
@@ -53,7 +53,7 @@
     --popover: 215 30% 12%;
     --popover-foreground: 210 40% 98%;
     
-    /* Primary brand colors */
+    /* Primary brand colors - maintain gold accent */
     --primary: 45 100% 50%;
     --primary-foreground: 215 30% 10%;
     
