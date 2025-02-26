@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { MoreHorizontal, Star, SkipBack, Play, Pause, SkipForward } from "lucide-react";
+import { MoreHorizontal, Star, SkipBack, Play, Pause, SkipForward, ChevronDown } from "lucide-react";
 import { PlayerControls } from "./PlayerControls";
 import { VolumeControl } from "./VolumeControl";
 import { StreamMetadata } from "@/types/player";
@@ -28,7 +28,8 @@ export const FullscreenPlayer = ({
   metadata,
   togglePlayPause,
   handleVolumeChange,
-  toggleMute
+  toggleMute,
+  toggleFullscreen
 }: FullscreenPlayerProps) => {
   const isMobile = window.innerWidth < 768;
   const [shouldScroll, setShouldScroll] = useState(false);
@@ -47,6 +48,19 @@ export const FullscreenPlayer = ({
         ? 'bg-gradient-to-b from-[#1A1F2C] to-[#121520] text-white'
         : 'bg-gradient-to-b from-[#F1F0FB] to-[#E6E4F0] text-foreground'
     }`}>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={toggleFullscreen}
+        className={`absolute top-4 right-4 ${
+          theme === 'dark' 
+            ? 'text-white/60 hover:text-white' 
+            : 'text-muted-foreground hover:text-foreground'
+        }`}
+      >
+        <ChevronDown size={24} />
+      </Button>
+
       <div className="flex-1 flex items-center justify-center">
         <div className="w-[85vw] h-[85vw] max-w-[400px] max-h-[400px] rounded-lg overflow-hidden shadow-lg">
           <AspectRatio ratio={1/1}>
@@ -81,7 +95,7 @@ export const FullscreenPlayer = ({
               </p>
             )}
           </div>
-          <div className="flex gap-2 flex-shrink-0">
+          <div className="flex gap-2 flex-shrink-0 ml-4">
             <Button 
               variant="ghost" 
               size="icon" 
