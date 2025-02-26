@@ -6,6 +6,7 @@ import { PlayerControls } from "./PlayerControls";
 import { VolumeControl } from "./VolumeControl";
 import { StreamMetadata } from "@/types/player";
 import { Slider } from "@/components/ui/slider";
+import { useEffect, useRef, useState } from "react";
 
 interface FullscreenPlayerProps {
   isPlaying: boolean;
@@ -29,6 +30,14 @@ export const FullscreenPlayer = ({
   toggleMute
 }: FullscreenPlayerProps) => {
   const isMobile = window.innerWidth < 768;
+  const [shouldScroll, setShouldScroll] = useState(false);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    if (titleRef.current) {
+      setShouldScroll(titleRef.current.scrollWidth > titleRef.current.clientWidth);
+    }
+  }, [metadata.title]);
   
   return (
     <div className="h-full bg-gradient-to-b from-[#4A1E1C] to-[#2A110F] flex flex-col justify-between py-8 px-6">
@@ -51,17 +60,29 @@ export const FullscreenPlayer = ({
       {/* Track Info and Controls */}
       <div className="space-y-6">
         <div className="flex justify-between items-start">
-          <div className="space-y-1">
-            <h2 className="text-2xl font-semibold text-white">
+          <div className="space-y-1 flex-1 min-w-0">
+            <h2 
+              ref={titleRef}
+              className={`text-2xl font-semibold text-white whitespace-nowrap ${
+                shouldScroll ? 'animate-[marquee_10s_linear_infinite]' : 'truncate'
+              }`}
+              style={{
+                ...(shouldScroll ? {
+                  animation: 'marquee 10s linear infinite',
+                  paddingLeft: '100%',
+                  display: 'inline-block'
+                } : {})
+              }}
+            >
               {metadata.title}
             </h2>
             {metadata.artist && (
-              <p className="text-lg text-white/60">
+              <p className="text-lg text-white/60 truncate">
                 {metadata.artist}
               </p>
             )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-shrink-0">
             <Button variant="ghost" size="icon" className="text-white/60 hover:text-white">
               <Star size={24} />
             </Button>

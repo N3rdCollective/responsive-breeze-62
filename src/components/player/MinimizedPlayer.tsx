@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Play, Pause, Maximize2 } from "lucide-react";
 import { VolumeControl } from "./VolumeControl";
 import { StreamMetadata } from "@/types/player";
+import { useEffect, useRef, useState } from "react";
 
 interface MinimizedPlayerProps {
   isPlaying: boolean;
@@ -25,25 +26,50 @@ export const MinimizedPlayer = ({
   toggleMute,
   toggleFullscreen
 }: MinimizedPlayerProps) => {
+  const [shouldScroll, setShouldScroll] = useState(false);
+  const titleRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    if (titleRef.current) {
+      setShouldScroll(titleRef.current.scrollWidth > titleRef.current.clientWidth);
+    }
+  }, [metadata.title]);
+
   return (
     <div className="flex items-center justify-between px-4 h-full">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-1 min-w-0">
         <Button 
           variant="default" 
           size="icon" 
-          className="rounded-full bg-[#FFD700] hover:bg-[#FFD700]/90 text-black shadow-lg"
+          className="rounded-full bg-[#FFD700] hover:bg-[#FFD700]/90 text-black shadow-lg flex-shrink-0"
           onClick={togglePlayPause}
         >
           {isPlaying ? <Pause size={20} /> : <Play size={20} />}
         </Button>
-        <div className="max-w-[150px]">
-          <p className="text-sm font-medium truncate">{metadata.title}</p>
+        <div className="min-w-0 flex-1">
+          <p 
+            ref={titleRef}
+            className={`text-sm font-medium whitespace-nowrap ${
+              shouldScroll ? 'animate-[marquee_10s_linear_infinite]' : 'truncate'
+            }`}
+            style={{
+              ...(shouldScroll ? {
+                animation: 'marquee 10s linear infinite',
+                paddingLeft: '100%',
+                display: 'inline-block'
+              } : {})
+            }}
+          >
+            {metadata.title}
+          </p>
           {metadata.artist && (
-            <p className="text-xs text-muted-foreground truncate">{metadata.artist}</p>
+            <p className="text-xs text-muted-foreground truncate">
+              {metadata.artist}
+            </p>
           )}
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-shrink-0">
         <VolumeControl
           volume={volume}
           isMuted={isMuted}
