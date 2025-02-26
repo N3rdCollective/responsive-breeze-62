@@ -1,12 +1,13 @@
 
 import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { MoreHorizontal, Star, SkipBack, Play, Pause, SkipForward } from "lucide-react";
+import { MoreHorizontal, Star, SkipBack, Play, Pause, SkipForward, ChevronDown } from "lucide-react";
 import { PlayerControls } from "./PlayerControls";
 import { VolumeControl } from "./VolumeControl";
 import { StreamMetadata } from "@/types/player";
 import { Slider } from "@/components/ui/slider";
 import { useEffect, useRef, useState } from "react";
+import ColorThief from "colorthief";
 
 interface FullscreenPlayerProps {
   isPlaying: boolean;
@@ -27,27 +28,70 @@ export const FullscreenPlayer = ({
   metadata,
   togglePlayPause,
   handleVolumeChange,
-  toggleMute
+  toggleMute,
+  toggleFullscreen
 }: FullscreenPlayerProps) => {
   const isMobile = window.innerWidth < 768;
   const [shouldScroll, setShouldScroll] = useState(false);
+  const [backgroundColor, setBackgroundColor] = useState("from-[#4A1E1C] to-[#2A110F]");
   const titleRef = useRef<HTMLHeadingElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     if (titleRef.current) {
       setShouldScroll(titleRef.current.scrollWidth > titleRef.current.clientWidth);
     }
   }, [metadata.title]);
+
+  useEffect(() => {
+    const extractColor = async () => {
+      if (imageRef.current && imageRef.current.complete) {
+        try {
+          const colorThief = new ColorThief();
+          const color = colorThief.getColor(imageRef.current);
+          const [r, g, b] = color;
+          
+          // Create darker variant for gradient
+          const darkerColor = color.map((c: number) => Math.max(0, c - 40));
+          const [dr, dg, db] = darkerColor;
+          
+          setBackgroundColor(`from-[rgb(${r},${g},${b})] to-[rgb(${dr},${dg},${db})]`);
+        } catch (error) {
+          console.error('Color extraction failed:', error);
+          setBackgroundColor("from-[#4A1E1C] to-[#2A110F]");
+        }
+      }
+    };
+
+    if (imageRef.current) {
+      if (imageRef.current.complete) {
+        extractColor();
+      } else {
+        imageRef.current.onload = extractColor;
+      }
+    }
+  }, [metadata.artwork]);
   
   return (
-    <div className="h-full bg-gradient-to-b from-[#4A1E1C] to-[#2A110F] flex flex-col justify-between py-8 px-6">
+    <div className={`h-full bg-gradient-to-b ${backgroundColor} flex flex-col justify-between py-8 px-6 transition-colors duration-500`}>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={toggleFullscreen}
+        className="absolute top-4 right-4 text-white/60 hover:text-white"
+      >
+        <ChevronDown size={24} />
+      </Button>
+
       <div className="flex-1 flex items-center justify-center">
         <div className="w-[85vw] h-[85vw] max-w-[400px] max-h-[400px] rounded-lg overflow-hidden">
           <AspectRatio ratio={1/1}>
             <img
+              ref={imageRef}
               src={metadata.artwork}
               alt="Album Art"
               className="object-cover w-full h-full"
+              crossOrigin="anonymous"
               onError={(e) => {
                 e.currentTarget.src = "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05";
               }}

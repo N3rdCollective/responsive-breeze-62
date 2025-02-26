@@ -38,13 +38,15 @@ const MusicPlayer = () => {
 
   if (isMobile) {
     return (
-      <div className={`
-        fixed transition-all duration-300 z-50
-        ${isFullscreen 
-          ? 'top-0 left-0 right-0 bottom-0 h-screen' 
-          : 'bottom-0 left-0 right-0 h-16 bg-background border-t border-border'
-        }
-      `}>
+      <div 
+        className={`
+          fixed transition-all duration-300 ease-in-out z-50
+          ${isFullscreen 
+            ? 'top-0 left-0 right-0 bottom-0 h-screen' 
+            : 'bottom-0 left-0 right-0 h-16 bg-background border-t border-border'
+          }
+        `}
+      >
         {!isFullscreen 
           ? <MinimizedPlayer 
               isPlaying={isPlaying}
