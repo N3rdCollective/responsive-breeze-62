@@ -72,8 +72,13 @@ const MusicPlayer = () => {
     );
   }
 
+  // Only show desktop player when audio is playing
+  if (!isPlaying) {
+    return null;
+  }
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-20 bg-background border-t border-border shadow-lg z-50">
+    <div className="fixed bottom-0 left-0 right-0 h-20 bg-background border-t border-border shadow-lg z-50 animate-fadeIn">
       <DesktopPlayer
         isPlaying={isPlaying}
         volume={volume}
