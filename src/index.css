@@ -44,37 +44,37 @@
  
   .dark {
     /* Base colors */
-    --background: 215 30% 10%;
-    --foreground: 210 40% 98%;
+    --background: 0 0% 13%; /* Adjusted to #222222 */
+    --foreground: 0 0% 98%;
     
     /* Card & Container colors */
-    --card: 215 30% 12%;
-    --card-foreground: 210 40% 98%;
-    --popover: 215 30% 12%;
-    --popover-foreground: 210 40% 98%;
+    --card: 0 0% 20%; /* Adjusted to #333333 */
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 20%;
+    --popover-foreground: 0 0% 98%;
     
     /* Primary brand colors - maintain gold accent */
     --primary: 45 100% 50%;
-    --primary-foreground: 215 30% 10%;
+    --primary-foreground: 0 0% 13%;
     
-    /* Secondary & Accent colors */
-    --secondary: 215 25% 25%;
-    --secondary-foreground: 210 40% 98%;
-    --accent: 215 25% 25%;
-    --accent-foreground: 210 40% 98%;
+    /* Secondary & Accent colors - back to grey */
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 0 0% 98%;
+    --accent: 0 0% 20%;
+    --accent-foreground: 0 0% 98%;
     
     /* UI feedback colors */
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 98%;
     
-    /* Neutral tones */
-    --muted: 215 25% 25%;
-    --muted-foreground: 217.9 10.6% 64.9%;
+    /* Neutral tones - back to grey */
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 63%;
     
     /* Border & Input colors */
-    --border: 215 25% 25%;
-    --input: 215 25% 25%;
-    --ring: 216 12.2% 83.9%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 83.9%;
   }
 }
  
