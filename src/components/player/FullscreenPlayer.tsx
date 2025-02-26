@@ -61,13 +61,13 @@ export const FullscreenPlayer = ({
         <ChevronDown size={24} />
       </Button>
 
-      <div className="flex-1 flex items-center justify-center">
-        <div className="w-[85vw] h-[85vw] max-w-[400px] max-h-[400px] rounded-2xl overflow-hidden shadow-lg">
+      <div className="flex-1 flex items-center justify-center overflow-visible">
+        <div className="w-[85vw] aspect-square max-w-[400px] rounded-2xl overflow-hidden shadow-lg">
           <AspectRatio ratio={1/1}>
             <img
               src={metadata.artwork}
               alt="Album Art"
-              className="object-cover w-full h-full"
+              className="object-contain w-full h-full"
               onError={(e) => {
                 e.currentTarget.src = "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05";
               }}
