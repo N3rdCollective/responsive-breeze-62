@@ -7,6 +7,7 @@ import { VolumeControl } from "./VolumeControl";
 import { StreamMetadata } from "@/types/player";
 import { Slider } from "@/components/ui/slider";
 import { useEffect, useRef, useState } from "react";
+import { useTheme } from "next-themes";
 
 interface FullscreenPlayerProps {
   isPlaying: boolean;
@@ -32,6 +33,7 @@ export const FullscreenPlayer = ({
   const isMobile = window.innerWidth < 768;
   const [shouldScroll, setShouldScroll] = useState(false);
   const titleRef = useRef<HTMLHeadingElement>(null);
+  const { theme } = useTheme();
 
   useEffect(() => {
     if (titleRef.current) {
@@ -40,9 +42,13 @@ export const FullscreenPlayer = ({
   }, [metadata.title]);
   
   return (
-    <div className="h-full bg-gradient-to-b from-[#4A1E1C] to-[#2A110F] flex flex-col justify-between py-8 px-6">
+    <div className={`h-full flex flex-col justify-between py-8 px-6 ${
+      theme === 'dark' 
+        ? 'bg-gradient-to-b from-background via-background/95 to-background/90 text-white'
+        : 'bg-gradient-to-b from-background via-card to-muted text-foreground'
+    }`}>
       <div className="flex-1 flex items-center justify-center">
-        <div className="w-[85vw] h-[85vw] max-w-[400px] max-h-[400px] rounded-lg overflow-hidden">
+        <div className="w-[85vw] h-[85vw] max-w-[400px] max-h-[400px] rounded-lg overflow-hidden shadow-lg">
           <AspectRatio ratio={1/1}>
             <img
               src={metadata.artwork}
@@ -62,7 +68,7 @@ export const FullscreenPlayer = ({
             <div className="relative overflow-hidden">
               <h2 
                 ref={titleRef}
-                className={`text-2xl font-semibold text-white whitespace-nowrap ${
+                className={`text-2xl font-semibold whitespace-nowrap ${
                   shouldScroll ? 'animate-marquee' : 'truncate'
                 }`}
               >
@@ -70,16 +76,24 @@ export const FullscreenPlayer = ({
               </h2>
             </div>
             {metadata.artist && (
-              <p className="text-lg text-white/60 truncate">
+              <p className={`text-lg ${theme === 'dark' ? 'text-white/60' : 'text-muted-foreground'} truncate`}>
                 {metadata.artist}
               </p>
             )}
           </div>
           <div className="flex gap-2 flex-shrink-0">
-            <Button variant="ghost" size="icon" className="text-white/60 hover:text-white">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className={theme === 'dark' ? 'text-white/60 hover:text-white' : 'text-muted-foreground hover:text-foreground'}
+            >
               <Star size={24} />
             </Button>
-            <Button variant="ghost" size="icon" className="text-white/60 hover:text-white">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className={theme === 'dark' ? 'text-white/60 hover:text-white' : 'text-muted-foreground hover:text-foreground'}
+            >
               <MoreHorizontal size={24} />
             </Button>
           </div>
@@ -93,7 +107,9 @@ export const FullscreenPlayer = ({
             className="w-full"
             disabled
           />
-          <div className="flex justify-between text-sm text-white/40">
+          <div className={`flex justify-between text-sm ${
+            theme === 'dark' ? 'text-white/40' : 'text-muted-foreground'
+          }`}>
             <span>LIVE</span>
             <span>24/7</span>
           </div>
@@ -103,7 +119,11 @@ export const FullscreenPlayer = ({
           <Button
             variant="ghost"
             size="icon"
-            className="text-white/60 hover:text-white w-16 h-16"
+            className={`w-16 h-16 ${
+              theme === 'dark' 
+                ? 'text-white/60 hover:text-white' 
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
             disabled
           >
             <SkipBack size={32} />
@@ -111,7 +131,7 @@ export const FullscreenPlayer = ({
           <Button
             variant="ghost"
             size="icon"
-            className="text-white w-20 h-20"
+            className={`w-20 h-20 ${theme === 'dark' ? 'text-white' : 'text-foreground'}`}
             onClick={togglePlayPause}
           >
             {isPlaying ? (
@@ -123,7 +143,11 @@ export const FullscreenPlayer = ({
           <Button
             variant="ghost"
             size="icon"
-            className="text-white/60 hover:text-white w-16 h-16"
+            className={`w-16 h-16 ${
+              theme === 'dark' 
+                ? 'text-white/60 hover:text-white' 
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
             disabled
           >
             <SkipForward size={32} />
