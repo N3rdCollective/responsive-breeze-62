@@ -27,21 +27,20 @@ const Navbar = () => {
   }, []);
 
   const isActive = (path: string) => location.pathname === path;
+  const isHomePage = location.pathname === "/";
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
       isScrolled 
         ? "bg-white/90 dark:bg-[#333333]/90 backdrop-blur-md shadow-sm" 
-        : "bg-transparent"
+        : isHomePage 
+          ? "bg-transparent" 
+          : "bg-white dark:bg-[#333333]"
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <Link to="/" className={`text-xl font-bold ${
-              isScrolled 
-                ? "text-gray-900 dark:text-[#FFD700]" 
-                : "text-white dark:text-[#FFD700]"
-            }`}>
+            <Link to="/" className="text-xl font-bold text-[#333333] dark:text-[#FFD700]">
               Rappin' Lounge
             </Link>
           </div>
@@ -61,11 +60,11 @@ const Navbar = () => {
                 className={`
                   ${isActive(item.path) 
                     ? 'text-[#FFD700] dark:text-[#FFD700]' 
-                    : isScrolled 
-                      ? 'text-gray-600 dark:text-white hover:text-[#FFD700] dark:hover:text-[#FFD700]'
-                      : 'text-white dark:text-white hover:text-[#FFD700] dark:hover:text-[#FFD700]'
+                    : isHomePage && !isScrolled
+                      ? 'text-white hover:text-[#FFD700]'
+                      : 'text-[#333333] dark:text-white hover:text-[#FFD700] dark:hover:text-[#FFD700]'
                   }
-                  transition-colors duration-200
+                  font-medium transition-colors duration-200
                 `}
               >
                 {item.label}
@@ -76,9 +75,10 @@ const Navbar = () => {
               size="sm"
               onClick={togglePlayPause}
               className={`
-                ${isScrolled 
+                ${isScrolled || !isHomePage
                   ? "bg-[#FFD700] text-black hover:bg-[#FFD700]/90" 
-                  : "bg-gray-900 text-white hover:bg-gray-800"}
+                  : "bg-white text-black hover:bg-white/90"
+                }
                 dark:bg-[#FFD700] dark:text-black dark:hover:bg-[#FFD700]/90
               `}
             >
@@ -90,9 +90,10 @@ const Navbar = () => {
                 size="icon"
                 onClick={() => setTheme(theme === "light" ? "dark" : "light")}
                 className={`
-                  ${isScrolled 
-                    ? "text-gray-600 hover:text-gray-900" 
-                    : "text-white hover:text-[#FFD700]"}
+                  ${isHomePage && !isScrolled
+                    ? "text-white hover:text-[#FFD700]"
+                    : "text-[#333333] hover:text-[#FFD700]"
+                  }
                   dark:text-white dark:hover:text-[#FFD700]
                 `}
               >
