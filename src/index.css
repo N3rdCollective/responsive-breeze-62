@@ -5,48 +5,76 @@
  
 @layer base {
   :root {
+    /* Base colors */
     --background: 0 0% 100%;
     --foreground: 215 25% 20%;
+    
+    /* Card & Container colors */
     --card: 0 0% 100%;
     --card-foreground: 215 25% 20%;
     --popover: 0 0% 100%;
     --popover-foreground: 215 25% 20%;
+    
+    /* Primary brand colors */
     --primary: 45 100% 50%;
     --primary-foreground: 215 25% 20%;
+    
+    /* Secondary & Accent colors */
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 215 25% 20%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215 25% 35%;
     --accent: 210 40% 96.1%;
     --accent-foreground: 215 25% 20%;
+    
+    /* UI feedback colors */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
+    
+    /* Neutral tones */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215 25% 35%;
+    
+    /* Border & Input colors */
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 215 25% 27%;
-    --radius: 0.5rem;
+    
+    /* Border radius */
+    --radius: 0.75rem;
   }
  
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    /* Base colors */
+    --background: 215 30% 10%;
+    --foreground: 210 40% 98%;
+    
+    /* Card & Container colors */
+    --card: 215 30% 12%;
+    --card-foreground: 210 40% 98%;
+    --popover: 215 30% 12%;
+    --popover-foreground: 210 40% 98%;
+    
+    /* Primary brand colors */
     --primary: 45 100% 50%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
+    --primary-foreground: 215 30% 10%;
+    
+    /* Secondary & Accent colors */
+    --secondary: 215 25% 25%;
+    --secondary-foreground: 210 40% 98%;
+    --accent: 215 25% 25%;
+    --accent-foreground: 210 40% 98%;
+    
+    /* UI feedback colors */
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.9%;
+    --destructive-foreground: 210 40% 98%;
+    
+    /* Neutral tones */
+    --muted: 215 25% 25%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    
+    /* Border & Input colors */
+    --border: 215 25% 25%;
+    --input: 215 25% 25%;
+    --ring: 216 12.2% 83.9%;
   }
 }
  
@@ -54,11 +82,18 @@
   * {
     @apply border-border;
   }
+  
+  html {
+    @apply scroll-smooth antialiased;
+  }
+  
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
+/* Animation keyframes */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -79,6 +114,7 @@
   }
 }
 
+/* Animation utilities */
 .animate-fadeIn {
   animation: fadeIn 0.5s ease-out forwards;
 }
@@ -88,6 +124,23 @@
   display: inline-block;
   padding-left: 100%;
   will-change: transform;
+}
+
+/* Layout utilities */
+.glass-morphism {
+  @apply backdrop-blur-xl bg-white/5 border border-white/10;
+}
+
+.neo-blur {
+  @apply backdrop-blur-2xl bg-black/40 border border-white/10;
+}
+
+.text-gradient {
+  @apply bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent;
+}
+
+.text-gradient-primary {
+  @apply bg-gradient-to-br from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent;
 }
 
 .overflow-hidden {
