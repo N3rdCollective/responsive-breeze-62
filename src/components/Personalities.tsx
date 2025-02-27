@@ -80,8 +80,8 @@ export const Personalities = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
           {personalities?.map((personality, index) => {
-            const showTimes = personality.show_times as ShowTimes | null;
-            const socialLinks = personality.social_links as SocialLinks | null;
+            const showTimes = personality.show_times ? (personality.show_times as unknown) as ShowTimes : null;
+            const socialLinks = personality.social_links ? (personality.social_links as unknown) as SocialLinks : null;
 
             return (
               <div 
