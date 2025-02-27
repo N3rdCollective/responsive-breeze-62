@@ -9,142 +9,17 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      advertisements: {
-        Row: {
-          active: boolean | null
-          created_at: string | null
-          end_date: string
-          height: number
-          id: string
-          image_url: string
-          link_url: string | null
-          location: string
-          name: string
-          start_date: string
-          updated_at: string | null
-          weight: number | null
-          width: number
-        }
-        Insert: {
-          active?: boolean | null
-          created_at?: string | null
-          end_date: string
-          height: number
-          id?: string
-          image_url: string
-          link_url?: string | null
-          location: string
-          name: string
-          start_date: string
-          updated_at?: string | null
-          weight?: number | null
-          width: number
-        }
-        Update: {
-          active?: boolean | null
-          created_at?: string | null
-          end_date?: string
-          height?: number
-          id?: string
-          image_url?: string
-          link_url?: string | null
-          location?: string
-          name?: string
-          start_date?: string
-          updated_at?: string | null
-          weight?: number | null
-          width?: number
-        }
-        Relationships: []
-      }
-      events: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          event_date: string
-          id: string
-          image_url: string | null
-          is_featured: boolean | null
-          ticket_packages: Json | null
-          title: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          event_date: string
-          id?: string
-          image_url?: string | null
-          is_featured?: boolean | null
-          ticket_packages?: Json | null
-          title: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          event_date?: string
-          id?: string
-          image_url?: string | null
-          is_featured?: boolean | null
-          ticket_packages?: Json | null
-          title?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      featured_artists: {
-        Row: {
-          active: boolean | null
-          artist_image: string | null
-          artist_name: string
-          artist_page_link: string | null
-          bio: string | null
-          created_at: string | null
-          end_date: string
-          id: string
-          instagram_url: string | null
-          start_date: string
-          twitter_url: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          active?: boolean | null
-          artist_image?: string | null
-          artist_name: string
-          artist_page_link?: string | null
-          bio?: string | null
-          created_at?: string | null
-          end_date: string
-          id?: string
-          instagram_url?: string | null
-          start_date: string
-          twitter_url?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          active?: boolean | null
-          artist_image?: string | null
-          artist_name?: string
-          artist_page_link?: string | null
-          bio?: string | null
-          created_at?: string | null
-          end_date?: string
-          id?: string
-          instagram_url?: string | null
-          start_date?: string
-          twitter_url?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      hosts: {
+      personalities: {
         Row: {
           bio: string | null
           created_at: string | null
           id: string
           image_url: string | null
           name: string
+          role: string
+          show_times: Json | null
+          social_links: Json | null
+          start_date: string | null
           updated_at: string | null
         }
         Insert: {
@@ -153,6 +28,10 @@ export type Database = {
           id?: string
           image_url?: string | null
           name: string
+          role?: string
+          show_times?: Json | null
+          social_links?: Json | null
+          start_date?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -161,40 +40,11 @@ export type Database = {
           id?: string
           image_url?: string | null
           name?: string
+          role?: string
+          show_times?: Json | null
+          social_links?: Json | null
+          start_date?: string | null
           updated_at?: string | null
-        }
-        Relationships: []
-      }
-      members: {
-        Row: {
-          approved: boolean | null
-          bio: string | null
-          created_at: string | null
-          full_name: string | null
-          id: string
-          role: string | null
-          updated_at: string | null
-          username: string | null
-        }
-        Insert: {
-          approved?: boolean | null
-          bio?: string | null
-          created_at?: string | null
-          full_name?: string | null
-          id: string
-          role?: string | null
-          updated_at?: string | null
-          username?: string | null
-        }
-        Update: {
-          approved?: boolean | null
-          bio?: string | null
-          created_at?: string | null
-          full_name?: string | null
-          id?: string
-          role?: string | null
-          updated_at?: string | null
-          username?: string | null
         }
         Relationships: []
       }
@@ -235,15 +85,7 @@ export type Database = {
           title?: string
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "posts_author_fkey"
-            columns: ["author"]
-            isOneToOne: false
-            referencedRelation: "members"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       shows: {
         Row: {
@@ -251,8 +93,8 @@ export type Database = {
           days: string[]
           description: string | null
           end_time: string
-          host_id: string | null
           id: string
+          personality_id: string | null
           start_time: string
           title: string
           updated_at: string | null
@@ -262,8 +104,8 @@ export type Database = {
           days: string[]
           description?: string | null
           end_time: string
-          host_id?: string | null
           id?: string
+          personality_id?: string | null
           start_time: string
           title: string
           updated_at?: string | null
@@ -273,63 +115,21 @@ export type Database = {
           days?: string[]
           description?: string | null
           end_time?: string
-          host_id?: string | null
           id?: string
+          personality_id?: string | null
           start_time?: string
           title?: string
           updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "shows_host_id_fkey"
-            columns: ["host_id"]
+            foreignKeyName: "shows_personality_id_fkey"
+            columns: ["personality_id"]
             isOneToOne: false
-            referencedRelation: "hosts"
+            referencedRelation: "personalities"
             referencedColumns: ["id"]
           },
         ]
-      }
-      slider_items: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          height: number | null
-          id: string
-          media_type: string | null
-          media_url: string
-          sort_order: number | null
-          title: string
-          updated_at: string | null
-          url: string | null
-          width: number | null
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          height?: number | null
-          id?: string
-          media_type?: string | null
-          media_url: string
-          sort_order?: number | null
-          title: string
-          updated_at?: string | null
-          url?: string | null
-          width?: number | null
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          height?: number | null
-          id?: string
-          media_type?: string | null
-          media_url?: string
-          sort_order?: number | null
-          title?: string
-          updated_at?: string | null
-          url?: string | null
-          width?: number | null
-        }
-        Relationships: []
       }
     }
     Views: {
