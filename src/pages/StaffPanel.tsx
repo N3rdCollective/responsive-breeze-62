@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -7,26 +6,25 @@ import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import ManageStaffModal from "@/components/ManageStaffModal";
 
 const StaffPanel = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [staffName, setStaffName] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isManageStaffOpen, setIsManageStaffOpen] = useState(false);
 
-  // Check authentication status on component mount
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session) {
-          // No session found, redirect to login
           navigate("/staff-login");
           return;
         }
         
-        // Check if the user is staff
         const { data: staffData, error: staffError } = await supabase
           .from("staff")
           .select("*")
@@ -34,13 +32,11 @@ const StaffPanel = () => {
           .single();
           
         if (staffError || !staffData) {
-          // Not a staff member, sign out and redirect
           await supabase.auth.signOut();
           navigate("/staff-login");
           return;
         }
         
-        // Set staff name for greeting
         setStaffName(staffData.first_name || staffData.email);
       } catch (error) {
         console.error("Auth check error:", error);
@@ -52,7 +48,6 @@ const StaffPanel = () => {
     
     checkAuth();
     
-    // Set up auth state listener
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === "SIGNED_OUT") {
@@ -76,10 +71,7 @@ const StaffPanel = () => {
   };
 
   const handleManageUsers = () => {
-    toast({
-      title: "Manage Users",
-      description: "This would open the user management interface in a full implementation.",
-    });
+    setIsManageStaffOpen(true);
   };
 
   const handleViewAnalytics = () => {
@@ -263,6 +255,12 @@ const StaffPanel = () => {
           </div>
         </div>
       </div>
+      
+      <ManageStaffModal 
+        open={isManageStaffOpen}
+        onOpenChange={setIsManageStaffOpen}
+      />
+      
       <Footer />
     </div>
   );
