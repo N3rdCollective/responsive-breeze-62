@@ -13,10 +13,21 @@ const AdminCard = ({ onManageStaff, onLogout }: AdminCardProps) => {
   const { toast } = useToast();
 
   const handleViewAnalytics = () => {
-    toast({
-      title: "Analytics Dashboard",
-      description: "This would display detailed analytics in a full implementation.",
-    });
+    // Find the StatsPanel in the DOM and click the Analytics tab
+    const analyticsTab = document.querySelector('[value="analytics"]') as HTMLElement;
+    if (analyticsTab) {
+      analyticsTab.click();
+      // Scroll to the stats panel
+      const statsPanel = document.querySelector('.bg-\\[\\#F5F5F5\\].dark\\:bg-\\[\\#333333\\]');
+      if (statsPanel) {
+        statsPanel.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      toast({
+        title: "Analytics Dashboard",
+        description: "Navigate to the Analytics tab in the Station Insights section below.",
+      });
+    }
   };
 
   return (
