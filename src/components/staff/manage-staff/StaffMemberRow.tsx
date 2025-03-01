@@ -92,26 +92,28 @@ const StaffMemberRow = ({ staff, onUpdate }: StaffMemberRowProps) => {
           : '-'}
       </td>
       <td className="p-2 capitalize">{staff.role}</td>
-      <td className="p-2 text-right">
-        <Button 
-          variant="outline" 
-          size="sm"
-          className={`${staff.role === "admin" ? "text-yellow-600 dark:text-yellow-400" : "text-blue-600 dark:text-blue-400"} mr-2`}
-          onClick={() => handleToggleAdmin(staff.id, staff.email, staff.role)}
-          disabled={isUpdatingRole}
-        >
-          {isUpdatingRole ? "Updating..." : 
-            staff.role === "admin" ? "Remove Admin" : "Make Admin"}
-        </Button>
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-          onClick={() => handleRemoveStaff(staff.id, staff.email)}
-          disabled={isUpdatingRole}
-        >
-          Remove
-        </Button>
+      <td className="p-2 whitespace-nowrap">
+        <div className="flex flex-row gap-2 justify-end">
+          <Button 
+            variant="outline" 
+            size="sm"
+            className={`${staff.role === "admin" ? "text-yellow-600 dark:text-yellow-400" : "text-blue-600 dark:text-blue-400"}`}
+            onClick={() => handleToggleAdmin(staff.id, staff.email, staff.role)}
+            disabled={isUpdatingRole}
+          >
+            {isUpdatingRole ? "Updating..." : 
+              staff.role === "admin" ? "Remove Admin" : "Make Admin"}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+            onClick={() => handleRemoveStaff(staff.id, staff.email)}
+            disabled={isUpdatingRole}
+          >
+            Remove
+          </Button>
+        </div>
       </td>
     </tr>
   );
