@@ -1,403 +1,332 @@
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import { useToast } from "@/hooks/use-toast";
+import useStaffAuth from "@/hooks/useStaffAuth";
+
+// UI Components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, Upload } from "lucide-react";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 
-interface PostFormData {
+// Type definitions for our news posts
+type NewsStatus = "published" | "draft";
+
+interface NewsPost {
+  id: string;
   title: string;
   content: string;
-  category: string;
-  featured_image: string | null;
-  status: "draft" | "published";
+  excerpt: string;
+  status: NewsStatus;
+  featured_image?: string;
+  created_at: string;
+  updated_at: string;
+  author: string;
 }
 
 const NewsEditor = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { staffName, userRole, isLoading: authLoading } = useStaffAuth();
-  const isAdmin = userRole === "admin";
-  const isModerator = userRole === "moderator";
-  const isNewPost = !id;
+  const { user, isAdmin, role } = useStaffAuth();
   
-  const [formData, setFormData] = useState<PostFormData>({
-    title: "",
-    content: "",
-    category: "",
-    featured_image: null,
-    status: "draft",
-  });
+  // State for the news post
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [excerpt, setExcerpt] = useState("");
+  const [status, setStatus] = useState<NewsStatus>("draft");
+  const [featuredImage, setFeaturedImage] = useState<File | null>(null);
+  const [currentFeaturedImageUrl, setCurrentFeaturedImageUrl] = useState("");
   
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  // Loading and error state
+  const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-
-  const { isLoading, error } = useQuery({
-    queryKey: ["news-post-edit", id],
-    queryFn: async () => {
-      if (isNewPost) return null;
+  const [isUploading, setIsUploading] = useState(false);
+  
+  // Check auth
+  useEffect(() => {
+    if (!user) {
+      navigate("/staff-login");
+    }
+  }, [user, navigate]);
+  
+  // Fetch the news post if editing an existing one
+  useEffect(() => {
+    const fetchNewsPost = async () => {
+      if (!id) return;
       
-      const { data, error } = await supabase
-        .from("posts")
-        .select("*")
-        .eq("id", id)
-        .single();
-      
-      if (error) {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("news_posts")
+          .select("*")
+          .eq("id", id)
+          .single();
+          
+        if (error) throw error;
+        
+        if (data) {
+          setTitle(data.title);
+          setContent(data.content);
+          setExcerpt(data.excerpt);
+          setStatus(data.status as NewsStatus);
+          
+          if (data.featured_image) {
+            setCurrentFeaturedImageUrl(data.featured_image);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching news post:", error);
         toast({
-          title: "Error fetching post",
-          description: error.message,
+          title: "Error",
+          description: "Failed to load news post",
           variant: "destructive",
         });
-        throw error;
+      } finally {
+        setIsLoading(false);
       }
-      
-      setFormData({
-        title: data.title,
-        content: data.content,
-        category: data.category || "",
-        featured_image: data.featured_image,
-        status: data.status,
-      });
-      
-      if (data.featured_image) {
-        setImagePreview(data.featured_image);
-      }
-      
-      return data;
-    },
-    enabled: !isNewPost,
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    setImageFile(file);
-    
-    // Create preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string);
     };
-    reader.readAsDataURL(file);
-  };
-
-  const uploadImage = async (): Promise<string | null> => {
-    if (!imageFile) return formData.featured_image;
     
-    const fileExt = imageFile.name.split('.').pop();
-    const fileName = `${Date.now()}.${fileExt}`;
-    const filePath = `news/${fileName}`;
+    fetchNewsPost();
+  }, [id, toast]);
+  
+  // Function to handle image uploads
+  const handleImageUpload = async (file: File): Promise<string | null> => {
+    if (!file) return null;
     
-    const { error: uploadError } = await supabase.storage
-      .from('media')
-      .upload(filePath, imageFile);
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+      const filePath = `news/${fileName}`;
       
-    if (uploadError) {
+      const { error: uploadError } = await supabase.storage
+        .from("media")
+        .upload(filePath, file);
+        
+      if (uploadError) throw uploadError;
+      
+      const { data } = supabase.storage
+        .from("media")
+        .getPublicUrl(filePath);
+        
+      return data.publicUrl;
+    } catch (error) {
+      console.error("Error uploading image:", error);
       toast({
-        title: "Error uploading image",
-        description: uploadError.message,
+        title: "Upload Failed",
+        description: "There was an error uploading your image",
         variant: "destructive",
       });
       return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+  
+  // Save the news post
+  const handleSave = async () => {
+    if (!title || !content) {
+      toast({
+        title: "Missing Information",
+        description: "Title and content are required",
+        variant: "destructive",
+      });
+      return;
     }
     
-    const { data } = supabase.storage.from('media').getPublicUrl(filePath);
-    return data.publicUrl;
-  };
-
-  const savePost = async () => {
+    setIsSaving(true);
+    
     try {
-      setIsSaving(true);
+      let featuredImageUrl = currentFeaturedImageUrl;
       
-      // Validate form
-      if (!formData.title.trim()) {
-        toast({
-          title: "Title is required",
-          variant: "destructive",
-        });
-        return;
+      // Upload the featured image if a new one was selected
+      if (featuredImage) {
+        const uploadedUrl = await handleImageUpload(featuredImage);
+        if (uploadedUrl) {
+          featuredImageUrl = uploadedUrl;
+        }
       }
       
-      // Upload image if exists
-      let imageUrl = formData.featured_image;
-      if (imageFile) {
-        imageUrl = await uploadImage();
-        if (!imageUrl && imageFile) return; // Upload failed
-      }
-      
-      const postData = {
-        title: formData.title,
-        content: formData.content,
-        category: formData.category || null,
-        featured_image: imageUrl,
-        status: formData.status,
-        post_date: new Date().toISOString(),
-        author: staffName,
+      const newsData = {
+        title,
+        content,
+        excerpt: excerpt || content.substring(0, 150) + "...",
+        status,
+        featured_image: featuredImageUrl,
+        author: user?.email || "Staff Member",
+        updated_at: new Date().toISOString(),
       };
       
       let result;
       
-      if (isNewPost) {
-        // Create new post
-        result = await supabase
-          .from("posts")
-          .insert(postData);
-      } else {
+      if (id) {
         // Update existing post
         result = await supabase
-          .from("posts")
-          .update(postData)
+          .from("news_posts")
+          .update(newsData)
           .eq("id", id);
+      } else {
+        // Create new post
+        result = await supabase
+          .from("news_posts")
+          .insert([{
+            ...newsData,
+            created_at: new Date().toISOString(),
+          }]);
       }
       
-      if (result.error) {
-        toast({
-          title: `Error ${isNewPost ? 'creating' : 'updating'} post`,
-          description: result.error.message,
-          variant: "destructive",
-        });
-        return;
-      }
+      if (result.error) throw result.error;
       
       toast({
-        title: `Post ${isNewPost ? 'created' : 'updated'} successfully`,
-        description: `The post has been ${isNewPost ? 'created' : 'updated'}.`,
+        title: "Success",
+        description: id ? "News post updated" : "News post created",
       });
       
       navigate("/staff/news");
-    } catch (err) {
+    } catch (error) {
+      console.error("Error saving news post:", error);
       toast({
-        title: "An error occurred",
-        description: err instanceof Error ? err.message : "Unknown error",
+        title: "Error",
+        description: "Failed to save news post",
         variant: "destructive",
       });
     } finally {
       setIsSaving(false);
     }
   };
-
-  if (authLoading) {
-    return <LoadingSpinner />;
-  }
-
-  if (!isAdmin && !isModerator) {
+  
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <main className="pt-24 pb-16 container mx-auto px-4">
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-destructive mb-4">Access Denied</h2>
-            <p className="text-muted-foreground mb-6">You don't have permission to access this page.</p>
-            <Button onClick={() => navigate('/staff-panel')}>
-              Back to Staff Panel
-            </Button>
-          </div>
-        </main>
-        <Footer />
+      <div className="flex items-center justify-center h-screen">
+        <LoadingSpinner />
       </div>
     );
   }
-
+  
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <main className="pt-24 pb-16 container mx-auto px-4">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/staff/news')}
-              className="flex items-center gap-1"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to News Management
-            </Button>
-            <h1 className="text-2xl md:text-3xl font-bold">
-              {isNewPost ? "Create New Post" : "Edit Post"}
-            </h1>
+    <div className="container mx-auto p-4 max-w-4xl">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">
+          {id ? "Edit News Post" : "Create News Post"}
+        </h1>
+        <Button
+          variant="outline"
+          onClick={() => navigate("/staff/news")}
+        >
+          Cancel
+        </Button>
+      </div>
+      
+      <div className="space-y-6">
+        <div>
+          <Label htmlFor="title">Title</Label>
+          <Input
+            id="title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Enter post title"
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="excerpt">Excerpt (optional)</Label>
+          <Textarea
+            id="excerpt"
+            value={excerpt}
+            onChange={(e) => setExcerpt(e.target.value)}
+            placeholder="Brief summary of the post"
+            className="h-20"
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="content">Content</Label>
+          <Textarea
+            id="content"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Write your post content here"
+            className="h-64"
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="status">Status</Label>
+          <Select
+            value={status}
+            onValueChange={(value: NewsStatus) => setStatus(value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="draft">Draft</SelectItem>
+              <SelectItem value="published">Published</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div>
+          <Label htmlFor="featured-image">Featured Image</Label>
+          <div className="mt-2">
+            <Input
+              id="featured-image"
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const files = e.target.files;
+                if (files && files.length > 0) {
+                  setFeaturedImage(files[0]);
+                }
+              }}
+            />
           </div>
           
-          <Button 
-            onClick={savePost}
-            disabled={isSaving}
-            className="flex items-center gap-1"
+          {currentFeaturedImageUrl && (
+            <div className="mt-4">
+              <p className="text-sm text-gray-500 mb-2">Current image:</p>
+              <img
+                src={currentFeaturedImageUrl}
+                alt="Featured"
+                className="w-full max-w-md rounded-md"
+              />
+            </div>
+          )}
+        </div>
+        
+        <div className="flex justify-end space-x-4 pt-4">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/staff/news")}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={isSaving || isUploading}
           >
             {isSaving ? (
               <>
                 <LoadingSpinner size="sm" />
-                Saving...
+                <span className="ml-2">Saving...</span>
               </>
             ) : (
-              <>
-                <Save className="h-4 w-4" />
-                Save Post
-              </>
+              "Save Post"
             )}
           </Button>
         </div>
-        
-        {isLoading ? (
-          <div className="flex justify-center items-center p-12">
-            <LoadingSpinner />
-          </div>
-        ) : error ? (
-          <div className="text-center py-12">
-            <h3 className="text-xl font-semibold text-destructive">Error loading post</h3>
-            <p className="text-muted-foreground mt-2">Please try again later</p>
-            <Button 
-              variant="outline" 
-              onClick={() => navigate("/staff/news")}
-              className="mt-4"
-            >
-              Back to News Management
-            </Button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="lg:col-span-2">
-              <CardContent className="p-6">
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Title</Label>
-                    <Input
-                      id="title"
-                      name="title"
-                      value={formData.title}
-                      onChange={handleChange}
-                      placeholder="Enter post title"
-                      className="text-lg"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="content">Content</Label>
-                    <Textarea
-                      id="content"
-                      name="content"
-                      value={formData.content}
-                      onChange={handleChange}
-                      placeholder="Write your post content here..."
-                      className="min-h-[300px] resize-y"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="space-y-6">
-                  <div>
-                    <Label htmlFor="status" className="block mb-2">Status</Label>
-                    <div className="flex gap-4">
-                      <div className="flex items-center">
-                        <input
-                          type="radio"
-                          id="draft"
-                          name="status"
-                          value="draft"
-                          checked={formData.status === "draft"}
-                          onChange={() => setFormData(prev => ({ ...prev, status: "draft" }))}
-                          className="mr-2"
-                        />
-                        <Label htmlFor="draft" className="cursor-pointer">Draft</Label>
-                      </div>
-                      
-                      <div className="flex items-center">
-                        <input
-                          type="radio"
-                          id="published"
-                          name="status"
-                          value="published"
-                          checked={formData.status === "published"}
-                          onChange={() => setFormData(prev => ({ ...prev, status: "published" }))}
-                          className="mr-2"
-                        />
-                        <Label htmlFor="published" className="cursor-pointer">Published</Label>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="category">Category</Label>
-                    <Input
-                      id="category"
-                      name="category"
-                      value={formData.category}
-                      onChange={handleChange}
-                      placeholder="Enter category"
-                    />
-                    <p className="text-xs text-muted-foreground">Leave empty for uncategorized</p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="featured_image">Featured Image</Label>
-                    
-                    <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 text-center">
-                      {imagePreview ? (
-                        <div className="space-y-2">
-                          <img 
-                            src={imagePreview} 
-                            alt="Preview" 
-                            className="mx-auto max-h-[200px] object-cover rounded"
-                          />
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            type="button"
-                            onClick={() => {
-                              setImagePreview(null);
-                              setImageFile(null);
-                              setFormData(prev => ({ ...prev, featured_image: null }));
-                            }}
-                          >
-                            Remove Image
-                          </Button>
-                        </div>
-                      ) : (
-                        <label className="flex flex-col items-center gap-2 cursor-pointer">
-                          <Upload className="h-8 w-8 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">
-                            Click to upload image
-                          </span>
-                          <input
-                            type="file"
-                            id="featured_image"
-                            accept="image/*"
-                            onChange={handleImageChange}
-                            className="hidden"
-                          />
-                        </label>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-      </main>
-      <Footer />
+      </div>
     </div>
   );
 };
