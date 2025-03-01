@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { usePasswordSection } from "./usePasswordSection";
 
 export const useProfileEditorState = (
   open: boolean,
@@ -10,20 +11,33 @@ export const useProfileEditorState = (
   const { toast } = useToast();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPasswordSection, setShowPasswordSection] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Use the password section hook
+  const {
+    currentPassword,
+    newPassword,
+    confirmPassword,
+    showPasswordSection,
+    handleCurrentPasswordChange: setCurrentPassword,
+    handleNewPasswordChange: setNewPassword,
+    handleConfirmPasswordChange: setConfirmPassword,
+    togglePasswordSection: togglePasswordSectionInternal,
+    resetPasswordFields
+  } = usePasswordSection();
+  
+  // For backward compatibility
+  const setShowPasswordSection = (value: boolean) => {
+    if (value !== showPasswordSection) {
+      togglePasswordSectionInternal();
+    }
+  };
   
   useEffect(() => {
     if (open) {
       loadStaffProfile();
-      // Reset password fields and visibility when reopening
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      setShowPasswordSection(false);
+      // Reset password fields when reopening
+      resetPasswordFields();
     }
   }, [open]);
   

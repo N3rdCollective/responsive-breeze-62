@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Lock } from "lucide-react";
+import { usePasswordSection } from "./usePasswordSection";
 
 interface PasswordSectionProps {
   currentPassword: string;
@@ -28,6 +29,22 @@ const PasswordSection = ({
   setShowPasswordSection,
   disabled = false
 }: PasswordSectionProps) => {
+  // Pass through to the hook for backward compatibility
+  const passwordManager = usePasswordSection({
+    initialPasswordSection: showPasswordSection,
+    onPasswordsChanged: ({ currentPassword, newPassword, confirmPassword }) => {
+      setCurrentPassword(currentPassword);
+      setNewPassword(newPassword);
+      setConfirmPassword(confirmPassword);
+    },
+  });
+
+  // Toggle password section in both the local hook and parent component
+  const handleToggleSection = () => {
+    passwordManager.togglePasswordSection();
+    setShowPasswordSection(!showPasswordSection);
+  };
+
   return (
     <>
       <div className="pt-2">
@@ -35,7 +52,7 @@ const PasswordSection = ({
           type="button" 
           variant="outline" 
           className="w-full flex items-center justify-center gap-2"
-          onClick={() => setShowPasswordSection(!showPasswordSection)}
+          onClick={handleToggleSection}
           disabled={disabled}
         >
           <Lock className="h-4 w-4" />
