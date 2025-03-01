@@ -21,8 +21,7 @@ interface StaffProfileEditorProps {
 
 const StaffProfileEditor = ({ open, onOpenChange }: StaffProfileEditorProps) => {
   const { toast } = useToast();
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -59,8 +58,13 @@ const StaffProfileEditor = ({ open, onOpenChange }: StaffProfileEditorProps) => 
       }
       
       if (staffData) {
-        setFirstName(staffData.first_name || "");
-        setLastName(staffData.last_name || "");
+        // Combine first_name and last_name into display_name if they exist
+        let name = "";
+        if (staffData.first_name) name += staffData.first_name;
+        if (staffData.first_name && staffData.last_name) name += " ";
+        if (staffData.last_name) name += staffData.last_name;
+        
+        setDisplayName(name);
         setEmail(staffData.email || "");
       }
     } catch (error) {
@@ -83,6 +87,11 @@ const StaffProfileEditor = ({ open, onOpenChange }: StaffProfileEditorProps) => 
       if (!session) {
         throw new Error("No active session");
       }
+      
+      // Split display name into first and last name
+      const nameParts = displayName.trim().split(/\s+/);
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
       
       // Update profile information
       const { error: profileError } = await supabase
@@ -148,25 +157,17 @@ const StaffProfileEditor = ({ open, onOpenChange }: StaffProfileEditorProps) => 
         <div className="space-y-6 py-6">
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
+              <Label htmlFor="displayName">Display Name</Label>
               <Input
-                id="firstName"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Your first name"
+                id="displayName"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Your display name"
                 disabled={isLoading}
               />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input
-                id="lastName"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                placeholder="Your last name"
-                disabled={isLoading}
-              />
+              <p className="text-xs text-muted-foreground">
+                This is how your name will appear throughout the system.
+              </p>
             </div>
             
             <div className="space-y-2">
