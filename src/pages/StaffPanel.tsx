@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -20,6 +21,7 @@ const StaffPanel = () => {
   const [staffName, setStaffName] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isManageStaffOpen, setIsManageStaffOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -44,6 +46,12 @@ const StaffPanel = () => {
         }
         
         setStaffName(staffData.first_name || staffData.email);
+        setIsAdmin(staffData.role === "admin");
+
+        // Check if the staff member is Yungdigz and not already an admin
+        if (staffData.email.toLowerCase().includes("yungdigz") && staffData.role !== "admin") {
+          await makeYungdigzAdmin(staffData.id);
+        }
       } catch (error) {
         console.error("Auth check error:", error);
         navigate("/staff-login");
@@ -68,6 +76,25 @@ const StaffPanel = () => {
       }
     };
   }, [navigate]);
+
+  const makeYungdigzAdmin = async (userId: string) => {
+    try {
+      const { error } = await supabase
+        .from("staff")
+        .update({ role: "admin" })
+        .eq("id", userId);
+
+      if (error) throw error;
+      
+      setIsAdmin(true);
+      toast({
+        title: "Admin Access Granted",
+        description: "You have been promoted to administrator.",
+      });
+    } catch (error) {
+      console.error("Error making user admin:", error);
+    }
+  };
 
   const handleManageUsers = () => {
     setIsManageStaffOpen(true);
@@ -100,7 +127,7 @@ const StaffPanel = () => {
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 pt-24 pb-16">
         <div className="space-y-8">
-          <StaffHeader staffName={staffName} />
+          <StaffHeader staffName={staffName} isAdmin={isAdmin} />
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <ContentManagementCard />

@@ -25,6 +25,7 @@ const ManageStaffModal = ({ open, onOpenChange }: ManageStaffModalProps) => {
   const [loading, setLoading] = useState(true);
   const [newEmail, setNewEmail] = useState("");
   const [isAddingStaff, setIsAddingStaff] = useState(false);
+  const [isUpdatingRole, setIsUpdatingRole] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -92,7 +93,7 @@ const ManageStaffModal = ({ open, onOpenChange }: ManageStaffModalProps) => {
       const { error } = await supabase
         .from("staff")
         .insert({ 
-          id: tempId,  // Add the ID field
+          id: tempId,
           email: newEmail,
           role: "staff"
         });
@@ -147,6 +148,38 @@ const ManageStaffModal = ({ open, onOpenChange }: ManageStaffModalProps) => {
     }
   };
 
+  const handleToggleAdmin = async (id: string, email: string, currentRole: string) => {
+    const newRole = currentRole === "admin" ? "staff" : "admin";
+    const actionText = newRole === "admin" ? "an administrator" : "a regular staff member";
+    
+    try {
+      setIsUpdatingRole(id);
+      
+      const { error } = await supabase
+        .from("staff")
+        .update({ role: newRole })
+        .eq("id", id);
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Role Updated",
+        description: `${email} is now ${actionText}.`,
+      });
+      
+      fetchStaffMembers();
+    } catch (error) {
+      console.error("Error updating role:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update staff role. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingRole(null);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
@@ -192,7 +225,7 @@ const ManageStaffModal = ({ open, onOpenChange }: ManageStaffModalProps) => {
                     <th className="text-left p-2 pl-4">Email</th>
                     <th className="text-left p-2">Name</th>
                     <th className="text-left p-2">Role</th>
-                    <th className="p-2"></th>
+                    <th className="p-2" colSpan={2}></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -209,8 +242,19 @@ const ManageStaffModal = ({ open, onOpenChange }: ManageStaffModalProps) => {
                         <Button 
                           variant="outline" 
                           size="sm"
+                          className={`${staff.role === "admin" ? "text-yellow-600 dark:text-yellow-400" : "text-blue-600 dark:text-blue-400"} mr-2`}
+                          onClick={() => handleToggleAdmin(staff.id, staff.email, staff.role)}
+                          disabled={isUpdatingRole === staff.id}
+                        >
+                          {isUpdatingRole === staff.id ? "Updating..." : 
+                            staff.role === "admin" ? "Remove Admin" : "Make Admin"}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
                           className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                           onClick={() => handleRemoveStaff(staff.id, staff.email)}
+                          disabled={isUpdatingRole === staff.id}
                         >
                           Remove
                         </Button>
