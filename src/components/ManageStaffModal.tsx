@@ -84,11 +84,15 @@ const ManageStaffModal = ({ open, onOpenChange }: ManageStaffModalProps) => {
         return;
       }
       
+      // Generate a temporary ID for the new staff member
+      const tempId = crypto.randomUUID();
+      
       // In a real implementation, this would invite the user via email
       // For now, we'll just add them to the staff table
       const { error } = await supabase
         .from("staff")
         .insert({ 
+          id: tempId,  // Add the ID field
           email: newEmail,
           role: "staff"
         });
