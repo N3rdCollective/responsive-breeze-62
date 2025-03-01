@@ -25,7 +25,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       {label && <Label htmlFor={id}>{label}</Label>}
       <Editor
         id={id}
-        apiKey="no-api-key" // For development, we'll use the no-api-key which has limitations but works
+        apiKey="j1ru8tx10r2f8ek631z9wn7dcssqtnypuetvaybahh3oq0tq"
         onInit={(evt, editor) => editorRef.current = editor}
         initialValue={value}
         onEditorChange={(newContent) => onChange(newContent)}
