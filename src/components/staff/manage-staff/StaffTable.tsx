@@ -15,9 +15,10 @@ interface StaffTableProps {
   staffMembers: StaffMember[];
   loading: boolean;
   onStaffUpdate: () => void;
+  currentUserRole: string;
 }
 
-const StaffTable = ({ staffMembers, loading, onStaffUpdate }: StaffTableProps) => {
+const StaffTable = ({ staffMembers, loading, onStaffUpdate, currentUserRole }: StaffTableProps) => {
   return (
     <div className="border rounded-md overflow-x-auto">
       {loading ? (
@@ -44,7 +45,8 @@ const StaffTable = ({ staffMembers, loading, onStaffUpdate }: StaffTableProps) =
               <StaffMemberRow 
                 key={staff.id} 
                 staff={staff} 
-                onUpdate={onStaffUpdate} 
+                onUpdate={onStaffUpdate}
+                currentUserRole={currentUserRole}
               />
             ))}
           </tbody>

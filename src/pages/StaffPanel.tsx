@@ -17,7 +17,7 @@ import LoadingSpinner from "@/components/staff/LoadingSpinner";
 const StaffPanel = () => {
   const { toast } = useToast();
   const [isManageStaffOpen, setIsManageStaffOpen] = useState(false);
-  const { staffName, isAdmin, isLoading, handleLogout } = useStaffAuth();
+  const { staffName, isAdmin, isLoading, handleLogout, userRole } = useStaffAuth();
 
   const handleManageUsers = () => {
     setIsManageStaffOpen(true);
@@ -50,6 +50,7 @@ const StaffPanel = () => {
       <ManageStaffModal 
         open={isManageStaffOpen}
         onOpenChange={setIsManageStaffOpen}
+        currentUserRole={userRole}
       />
       
       <Footer />

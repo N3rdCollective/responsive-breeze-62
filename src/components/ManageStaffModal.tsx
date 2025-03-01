@@ -8,9 +8,10 @@ import StaffTable from "./staff/manage-staff/StaffTable";
 interface ManageStaffModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  currentUserRole: string;
 }
 
-const ManageStaffModal = ({ open, onOpenChange }: ManageStaffModalProps) => {
+const ManageStaffModal = ({ open, onOpenChange, currentUserRole }: ManageStaffModalProps) => {
   const { staffMembers, loading, fetchStaffMembers } = useStaffManagement(open);
 
   return (
@@ -26,12 +27,16 @@ const ManageStaffModal = ({ open, onOpenChange }: ManageStaffModalProps) => {
         </DialogHeader>
         
         <div className="space-y-6 py-4">
-          <AddStaffForm onStaffAdded={fetchStaffMembers} />
+          <AddStaffForm 
+            onStaffAdded={fetchStaffMembers} 
+            currentUserRole={currentUserRole}
+          />
           
           <StaffTable
             staffMembers={staffMembers}
             loading={loading}
             onStaffUpdate={fetchStaffMembers}
+            currentUserRole={currentUserRole}
           />
         </div>
         

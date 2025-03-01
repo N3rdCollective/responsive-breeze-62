@@ -16,15 +16,30 @@ interface StaffMember {
 interface StaffMemberRowProps {
   staff: StaffMember;
   onUpdate: () => void;
+  currentUserRole: string;
 }
 
-const StaffMemberRow = ({ staff, onUpdate }: StaffMemberRowProps) => {
+const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProps) => {
   const [isUpdatingRole, setIsUpdatingRole] = useState<boolean>(false);
   const { toast } = useToast();
 
-  const handleToggleAdmin = async (id: string, email: string, currentRole: string) => {
-    const newRole = currentRole === "admin" ? "staff" : "admin";
-    const actionText = newRole === "admin" ? "an administrator" : "a regular staff member";
+  // Check if the current user can modify this staff member
+  const canModify = currentUserRole === "admin" || 
+                  (currentUserRole === "moderator" && staff.role !== "admin");
+
+  const handleToggleRole = async (id: string, email: string, currentRole: string) => {
+    // If current role is admin, change to moderator
+    // If current role is moderator, change to admin
+    // If current role is staff, change to moderator (new default progression)
+    let newRole = "moderator";
+    
+    if (currentRole === "moderator") {
+      newRole = "admin";
+    } else if (currentRole === "admin") {
+      newRole = "moderator";
+    }
+    
+    const actionText = `a${newRole === "admin" ? "n" : ""} ${newRole}`;
     
     try {
       setIsUpdatingRole(true);
@@ -83,6 +98,15 @@ const StaffMemberRow = ({ staff, onUpdate }: StaffMemberRowProps) => {
     }
   };
 
+  // Helper to get button text based on role
+  const getRoleButtonText = (role: string) => {
+    if (isUpdatingRole) return "Updating...";
+    
+    if (role === "admin") return "Make Moderator";
+    if (role === "moderator") return "Make Admin";
+    return "Make Moderator"; // Default for "staff" role
+  };
+
   return (
     <tr className="border-b hover:bg-muted/50">
       <td className="p-2 pl-4">{staff.email}</td>
@@ -94,25 +118,33 @@ const StaffMemberRow = ({ staff, onUpdate }: StaffMemberRowProps) => {
       <td className="p-2 capitalize">{staff.role}</td>
       <td className="p-2 pr-4 whitespace-nowrap">
         <div className="flex flex-row gap-2 justify-end">
-          <Button 
-            variant="outline" 
-            size="sm"
-            className={`${staff.role === "admin" ? "text-yellow-600 dark:text-yellow-400" : "text-blue-600 dark:text-blue-400"}`}
-            onClick={() => handleToggleAdmin(staff.id, staff.email, staff.role)}
-            disabled={isUpdatingRole}
-          >
-            {isUpdatingRole ? "Updating..." : 
-              staff.role === "admin" ? "Remove Admin" : "Make Admin"}
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-            onClick={() => handleRemoveStaff(staff.id, staff.email)}
-            disabled={isUpdatingRole}
-          >
-            Remove
-          </Button>
+          {canModify && (
+            <>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className={`${staff.role === "admin" ? "text-yellow-600 dark:text-yellow-400" : 
+                  staff.role === "moderator" ? "text-blue-600 dark:text-blue-400" :
+                  "text-green-600 dark:text-green-400"}`}
+                onClick={() => handleToggleRole(staff.id, staff.email, staff.role)}
+                disabled={isUpdatingRole}
+              >
+                {getRoleButtonText(staff.role)}
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                onClick={() => handleRemoveStaff(staff.id, staff.email)}
+                disabled={isUpdatingRole}
+              >
+                Remove
+              </Button>
+            </>
+          )}
+          {!canModify && (
+            <span className="text-sm text-gray-500 italic px-2">No permission</span>
+          )}
         </div>
       </td>
     </tr>

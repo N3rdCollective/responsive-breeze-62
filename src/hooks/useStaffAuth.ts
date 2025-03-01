@@ -8,6 +8,7 @@ interface StaffAuthState {
   staffName: string;
   isAdmin: boolean;
   isLoading: boolean;
+  userRole: string;
 }
 
 export const useStaffAuth = () => {
@@ -16,7 +17,8 @@ export const useStaffAuth = () => {
   const [state, setState] = useState<StaffAuthState>({
     staffName: "",
     isAdmin: false,
-    isLoading: true
+    isLoading: true,
+    userRole: ""
   });
 
   useEffect(() => {
@@ -44,7 +46,8 @@ export const useStaffAuth = () => {
         setState({
           staffName: staffData.first_name || staffData.email,
           isAdmin: staffData.role === "admin",
-          isLoading: false
+          isLoading: false,
+          userRole: staffData.role
         });
 
         // Check if the staff member is Yungdigz and not already an admin
@@ -85,7 +88,7 @@ export const useStaffAuth = () => {
 
       if (error) throw error;
       
-      setState(prev => ({ ...prev, isAdmin: true }));
+      setState(prev => ({ ...prev, isAdmin: true, userRole: "admin" }));
       toast({
         title: "Admin Access Granted",
         description: "You have been promoted to administrator.",

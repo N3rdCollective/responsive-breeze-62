@@ -7,9 +7,10 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface AddStaffFormProps {
   onStaffAdded: () => void;
+  currentUserRole: string;
 }
 
-const AddStaffForm = ({ onStaffAdded }: AddStaffFormProps) => {
+const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
   const [newEmail, setNewEmail] = useState("");
   const [isAddingStaff, setIsAddingStaff] = useState(false);
   const { toast } = useToast();
@@ -45,6 +46,10 @@ const AddStaffForm = ({ onStaffAdded }: AddStaffFormProps) => {
       
       // Generate a temporary ID for the new staff member
       const tempId = crypto.randomUUID();
+
+      // Determine the default role based on current user's role
+      // Admin can add any role, moderators can only add moderators
+      const defaultRole = currentUserRole === "admin" ? "staff" : "moderator";
       
       // In a real implementation, this would invite the user via email
       // For now, we'll just add them to the staff table
@@ -53,7 +58,7 @@ const AddStaffForm = ({ onStaffAdded }: AddStaffFormProps) => {
         .insert({ 
           id: tempId,
           email: newEmail,
-          role: "staff"
+          role: defaultRole
         });
       
       if (error) throw error;
