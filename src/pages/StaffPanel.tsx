@@ -1,14 +1,72 @@
 
+import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const StaffPanel = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [staffName, setStaffName] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Check authentication status on component mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          // No session found, redirect to login
+          navigate("/staff-login");
+          return;
+        }
+        
+        // Check if the user is staff
+        const { data: staffData, error: staffError } = await supabase
+          .from("staff")
+          .select("*")
+          .eq("id", session.user.id)
+          .single();
+          
+        if (staffError || !staffData) {
+          // Not a staff member, sign out and redirect
+          await supabase.auth.signOut();
+          navigate("/staff-login");
+          return;
+        }
+        
+        // Set staff name for greeting
+        setStaffName(staffData.first_name || staffData.email);
+      } catch (error) {
+        console.error("Auth check error:", error);
+        navigate("/staff-login");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    checkAuth();
+    
+    // Set up auth state listener
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === "SIGNED_OUT") {
+          navigate("/staff-login");
+        }
+      }
+    );
+    
+    return () => {
+      if (authListener && authListener.subscription) {
+        authListener.subscription.unsubscribe();
+      }
+    };
+  }, [navigate]);
 
   const handleEditPage = (page: string) => {
     toast({
@@ -31,6 +89,35 @@ const StaffPanel = () => {
     });
   };
 
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Logged Out",
+        description: "You have been logged out successfully.",
+      });
+      navigate("/staff-login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "Logout failed",
+        description: "There was an error during logout. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-gray-500 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -41,7 +128,7 @@ const StaffPanel = () => {
               Staff Control Panel
             </h1>
             <p className="text-gray-500 dark:text-gray-400">
-              Welcome to the staff control panel. Manage your radio station content here.
+              Welcome{staffName ? `, ${staffName}` : ""}! Manage your radio station content here.
             </p>
           </div>
 
@@ -145,13 +232,7 @@ const StaffPanel = () => {
                 <Button 
                   variant="outline" 
                   className="w-full bg-white dark:bg-[#222222] text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                  onClick={() => {
-                    toast({
-                      title: "Logged Out",
-                      description: "You have been logged out successfully.",
-                    });
-                    navigate("/staff-login");
-                  }}
+                  onClick={handleLogout}
                 >
                   Logout
                 </Button>

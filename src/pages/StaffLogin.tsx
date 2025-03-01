@@ -6,23 +6,72 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const StaffLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Here you would typically handle authentication
-    console.log("Login attempt:", { email });
+    if (!email || !password) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
     
-    toast({
-      title: "Login attempted",
-      description: "This is a demo. Authentication needs to be implemented.",
-    });
+    setIsLoading(true);
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (data?.user) {
+        // Check if the user is staff by querying the staff table
+        const { data: staffData, error: staffError } = await supabase
+          .from("staff")
+          .select("*")
+          .eq("id", data.user.id)
+          .single();
+          
+        if (staffError || !staffData) {
+          // If no staff record, log them out
+          await supabase.auth.signOut();
+          throw new Error("You don't have permission to access the staff panel.");
+        }
+        
+        toast({
+          title: "Login successful",
+          description: `Welcome back, ${staffData.first_name || email}!`,
+        });
+        
+        // Redirect to staff panel
+        navigate("/staff-panel");
+      }
+    } catch (error: any) {
+      console.error("Login error:", error);
+      toast({
+        title: "Login failed",
+        description: error.message || "An error occurred during login.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -53,6 +102,7 @@ const StaffLogin = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={isLoading}
                   className="bg-white dark:bg-[#222222] border-[#666666]/20 dark:border-white/10 text-black dark:text-white"
                 />
               </div>
@@ -71,6 +121,7 @@ const StaffLogin = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled={isLoading}
                   className="bg-white dark:bg-[#222222] border-[#666666]/20 dark:border-white/10 text-black dark:text-white"
                 />
               </div>
@@ -78,8 +129,9 @@ const StaffLogin = () => {
               <Button 
                 type="submit" 
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                disabled={isLoading}
               >
-                Login
+                {isLoading ? "Logging in..." : "Login"}
               </Button>
             </form>
 
