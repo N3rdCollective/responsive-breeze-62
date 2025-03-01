@@ -27,7 +27,11 @@ export const useStaffAuth = () => {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session) {
-          navigate("/staff-login");
+          // If not already on login page, redirect to it
+          if (!window.location.pathname.includes('/staff-login')) {
+            navigate("/staff-login");
+          }
+          setState(prev => ({ ...prev, isLoading: false }));
           return;
         }
         
@@ -39,7 +43,10 @@ export const useStaffAuth = () => {
           
         if (staffError || !staffData) {
           await supabase.auth.signOut();
-          navigate("/staff-login");
+          if (!window.location.pathname.includes('/staff-login')) {
+            navigate("/staff-login");
+          }
+          setState(prev => ({ ...prev, isLoading: false }));
           return;
         }
         
@@ -56,8 +63,9 @@ export const useStaffAuth = () => {
         }
       } catch (error) {
         console.error("Auth check error:", error);
-        navigate("/staff-login");
-      } finally {
+        if (!window.location.pathname.includes('/staff-login')) {
+          navigate("/staff-login");
+        }
         setState(prev => ({ ...prev, isLoading: false }));
       }
     };
@@ -67,7 +75,17 @@ export const useStaffAuth = () => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === "SIGNED_OUT") {
-          navigate("/staff-login");
+          if (!window.location.pathname.includes('/staff-login')) {
+            navigate("/staff-login");
+          }
+          setState({
+            staffName: "",
+            isAdmin: false,
+            isLoading: false,
+            userRole: ""
+          });
+        } else if (event === "SIGNED_IN" && session) {
+          checkAuth();
         }
       }
     );

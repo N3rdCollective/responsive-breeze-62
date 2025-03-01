@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,7 +37,7 @@ const NewsEditor = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { staffName, isAdmin, userRole } = useStaffAuth();
+  const { staffName, isAdmin, userRole, isLoading: authLoading } = useStaffAuth();
   
   // State for the news post
   const [title, setTitle] = useState("");
@@ -53,15 +52,12 @@ const NewsEditor = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   
-  // Check auth
-  useEffect(() => {
-    if (!staffName) {
-      navigate("/staff-login");
-    }
-  }, [staffName, navigate]);
-  
   // Fetch the news post if editing an existing one
   useEffect(() => {
+    // Check auth before fetching data
+    if (authLoading) return; // Wait for auth check to complete
+    if (!staffName) return; // Don't fetch if not authenticated
+    
     const fetchNewsPost = async () => {
       if (!id) return; // Exit early if no ID (creating a new post)
       
@@ -101,7 +97,7 @@ const NewsEditor = () => {
     };
     
     fetchNewsPost();
-  }, [id, toast]);
+  }, [id, toast, staffName, authLoading]);
   
   // Function to handle image uploads
   const handleImageUpload = async (file: File): Promise<string | null> => {
@@ -212,6 +208,18 @@ const NewsEditor = () => {
       setIsSaving(false);
     }
   };
+  
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+  
+  if (!staffName) {
+    return null; // Return null to prevent flashing content before redirect
+  }
   
   if (isLoading) {
     return (
