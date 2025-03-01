@@ -72,6 +72,13 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
     setFeaturedImage(file);
   };
   
+  // Function to extract plain text from HTML for excerpt generation
+  const extractTextFromHtml = (html: string): string => {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    return tempDiv.textContent || tempDiv.innerText || "";
+  };
+  
   // Save the news post
   const handleSave = async () => {
     if (!title || !content) {
@@ -99,7 +106,7 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
       }
       
       // Generate an excerpt from content if none is provided
-      const finalExcerpt = excerpt || content.substring(0, 150) + "...";
+      const finalExcerpt = excerpt || extractTextFromHtml(content).substring(0, 150) + "...";
       
       const newsData = {
         title,

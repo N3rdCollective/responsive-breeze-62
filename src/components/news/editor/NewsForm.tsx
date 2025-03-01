@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import ImageUploader from "./ImageUploader";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 import { useNavigate } from "react-router-dom";
+import RichTextEditor from "./RichTextEditor";
 
 export type NewsStatus = "published" | "draft";
 
@@ -73,16 +74,12 @@ const NewsForm: React.FC<NewsFormProps> = ({
         />
       </div>
       
-      <div>
-        <Label htmlFor="content">Content</Label>
-        <Textarea
-          id="content"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Write your post content here"
-          className="h-64"
-        />
-      </div>
+      <RichTextEditor
+        id="content"
+        label="Content"
+        value={content}
+        onChange={setContent}
+      />
       
       <div>
         <Label htmlFor="status">Status</Label>
