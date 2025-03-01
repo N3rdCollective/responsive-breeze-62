@@ -63,7 +63,7 @@ const NewsEditor = () => {
   // Fetch the news post if editing an existing one
   useEffect(() => {
     const fetchNewsPost = async () => {
-      if (!id) return;
+      if (!id) return; // Exit early if no ID (creating a new post)
       
       setIsLoading(true);
       try {
@@ -189,6 +189,7 @@ const NewsEditor = () => {
           .insert([{
             ...newsData,
             created_at: new Date().toISOString(),
+            post_date: new Date().toISOString(), // Add post_date for new posts
           }]);
       }
       
