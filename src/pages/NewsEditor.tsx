@@ -26,7 +26,7 @@ interface NewsPost {
   id: string;
   title: string;
   content: string;
-  excerpt: string;
+  excerpt?: string; // Make excerpt optional since it may not exist in the database
   status: NewsStatus;
   featured_image?: string;
   created_at: string;
@@ -78,8 +78,9 @@ const NewsEditor = () => {
         if (data) {
           setTitle(data.title);
           setContent(data.content || "");
-          setExcerpt(data.excerpt || "");
-          setStatus(data.status as NewsStatus || "draft");
+          // Since excerpt may not exist in the database, we'll generate one from content if needed
+          setExcerpt(data.excerpt || data.content?.substring(0, 150) + "..." || "");
+          setStatus((data.status as NewsStatus) || "draft");
           
           if (data.featured_image) {
             setCurrentFeaturedImageUrl(data.featured_image);
@@ -158,10 +159,13 @@ const NewsEditor = () => {
         }
       }
       
+      // Generate an excerpt from content if none is provided
+      const finalExcerpt = excerpt || content.substring(0, 150) + "...";
+      
       const newsData = {
         title,
         content,
-        excerpt: excerpt || content.substring(0, 150) + "...",
+        excerpt: finalExcerpt,
         status,
         featured_image: featuredImageUrl,
         author: staffName || "Staff Member",
