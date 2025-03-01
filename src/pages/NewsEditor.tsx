@@ -78,8 +78,10 @@ const NewsEditor = () => {
         if (data) {
           setTitle(data.title);
           setContent(data.content || "");
-          // Since excerpt may not exist in the database, we'll generate one from content if needed
-          setExcerpt(data.excerpt || data.content?.substring(0, 150) + "..." || "");
+          // Type assertion to avoid TypeScript error, since excerpt might not exist in the database
+          const postData = data as any;
+          // Use the excerpt if it exists, otherwise generate one from content
+          setExcerpt(postData.excerpt || data.content?.substring(0, 150) + "..." || "");
           setStatus((data.status as NewsStatus) || "draft");
           
           if (data.featured_image) {
