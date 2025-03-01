@@ -1,10 +1,11 @@
-
 import React, { useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 import NewsForm from "@/components/news/editor/NewsForm";
 import { useNewsEditor } from "@/components/news/editor/useNewsEditor";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // Type definitions for our news posts
 interface NewsPost {
@@ -22,6 +23,7 @@ interface NewsPost {
 const NewsEditor = () => {
   const { id } = useParams<{ id: string }>();
   const { staffName, isLoading: authLoading } = useStaffAuth();
+  const navigate = useNavigate();
   
   const {
     title,
@@ -41,11 +43,9 @@ const NewsEditor = () => {
     handleSave
   } = useNewsEditor({ id, staffName });
   
-  // Fetch the news post if editing an existing one
   useEffect(() => {
-    // Check auth before fetching data
-    if (authLoading) return; // Wait for auth check to complete
-    if (!staffName) return; // Don't fetch if not authenticated
+    if (authLoading) return;
+    if (!staffName) return;
     
     fetchNewsPost();
   }, [id, staffName, authLoading]);
@@ -59,7 +59,7 @@ const NewsEditor = () => {
   }
   
   if (!staffName) {
-    return null; // Return null to prevent flashing content before redirect
+    return null;
   }
   
   if (isLoading) {
@@ -72,6 +72,18 @@ const NewsEditor = () => {
   
   return (
     <div className="container mx-auto p-4 max-w-4xl">
+      <div className="mb-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/staff-panel')}
+          className="gap-1 text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Staff Panel
+        </Button>
+      </div>
+      
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">
           {id ? "Edit News Post" : "Create News Post"}
