@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import useStaffAuth from "@/hooks/useStaffAuth";
+import { useStaffAuth } from "@/hooks/useStaffAuth";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,7 @@ const NewsEditor = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, isAdmin, role } = useStaffAuth();
+  const { staffName, isAdmin, userRole } = useStaffAuth();
   
   // State for the news post
   const [title, setTitle] = useState("");
@@ -55,10 +55,10 @@ const NewsEditor = () => {
   
   // Check auth
   useEffect(() => {
-    if (!user) {
+    if (!staffName) {
       navigate("/staff-login");
     }
-  }, [user, navigate]);
+  }, [staffName, navigate]);
   
   // Fetch the news post if editing an existing one
   useEffect(() => {
@@ -68,7 +68,7 @@ const NewsEditor = () => {
       setIsLoading(true);
       try {
         const { data, error } = await supabase
-          .from("news_posts")
+          .from("posts")
           .select("*")
           .eq("id", id)
           .single();
@@ -77,9 +77,9 @@ const NewsEditor = () => {
         
         if (data) {
           setTitle(data.title);
-          setContent(data.content);
-          setExcerpt(data.excerpt);
-          setStatus(data.status as NewsStatus);
+          setContent(data.content || "");
+          setExcerpt(data.excerpt || "");
+          setStatus(data.status as NewsStatus || "draft");
           
           if (data.featured_image) {
             setCurrentFeaturedImageUrl(data.featured_image);
@@ -164,7 +164,7 @@ const NewsEditor = () => {
         excerpt: excerpt || content.substring(0, 150) + "...",
         status,
         featured_image: featuredImageUrl,
-        author: user?.email || "Staff Member",
+        author: staffName || "Staff Member",
         updated_at: new Date().toISOString(),
       };
       
@@ -173,13 +173,13 @@ const NewsEditor = () => {
       if (id) {
         // Update existing post
         result = await supabase
-          .from("news_posts")
+          .from("posts")
           .update(newsData)
           .eq("id", id);
       } else {
         // Create new post
         result = await supabase
-          .from("news_posts")
+          .from("posts")
           .insert([{
             ...newsData,
             created_at: new Date().toISOString(),
@@ -318,7 +318,7 @@ const NewsEditor = () => {
           >
             {isSaving ? (
               <>
-                <LoadingSpinner size="sm" />
+                <LoadingSpinner />
                 <span className="ml-2">Saving...</span>
               </>
             ) : (
