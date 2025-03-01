@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
+import { Json } from "@/integrations/supabase/types";
 
 interface AnalyticsData {
   total_visits: number;
@@ -64,19 +65,39 @@ const AnalyticsDashboard = () => {
         if (error) throw error;
         
         if (data && data.length > 0) {
-          setAnalyticsData(data[0]);
+          // Convert the Json device_breakdown to Record<string, number>
+          const deviceBreakdown: Record<string, number> = {};
+          
+          if (data[0].device_breakdown && typeof data[0].device_breakdown === 'object') {
+            Object.entries(data[0].device_breakdown as object).forEach(([key, value]) => {
+              if (typeof value === 'number') {
+                deviceBreakdown[key] = value;
+              }
+            });
+          }
+          
+          // Create proper typed object
+          const typedAnalyticsData: AnalyticsData = {
+            total_visits: data[0].total_visits,
+            unique_visitors: data[0].unique_visitors,
+            page_path: data[0].page_path,
+            visit_count: data[0].visit_count,
+            device_breakdown: deviceBreakdown
+          };
+          
+          setAnalyticsData(typedAnalyticsData);
           
           // Prepare page data for chart
-          const pagesData = Object.entries(data)
-            .filter(([key]) => key === 'page_path')
-            .map(([_, val]) => ({ name: val as string, value: data[0].visit_count }));
-          
-          setPageData(pagesData);
+          if (data[0].page_path) {
+            setPageData([
+              { name: data[0].page_path, value: data[0].visit_count }
+            ]);
+          }
           
           // Prepare device data for chart
-          if (data[0].device_breakdown) {
-            const devicesData = Object.entries(data[0].device_breakdown)
-              .map(([name, value]) => ({ name, value: value as number }));
+          if (typedAnalyticsData.device_breakdown) {
+            const devicesData = Object.entries(typedAnalyticsData.device_breakdown)
+              .map(([name, value]) => ({ name, value }));
             
             setDeviceData(devicesData);
           }
