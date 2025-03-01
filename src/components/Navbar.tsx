@@ -1,8 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import DesktopNav from "./navbar/DesktopNav";
 import MobileNav from "./navbar/MobileNav";
-import { usePageTracking } from '@/hooks/useAnalytics';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -21,8 +21,6 @@ const Navbar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  usePageTracking();
 
   const isActive = (path: string) => location.pathname === path;
   const isHomePage = location.pathname === "/";
