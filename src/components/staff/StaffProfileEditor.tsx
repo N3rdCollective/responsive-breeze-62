@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { UserCog } from "lucide-react";
+import { UserCog, Lock } from "lucide-react";
 
 interface StaffProfileEditorProps {
   open: boolean;
@@ -24,11 +24,20 @@ const StaffProfileEditor = ({ open, onOpenChange }: StaffProfileEditorProps) => 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPasswordSection, setShowPasswordSection] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
   useEffect(() => {
     if (open) {
       loadStaffProfile();
+      // Reset password fields and visibility when reopening
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setShowPasswordSection(false);
     }
   }, [open]);
   
@@ -75,7 +84,8 @@ const StaffProfileEditor = ({ open, onOpenChange }: StaffProfileEditorProps) => 
         throw new Error("No active session");
       }
       
-      const { error } = await supabase
+      // Update profile information
+      const { error: profileError } = await supabase
         .from("staff")
         .update({
           first_name: firstName,
@@ -83,8 +93,28 @@ const StaffProfileEditor = ({ open, onOpenChange }: StaffProfileEditorProps) => 
         })
         .eq("id", session.user.id);
         
-      if (error) {
-        throw error;
+      if (profileError) {
+        throw profileError;
+      }
+      
+      // Update password if section is shown and fields are filled
+      if (showPasswordSection && currentPassword && newPassword && confirmPassword) {
+        if (newPassword !== confirmPassword) {
+          throw new Error("New passwords don't match");
+        }
+        
+        const { error: passwordError } = await supabase.auth.updateUser({
+          password: newPassword
+        });
+        
+        if (passwordError) {
+          throw passwordError;
+        }
+        
+        toast({
+          title: "Password Updated",
+          description: "Your password has been updated successfully.",
+        });
       }
       
       toast({
@@ -93,11 +123,11 @@ const StaffProfileEditor = ({ open, onOpenChange }: StaffProfileEditorProps) => 
       });
       
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating profile:", error);
       toast({
         title: "Update failed",
-        description: "There was an error updating your profile. Please try again.",
+        description: error.message || "There was an error updating your profile. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -151,6 +181,59 @@ const StaffProfileEditor = ({ open, onOpenChange }: StaffProfileEditorProps) => 
                 Email cannot be changed as it's linked to your account.
               </p>
             </div>
+            
+            <div className="pt-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="w-full flex items-center justify-center gap-2"
+                onClick={() => setShowPasswordSection(!showPasswordSection)}
+                disabled={isLoading}
+              >
+                <Lock className="h-4 w-4" />
+                {showPasswordSection ? "Hide Password Section" : "Change Password"}
+              </Button>
+            </div>
+            
+            {showPasswordSection && (
+              <div className="space-y-4 pt-4 border-t">
+                <div className="space-y-2">
+                  <Label htmlFor="currentPassword">Current Password</Label>
+                  <Input
+                    id="currentPassword"
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Enter current password"
+                    disabled={isLoading}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter new password"
+                    disabled={isLoading}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm new password"
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
         
