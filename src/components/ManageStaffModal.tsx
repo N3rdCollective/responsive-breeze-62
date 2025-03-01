@@ -15,7 +15,7 @@ const ManageStaffModal = ({ open, onOpenChange }: ManageStaffModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[700px] md:max-w-[800px] w-[90vw]">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-black dark:text-[#FFD700]">
             Manage Staff

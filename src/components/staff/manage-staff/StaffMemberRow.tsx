@@ -92,7 +92,7 @@ const StaffMemberRow = ({ staff, onUpdate }: StaffMemberRowProps) => {
           : '-'}
       </td>
       <td className="p-2 capitalize">{staff.role}</td>
-      <td className="p-2 whitespace-nowrap">
+      <td className="p-2 pr-4 whitespace-nowrap">
         <div className="flex flex-row gap-2 justify-end">
           <Button 
             variant="outline" 
