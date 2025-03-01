@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      analytics: {
+        Row: {
+          country: string | null
+          device_type: string | null
+          id: string
+          page_path: string
+          referrer: string | null
+          session_id: string | null
+          user_agent: string | null
+          user_id: string | null
+          visit_date: string | null
+        }
+        Insert: {
+          country?: string | null
+          device_type?: string | null
+          id?: string
+          page_path: string
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          visit_date?: string | null
+        }
+        Update: {
+          country?: string | null
+          device_type?: string | null
+          id?: string
+          page_path?: string
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          visit_date?: string | null
+        }
+        Relationships: []
+      }
       personalities: {
         Row: {
           bio: string | null
@@ -171,6 +207,19 @@ export type Database = {
           required_role: string
         }
         Returns: boolean
+      }
+      get_analytics_summary: {
+        Args: {
+          start_date?: string
+          end_date?: string
+        }
+        Returns: {
+          total_visits: number
+          unique_visitors: number
+          page_path: string
+          visit_count: number
+          device_breakdown: Json
+        }[]
       }
     }
     Enums: {
