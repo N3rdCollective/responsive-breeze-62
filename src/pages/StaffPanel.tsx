@@ -13,7 +13,6 @@ import ShowManagementCard from "@/components/staff/ShowManagementCard";
 import AdminCard from "@/components/staff/AdminCard";
 import StatsPanel from "@/components/staff/StatsPanel";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
-import { Button } from "@/components/ui/button";
 
 const StaffPanel = () => {
   const { toast } = useToast();
@@ -34,16 +33,6 @@ const StaffPanel = () => {
       <div className="max-w-7xl mx-auto px-4 pt-24 pb-16">
         <div className="space-y-8">
           <StaffHeader staffName={staffName} isAdmin={isAdmin} />
-
-          <div className="text-center mb-6">
-            <Button 
-              variant="default" 
-              onClick={handleManageUsers} 
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              Open Staff Management Demo
-            </Button>
-          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <ContentManagementCard />
