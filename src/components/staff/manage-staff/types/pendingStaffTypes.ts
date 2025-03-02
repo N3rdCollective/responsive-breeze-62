@@ -11,6 +11,8 @@ export interface StaffMember {
   email: string;
   role: string;
   display_name: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
   created_at?: string;
 }
 

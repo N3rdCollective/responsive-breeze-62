@@ -1,18 +1,8 @@
-
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-interface StaffMember {
-  id: string;
-  email: string;
-  first_name: string | null;
-  last_name: string | null;
-  display_name: string | null;
-  role: string;
-  created_at: string | null;
-}
+import { StaffMember } from "./types/pendingStaffTypes";
 
 interface StaffMemberRowProps {
   staff: StaffMember;
@@ -24,20 +14,15 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
   const [isUpdatingRole, setIsUpdatingRole] = useState<boolean>(false);
   const { toast } = useToast();
 
-  // Check if this is a super admin account (DJEpidemik)
   const isSuperAdmin = staff.role === "super_admin" || 
                       staff.email.toLowerCase().includes("djepide") ||
                       staff.email.toLowerCase().includes("dj_epide");
   
-  // Check if the current user can modify this staff member
   const canModify = (currentUserRole === "admin" || currentUserRole === "super_admin") && 
                   !isSuperAdmin &&
                   (staff.role !== "admin" || currentUserRole === "super_admin");
 
   const handleToggleRole = async (id: string, email: string, currentRole: string) => {
-    // If current role is admin, change to moderator
-    // If current role is moderator, change to admin
-    // If current role is staff, change to moderator (new default progression)
     let newRole = "moderator";
     
     if (currentRole === "moderator") {
@@ -105,7 +90,6 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
     }
   };
 
-  // Helper to get button text based on role
   const getRoleButtonText = (role: string) => {
     if (isUpdatingRole) return "Updating...";
     
@@ -114,7 +98,6 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
     return "Make Moderator"; // Default for "staff" role
   };
 
-  // Get display name (prioritize display_name, then fall back to first/last name)
   const getDisplayName = () => {
     if (staff.display_name) {
       return staff.display_name;
