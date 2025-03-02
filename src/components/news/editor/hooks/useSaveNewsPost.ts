@@ -94,7 +94,7 @@ export const useSaveNewsPost = () => {
         content,
         status,
         featured_image: featuredImageUrl || null,
-        author: staffName || "Staff Member", // This is now stored as a string, not a UUID
+        author: staffName || "Staff Member", // Store as a string, not a UUID reference
         updated_at: new Date().toISOString(),
         excerpt: finalExcerpt,
       };
@@ -108,17 +108,8 @@ export const useSaveNewsPost = () => {
         console.log("Updating existing post with ID:", id);
         result = await supabase
           .from("posts")
-          .upsert({
-            id,
-            title,
-            content,
-            status,
-            featured_image: featuredImageUrl || null,
-            // Fix: Store author as a string, not as a UUID
-            author: staffName || "Staff Member",
-            updated_at: new Date().toISOString(),
-            excerpt: finalExcerpt,
-          })
+          .update(newsData)
+          .eq("id", id)
           .select();
           
         console.log("Update result:", result);
