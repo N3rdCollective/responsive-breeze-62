@@ -24,7 +24,13 @@ export const usePendingStaff = (onStaffUpdate: () => void) => {
 
       if (error) throw error;
 
-      setPendingStaff(data || []);
+      // Type casting to ensure status is one of the allowed values
+      const typedData = data?.map(item => ({
+        ...item,
+        status: item.status as 'invited' | 'approved' | 'rejected' | 'requested'
+      })) || [];
+      
+      setPendingStaff(typedData);
     } catch (error) {
       console.error("Error fetching pending staff:", error);
       toast({
@@ -55,23 +61,29 @@ export const usePendingStaff = (onStaffUpdate: () => void) => {
       setProcessingId(pendingId);
       
       // Get the pending staff record
-      const { data: pendingStaff, error: fetchError } = await supabase
+      const { data: pendingStaffData, error: fetchError } = await supabase
         .from("pending_staff")
         .select("*")
         .eq("id", pendingId)
         .single();
       
-      if (fetchError || !pendingStaff) {
+      if (fetchError || !pendingStaffData) {
         throw new Error("Failed to fetch pending staff record");
       }
+      
+      // Type cast the status to match our expected type
+      const pendingStaffMember: PendingStaffMember = {
+        ...pendingStaffData,
+        status: pendingStaffData.status as 'invited' | 'approved' | 'rejected' | 'requested'
+      };
       
       // Handle based on status - this now handles both invited and requested statuses
       if (approved) {
         // If invited or requested and approved, move to staff
-        await handleApproval(pendingStaff);
+        await handleApproval(pendingStaffMember);
       } else {
         // If rejected, update pending_staff status
-        await handleRejection(pendingStaff);
+        await handleRejection(pendingStaffMember);
       }
       
       fetchPendingStaff();
