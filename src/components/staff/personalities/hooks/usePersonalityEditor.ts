@@ -72,7 +72,17 @@ export const usePersonalityEditor = (personalityId: string) => {
         }
       }
       
-      const { error } = await supabase
+      // Log the update operation to debug
+      console.log("Updating personality with ID:", personalityId);
+      console.log("Update data:", {
+        name: values.name,
+        role: values.role,
+        bio: values.bio || null,
+        image_url: imageUrl,
+        social_links: values.social_links || null
+      });
+      
+      const { error: updateError, data: updatedData } = await supabase
         .from("personalities")
         .update({
           name: values.name,
@@ -82,9 +92,15 @@ export const usePersonalityEditor = (personalityId: string) => {
           social_links: values.social_links || null,
           updated_at: new Date().toISOString()
         })
-        .eq("id", personalityId);
+        .eq("id", personalityId)
+        .select();
       
-      if (error) throw error;
+      if (updateError) {
+        console.error("Supabase update error:", updateError);
+        throw updateError;
+      }
+      
+      console.log("Update successful, response:", updatedData);
       
       toast({
         title: "Personality updated",

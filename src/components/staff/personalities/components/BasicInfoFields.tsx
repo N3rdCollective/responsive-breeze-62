@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
 import { PersonalityFormValues } from "../schema/personalityFormSchema";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface BasicInfoFieldsProps {
   form: UseFormReturn<PersonalityFormValues>;
@@ -15,6 +15,13 @@ interface BasicInfoFieldsProps {
 export const BasicInfoFields = ({ form, currentImageUrl }: BasicInfoFieldsProps) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null);
 
+  // Update preview URL when currentImageUrl changes
+  useEffect(() => {
+    if (currentImageUrl) {
+      setPreviewUrl(currentImageUrl);
+    }
+  }, [currentImageUrl]);
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -22,6 +29,9 @@ export const BasicInfoFields = ({ form, currentImageUrl }: BasicInfoFieldsProps)
       // Create a preview URL
       const objectUrl = URL.createObjectURL(file);
       setPreviewUrl(objectUrl);
+      
+      // Clean up the old image_url to make sure we use the new uploaded image
+      form.setValue("image_url", "");
     }
   };
 
