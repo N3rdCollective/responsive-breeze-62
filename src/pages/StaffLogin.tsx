@@ -1,3 +1,4 @@
+
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -59,7 +60,7 @@ const StaffLogin = () => {
         });
         
         // Redirect to staff panel
-        navigate("/staff-panel");
+        navigate("/staff/panel");
       }
     } catch (error: any) {
       console.error("Login error:", error);
@@ -136,14 +137,14 @@ const StaffLogin = () => {
 
             <div className="mt-4 text-center space-y-2">
               <Link 
-                to="/staff-panel" 
+                to="/staff/panel" 
                 className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors block"
               >
                 Demo: Skip Login
               </Link>
               
               <Link 
-                to="/staff-registration" 
+                to="/staff/registration" 
                 className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors block"
               >
                 Register as new staff member

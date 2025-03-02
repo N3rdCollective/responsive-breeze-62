@@ -16,12 +16,12 @@ const StaffRegistration = () => {
     
     // Redirect after short delay
     setTimeout(() => {
-      navigate("/staff-login");
+      navigate("/staff/login");
     }, 3000);
   };
 
   const handleBackToLogin = () => {
-    navigate("/staff-login");
+    navigate("/staff/login");
   };
 
   return (
@@ -59,7 +59,7 @@ const StaffRegistration = () => {
           <CardFooter className="flex justify-center">
             <div className="text-sm text-gray-500 dark:text-gray-400">
               Already have an account?{" "}
-              <a href="/staff-login" className="text-blue-600 hover:underline">
+              <a href="/staff/login" className="text-blue-600 hover:underline">
                 Sign in
               </a>
             </div>

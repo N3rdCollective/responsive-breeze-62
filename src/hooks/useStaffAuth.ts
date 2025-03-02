@@ -134,7 +134,7 @@ export const useStaffAuth = () => {
         title: "Logged Out",
         description: "You have been logged out successfully.",
       });
-      navigate("/staff/login"); // Fix the navigation path to match your route definition
+      navigate("/staff/login"); // Ensure this matches the route in App.tsx
     } catch (error) {
       console.error("Logout error:", error);
       toast({

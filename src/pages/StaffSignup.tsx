@@ -46,7 +46,7 @@ const StaffSignup = () => {
         description: "Please use the link that was sent to your email",
         variant: "destructive",
       });
-      navigate("/staff-login");
+      navigate("/staff/login");
     }
   }, [searchParams, navigate, toast]);
 
@@ -243,7 +243,7 @@ const StaffSignup = () => {
         <CardFooter className="flex justify-center">
           <div className="text-sm text-gray-500 dark:text-gray-400">
             Already have an account?{" "}
-            <a href="/staff-login" className="text-blue-600 hover:underline">
+            <a href="/staff/login" className="text-blue-600 hover:underline">
               Sign in
             </a>
           </div>
