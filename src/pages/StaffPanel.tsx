@@ -54,8 +54,18 @@ const StaffPanel = () => {
             description: "There was an error verifying your staff access. Please try again.",
             variant: "destructive",
           });
+          navigate("/staff-login");
+        } else if (!staffData) {
+          console.log("User not found in staff table");
+          toast({
+            title: "Access Denied",
+            description: "You do not have staff privileges.",
+            variant: "destructive",
+          });
+          navigate("/staff-login");
         } else {
           console.log("Staff data found:", staffData);
+          console.log("User role:", staffData.role);
         }
       }
     };

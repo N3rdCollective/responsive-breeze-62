@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { usePendingStaff } from "./pending-staff/usePendingStaff";
 import PendingStaffSkeleton from "./pending-staff/PendingStaffSkeleton";
 import EmptyPendingState from "./pending-staff/EmptyPendingState";
@@ -11,10 +11,21 @@ const PendingStaffTable = ({ onStaffUpdate, currentUserRole }: PendingStaffTable
     pendingStaff, 
     loading, 
     processingId, 
-    handleApproveReject 
+    handleApproveReject,
+    error,
+    fetchPendingStaff
   } = usePendingStaff(onStaffUpdate);
 
   const canManageStaff = currentUserRole === "admin" || currentUserRole === "super_admin";
+
+  useEffect(() => {
+    console.log("PendingStaffTable: Rendered with role", currentUserRole);
+    console.log("PendingStaffTable: Can manage staff?", canManageStaff);
+    
+    if (!canManageStaff) {
+      console.log("PendingStaffTable: User doesn't have permission to manage staff");
+    }
+  }, [currentUserRole, canManageStaff]);
 
   if (loading) {
     return <PendingStaffSkeleton />;

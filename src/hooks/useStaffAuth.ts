@@ -45,7 +45,7 @@ export const useStaffAuth = () => {
           .eq("id", session.user.id)
           .single();
           
-        if (staffError || !staffData) {
+        if (staffError) {
           console.error("useStaffAuth: Staff data error:", staffError);
           console.log("useStaffAuth: Staff data not found, signing out");
           await supabase.auth.signOut();
@@ -56,11 +56,24 @@ export const useStaffAuth = () => {
           return;
         }
         
+        if (!staffData) {
+          console.log("useStaffAuth: No staff record found for this user");
+          toast({
+            title: "Access Denied",
+            description: "You do not have staff privileges.",
+            variant: "destructive",
+          });
+          await supabase.auth.signOut();
+          navigate("/staff-login");
+          setState(prev => ({ ...prev, isLoading: false }));
+          return;
+        }
+        
         console.log("useStaffAuth: Staff data found:", staffData);
         
         // Check if this is DJEpidemik user - they should be Super Admin
         const isDJEpidemik = staffData.email.toLowerCase().includes("djepide") || 
-                           staffData.email.toLowerCase().includes("dj_epide");
+                          staffData.email.toLowerCase().includes("dj_epide");
         
         // Set the userRole based on whether this is DJEpidemik
         const userRole = isDJEpidemik ? "super_admin" : staffData.role;
