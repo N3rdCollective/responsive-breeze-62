@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -133,16 +134,15 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
       console.log("Generated excerpt:", finalExcerpt);
       
       // Prepare the data for the database
-      // Use type assertion to add the excerpt field to the Post type
-      const newsData: Partial<Post> & { excerpt?: string } = {
+      const newsData = {
         title,
         content,
         status,
         featured_image: featuredImageUrl || null,
         author: staffName || "Staff Member",
         updated_at: new Date().toISOString(),
-        excerpt: finalExcerpt, // Add excerpt to the database fields
-      };
+        excerpt: finalExcerpt, // Now this field exists in the database
+      } as Partial<Post>;
       
       console.log("Saving post data:", newsData);
       
