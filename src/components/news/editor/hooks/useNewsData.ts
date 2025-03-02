@@ -126,12 +126,13 @@ export const useNewsData = () => {
       console.log("Generated excerpt:", finalExcerpt);
       
       // Prepare the data for the database
+      // Store author name as string, not UUID
       const newsData = {
         title,
         content,
         status,
         featured_image: featuredImageUrl || null,
-        author: staffName || "Staff Member",
+        author: staffName || "Staff Member", // This is now stored as a string, not a UUID
         updated_at: new Date().toISOString(),
         excerpt: finalExcerpt,
       };
@@ -143,15 +144,15 @@ export const useNewsData = () => {
       if (id) {
         // Update existing post
         console.log("Updating existing post with ID:", id);
-        // Make sure to include title explicitly in the upsert operation
         result = await supabase
           .from("posts")
           .upsert({
             id,
-            title, // Explicitly include title to satisfy TypeScript
+            title,
             content,
             status,
             featured_image: featuredImageUrl || null,
+            // Fix: Store author as a string, not as a UUID
             author: staffName || "Staff Member",
             updated_at: new Date().toISOString(),
             excerpt: finalExcerpt,
