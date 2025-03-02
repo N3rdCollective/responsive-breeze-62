@@ -50,7 +50,7 @@ const Footer = () => {
               </a>
             </div>
             <div>
-              <a href="/staff-login" className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors text-sm">Staff Login</a>
+              <a href="/staff/login" className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors text-sm">Staff Login</a>
             </div>
           </div>
         </div>
