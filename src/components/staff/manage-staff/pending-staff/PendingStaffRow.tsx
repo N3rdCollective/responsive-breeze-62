@@ -1,46 +1,67 @@
-
-import React from 'react';
-import { TableRow, TableCell } from "@/components/ui/table";
-import { format } from "date-fns";
-import StaffActionButtons from './StaffActionButtons';
-import { PendingStaffMember } from '../types/pendingStaffTypes';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/utils";
+import { PendingStaff } from "../types/pendingStaffTypes";
 
 interface PendingStaffRowProps {
-  staff: PendingStaffMember;
+  pending: PendingStaff;
   processingId: string | null;
   canManageStaff: boolean;
-  onApproveReject: (pendingId: string, approved: boolean) => Promise<void>;
+  onApproveReject: (pendingId: string, approved: boolean) => void;
 }
 
-const PendingStaffRow: React.FC<PendingStaffRowProps> = ({ 
-  staff, 
-  processingId, 
-  canManageStaff, 
-  onApproveReject 
-}) => {
+const PendingStaffRow = ({ pending, processingId, canManageStaff, onApproveReject }: PendingStaffRowProps) => {
+  const isProcessing = pending.id === processingId;
+
+  // Get status display text and style
+  const getStatusDisplay = () => {
+    switch (pending.status) {
+      case "approved":
+        return <span className="text-green-600 dark:text-green-400 font-medium">Approved</span>;
+      case "rejected":
+        return <span className="text-red-600 dark:text-red-400 font-medium">Rejected</span>;
+      case "requested":
+        return <span className="text-blue-600 dark:text-blue-400 font-medium">Requested by user</span>;
+      default:
+        return <span className="text-yellow-600 dark:text-yellow-400 font-medium">Invited</span>;
+    }
+  };
+
   return (
-    <TableRow>
-      <TableCell>{staff.email}</TableCell>
-      <TableCell>
-        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-          staff.status === 'approved' ? 'bg-green-100 text-green-800' : 
-          staff.status === 'rejected' ? 'bg-red-100 text-red-800' : 
-          'bg-yellow-100 text-yellow-800'
-        }`}>
-          {staff.status.charAt(0).toUpperCase() + staff.status.slice(1)}
-        </span>
-      </TableCell>
-      <TableCell>{format(new Date(staff.invited_at), 'MMM d, yyyy')}</TableCell>
-      <TableCell>
-        <StaffActionButtons 
-          staffId={staff.id}
-          status={staff.status}
-          processingId={processingId}
-          canManageStaff={canManageStaff}
-          onApproveReject={onApproveReject}
-        />
-      </TableCell>
-    </TableRow>
+    <tr className="border-b hover:bg-muted/50">
+      <td className="p-2 pl-4">{pending.email}</td>
+      <td className="p-2">
+        {getStatusDisplay()}
+      </td>
+      <td className="p-2">
+        {formatDate(pending.invited_at)}
+      </td>
+      <td className="p-2 pr-4 whitespace-nowrap">
+        {canManageStaff ? (
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onApproveReject(pending.id, true)}
+              disabled={isProcessing}
+            >
+              {isProcessing ? "Approving..." : "Approve"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+              onClick={() => onApproveReject(pending.id, false)}
+              disabled={isProcessing}
+            >
+              {isProcessing ? "Rejecting..." : "Reject"}
+            </Button>
+          </>
+        ) : (
+          <span className="text-sm text-gray-500 italic px-2">No permission</span>
+        )}
+      </td>
+    </tr>
   );
 };
 

@@ -17,6 +17,7 @@ import Personalities from '@/pages/Personalities';
 import Careers from '@/pages/Careers';
 import NotFound from '@/pages/NotFound';
 import StaffSignup from "./pages/StaffSignup";
+import StaffRegistration from "./pages/StaffRegistration";
 
 // Import the Toaster component
 import { Toaster } from '@/components/ui/toaster';
@@ -44,6 +45,7 @@ function App() {
             <Route path="/staff/news/edit" element={<NewsEditor />} />
             <Route path="/staff/news/edit/:id" element={<NewsEditor />} />
             <Route path="/staff-signup" element={<StaffSignup />} />
+            <Route path="/staff-registration" element={<StaffRegistration />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster />
