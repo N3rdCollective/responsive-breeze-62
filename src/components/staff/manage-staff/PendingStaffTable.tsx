@@ -11,9 +11,7 @@ const PendingStaffTable = ({ onStaffUpdate, currentUserRole }: PendingStaffTable
     pendingStaff, 
     loading, 
     processingId, 
-    handleApproveReject,
-    error,
-    fetchPendingStaff
+    handleApproveReject
   } = usePendingStaff(onStaffUpdate);
 
   const canManageStaff = currentUserRole === "admin" || currentUserRole === "super_admin";
