@@ -6,30 +6,37 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 
 interface AddStaffFormProps {
   onStaffAdded: () => void;
   currentUserRole: string;
 }
 
+// Create a schema for email validation
+const formSchema = z.object({
+  email: z.string().email("Please enter a valid email address")
+});
+
 const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
-  const [newEmail, setNewEmail] = useState("");
   const [isAddingStaff, setIsAddingStaff] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const canAddStaff = currentUserRole === "admin" || currentUserRole === "super_admin";
-
-  const handleAddStaff = async () => {
-    if (!newEmail || !newEmail.includes('@')) {
-      toast({
-        title: "Invalid Email",
-        description: "Please enter a valid email address.",
-        variant: "destructive",
-      });
-      return;
+  
+  // Initialize form with react-hook-form
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: ""
     }
+  });
 
+  const handleAddStaff = async (values: z.infer<typeof formSchema>) => {
     if (!canAddStaff) {
       setError("You don't have permission to add staff members. Only admins and super admins can add staff.");
       return;
@@ -43,30 +50,27 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
       const { data: existingStaff } = await supabase
         .from("staff")
         .select("*")
-        .eq("email", newEmail)
+        .eq("email", values.email)
         .single();
       
       if (existingStaff) {
         toast({
           title: "Staff Already Exists",
-          description: `${newEmail} is already a staff member.`,
+          description: `${values.email} is already a staff member.`,
           variant: "destructive",
         });
         return;
       }
       
-      // Generate a temporary ID for the new staff member
-      const tempId = crypto.randomUUID();
-
       // Default role for new staff is "staff"
       const defaultRole = "staff";
       
-      // Insert the new staff member
+      // Insert the new staff member WITHOUT specifying an ID
+      // Let Supabase handle this to avoid foreign key constraint issues
       const { error: insertError } = await supabase
         .from("staff")
         .insert({ 
-          id: tempId,
-          email: newEmail,
+          email: values.email,
           role: defaultRole
         });
       
@@ -83,10 +87,10 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
       
       toast({
         title: "Staff Added",
-        description: `${newEmail} has been added to the staff.`,
+        description: `${values.email} has been added to the staff.`,
       });
       
-      setNewEmail("");
+      form.reset();
       onStaffAdded();
     } catch (error) {
       console.error("Error adding staff:", error);
@@ -106,20 +110,34 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
         </Alert>
       )}
       
-      <div className="flex gap-2">
-        <Input
-          placeholder="staff@radiofm.com"
-          value={newEmail}
-          onChange={(e) => setNewEmail(e.target.value)}
-          disabled={isAddingStaff || !canAddStaff}
-        />
-        <Button 
-          onClick={handleAddStaff} 
-          disabled={isAddingStaff || !canAddStaff}
-        >
-          {isAddingStaff ? "Adding..." : "Add Staff"}
-        </Button>
-      </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleAddStaff)} className="space-y-4">
+          <div className="flex gap-2">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormControl>
+                    <Input
+                      placeholder="staff@radiofm.com"
+                      {...field}
+                      disabled={isAddingStaff || !canAddStaff}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button 
+              type="submit"
+              disabled={isAddingStaff || !canAddStaff}
+            >
+              {isAddingStaff ? "Adding..." : "Add Staff"}
+            </Button>
+          </div>
+        </form>
+      </Form>
       
       {!canAddStaff && (
         <p className="text-sm text-gray-500">
