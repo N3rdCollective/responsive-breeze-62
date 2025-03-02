@@ -73,7 +73,7 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
       console.log("Invitation sent successfully:", data);
       
       toast({
-        title: "Invitation Sent",
+        title: "Invitation Email Sent",
         description: `An invitation has been sent to ${values.email}. They will need to complete signup and await approval.`,
       });
       
