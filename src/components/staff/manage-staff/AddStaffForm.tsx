@@ -94,6 +94,10 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
       else if (errorMessage.includes("Failed to communicate")) {
         displayErrorMessage = "Connection issue with the server. Please try again or contact support.";
       }
+      // Check for JSON parsing errors
+      else if (errorMessage.includes("Invalid JSON")) {
+        displayErrorMessage = "Invalid data format. Please try again with a valid email address.";
+      }
       
       setError(`Failed to add staff member: ${displayErrorMessage}`);
       
