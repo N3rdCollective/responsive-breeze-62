@@ -38,28 +38,33 @@ const PendingStaffRow = ({ pending, processingId, canManageStaff, onApproveRejec
         {formatDate(pending.invited_at)}
       </td>
       <td className="p-2 pr-4 whitespace-nowrap">
-        {canManageStaff ? (
-          <>
+        {canManageStaff && (pending.status === 'invited' || pending.status === 'requested') ? (
+          <div className="flex space-x-2">
             <Button
               variant="outline"
               size="sm"
+              className="bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
               onClick={() => onApproveReject(pending.id, true)}
               disabled={isProcessing}
             >
-              {isProcessing ? "Approving..." : "Approve"}
+              {isProcessing ? "Processing..." : "Approve"}
             </Button>
             <Button
               variant="outline"
               size="sm"
-              className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+              className="bg-red-50 hover:bg-red-100 text-red-700 border-red-200"
               onClick={() => onApproveReject(pending.id, false)}
               disabled={isProcessing}
             >
-              {isProcessing ? "Rejecting..." : "Reject"}
+              {isProcessing ? "Processing..." : "Reject"}
             </Button>
-          </>
+          </div>
         ) : (
-          <span className="text-sm text-gray-500 italic px-2">No permission</span>
+          <span className="text-sm text-gray-500 italic px-2">
+            {!canManageStaff ? "No permission" : (
+              pending.status === 'approved' ? "Approved" : "Rejected"
+            )}
+          </span>
         )}
       </td>
     </tr>

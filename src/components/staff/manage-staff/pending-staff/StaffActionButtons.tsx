@@ -5,7 +5,7 @@ import { CheckCircle, XCircle } from "lucide-react";
 
 interface StaffActionButtonsProps {
   staffId: string;
-  status: 'invited' | 'approved' | 'rejected';
+  status: 'invited' | 'approved' | 'rejected' | 'requested';
   processingId: string | null;
   canManageStaff: boolean;
   onApproveReject: (pendingId: string, approved: boolean) => Promise<void>;
@@ -18,7 +18,8 @@ const StaffActionButtons: React.FC<StaffActionButtonsProps> = ({
   canManageStaff,
   onApproveReject 
 }) => {
-  if (status !== 'invited' || !canManageStaff) {
+  // Only show action buttons for invited or requested statuses
+  if ((status !== 'invited' && status !== 'requested') || !canManageStaff) {
     return (
       <span className="text-sm text-gray-500">
         {status === 'approved' ? 'Approved' : 
