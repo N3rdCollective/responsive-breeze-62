@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import useStaffManagement from "./staff/manage-staff/useStaffManagement";
 import AddStaffForm from "./staff/manage-staff/AddStaffForm";
 import StaffTable from "./staff/manage-staff/StaffTable";
+import PendingStaffTable from "./staff/manage-staff/PendingStaffTable";
 
 interface ManageStaffModalProps {
   open: boolean;
@@ -40,6 +41,11 @@ const ManageStaffModal = ({ open, onOpenChange, currentUserRole }: ManageStaffMo
           <div className="space-y-6 py-4">
             <AddStaffForm 
               onStaffAdded={fetchStaffMembers} 
+              currentUserRole={currentUserRole}
+            />
+            
+            <PendingStaffTable
+              onStaffUpdate={fetchStaffMembers}
               currentUserRole={currentUserRole}
             />
             

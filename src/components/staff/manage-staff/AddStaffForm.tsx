@@ -46,49 +46,34 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
       setIsAddingStaff(true);
       setError(null);
       
-      // Check if staff already exists
-      const { data: existingStaff } = await supabase
-        .from("staff")
-        .select("*")
-        .eq("email", values.email)
-        .single();
+      // Call our Edge Function to invite staff
+      const response = await supabase.functions.invoke('invite-staff', {
+        body: { email: values.email }
+      });
       
-      if (existingStaff) {
-        toast({
-          title: "Staff Already Exists",
-          description: `${values.email} is already a staff member.`,
-          variant: "destructive",
-        });
-        return;
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to invite staff member');
       }
       
-      // Default role for new staff is "staff"
-      const defaultRole = "staff";
+      if (!response.data) {
+        throw new Error('No response from server');
+      }
       
-      // First, create a user in auth.users through the Supabase admin API
-      // Then the trigger will create the staff record automatically
-      
-      // Create an invite link (temporary solution)
-      const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(
-        values.email
-      );
-      
-      if (inviteError) {
-        console.error("Error inviting user:", inviteError);
-        setError(`Failed to add staff member: ${inviteError.message}`);
-        return;
+      // Check for error in the response data
+      if (response.data.error) {
+        throw new Error(response.data.error);
       }
       
       toast({
-        title: "Staff Added",
-        description: `${values.email} has been added to the staff. An invitation has been sent to their email.`,
+        title: "Invitation Sent",
+        description: `An invitation has been sent to ${values.email}. They will need to complete signup and await approval.`,
       });
       
       form.reset();
       onStaffAdded();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding staff:", error);
-      setError("An unexpected error occurred. Please try again.");
+      setError(`Failed to add staff member: ${error.message}`);
     } finally {
       setIsAddingStaff(false);
     }
@@ -127,7 +112,7 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
               type="submit"
               disabled={isAddingStaff || !canAddStaff}
             >
-              {isAddingStaff ? "Adding..." : "Add Staff"}
+              {isAddingStaff ? "Sending Invite..." : "Invite Staff"}
             </Button>
           </div>
         </form>

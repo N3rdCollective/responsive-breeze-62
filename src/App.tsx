@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
@@ -17,6 +16,7 @@ import NewsEditor from '@/pages/NewsEditor';
 import Personalities from '@/pages/Personalities';
 import Careers from '@/pages/Careers';
 import NotFound from '@/pages/NotFound';
+import StaffSignup from "./pages/StaffSignup";
 
 // Import the Toaster component
 import { Toaster } from '@/components/ui/toaster';
@@ -43,6 +43,7 @@ function App() {
             <Route path="/staff/news" element={<StaffNews />} />
             <Route path="/staff/news/edit" element={<NewsEditor />} />
             <Route path="/staff/news/edit/:id" element={<NewsEditor />} />
+            <Route path="/staff-signup" element={<StaffSignup />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster />
