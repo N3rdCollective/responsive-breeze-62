@@ -46,24 +46,31 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
       setIsAddingStaff(true);
       setError(null);
       
-      // Call our Edge Function to invite staff
+      console.log("Sending invitation to:", values.email);
+      
+      // Call our Edge Function to invite staff with improved error handling
       const { data, error: functionError } = await supabase.functions.invoke('invite-staff', {
-        body: { email: values.email }
+        body: { email: values.email },
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
       
       if (functionError) {
         console.error("Edge function error:", functionError);
-        throw new Error(functionError.message || 'Failed to invoke invite-staff function');
+        throw new Error(`Failed to communicate with the server: ${functionError.message || 'Unknown error'}`);
       }
       
       if (!data) {
-        throw new Error('No response from server');
+        throw new Error('No response received from server');
       }
       
       // Check for error in the response data
       if (data.error) {
         throw new Error(data.error);
       }
+      
+      console.log("Invitation sent successfully:", data);
       
       toast({
         title: "Invitation Sent",
@@ -74,11 +81,13 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
       onStaffAdded();
     } catch (error: any) {
       console.error("Error adding staff:", error);
-      setError(`Failed to add staff member: ${error.message}`);
+      const errorMessage = error.message || "An unexpected error occurred";
+      
+      setError(`Failed to add staff member: ${errorMessage}`);
       
       toast({
         title: "Error",
-        description: `Failed to send invitation: ${error.message}`,
+        description: `Failed to send invitation: ${errorMessage}`,
         variant: "destructive",
       });
     } finally {

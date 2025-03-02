@@ -5,25 +5,59 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    console.log('Handling OPTIONS preflight request');
+    return new Response(null, { 
+      status: 204,
+      headers: corsHeaders 
+    });
   }
 
   try {
-    const { email } = await req.json();
+    console.log('Processing invite-staff request');
     
+    // Validate request content type
+    const contentType = req.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error('Invalid content type:', contentType);
+      throw new Error('Request must be application/json');
+    }
+    
+    // Parse request body
+    let email;
+    try {
+      const body = await req.json();
+      email = body.email;
+    } catch (parseError) {
+      console.error('Error parsing JSON:', parseError);
+      throw new Error('Invalid JSON in request body');
+    }
+    
+    // Validate email
     if (!email || typeof email !== 'string' || !email.includes('@')) {
+      console.error('Invalid email:', email);
       throw new Error('Invalid email address');
     }
 
+    console.log(`Processing invitation for email: ${email}`);
+
     // Initialize Supabase client with admin privileges
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing Supabase environment variables');
+      throw new Error('Server configuration error: Missing credentials');
+    }
+
     const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      supabaseUrl,
+      supabaseServiceKey,
       { auth: { persistSession: false } }
     );
 
@@ -40,7 +74,6 @@ serve(async (req) => {
     }
 
     if (existingPending) {
-      // If already pending, just resend the invitation
       console.log(`Email ${email} already in pending_staff, resending invitation`);
     } else {
       // First check if this email is already in the staff table
@@ -56,6 +89,7 @@ serve(async (req) => {
       }
         
       if (existingStaff) {
+        console.log(`Email ${email} already exists as staff member`);
         return new Response(
           JSON.stringify({ error: 'This email is already registered as a staff member' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -75,15 +109,23 @@ serve(async (req) => {
         console.error('Error inserting to pending staff:', insertError);
         throw new Error(`Failed to add to pending staff: ${insertError.message}`);
       }
+      
+      console.log(`Added ${email} to pending_staff table`);
     }
 
     // Send invitation email with signup link
     try {
+      console.log('Generating signup link...');
+      const origin = req.headers.get('origin') || Deno.env.get('SITE_URL') || 'http://localhost:5173';
+      const redirectTo = `${origin}/staff-signup?email=${encodeURIComponent(email)}`;
+      
+      console.log(`Using redirect URL: ${redirectTo}`);
+      
       const { data: signupData, error: signupError } = await supabaseAdmin.auth.admin.generateLink({
         type: 'signup',
         email,
         options: {
-          redirectTo: `${req.headers.get('origin') || Deno.env.get('SITE_URL')}/staff-signup?email=${encodeURIComponent(email)}`,
+          redirectTo
         }
       });
 
@@ -92,7 +134,7 @@ serve(async (req) => {
         throw new Error(`Failed to generate signup link: ${signupError.message}`);
       }
 
-      console.log(`Invitation sent to ${email}`);
+      console.log(`Invitation sent to ${email}, signup URL generated`);
 
       return new Response(
         JSON.stringify({ 
@@ -111,7 +153,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in invite-staff function:', error);
     return new Response(
-      JSON.stringify({ error: error.message || 'Unknown error occurred' }),
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        success: false
+      }),
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
