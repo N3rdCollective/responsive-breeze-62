@@ -25,13 +25,18 @@ export const BasicInfoFields = ({ form, currentImageUrl }: BasicInfoFieldsProps)
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      console.log("Image file selected:", file.name);
       form.setValue("image_file", file);
+      
       // Create a preview URL
       const objectUrl = URL.createObjectURL(file);
       setPreviewUrl(objectUrl);
       
       // Clean up the old image_url to make sure we use the new uploaded image
       form.setValue("image_url", "");
+      
+      // Mark the field as touched and validate
+      form.trigger("image_file");
     }
   };
 

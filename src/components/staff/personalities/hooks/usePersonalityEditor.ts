@@ -34,13 +34,23 @@ export const usePersonalityEditor = (personalityId: string) => {
   const { data: personality, isLoading, error } = useQuery({
     queryKey: ["personality", personalityId],
     queryFn: async () => {
+      if (!personalityId) {
+        throw new Error("No personality ID provided");
+      }
+      
+      console.log("Fetching personality data for ID:", personalityId);
       const { data, error } = await supabase
         .from("personalities")
         .select("*")
         .eq("id", personalityId)
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching personality:", error);
+        throw error;
+      }
+      
+      console.log("Fetched personality data:", data);
       return data;
     },
     enabled: !!personalityId
@@ -49,6 +59,7 @@ export const usePersonalityEditor = (personalityId: string) => {
   // Update form values when personality data is loaded
   useEffect(() => {
     if (personality) {
+      console.log("Setting form values with personality data:", personality);
       form.reset({
         name: personality.name || "",
         role: personality.role || "",
@@ -60,15 +71,28 @@ export const usePersonalityEditor = (personalityId: string) => {
   }, [personality, form]);
 
   const onSubmit = async (values: PersonalityFormValues) => {
+    if (!personalityId) {
+      toast({
+        title: "Error updating personality",
+        description: "No personality ID provided.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
       setIsSubmitting(true);
       
       // Handle image upload if a new image was provided
       let imageUrl = values.image_url || null;
       if (values.image_file) {
+        console.log("Uploading new image file:", values.image_file.name);
         const uploadedUrl = await handleImageUpload(values.image_file);
         if (uploadedUrl) {
+          console.log("Image uploaded successfully:", uploadedUrl);
           imageUrl = uploadedUrl;
+        } else {
+          console.error("Failed to upload image");
         }
       }
       
