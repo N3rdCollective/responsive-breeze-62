@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -81,7 +80,8 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
   const extractTextFromHtml = (html: string): string => {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
-    return tempDiv.textContent || tempDiv.innerText || "";
+    const textContent = tempDiv.textContent || tempDiv.innerText || "";
+    return textContent.substring(0, 150) + (textContent.length > 150 ? "..." : "");
   };
   
   // Save the news post
@@ -104,18 +104,27 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
       // Upload the featured image if a new one was selected
       if (featuredImage) {
         console.log("Uploading new featured image");
-        const uploadedUrl = await handleImageUpload(featuredImage);
-        if (uploadedUrl) {
-          featuredImageUrl = uploadedUrl;
-          console.log("Image uploaded successfully:", featuredImageUrl);
-        } else {
-          console.error("Image upload failed, but continuing with save");
+        try {
+          const uploadedUrl = await handleImageUpload(featuredImage);
+          if (uploadedUrl) {
+            featuredImageUrl = uploadedUrl;
+            console.log("Image uploaded successfully:", featuredImageUrl);
+          } else {
+            console.error("Image upload failed, but continuing with save");
+          }
+        } catch (imageError) {
+          console.error("Error uploading image:", imageError);
+          toast({
+            title: "Image Upload Failed",
+            description: "Continuing to save post without the new image",
+            variant: "destructive",
+          });
         }
         setIsUploading(false);
       }
       
       // Generate an excerpt from content if none is provided
-      const finalExcerpt = excerpt || extractTextFromHtml(content).substring(0, 150) + "...";
+      const finalExcerpt = excerpt || extractTextFromHtml(content);
       console.log("Generated excerpt:", finalExcerpt);
       
       // Prepare the data for the database
@@ -126,6 +135,7 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
         featured_image: featuredImageUrl || null,
         author: staffName || "Staff Member",
         updated_at: new Date().toISOString(),
+        excerpt: finalExcerpt, // Add excerpt to the database fields
       };
       
       console.log("Saving post data:", newsData);
@@ -167,7 +177,7 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
           if (!checkResult.data) {
             throw new Error("Post not found. It may have been deleted.");
           } else {
-            console.log("Post exists but wasn't updated. This could be due to no changes or permission issues.");
+            throw new Error("Post exists but wasn't updated. This could be due to permission issues or no actual changes were made.");
           }
         }
       } else {
@@ -206,7 +216,7 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
       // Short delay before navigation to ensure state updates are complete
       setTimeout(() => {
         navigate("/staff/news");
-      }, 800);
+      }, 1000);
     } catch (error) {
       console.error("Error saving news post:", error);
       toast({
