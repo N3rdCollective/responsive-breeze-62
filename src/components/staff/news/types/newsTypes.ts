@@ -10,3 +10,15 @@ export interface Post {
   status: string;
   created_at: string;
 }
+
+export interface PaginationMeta {
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
+  totalItems: number;
+}
+
+export interface PaginatedPosts {
+  data: Post[];
+  pagination: PaginationMeta;
+}

@@ -19,11 +19,14 @@ const StaffNews = () => {
   const {
     posts,
     filteredPosts,
+    paginatedPosts,
+    pagination,
     isLoading,
     error,
     refetch,
     searchTerm,
-    setSearchTerm
+    setSearchTerm,
+    handlePageChange
   } = useNewsManagement();
 
   if (authLoading) {
@@ -51,7 +54,7 @@ const StaffNews = () => {
         <Card className="bg-card shadow-sm border-border/40">
           <CardHeader className="pb-2">
             <NewsTableHeader 
-              postsCount={posts?.length} 
+              postsCount={filteredPosts?.length} 
               searchTerm={searchTerm} 
               setSearchTerm={setSearchTerm} 
             />
@@ -61,10 +64,13 @@ const StaffNews = () => {
             <NewsListTable 
               posts={posts}
               filteredPosts={filteredPosts}
+              paginatedPosts={paginatedPosts}
+              pagination={pagination}
               isLoading={isLoading}
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
               refetch={refetch}
+              handlePageChange={handlePageChange}
             />
           </CardContent>
         </Card>
