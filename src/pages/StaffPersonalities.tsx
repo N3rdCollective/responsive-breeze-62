@@ -7,7 +7,10 @@ import { useStaffAuth } from "@/hooks/useStaffAuth";
 import { Navigate } from "react-router-dom";
 
 const StaffPersonalities = () => {
-  const { isAuthenticated, isLoading } = useStaffAuth();
+  const { isLoading, userRole, staffName } = useStaffAuth();
+  
+  // Check authentication
+  const isAuthenticated = userRole !== "";
 
   if (isLoading) {
     return (
@@ -25,7 +28,11 @@ const StaffPersonalities = () => {
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       <div className="pt-16 pb-24">
-        <StaffHeader title="Personality Management" subtitle="Edit radio personalities and their details" />
+        <div className="container mx-auto px-6">
+          <StaffHeader staffName={staffName} isAdmin={userRole === "admin" || userRole === "super_admin"} />
+          <h1 className="text-3xl font-bold mb-2">Personality Management</h1>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">Edit radio personalities and their details</p>
+        </div>
         <PersonalityEditor />
       </div>
       <Footer />

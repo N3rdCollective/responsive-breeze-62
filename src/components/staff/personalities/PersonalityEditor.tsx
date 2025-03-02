@@ -10,6 +10,19 @@ import { useStaffAuth } from "@/hooks/useStaffAuth";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
+import { Json } from "@/integrations/supabase/types";
+
+interface ShowTimes {
+  days: string[];
+  start: string;
+  end: string;
+}
+
+interface SocialLinks {
+  twitter?: string;
+  instagram?: string;
+  facebook?: string;
+}
 
 interface Personality {
   id: string;
@@ -22,18 +35,6 @@ interface Personality {
   created_at: string | null;
   updated_at: string | null;
   start_date: string | null;
-}
-
-interface ShowTimes {
-  days: string[];
-  start: string;
-  end: string;
-}
-
-interface SocialLinks {
-  twitter?: string;
-  instagram?: string;
-  facebook?: string;
 }
 
 interface FormValues {
@@ -90,7 +91,16 @@ export const PersonalityEditor = () => {
       if (error) throw error;
       
       if (data) {
-        setPersonalities(data as Personality[]);
+        // Convert database data to the expected Personality type
+        const typedPersonalities: Personality[] = data.map(item => {
+          return {
+            ...item,
+            show_times: item.show_times as unknown as ShowTimes,
+            social_links: item.social_links as unknown as SocialLinks
+          };
+        });
+        
+        setPersonalities(typedPersonalities);
       }
     } catch (error) {
       console.error("Error fetching personalities:", error);

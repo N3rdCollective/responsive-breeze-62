@@ -9,6 +9,7 @@ interface StaffAuthState {
   isAdmin: boolean;
   isLoading: boolean;
   userRole: string;
+  isAuthenticated: boolean;
 }
 
 export const useStaffAuth = () => {
@@ -18,7 +19,8 @@ export const useStaffAuth = () => {
     staffName: "",
     isAdmin: false,
     isLoading: true,
-    userRole: ""
+    userRole: "",
+    isAuthenticated: false
   });
 
   useEffect(() => {
@@ -28,10 +30,10 @@ export const useStaffAuth = () => {
         
         if (!session) {
           // If not already on login page, redirect to it
-          if (!window.location.pathname.includes('/staff-login')) {
-            navigate("/staff-login");
+          if (!window.location.pathname.includes('/staff/login')) {
+            navigate("/staff/login");
           }
-          setState(prev => ({ ...prev, isLoading: false }));
+          setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false }));
           return;
         }
         
@@ -43,10 +45,10 @@ export const useStaffAuth = () => {
           
         if (staffError || !staffData) {
           await supabase.auth.signOut();
-          if (!window.location.pathname.includes('/staff-login')) {
-            navigate("/staff-login");
+          if (!window.location.pathname.includes('/staff/login')) {
+            navigate("/staff/login");
           }
-          setState(prev => ({ ...prev, isLoading: false }));
+          setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false }));
           return;
         }
         
@@ -61,7 +63,8 @@ export const useStaffAuth = () => {
           staffName: staffData.first_name || staffData.email,
           isAdmin: userRole === "admin" || userRole === "super_admin",
           isLoading: false,
-          userRole: userRole
+          userRole: userRole,
+          isAuthenticated: true
         });
 
         // Check if DJEpidemik and ensure they are a super_admin in the database
@@ -70,10 +73,10 @@ export const useStaffAuth = () => {
         }
       } catch (error) {
         console.error("Auth check error:", error);
-        if (!window.location.pathname.includes('/staff-login')) {
-          navigate("/staff-login");
+        if (!window.location.pathname.includes('/staff/login')) {
+          navigate("/staff/login");
         }
-        setState(prev => ({ ...prev, isLoading: false }));
+        setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false }));
       }
     };
     
@@ -82,14 +85,15 @@ export const useStaffAuth = () => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === "SIGNED_OUT") {
-          if (!window.location.pathname.includes('/staff-login')) {
-            navigate("/staff-login");
+          if (!window.location.pathname.includes('/staff/login')) {
+            navigate("/staff/login");
           }
           setState({
             staffName: "",
             isAdmin: false,
             isLoading: false,
-            userRole: ""
+            userRole: "",
+            isAuthenticated: false
           });
         } else if (event === "SIGNED_IN" && session) {
           checkAuth();
