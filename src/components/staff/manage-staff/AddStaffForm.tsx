@@ -48,9 +48,13 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
       
       console.log("Sending invitation to:", values.email);
       
-      // Call our Edge Function to invite staff with improved error handling
+      // Explicitly create the request body as a properly formatted JSON string
+      const requestBody = JSON.stringify({ email: values.email });
+      console.log("Request body:", requestBody);
+      
+      // Call our Edge Function with improved error handling
       const { data, error: functionError } = await supabase.functions.invoke('invite-staff', {
-        body: { email: values.email },
+        body: { email: values.email }, // This will be automatically stringified by the SDK
         headers: {
           'Content-Type': 'application/json'
         }
@@ -95,8 +99,8 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
         displayErrorMessage = "Connection issue with the server. Please try again or contact support.";
       }
       // Check for JSON parsing errors
-      else if (errorMessage.includes("Invalid JSON")) {
-        displayErrorMessage = "Invalid data format. Please try again with a valid email address.";
+      else if (errorMessage.includes("JSON")) {
+        displayErrorMessage = "Error in request format. Please try again with a valid email address.";
       }
       // Check for empty request
       else if (errorMessage.includes("Empty request")) {

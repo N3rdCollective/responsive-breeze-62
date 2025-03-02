@@ -21,6 +21,8 @@ serve(async (req) => {
 
   try {
     console.log('Processing invite-staff request');
+    console.log('Request headers:', Object.fromEntries(req.headers.entries()));
+    console.log('Request method:', req.method);
     
     // Validate request content type
     const contentType = req.headers.get('content-type');
@@ -31,25 +33,59 @@ serve(async (req) => {
     
     // Parse request body with better error handling
     let email;
-    let requestBody;
     
     try {
+      // Get the raw text first to log it and check if it's empty
       const text = await req.text();
-      console.log('Request body text:', text);
+      console.log('Request body text length:', text.length);
+      console.log('Request body text (first 200 chars):', text.substring(0, 200));
       
       if (!text || text.trim() === '') {
         console.error('Empty request body');
-        throw new Error('Empty request body');
+        return new Response(
+          JSON.stringify({ 
+            error: 'Empty request body. Please provide a valid JSON with an email field.',
+            success: false
+          }),
+          { 
+            status: 400, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
       }
       
+      // Try to parse the JSON
+      let requestBody;
       try {
         requestBody = JSON.parse(text);
+        console.log('Parsed request body:', requestBody);
       } catch (jsonError) {
-        console.error('JSON parse error:', jsonError, 'for text:', text);
-        throw new Error(`Invalid JSON in request body: ${jsonError.message}`);
+        console.error('JSON parse error:', jsonError);
+        return new Response(
+          JSON.stringify({ 
+            error: `Invalid JSON in request body: ${jsonError.message}`,
+            success: false
+          }),
+          { 
+            status: 400, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
       }
       
       email = requestBody.email;
+      if (!email) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Missing email field in request body',
+            success: false
+          }),
+          { 
+            status: 400, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
     } catch (parseError) {
       console.error('Error parsing request:', parseError);
       return new Response(
@@ -210,9 +246,11 @@ serve(async (req) => {
 
     // Generate signup link
     console.log('Generating signup link...');
+    // Get the original request origin or fallback to environment variable
     const origin = req.headers.get('origin') || Deno.env.get('SITE_URL') || 'http://localhost:5173';
-    const redirectTo = `${origin}/staff-signup?email=${encodeURIComponent(email)}`;
+    console.log('Using origin for redirect:', origin);
     
+    const redirectTo = `${origin}/staff-signup?email=${encodeURIComponent(email)}`;
     console.log(`Using redirect URL: ${redirectTo}`);
     
     const { data: signupData, error: signupError } = await supabaseAdmin.auth.admin.generateLink({
@@ -285,7 +323,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         message: 'Invitation sent successfully',
-        signupUrl: signupUrl
+        signupUrl: signupUrl,
+        success: true
       }),
       { 
         status: 200, 
