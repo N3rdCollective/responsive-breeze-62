@@ -50,16 +50,23 @@ export const useStaffAuth = () => {
           return;
         }
         
+        // Check if this is DJEpidemik user - they should be Super Admin
+        const isDJEpidemik = staffData.email.toLowerCase().includes("djepide") || 
+                           staffData.email.toLowerCase().includes("dj_epide");
+        
+        // Set the userRole based on whether this is DJEpidemik
+        const userRole = isDJEpidemik ? "super_admin" : staffData.role;
+        
         setState({
           staffName: staffData.first_name || staffData.email,
-          isAdmin: staffData.role === "admin",
+          isAdmin: userRole === "admin" || userRole === "super_admin",
           isLoading: false,
-          userRole: staffData.role
+          userRole: userRole
         });
 
-        // Check if the staff member is Yungdigz and not already an admin
-        if (staffData.email.toLowerCase().includes("yungdigz") && staffData.role !== "admin") {
-          await makeUserAdmin(staffData.id);
+        // Check if DJEpidemik and ensure they are a super_admin in the database
+        if (isDJEpidemik && staffData.role !== "super_admin") {
+          await makeUserSuperAdmin(staffData.id);
         }
       } catch (error) {
         console.error("Auth check error:", error);
@@ -97,22 +104,22 @@ export const useStaffAuth = () => {
     };
   }, [navigate]);
 
-  const makeUserAdmin = async (userId: string) => {
+  const makeUserSuperAdmin = async (userId: string) => {
     try {
       const { error } = await supabase
         .from("staff")
-        .update({ role: "admin" })
+        .update({ role: "super_admin" })
         .eq("id", userId);
 
       if (error) throw error;
       
-      setState(prev => ({ ...prev, isAdmin: true, userRole: "admin" }));
+      setState(prev => ({ ...prev, isAdmin: true, userRole: "super_admin" }));
       toast({
-        title: "Admin Access Granted",
-        description: "You have been promoted to administrator.",
+        title: "Super Admin Access Granted",
+        description: "You have been granted Super Admin access.",
       });
     } catch (error) {
-      console.error("Error making user admin:", error);
+      console.error("Error making user super admin:", error);
     }
   };
 

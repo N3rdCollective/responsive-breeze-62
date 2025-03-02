@@ -23,9 +23,15 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
   const [isUpdatingRole, setIsUpdatingRole] = useState<boolean>(false);
   const { toast } = useToast();
 
+  // Check if this is a super admin account (DJEpidemik)
+  const isSuperAdmin = staff.role === "super_admin" || 
+                      staff.email.toLowerCase().includes("djepide") ||
+                      staff.email.toLowerCase().includes("dj_epide");
+  
   // Check if the current user can modify this staff member
-  const canModify = currentUserRole === "admin" || 
-                  (currentUserRole === "moderator" && staff.role !== "admin");
+  const canModify = (currentUserRole === "admin" || currentUserRole === "super_admin") && 
+                  !isSuperAdmin &&
+                  (staff.role !== "admin" || currentUserRole === "super_admin");
 
   const handleToggleRole = async (id: string, email: string, currentRole: string) => {
     // If current role is admin, change to moderator
@@ -115,10 +121,18 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
           ? `${staff.first_name || ''} ${staff.last_name || ''}`.trim() 
           : '-'}
       </td>
-      <td className="p-2 capitalize">{staff.role}</td>
+      <td className="p-2 capitalize">
+        {isSuperAdmin ? (
+          <span className="font-semibold text-purple-600 dark:text-purple-400">Super Admin</span>
+        ) : (
+          staff.role
+        )}
+      </td>
       <td className="p-2 pr-4 whitespace-nowrap">
         <div className="flex flex-row gap-2 justify-end">
-          {canModify && (
+          {isSuperAdmin ? (
+            <span className="text-sm text-gray-500 italic px-2">Super Admin cannot be modified</span>
+          ) : canModify ? (
             <>
               <Button 
                 variant="outline" 
@@ -141,8 +155,7 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
                 Remove
               </Button>
             </>
-          )}
-          {!canModify && (
+          ) : (
             <span className="text-sm text-gray-500 italic px-2">No permission</span>
           )}
         </div>
