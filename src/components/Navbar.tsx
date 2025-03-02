@@ -59,7 +59,7 @@ const Navbar = () => {
 
   // Add staff portal link if user is logged in
   if (isLoggedIn) {
-    navigationItems.push({ path: "/staff-panel", label: "Staff Portal" });
+    navigationItems.push({ path: "/staff/panel", label: "Staff Portal" }); // Fix path to match route in App.tsx
   }
 
   return (
