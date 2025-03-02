@@ -42,6 +42,7 @@ export const useStaffAuth = () => {
           .single();
           
         if (staffError || !staffData) {
+          console.error("Staff data error:", staffError);
           await supabase.auth.signOut();
           if (!window.location.pathname.includes('/staff-login')) {
             navigate("/staff-login");

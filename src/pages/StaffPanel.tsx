@@ -1,10 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useToast } from "@/hooks/use-toast";
 import ManageStaffModal from "@/components/ManageStaffModal";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 // Import components
 import StaffHeader from "@/components/staff/StaffHeader";
@@ -16,8 +18,25 @@ import LoadingSpinner from "@/components/staff/LoadingSpinner";
 
 const StaffPanel = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isManageStaffOpen, setIsManageStaffOpen] = useState(false);
   const { staffName, isAdmin, isLoading, handleLogout, userRole } = useStaffAuth();
+
+  // Add an effect to check authentication on component mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/staff-login");
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to access the staff panel.",
+        });
+      }
+    };
+    
+    checkAuth();
+  }, [navigate, toast]);
 
   const handleManageUsers = () => {
     setIsManageStaffOpen(true);
