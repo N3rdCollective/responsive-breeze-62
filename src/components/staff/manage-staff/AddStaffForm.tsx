@@ -65,32 +65,23 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
       // Default role for new staff is "staff"
       const defaultRole = "staff";
       
-      // Generate a UUID for the new staff member since the schema requires it
-      const newStaffId = crypto.randomUUID();
+      // First, create a user in auth.users through the Supabase admin API
+      // Then the trigger will create the staff record automatically
       
-      // Insert the new staff member
-      const { error: insertError } = await supabase
-        .from("staff")
-        .insert({ 
-          id: newStaffId,
-          email: values.email,
-          role: defaultRole
-        });
+      // Create an invite link (temporary solution)
+      const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(
+        values.email
+      );
       
-      if (insertError) {
-        console.error("Error adding staff:", insertError);
-        
-        if (insertError.code === "42501") {
-          setError("Permission denied. Your role may have changed or RLS policies are preventing this action.");
-        } else {
-          setError(`Failed to add staff member: ${insertError.message}`);
-        }
+      if (inviteError) {
+        console.error("Error inviting user:", inviteError);
+        setError(`Failed to add staff member: ${inviteError.message}`);
         return;
       }
       
       toast({
         title: "Staff Added",
-        description: `${values.email} has been added to the staff.`,
+        description: `${values.email} has been added to the staff. An invitation has been sent to their email.`,
       });
       
       form.reset();
