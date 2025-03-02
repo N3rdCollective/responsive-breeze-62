@@ -83,11 +83,23 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
       console.error("Error adding staff:", error);
       const errorMessage = error.message || "An unexpected error occurred";
       
-      setError(`Failed to add staff member: ${errorMessage}`);
+      // Improve error message based on specific issues
+      let displayErrorMessage = errorMessage;
+      
+      // Check for email already exists as staff member
+      if (errorMessage.includes("already registered as a staff member")) {
+        displayErrorMessage = "This email is already registered as a staff member.";
+      } 
+      // Check for connection issues
+      else if (errorMessage.includes("Failed to communicate")) {
+        displayErrorMessage = "Connection issue with the server. Please try again or contact support.";
+      }
+      
+      setError(`Failed to add staff member: ${displayErrorMessage}`);
       
       toast({
         title: "Error",
-        description: `Failed to send invitation: ${errorMessage}`,
+        description: `Failed to send invitation: ${displayErrorMessage}`,
         variant: "destructive",
       });
     } finally {
