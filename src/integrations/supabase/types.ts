@@ -45,6 +45,33 @@ export type Database = {
         }
         Relationships: []
       }
+      pending_staff: {
+        Row: {
+          approved_at: string | null
+          email: string
+          id: string
+          invited_at: string | null
+          rejected_at: string | null
+          status: string
+        }
+        Insert: {
+          approved_at?: string | null
+          email: string
+          id?: string
+          invited_at?: string | null
+          rejected_at?: string | null
+          status?: string
+        }
+        Update: {
+          approved_at?: string | null
+          email?: string
+          id?: string
+          invited_at?: string | null
+          rejected_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       personalities: {
         Row: {
           bio: string | null
