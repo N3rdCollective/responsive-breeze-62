@@ -27,7 +27,7 @@ interface EditorToolbarProps {
 }
 
 const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
-  const { addImage, addLink, setColor } = useEditorUtils(editor);
+  const { addImage, addLink, setColor, setTextAlign } = useEditorUtils(editor);
   
   return (
     <div className="flex flex-wrap gap-1 p-2 border-b bg-muted/50">
@@ -117,6 +117,40 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
         title="Quote"
       >
         <Quote className="h-4 w-4" />
+      </Button>
+      
+      {/* Text Alignment Buttons */}
+      <Button
+        type="button"
+        size="sm"
+        variant="ghost"
+        onClick={() => setTextAlign('left')}
+        className={editor.isActive({ textAlign: 'left' }) ? 'bg-muted' : ''}
+        title="Align Left"
+      >
+        <AlignLeft className="h-4 w-4" />
+      </Button>
+      
+      <Button
+        type="button"
+        size="sm"
+        variant="ghost"
+        onClick={() => setTextAlign('center')}
+        className={editor.isActive({ textAlign: 'center' }) ? 'bg-muted' : ''}
+        title="Align Center"
+      >
+        <AlignCenter className="h-4 w-4" />
+      </Button>
+      
+      <Button
+        type="button"
+        size="sm"
+        variant="ghost"
+        onClick={() => setTextAlign('right')}
+        className={editor.isActive({ textAlign: 'right' }) ? 'bg-muted' : ''}
+        title="Align Right"
+      >
+        <AlignRight className="h-4 w-4" />
       </Button>
       
       <Button

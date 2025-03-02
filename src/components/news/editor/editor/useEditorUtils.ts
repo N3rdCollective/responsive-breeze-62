@@ -1,4 +1,3 @@
-
 import { Editor } from '@tiptap/react';
 
 export const useEditorUtils = (editor: Editor) => {
@@ -36,9 +35,15 @@ export const useEditorUtils = (editor: Editor) => {
     }
   };
 
+  const setTextAlign = (alignment: 'left' | 'center' | 'right') => {
+    if (!editor) return;
+    editor.chain().focus().setTextAlign(alignment).run();
+  };
+
   return {
     addImage,
     addLink,
-    setColor
+    setColor,
+    setTextAlign
   };
 };

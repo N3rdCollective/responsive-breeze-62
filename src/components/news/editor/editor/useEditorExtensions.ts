@@ -5,6 +5,7 @@ import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextStyle from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
+import TextAlign from '@tiptap/extension-text-align';
 
 export const useEditorExtensions = () => {
   return [
@@ -20,6 +21,10 @@ export const useEditorExtensions = () => {
       placeholder: 'Write something...',
     }),
     TextStyle,
-    Color
+    Color,
+    TextAlign.configure({
+      types: ['heading', 'paragraph'],
+      defaultAlignment: 'left',
+    }),
   ];
 };
