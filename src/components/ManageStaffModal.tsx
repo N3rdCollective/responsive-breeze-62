@@ -1,10 +1,12 @@
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import useStaffManagement from "./staff/manage-staff/useStaffManagement";
 import AddStaffForm from "./staff/manage-staff/AddStaffForm";
 import StaffTable from "./staff/manage-staff/StaffTable";
 import PendingStaffTable from "./staff/manage-staff/PendingStaffTable";
+import StaffSectionHeader from "./staff/manage-staff/StaffSectionHeader";
+import AutoFillDemoLink from "./staff/manage-staff/AutoFillDemoLink";
 
 interface ManageStaffModalProps {
   open: boolean;
@@ -24,29 +26,26 @@ const ManageStaffModal = ({ open, onOpenChange, currentUserRole }: ManageStaffMo
           </DialogTitle>
           <DialogDescription>
             Add or remove staff members who can access the control panel.
-            <a href="#" className="text-blue-500 hover:underline ml-2" onClick={(e) => {
-              e.preventDefault();
-              const emailInput = document.querySelector('input[placeholder="staff@radiofm.com"]') as HTMLInputElement;
-              if (emailInput) {
-                emailInput.value = `demo-staff-${Math.floor(Math.random() * 1000)}@radiofm.com`;
-                emailInput.focus();
-              }
-            }}>
-              Demo: Auto-fill with random email
-            </a>
+            <AutoFillDemoLink />
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6 py-4">
+          <StaffSectionHeader title="Invite New Staff" />
+          
           <AddStaffForm 
             onStaffAdded={fetchStaffMembers} 
             currentUserRole={currentUserRole}
           />
           
+          <StaffSectionHeader title="Pending Invitations" />
+          
           <PendingStaffTable
             onStaffUpdate={fetchStaffMembers}
             currentUserRole={currentUserRole}
           />
+          
+          <StaffSectionHeader title="Active Staff Members" />
           
           <StaffTable
             staffMembers={staffMembers}
