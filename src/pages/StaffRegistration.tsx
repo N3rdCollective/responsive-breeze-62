@@ -66,19 +66,24 @@ const StaffRegistration = () => {
         return;
       }
 
-      // Add to pending_staff table with status 'requested'
-      const { error: pendingError } = await supabase
+      // Check if email already exists in pending_staff
+      const { data: existingPending, error: pendingCheckError } = await supabase
         .from("pending_staff")
-        .insert({ 
-          email: values.email,
-          status: 'requested',
-          invited_at: new Date().toISOString(),
-        });
+        .select("*")
+        .eq("email", values.email)
+        .single();
 
-      if (pendingError) throw pendingError;
+      if (!pendingCheckError && existingPending) {
+        if (existingPending.status === 'rejected') {
+          setError("Your previous registration request was rejected. Please contact an administrator.");
+        } else {
+          setError("You have already submitted a registration request. Please wait for approval.");
+        }
+        return;
+      }
 
-      // Create account in auth
-      const { error: signupError } = await supabase.auth.signUp({
+      // Create account in auth first
+      const { data: authData, error: signupError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
@@ -92,6 +97,20 @@ const StaffRegistration = () => {
       });
 
       if (signupError) throw signupError;
+
+      // Add to pending_staff table with status 'requested'
+      const { error: pendingError } = await supabase
+        .from("pending_staff")
+        .insert({ 
+          email: values.email,
+          status: 'requested',
+          invited_at: new Date().toISOString(),
+        });
+
+      if (pendingError) {
+        console.error("Error creating pending_staff record:", pendingError);
+        throw new Error("Failed to complete registration. Please try again.");
+      }
 
       setSuccess(true);
       toast({

@@ -17,12 +17,16 @@ export const usePendingStaff = (onStaffUpdate: () => void) => {
   const fetchPendingStaff = async () => {
     setLoading(true);
     try {
+      // Now this will respect RLS policies, only retrieving data the user is allowed to see
       const { data, error } = await supabase
         .from("pending_staff")
         .select("*")
         .order("invited_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching pending staff:", error);
+        throw error;
+      }
 
       // Type casting to ensure status is one of the allowed values
       const typedData = data?.map(item => ({
