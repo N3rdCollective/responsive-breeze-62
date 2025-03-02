@@ -246,8 +246,10 @@ serve(async (req) => {
 
     // Generate signup link
     console.log('Generating signup link...');
-    // Get the original request origin or fallback to environment variable
-    const origin = req.headers.get('origin') || Deno.env.get('SITE_URL') || 'http://localhost:5173';
+    
+    // Use the provided domain as the default origin instead of relying on the request origin
+    const defaultOrigin = "https://responsive-breeze-62.lovable.app";
+    const origin = req.headers.get('origin') || Deno.env.get('SITE_URL') || defaultOrigin;
     console.log('Using origin for redirect:', origin);
     
     const redirectTo = `${origin}/staff-signup?email=${encodeURIComponent(email)}`;

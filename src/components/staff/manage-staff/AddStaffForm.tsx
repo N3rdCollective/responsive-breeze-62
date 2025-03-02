@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -48,17 +47,15 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
       
       console.log("Sending invitation to:", values.email);
       
-      // Explicitly create the request body as a properly formatted JSON string
-      const requestBody = JSON.stringify({ email: values.email });
-      console.log("Request body:", requestBody);
-      
-      // Call our Edge Function with improved error handling
+      // Call our Edge Function with proper JSON data
       const { data, error: functionError } = await supabase.functions.invoke('invite-staff', {
-        body: { email: values.email }, // This will be automatically stringified by the SDK
+        body: { email: values.email }, // The Supabase SDK will handle JSON stringification properly
         headers: {
           'Content-Type': 'application/json'
         }
       });
+      
+      console.log("Response from edge function:", data);
       
       if (functionError) {
         console.error("Edge function error:", functionError);
