@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -11,7 +10,6 @@ import StaffHeader from "@/components/staff/StaffHeader";
 import ContentManagementCard from "@/components/staff/ContentManagementCard";
 import ShowManagementCard from "@/components/staff/ShowManagementCard";
 import AdminCard from "@/components/staff/AdminCard";
-import NewsManagementCard from "@/components/staff/NewsManagementCard";
 import StatsPanel from "@/components/staff/StatsPanel";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 
@@ -38,7 +36,6 @@ const StaffPanel = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <ContentManagementCard />
             <ShowManagementCard />
-            <NewsManagementCard />
             <AdminCard 
               onManageStaff={handleManageUsers} 
               onLogout={handleLogout} 
