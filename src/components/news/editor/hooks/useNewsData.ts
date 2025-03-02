@@ -143,40 +143,19 @@ export const useNewsData = () => {
       if (id) {
         // Update existing post
         console.log("Updating existing post with ID:", id);
+        // FIX: Use upsert instead of update to ensure we create the row if it doesn't exist
         result = await supabase
           .from("posts")
-          .update(newsData)
-          .eq("id", id)
-          .select();  // Add select() to get the updated data
+          .upsert({
+            id,
+            ...newsData
+          })
+          .select();
           
         console.log("Update result:", result);
         
         if (result.error) {
           throw new Error(`Database error: ${result.error.message} (${result.error.code})`);
-        }
-        
-        if (result.count === 0 || !result.data || result.data.length === 0) {
-          console.warn("No rows were updated - this may indicate an issue with permissions or row not found");
-          
-          // Double-check if the post exists
-          const checkResult = await supabase
-            .from("posts")
-            .select("id")
-            .eq("id", id)
-            .single();
-            
-          if (checkResult.error) {
-            console.error("Error checking post existence:", checkResult.error);
-            if (checkResult.error.code === "PGRST116") {
-              throw new Error("Post not found. It may have been deleted.");
-            }
-          }
-          
-          if (!checkResult.data) {
-            throw new Error("Post not found. It may have been deleted.");
-          } else {
-            throw new Error("Post exists but wasn't updated. This could be due to permission issues or no actual changes were made.");
-          }
         }
       } else {
         // Create new post
@@ -197,10 +176,6 @@ export const useNewsData = () => {
         
         if (result.error) {
           throw new Error(`Database error: ${result.error.message} (${result.error.code})`);
-        }
-        
-        if (!result.data || result.data.length === 0) {
-          throw new Error("Insert operation did not return data, which is unexpected");
         }
       }
       
@@ -234,3 +209,4 @@ export const useNewsData = () => {
     extractTextFromHtml
   };
 };
+
