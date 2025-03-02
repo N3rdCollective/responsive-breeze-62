@@ -119,13 +119,11 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
       console.log("Generated excerpt:", finalExcerpt);
       
       // Prepare the data for the database
-      // Note: We're not directly including 'excerpt' in the database update/insert
-      // since it's not in the posts table schema
       const newsData: Partial<Post> = {
         title,
         content,
         status,
-        featured_image: featuredImageUrl,
+        featured_image: featuredImageUrl || null,
         author: staffName || "Staff Member",
         updated_at: new Date().toISOString(),
       };
@@ -140,9 +138,40 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
         result = await supabase
           .from("posts")
           .update(newsData)
-          .eq("id", id);
+          .eq("id", id)
+          .select();  // Add select() to get the updated data
+          
+        console.log("Update result:", result);
+        
+        if (result.error) {
+          throw new Error(`Database error: ${result.error.message} (${result.error.code})`);
+        }
+        
+        if (result.count === 0 || !result.data || result.data.length === 0) {
+          console.warn("No rows were updated - this may indicate an issue with permissions or row not found");
+          
+          // Double-check if the post exists
+          const checkResult = await supabase
+            .from("posts")
+            .select("id")
+            .eq("id", id)
+            .single();
+            
+          if (checkResult.error) {
+            console.error("Error checking post existence:", checkResult.error);
+            if (checkResult.error.code === "PGRST116") {
+              throw new Error("Post not found. It may have been deleted.");
+            }
+          }
+          
+          if (!checkResult.data) {
+            throw new Error("Post not found. It may have been deleted.");
+          } else {
+            console.log("Post exists but wasn't updated. This could be due to no changes or permission issues.");
+          }
+        }
       } else {
-        // Create new post - ensure title is included and use a properly typed object
+        // Create new post
         console.log("Creating new post");
         const newPost = {
           ...newsData,
@@ -153,27 +182,21 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
         
         result = await supabase
           .from("posts")
-          .insert([newPost]);
-      }
-      
-      if (result.error) {
-        console.error("Database error:", result.error);
-        throw result.error;
+          .insert([newPost])
+          .select();  // Add select() to get the inserted data
+          
+        console.log("Insert result:", result);
+        
+        if (result.error) {
+          throw new Error(`Database error: ${result.error.message} (${result.error.code})`);
+        }
+        
+        if (!result.data || result.data.length === 0) {
+          throw new Error("Insert operation did not return data, which is unexpected");
+        }
       }
       
       console.log("Supabase operation result:", result);
-      
-      if (id) {
-        // For updates, check if any rows were affected
-        if (result.count === 0) {
-          console.warn("No rows were updated - check if anything actually changed");
-        }
-      } else {
-        // For inserts, check if data was returned
-        if (!result.data || result.data.length === 0) {
-          console.warn("Insert succeeded but no data was returned");
-        }
-      }
       
       toast({
         title: "Success",
@@ -183,12 +206,12 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
       // Short delay before navigation to ensure state updates are complete
       setTimeout(() => {
         navigate("/staff/news");
-      }, 500);
+      }, 800);
     } catch (error) {
       console.error("Error saving news post:", error);
       toast({
         title: "Error",
-        description: "Failed to save news post. " + (error as Error)?.message || "",
+        description: `Failed to save news post: ${(error as Error)?.message || "Unknown error"}`,
         variant: "destructive",
       });
     } finally {
