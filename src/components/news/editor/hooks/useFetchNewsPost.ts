@@ -64,9 +64,11 @@ export const useFetchNewsPost = () => {
         
         setCategory(data.category || "");
         
-        // Handle tags from the database (if they exist)
-        if (data.tags && Array.isArray(data.tags)) {
-          setTags(data.tags);
+        // Handle tags from the database (using a type cast since tags is stored in a custom field)
+        // The database schema might store tags as a JSON array or as another type
+        const postTags = (data as any).tags;
+        if (postTags && Array.isArray(postTags)) {
+          setTags(postTags);
         } else {
           setTags([]);
         }

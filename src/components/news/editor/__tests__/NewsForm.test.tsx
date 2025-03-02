@@ -122,6 +122,8 @@ describe('NewsForm', () => {
     setStatus: vi.fn(),
     category: 'Test Category',
     setCategory: vi.fn(),
+    tags: [],
+    setTags: vi.fn(),
     currentFeaturedImageUrl: '',
     onImageSelected: vi.fn(),
     onSave: vi.fn(),
