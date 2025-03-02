@@ -114,7 +114,7 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
       // Prepare the data for the database
       // Note: We're not directly including 'excerpt' in the database update/insert
       // since it's not in the posts table schema
-      const newsData: Partial<Post & { excerpt?: string }> = {
+      const newsData: Partial<Post> = {
         title,
         content,
         status,
@@ -134,14 +134,17 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
           .update(newsData)
           .eq("id", id);
       } else {
-        // Create new post
+        // Create new post - ensure title is included and use a properly typed object
+        const newPost = {
+          ...newsData,
+          title, // Explicitly include title to satisfy TypeScript
+          created_at: new Date().toISOString(),
+          post_date: new Date().toISOString(),
+        };
+        
         result = await supabase
           .from("posts")
-          .insert([{
-            ...newsData,
-            created_at: new Date().toISOString(),
-            post_date: new Date().toISOString(),
-          }]);
+          .insert([newPost]);
       }
       
       if (result.error) {
