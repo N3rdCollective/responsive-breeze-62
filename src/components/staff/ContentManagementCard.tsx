@@ -15,6 +15,7 @@ const ContentManagementCard = () => {
   const isModerator = userRole === "moderator";
   const isSuperAdmin = userRole === "super_admin";
   const canManageNews = isAdmin || isModerator || isSuperAdmin;
+  const canManageContent = isAdmin || isModerator || isSuperAdmin;
 
   const handleEditPage = (page: string) => {
     toast({
@@ -53,7 +54,8 @@ const ContentManagementCard = () => {
         <Button 
           variant="outline" 
           className="w-full bg-white dark:bg-[#222222] text-black dark:text-white hover:bg-gray-100 dark:hover:bg-[#444444]"
-          onClick={() => handleEditPage("Personalities")}
+          onClick={() => navigate("/staff/personalities")}
+          disabled={!canManageContent}
         >
           Edit Personalities
         </Button>
