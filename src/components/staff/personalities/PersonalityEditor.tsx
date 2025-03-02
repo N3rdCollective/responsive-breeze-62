@@ -76,6 +76,25 @@ const PersonalityEditor = () => {
     }
   });
 
+  // Helper function to safely parse social links from database
+  const parseSocialLinks = (dbSocialLinks: any) => {
+    // If null or not an object, return empty defaults
+    if (!dbSocialLinks || typeof dbSocialLinks !== 'object') {
+      return {
+        twitter: "",
+        instagram: "",
+        facebook: ""
+      };
+    }
+    
+    // Return object with correct properties, defaulting to empty strings
+    return {
+      twitter: dbSocialLinks.twitter || "",
+      instagram: dbSocialLinks.instagram || "",
+      facebook: dbSocialLinks.facebook || ""
+    };
+  };
+
   // Update form values when personality data is loaded
   useEffect(() => {
     if (personality) {
@@ -84,11 +103,7 @@ const PersonalityEditor = () => {
         role: personality.role || "",
         bio: personality.bio || "",
         image_url: personality.image_url || "",
-        social_links: personality.social_links || {
-          twitter: "",
-          instagram: "",
-          facebook: ""
-        },
+        social_links: parseSocialLinks(personality.social_links),
         start_date: personality.start_date || ""
       });
     }
