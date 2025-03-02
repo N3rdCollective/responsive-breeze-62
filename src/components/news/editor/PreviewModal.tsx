@@ -6,18 +6,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 
 interface PreviewModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
   content: string;
-  excerpt?: string;
+  excerpt: string;
   featuredImageUrl: string;
   authorName?: string;
   category?: string;
+  tags?: string[];
 }
 
 const PreviewModal: React.FC<PreviewModalProps> = ({
@@ -28,18 +29,19 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
   excerpt,
   featuredImageUrl,
   authorName = "Staff Author",
-  category,
+  category = "Uncategorized",
+  tags = []
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Preview</DialogTitle>
+          <DialogTitle>Preview: {title}</DialogTitle>
         </DialogHeader>
-        
-        <div className="space-y-4 mt-2">
+
+        <div className="preview-container mt-4">
           {featuredImageUrl && (
-            <div className="w-full h-64 overflow-hidden rounded-lg">
+            <div className="w-full h-[300px] overflow-hidden rounded-md mb-6">
               <img
                 src={featuredImageUrl}
                 alt={title}
@@ -47,35 +49,36 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
               />
             </div>
           )}
-          
-          <div className="space-y-4">
-            <h1 className="text-2xl font-bold">{title}</h1>
-            
-            <div className="flex flex-wrap gap-2 items-center text-sm text-muted-foreground">
-              <span>By {authorName}</span>
-              <span>•</span>
-              <span>{formatDistanceToNow(new Date(), { addSuffix: true })}</span>
-              {category && (
-                <>
-                  <span>•</span>
-                  <Badge variant="outline" className="font-normal">
-                    {category}
-                  </Badge>
-                </>
-              )}
-            </div>
-            
-            {excerpt && (
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                {excerpt}
-              </p>
+
+          <div className="flex flex-wrap gap-2 mb-4">
+            {category && (
+              <Badge variant="outline" className="bg-primary/10 text-primary">
+                {category}
+              </Badge>
             )}
-            
-            <div 
-              className="prose prose-gray max-w-none pt-4"
-              dangerouslySetInnerHTML={{ __html: content }}
-            />
+            {tags.map(tag => (
+              <Badge key={tag} variant="secondary" className="text-xs">
+                {tag}
+              </Badge>
+            ))}
           </div>
+
+          <h1 className="text-2xl font-bold mb-2">{title}</h1>
+
+          <div className="text-sm text-muted-foreground mb-6">
+            By {authorName} • {format(new Date(), "MMMM d, yyyy")}
+          </div>
+
+          {excerpt && (
+            <div className="text-muted-foreground text-sm italic mb-6">
+              {excerpt}
+            </div>
+          )}
+
+          <div
+            className="prose max-w-none dark:prose-invert"
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
         </div>
       </DialogContent>
     </Dialog>

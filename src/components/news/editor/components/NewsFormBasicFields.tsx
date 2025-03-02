@@ -11,6 +11,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { NewsStatus } from "../NewsForm";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
+
+// Predefined categories for the dropdown
+const PREDEFINED_CATEGORIES = [
+  "News",
+  "Events",
+  "Announcements",
+  "Music",
+  "Interviews",
+  "Features",
+  "Community",
+  "Other"
+];
 
 interface NewsFormBasicFieldsProps {
   title: string;
@@ -21,6 +35,8 @@ interface NewsFormBasicFieldsProps {
   setStatus: (status: NewsStatus) => void;
   category: string;
   setCategory: (category: string) => void;
+  tags: string[];
+  setTags: (tags: string[]) => void;
 }
 
 const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
@@ -32,7 +48,25 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
   setStatus,
   category,
   setCategory,
+  tags,
+  setTags,
 }) => {
+  const [tagInput, setTagInput] = React.useState("");
+  
+  const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && tagInput.trim()) {
+      e.preventDefault(); // Prevent form submission
+      if (!tags.includes(tagInput.trim())) {
+        setTags([...tags, tagInput.trim()]);
+      }
+      setTagInput("");
+    }
+  };
+  
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+  
   return (
     <div className="space-y-6">
       <div>
@@ -58,11 +92,43 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
       
       <div>
         <Label htmlFor="category">Category</Label>
-        <Input
-          id="category"
+        <Select
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          placeholder="e.g. News, Events, Announcements"
+          onValueChange={(value: string) => setCategory(value)}
+        >
+          <SelectTrigger id="category">
+            <SelectValue placeholder="Select a category" />
+          </SelectTrigger>
+          <SelectContent>
+            {PREDEFINED_CATEGORIES.map((cat) => (
+              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      
+      <div>
+        <Label htmlFor="tags">Tags</Label>
+        <div className="mb-2 flex flex-wrap gap-2">
+          {tags.map((tag) => (
+            <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+              {tag}
+              <button 
+                type="button" 
+                onClick={() => handleRemoveTag(tag)}
+                className="rounded-full w-4 h-4 flex items-center justify-center hover:bg-muted"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+        <Input
+          id="tags"
+          value={tagInput}
+          onChange={(e) => setTagInput(e.target.value)}
+          placeholder="Add tags (press Enter to add)"
+          onKeyDown={handleAddTag}
         />
       </div>
       
@@ -72,7 +138,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
           value={status}
           onValueChange={(value: NewsStatus) => setStatus(value)}
         >
-          <SelectTrigger>
+          <SelectTrigger id="status">
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
           <SelectContent>

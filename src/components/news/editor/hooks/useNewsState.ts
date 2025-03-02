@@ -8,6 +8,7 @@ export const useNewsState = () => {
   const [excerpt, setExcerpt] = useState("");
   const [status, setStatus] = useState<NewsStatus>("draft");
   const [category, setCategory] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [featuredImage, setFeaturedImage] = useState<File | null>(null);
   const [currentFeaturedImageUrl, setCurrentFeaturedImageUrl] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -21,6 +22,7 @@ export const useNewsState = () => {
     excerpt, setExcerpt,
     status, setStatus,
     category, setCategory,
+    tags, setTags,
     featuredImage, setFeaturedImage,
     currentFeaturedImageUrl, setCurrentFeaturedImageUrl,
     isLoading, setIsLoading,

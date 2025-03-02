@@ -9,6 +9,7 @@ interface FetchNewsPostCallbacks {
   setExcerpt: (excerpt: string) => void;
   setStatus: (status: NewsStatus) => void;
   setCategory: (category: string) => void;
+  setTags: (tags: string[]) => void;
   setCurrentFeaturedImageUrl: (url: string) => void;
   setIsLoading: (isLoading: boolean) => void;
 }
@@ -23,6 +24,7 @@ export const useFetchNewsPost = () => {
       setExcerpt,
       setStatus,
       setCategory,
+      setTags,
       setCurrentFeaturedImageUrl,
       setIsLoading
     } = callbacks;
@@ -61,6 +63,14 @@ export const useFetchNewsPost = () => {
         }
         
         setCategory(data.category || "");
+        
+        // Handle tags from the database (if they exist)
+        if (data.tags && Array.isArray(data.tags)) {
+          setTags(data.tags);
+        } else {
+          setTags([]);
+        }
+        
         setCurrentFeaturedImageUrl(data.featured_image || "");
       }
     } catch (error) {

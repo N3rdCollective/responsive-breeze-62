@@ -19,6 +19,8 @@ interface NewsFormProps {
   setStatus: (status: NewsStatus) => void;
   category: string;
   setCategory: (category: string) => void;
+  tags: string[];
+  setTags: (tags: string[]) => void;
   currentFeaturedImageUrl: string;
   onImageSelected: (file: File) => void;
   onSave: () => void;
@@ -40,6 +42,8 @@ const NewsForm: React.FC<NewsFormProps> = ({
   setStatus,
   category,
   setCategory,
+  tags,
+  setTags,
   currentFeaturedImageUrl,
   onImageSelected,
   onSave,
@@ -75,6 +79,8 @@ const NewsForm: React.FC<NewsFormProps> = ({
             setStatus={setStatus}
             category={category}
             setCategory={setCategory}
+            tags={tags}
+            setTags={setTags}
             currentFeaturedImageUrl={currentFeaturedImageUrl}
             onImageSelected={onImageSelected}
             onOpenPreview={handleOpenPreview}
@@ -96,6 +102,7 @@ const NewsForm: React.FC<NewsFormProps> = ({
             currentFeaturedImageUrl={currentFeaturedImageUrl}
             authorName={authorName}
             category={category}
+            tags={tags}
           />
         </TabsContent>
       </Tabs>
@@ -109,6 +116,7 @@ const NewsForm: React.FC<NewsFormProps> = ({
         featuredImageUrl={currentFeaturedImageUrl}
         authorName={authorName}
         category={category}
+        tags={tags}
       />
     </div>
   );

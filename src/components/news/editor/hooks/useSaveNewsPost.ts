@@ -13,6 +13,7 @@ export interface NewsPostData {
   excerpt: string;
   status: string;
   category: string;
+  tags: string[];
   featuredImage: File | null;
   currentFeaturedImageUrl: string;
   staffName: string;
@@ -44,7 +45,7 @@ export const useSaveNewsPost = () => {
     postData: NewsPostData,
     callbacks: SaveNewsPostCallbacks
   ) => {
-    const { id, title, content, excerpt, status, category, featuredImage, currentFeaturedImageUrl, staffName } = postData;
+    const { id, title, content, excerpt, status, category, tags, featuredImage, currentFeaturedImageUrl, staffName } = postData;
     const { uploadImage, setIsSaving, setIsUploading, onSuccess } = callbacks;
     
     if (!title || !content) {
@@ -94,6 +95,7 @@ export const useSaveNewsPost = () => {
         content,
         status,
         featured_image: featuredImageUrl || null,
+        tags,
         author: null, // Set to null since we don't have a valid UUID
         updated_at: new Date().toISOString(),
         excerpt: finalExcerpt,

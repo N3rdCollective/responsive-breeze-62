@@ -19,6 +19,8 @@ interface EditorTabContentProps {
   setStatus: (status: NewsStatus) => void;
   category: string;
   setCategory: (category: string) => void;
+  tags: string[];
+  setTags: (tags: string[]) => void;
   currentFeaturedImageUrl: string;
   onImageSelected: (file: File) => void;
   onOpenPreview: () => void;
@@ -35,6 +37,8 @@ const EditorTabContent: React.FC<EditorTabContentProps> = ({
   setStatus,
   category,
   setCategory,
+  tags,
+  setTags,
   currentFeaturedImageUrl,
   onImageSelected,
   onOpenPreview,
@@ -80,6 +84,8 @@ const EditorTabContent: React.FC<EditorTabContentProps> = ({
             setStatus={setStatus}
             category={category}
             setCategory={setCategory}
+            tags={tags}
+            setTags={setTags}
           />
         </TabsContent>
         

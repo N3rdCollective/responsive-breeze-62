@@ -1,15 +1,17 @@
 
 import React from "react";
-import { formatDistanceToNow } from "date-fns";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 
 interface NewsPreviewProps {
   title: string;
   content: string;
-  excerpt?: string;
+  excerpt: string;
   currentFeaturedImageUrl: string;
   authorName?: string;
   category?: string;
+  tags?: string[];
 }
 
 const NewsPreview: React.FC<NewsPreviewProps> = ({
@@ -18,51 +20,51 @@ const NewsPreview: React.FC<NewsPreviewProps> = ({
   excerpt,
   currentFeaturedImageUrl,
   authorName = "Staff Author",
-  category,
+  category = "Uncategorized",
+  tags = []
 }) => {
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="space-y-4">
-        {currentFeaturedImageUrl && (
-          <div className="w-full h-64 md:h-80 lg:h-96 overflow-hidden rounded-lg">
-            <img
-              src={currentFeaturedImageUrl}
-              alt={title}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
-
-        <div className="space-y-4">
-          <h1 className="text-3xl font-bold">{title}</h1>
-          
-          <div className="flex flex-wrap gap-2 items-center text-sm text-muted-foreground">
-            <span>By {authorName}</span>
-            <span>•</span>
-            <span>{formatDistanceToNow(new Date(), { addSuffix: true })}</span>
-            {category && (
-              <>
-                <span>•</span>
-                <Badge variant="outline" className="font-normal">
-                  {category}
-                </Badge>
-              </>
-            )}
-          </div>
-          
-          {excerpt && (
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              {excerpt}
-            </p>
-          )}
-          
-          <div 
-            className="prose prose-gray max-w-none pt-6"
-            dangerouslySetInnerHTML={{ __html: content }}
+    <Card className="border rounded-lg overflow-hidden">
+      {currentFeaturedImageUrl && (
+        <div className="w-full h-[300px] overflow-hidden">
+          <img
+            src={currentFeaturedImageUrl}
+            alt={title}
+            className="w-full h-full object-cover"
           />
         </div>
-      </div>
-    </div>
+      )}
+
+      <CardHeader className="pb-0">
+        <div className="flex flex-wrap gap-2 mb-2">
+          {category && (
+            <Badge variant="outline" className="bg-primary/10 text-primary">
+              {category}
+            </Badge>
+          )}
+          {tags.map(tag => (
+            <Badge key={tag} variant="secondary" className="text-xs">
+              {tag}
+            </Badge>
+          ))}
+        </div>
+        <CardTitle className="text-xl md:text-2xl">{title}</CardTitle>
+        <div className="text-sm text-muted-foreground mt-2">
+          By {authorName} • {format(new Date(), "MMMM d, yyyy")}
+        </div>
+      </CardHeader>
+
+      <CardContent className="pt-4">
+        <div className="text-muted-foreground text-sm italic mb-6">
+          {excerpt}
+        </div>
+
+        <div
+          className="prose max-w-none dark:prose-invert"
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+      </CardContent>
+    </Card>
   );
 };
 
