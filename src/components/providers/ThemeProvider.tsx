@@ -7,16 +7,14 @@ type Theme = "dark" | "light" | "system";
 type ThemeProviderProps = {
   children: React.ReactNode;
   defaultTheme?: Theme;
-  storageKey?: string;
 };
 
 export function ThemeProvider({
   children,
   defaultTheme = "system",
-  storageKey = "theme",
 }: ThemeProviderProps) {
   return (
-    <NextThemesProvider attribute="class" defaultTheme={defaultTheme} enableSystem storageKey={storageKey}>
+    <NextThemesProvider attribute="class" defaultTheme={defaultTheme} enableSystem>
       {children}
     </NextThemesProvider>
   );
