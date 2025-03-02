@@ -1,15 +1,6 @@
-
 import { useState } from "react";
 import StaffMemberRow from "./StaffMemberRow";
-
-interface StaffMember {
-  id: string;
-  email: string;
-  first_name: string | null;
-  last_name: string | null;
-  role: string;
-  created_at: string | null;
-}
+import { StaffMember } from "./types/pendingStaffTypes";
 
 interface StaffTableProps {
   staffMembers: StaffMember[];

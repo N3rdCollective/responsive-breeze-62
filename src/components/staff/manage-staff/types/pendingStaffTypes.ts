@@ -13,3 +13,8 @@ export interface StaffMember {
   display_name: string | null;
   created_at?: string;
 }
+
+export interface PendingStaffTableProps {
+  onStaffUpdate: () => void;
+  currentUserRole: string;
+}
