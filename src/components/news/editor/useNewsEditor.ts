@@ -9,6 +9,11 @@ import { Database } from "@/integrations/supabase/types";
 // Type for the posts table from Supabase
 type Post = Database['public']['Tables']['posts']['Row'];
 
+// Create an extended type that includes the excerpt field
+interface ExtendedPost extends Post {
+  excerpt?: string;
+}
+
 interface UseNewsEditorProps {
   id?: string;
   staffName: string;
@@ -50,9 +55,9 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
       if (data) {
         setTitle(data.title);
         setContent(data.content || "");
-        // Since excerpt might not be directly typed in the Post type,
-        // we use a type assertion and optional chaining
-        setExcerpt((data as any).excerpt || "");
+        // Cast data to ExtendedPost to safely access the excerpt field
+        const extendedData = data as ExtendedPost;
+        setExcerpt(extendedData.excerpt || "");
         setStatus((data.status as NewsStatus) || "draft");
         
         if (data.featured_image) {
@@ -128,7 +133,8 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
       console.log("Generated excerpt:", finalExcerpt);
       
       // Prepare the data for the database
-      const newsData: Partial<Post> = {
+      // Use type assertion to add the excerpt field to the Post type
+      const newsData: Partial<Post> & { excerpt?: string } = {
         title,
         content,
         status,
