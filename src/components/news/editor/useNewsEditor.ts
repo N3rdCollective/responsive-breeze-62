@@ -5,6 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { handleImageUpload } from "./ImageUploader";
 import { NewsStatus } from "./NewsForm";
+import { Database } from "@/integrations/supabase/types";
+
+// Type for the posts table from Supabase
+type Post = Database['public']['Tables']['posts']['Row'];
 
 interface UseNewsEditorProps {
   id?: string;
@@ -45,7 +49,9 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
       if (data) {
         setTitle(data.title);
         setContent(data.content || "");
-        setExcerpt(data.excerpt || "");
+        // Since excerpt might not be directly typed in the Post type,
+        // we use a type assertion and optional chaining
+        setExcerpt((data as any).excerpt || "");
         setStatus((data.status as NewsStatus) || "draft");
         
         if (data.featured_image) {
