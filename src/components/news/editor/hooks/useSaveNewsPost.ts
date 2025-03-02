@@ -88,14 +88,15 @@ export const useSaveNewsPost = () => {
       console.log("Generated excerpt:", finalExcerpt);
       
       // Prepare the data for the database
-      // Important: Do not use staffName directly for the author field if it's a UUID column
-      // Instead use a default string like "Staff" or NULL if you don't have a valid UUID
+      // Store author as string directly in 'category' field temporarily
+      // since author is a UUID column and we don't have user UUIDs yet
       const newsData = {
         title,
         content,
         status,
         featured_image: featuredImageUrl || null,
         author: null, // Set to null since we don't have a valid UUID
+        category: staffName || "Staff", // Store the author name as category as a workaround
         updated_at: new Date().toISOString(),
         excerpt: finalExcerpt,
       };
