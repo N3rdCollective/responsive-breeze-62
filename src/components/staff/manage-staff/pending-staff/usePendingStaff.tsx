@@ -1,24 +1,15 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { PendingStaff } from "../types/pendingStaffTypes";
+import { PendingStaffMember } from "../types/pendingStaffTypes";
 
 const canManageStaff = (currentUserRole: string) => {
   return currentUserRole === "admin" || currentUserRole === "super_admin";
 };
 
-const formatDate = (dateString: string | null): string => {
-  if (!dateString) return '-';
-  const date = new Date(dateString);
-  return date.toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-};
-
 export const usePendingStaff = (onStaffUpdate: () => void) => {
-  const [pendingStaff, setPendingStaff] = useState<PendingStaff[]>([]);
+  const [pendingStaff, setPendingStaff] = useState<PendingStaffMember[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const { toast } = useToast();
@@ -98,7 +89,7 @@ export const usePendingStaff = (onStaffUpdate: () => void) => {
     }
   };
 
-  const handleApproval = async (pendingStaff: PendingStaff) => {
+  const handleApproval = async (pendingStaff: PendingStaffMember) => {
     try {
       // Create staff record
       const { error: staffError } = await supabase
@@ -133,7 +124,7 @@ export const usePendingStaff = (onStaffUpdate: () => void) => {
     }
   };
 
-  const handleRejection = async (pendingStaff: PendingStaff) => {
+  const handleRejection = async (pendingStaff: PendingStaffMember) => {
     try {
       // Update pending_staff status to 'rejected'
       const { error: rejectError } = await supabase

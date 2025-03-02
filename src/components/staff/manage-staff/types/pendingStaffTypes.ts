@@ -1,12 +1,16 @@
 
+
 export interface PendingStaffMember {
   id: string;
   email: string;
-  status: 'invited' | 'approved' | 'rejected';
+  status: 'invited' | 'approved' | 'rejected' | 'requested';
   invited_at: string;
   approved_at?: string | null;
   rejected_at?: string | null;
 }
+
+// Adding PendingStaff as an alias for backwards compatibility
+export type PendingStaff = PendingStaffMember;
 
 export interface PendingStaffTableProps {
   onStaffUpdate: () => void;

@@ -1,10 +1,11 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
-import { PendingStaff } from "../types/pendingStaffTypes";
+import { PendingStaffMember } from "../types/pendingStaffTypes";
 
 interface PendingStaffRowProps {
-  pending: PendingStaff;
+  pending: PendingStaffMember;
   processingId: string | null;
   canManageStaff: boolean;
   onApproveReject: (pendingId: string, approved: boolean) => void;

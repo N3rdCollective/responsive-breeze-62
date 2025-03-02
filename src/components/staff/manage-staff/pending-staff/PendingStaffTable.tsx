@@ -34,7 +34,7 @@ const PendingStaffDataTable: React.FC<PendingStaffDataTableProps> = ({
             {pendingStaff.map((staff) => (
               <PendingStaffRow
                 key={staff.id}
-                staff={staff}
+                pending={staff}
                 processingId={processingId}
                 canManageStaff={canManageStaff}
                 onApproveReject={onApproveReject}
