@@ -3,9 +3,11 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const ContentManagementCard = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleEditPage = (page: string) => {
     toast({
@@ -36,9 +38,9 @@ const ContentManagementCard = () => {
         <Button 
           variant="outline" 
           className="w-full bg-white dark:bg-[#222222] text-black dark:text-white hover:bg-gray-100 dark:hover:bg-[#444444]"
-          onClick={() => handleEditPage("News")}
+          onClick={() => navigate("/staff/news")}
         >
-          Edit News
+          Manage News Posts
         </Button>
         <Button 
           variant="outline" 
