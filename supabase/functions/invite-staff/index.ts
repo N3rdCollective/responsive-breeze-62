@@ -28,22 +28,32 @@ serve(async (req) => {
     );
 
     // Check if the email already exists in pending_staff
-    const { data: existingPending } = await supabaseAdmin
+    const { data: existingPending, error: pendingError } = await supabaseAdmin
       .from('pending_staff')
       .select('*')
       .eq('email', email)
       .maybeSingle();
+      
+    if (pendingError) {
+      console.error('Error checking pending staff:', pendingError);
+      throw new Error(`Database error: ${pendingError.message}`);
+    }
 
     if (existingPending) {
       // If already pending, just resend the invitation
       console.log(`Email ${email} already in pending_staff, resending invitation`);
     } else {
       // First check if this email is already in the staff table
-      const { data: existingStaff } = await supabaseAdmin
+      const { data: existingStaff, error: staffError } = await supabaseAdmin
         .from('staff')
         .select('*')
         .eq('email', email)
         .maybeSingle();
+        
+      if (staffError) {
+        console.error('Error checking existing staff:', staffError);
+        throw new Error(`Database error: ${staffError.message}`);
+      }
         
       if (existingStaff) {
         return new Response(
@@ -53,7 +63,7 @@ serve(async (req) => {
       }
       
       // Add to pending_staff table
-      const { error: pendingError } = await supabaseAdmin
+      const { error: insertError } = await supabaseAdmin
         .from('pending_staff')
         .insert({ 
           email,
@@ -61,38 +71,51 @@ serve(async (req) => {
           invited_at: new Date().toISOString(),
         });
 
-      if (pendingError) {
-        throw new Error(`Failed to add to pending staff: ${pendingError.message}`);
+      if (insertError) {
+        console.error('Error inserting to pending staff:', insertError);
+        throw new Error(`Failed to add to pending staff: ${insertError.message}`);
       }
     }
 
     // Send invitation email with signup link
-    const { data: signupData, error: signupError } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'signup',
-      email,
-      options: {
-        redirectTo: `${req.headers.get('origin') || Deno.env.get('SITE_URL')}/staff-signup?email=${encodeURIComponent(email)}`,
+    try {
+      const { data: signupData, error: signupError } = await supabaseAdmin.auth.admin.generateLink({
+        type: 'signup',
+        email,
+        options: {
+          redirectTo: `${req.headers.get('origin') || Deno.env.get('SITE_URL')}/staff-signup?email=${encodeURIComponent(email)}`,
+        }
+      });
+
+      if (signupError) {
+        console.error('Error generating signup link:', signupError);
+        throw new Error(`Failed to generate signup link: ${signupError.message}`);
       }
-    });
 
-    if (signupError) {
-      throw new Error(`Failed to generate signup link: ${signupError.message}`);
+      console.log(`Invitation sent to ${email}`);
+
+      return new Response(
+        JSON.stringify({ 
+          message: 'Invitation sent successfully',
+          signupUrl: signupData.properties.action_link
+        }),
+        { 
+          status: 200, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    } catch (emailError) {
+      console.error('Error sending invitation email:', emailError);
+      throw new Error(`Failed to send invitation: ${emailError.message}`);
     }
-
-    console.log(`Invitation sent to ${email}`);
-
-    return new Response(
-      JSON.stringify({ 
-        message: 'Invitation sent successfully',
-        signupUrl: signupData.properties.action_link
-      }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
   } catch (error) {
     console.error('Error in invite-staff function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: error.message || 'Unknown error occurred' }),
+      { 
+        status: 500, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
     );
   }
 });
