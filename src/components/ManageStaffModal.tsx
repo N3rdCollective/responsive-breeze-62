@@ -6,7 +6,6 @@ import AddStaffForm from "./staff/manage-staff/AddStaffForm";
 import StaffTable from "./staff/manage-staff/StaffTable";
 import PendingStaffTable from "./staff/manage-staff/PendingStaffTable";
 import StaffSectionHeader from "./staff/manage-staff/StaffSectionHeader";
-import AutoFillDemoLink from "./staff/manage-staff/AutoFillDemoLink";
 import { StaffMember } from "./staff/manage-staff/types/pendingStaffTypes";
 
 interface ManageStaffModalProps {
@@ -26,8 +25,7 @@ const ManageStaffModal = ({ open, onOpenChange, currentUserRole }: ManageStaffMo
             Manage Staff
           </DialogTitle>
           <DialogDescription>
-            Add or remove staff members who can access the control panel.
-            <AutoFillDemoLink />
+            Staff management portal
           </DialogDescription>
         </DialogHeader>
         
