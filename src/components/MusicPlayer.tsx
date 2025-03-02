@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import { MinimizedPlayer } from "./player/MinimizedPlayer";
@@ -22,6 +21,27 @@ const MusicPlayer = () => {
       setIsFullscreen(true);
     }
   }, [isPlaying]);
+
+  useEffect(() => {
+    const body = document.body;
+    const isMobile = window.innerWidth < 768;
+    
+    if (body) {
+      if (isMobile && !isFullscreen) {
+        body.style.paddingBottom = "4rem"; // 16px (h-16)
+      } else if (!isMobile) {
+        body.style.paddingBottom = "5rem"; // 20px (h-20)
+      } else {
+        body.style.paddingBottom = "0";
+      }
+    }
+    
+    return () => {
+      if (body) {
+        body.style.paddingBottom = "0";
+      }
+    };
+  }, [isFullscreen]);
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
