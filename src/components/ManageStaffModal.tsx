@@ -7,6 +7,7 @@ import StaffTable from "./staff/manage-staff/StaffTable";
 import PendingStaffTable from "./staff/manage-staff/PendingStaffTable";
 import StaffSectionHeader from "./staff/manage-staff/StaffSectionHeader";
 import AutoFillDemoLink from "./staff/manage-staff/AutoFillDemoLink";
+import { StaffMember } from "./staff/manage-staff/types/pendingStaffTypes";
 
 interface ManageStaffModalProps {
   open: boolean;
