@@ -38,6 +38,7 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
     
     setIsLoading(true);
     try {
+      console.log("Fetching post with ID:", id);
       const { data, error } = await supabase
         .from("posts")
         .select("*")
@@ -46,6 +47,7 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
         
       if (error) throw error;
       
+      console.log("Fetched post data:", data);
       if (data) {
         setTitle(data.title);
         setContent(data.content || "");
@@ -101,15 +103,20 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
       
       // Upload the featured image if a new one was selected
       if (featuredImage) {
+        console.log("Uploading new featured image");
         const uploadedUrl = await handleImageUpload(featuredImage);
         if (uploadedUrl) {
           featuredImageUrl = uploadedUrl;
+          console.log("Image uploaded successfully:", featuredImageUrl);
+        } else {
+          console.error("Image upload failed, but continuing with save");
         }
         setIsUploading(false);
       }
       
       // Generate an excerpt from content if none is provided
       const finalExcerpt = excerpt || extractTextFromHtml(content).substring(0, 150) + "...";
+      console.log("Generated excerpt:", finalExcerpt);
       
       // Prepare the data for the database
       // Note: We're not directly including 'excerpt' in the database update/insert
@@ -129,12 +136,14 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
       
       if (id) {
         // Update existing post
+        console.log("Updating existing post with ID:", id);
         result = await supabase
           .from("posts")
           .update(newsData)
           .eq("id", id);
       } else {
         // Create new post - ensure title is included and use a properly typed object
+        console.log("Creating new post");
         const newPost = {
           ...newsData,
           title, // Explicitly include title to satisfy TypeScript
@@ -152,14 +161,29 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
         throw result.error;
       }
       
-      console.log("Save result:", result);
+      console.log("Supabase operation result:", result);
+      
+      if (id) {
+        // For updates, check if any rows were affected
+        if (result.count === 0) {
+          console.warn("No rows were updated - check if anything actually changed");
+        }
+      } else {
+        // For inserts, check if data was returned
+        if (!result.data || result.data.length === 0) {
+          console.warn("Insert succeeded but no data was returned");
+        }
+      }
       
       toast({
         title: "Success",
         description: id ? "News post updated" : "News post created",
       });
       
-      navigate("/staff/news");
+      // Short delay before navigation to ensure state updates are complete
+      setTimeout(() => {
+        navigate("/staff/news");
+      }, 500);
     } catch (error) {
       console.error("Error saving news post:", error);
       toast({
