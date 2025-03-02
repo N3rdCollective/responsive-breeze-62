@@ -21,6 +21,9 @@ export const useNewsState = (initialData?: {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  
+  // Preview modal state
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
   return {
     // State
@@ -42,5 +45,7 @@ export const useNewsState = (initialData?: {
     setIsSaving,
     isUploading,
     setIsUploading,
+    isPreviewModalOpen,
+    setIsPreviewModalOpen,
   };
 };

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -13,12 +12,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, User } from "lucide-react";
+import { Calendar, Eye, User } from "lucide-react";
 import { format } from "date-fns";
 import ImageUploader from "./ImageUploader";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 import { useNavigate } from "react-router-dom";
 import RichTextEditor from "./RichTextEditor";
+import PreviewModal from "./PreviewModal";
 
 export type NewsStatus = "published" | "draft";
 
@@ -36,6 +36,9 @@ interface NewsFormProps {
   onSave: () => void;
   isSaving: boolean;
   isUploading: boolean;
+  isPreviewModalOpen?: boolean;
+  setIsPreviewModalOpen?: (isOpen: boolean) => void;
+  authorName?: string;
 }
 
 const NewsForm: React.FC<NewsFormProps> = ({
@@ -51,10 +54,17 @@ const NewsForm: React.FC<NewsFormProps> = ({
   onImageSelected,
   onSave,
   isSaving,
-  isUploading
+  isUploading,
+  isPreviewModalOpen = false,
+  setIsPreviewModalOpen = () => {},
+  authorName = "Staff Author"
 }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string>("edit");
+  
+  const handleOpenPreview = () => {
+    setIsPreviewModalOpen(true);
+  };
   
   return (
     <div className="space-y-6">
@@ -113,6 +123,17 @@ const NewsForm: React.FC<NewsFormProps> = ({
             currentImageUrl={currentFeaturedImageUrl}
             onImageSelected={onImageSelected}
           />
+          
+          <div className="flex justify-end">
+            <Button 
+              type="button"
+              variant="outline"
+              onClick={handleOpenPreview}
+              className="flex items-center gap-2"
+            >
+              <Eye className="h-4 w-4" /> Preview in Modal
+            </Button>
+          </div>
         </TabsContent>
         
         <TabsContent value="preview">
@@ -188,6 +209,16 @@ const NewsForm: React.FC<NewsFormProps> = ({
           )}
         </Button>
       </div>
+      
+      <PreviewModal
+        isOpen={isPreviewModalOpen}
+        onOpenChange={setIsPreviewModalOpen}
+        title={title}
+        content={content}
+        excerpt={excerpt}
+        featuredImageUrl={currentFeaturedImageUrl}
+        authorName={authorName}
+      />
     </div>
   );
 };

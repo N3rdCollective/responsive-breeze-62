@@ -27,7 +27,8 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
     currentFeaturedImageUrl, setCurrentFeaturedImageUrl,
     isLoading, setIsLoading,
     isSaving, setIsSaving,
-    isUploading, setIsUploading
+    isUploading, setIsUploading,
+    isPreviewModalOpen, setIsPreviewModalOpen
   } = useNewsState();
 
   // Fetch the news post data
@@ -85,6 +86,8 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
     isLoading,
     isSaving,
     isUploading,
+    isPreviewModalOpen,
+    setIsPreviewModalOpen,
     
     // Methods
     fetchNewsPost: fetchNewsPostData,
