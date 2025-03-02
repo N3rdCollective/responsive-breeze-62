@@ -18,6 +18,8 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
+  const canAddStaff = currentUserRole === "admin" || currentUserRole === "super_admin";
+
   const handleAddStaff = async () => {
     if (!newEmail || !newEmail.includes('@')) {
       toast({
@@ -25,6 +27,11 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
         description: "Please enter a valid email address.",
         variant: "destructive",
       });
+      return;
+    }
+
+    if (!canAddStaff) {
+      setError("You don't have permission to add staff members. Only admins and super admins can add staff.");
       return;
     }
 
@@ -51,16 +58,11 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
       // Generate a temporary ID for the new staff member
       const tempId = crypto.randomUUID();
 
-      // Determine the default role based on current user's role
-      // Super admins and admins can add staff, moderators can only add moderators
-      let defaultRole = "staff";
-      if (currentUserRole !== "super_admin" && currentUserRole !== "admin") {
-        defaultRole = "moderator";
-      }
+      // Default role for new staff is "staff"
+      const defaultRole = "staff";
       
-      // Use service role or RPC function to bypass RLS
-      // For now, we'll try to insert with the current user's session
-      const { error } = await supabase
+      // Insert the new staff member
+      const { error: insertError } = await supabase
         .from("staff")
         .insert({ 
           id: tempId,
@@ -68,9 +70,14 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
           role: defaultRole
         });
       
-      if (error) {
-        console.error("Error adding staff:", error);
-        setError("Failed to add staff member. You may not have permission to add new staff.");
+      if (insertError) {
+        console.error("Error adding staff:", insertError);
+        
+        if (insertError.code === "42501") {
+          setError("Permission denied. Your role may have changed or RLS policies are preventing this action.");
+        } else {
+          setError(`Failed to add staff member: ${insertError.message}`);
+        }
         return;
       }
       
@@ -104,15 +111,21 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
           placeholder="staff@radiofm.com"
           value={newEmail}
           onChange={(e) => setNewEmail(e.target.value)}
-          disabled={isAddingStaff}
+          disabled={isAddingStaff || !canAddStaff}
         />
         <Button 
           onClick={handleAddStaff} 
-          disabled={isAddingStaff}
+          disabled={isAddingStaff || !canAddStaff}
         >
           {isAddingStaff ? "Adding..." : "Add Staff"}
         </Button>
       </div>
+      
+      {!canAddStaff && (
+        <p className="text-sm text-gray-500">
+          Only admins and super admins can add new staff members.
+        </p>
+      )}
     </div>
   );
 };

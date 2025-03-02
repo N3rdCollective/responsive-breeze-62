@@ -205,6 +205,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_manage_staff: {
+        Args: {
+          user_id: string
+        }
+        Returns: boolean
+      }
       check_user_role: {
         Args: {
           required_role: string
