@@ -200,6 +200,7 @@ export type Database = {
       staff: {
         Row: {
           created_at: string | null
+          display_name: string | null
           email: string
           first_name: string | null
           id: string
@@ -209,6 +210,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          display_name?: string | null
           email: string
           first_name?: string | null
           id: string
@@ -218,6 +220,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          display_name?: string | null
           email?: string
           first_name?: string | null
           id?: string

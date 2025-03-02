@@ -59,13 +59,18 @@ export const useProfileEditorState = (
       }
       
       if (staffData) {
-        // Combine first_name and last_name into display_name if they exist
-        let name = "";
-        if (staffData.first_name) name += staffData.first_name;
-        if (staffData.first_name && staffData.last_name) name += " ";
-        if (staffData.last_name) name += staffData.last_name;
-        
-        setDisplayName(name);
+        // Use display_name if available, otherwise fallback to first_name and last_name
+        if (staffData.display_name) {
+          setDisplayName(staffData.display_name);
+        } else {
+          // Combine first_name and last_name into display_name if they exist
+          let name = "";
+          if (staffData.first_name) name += staffData.first_name;
+          if (staffData.first_name && staffData.last_name) name += " ";
+          if (staffData.last_name) name += staffData.last_name;
+          
+          setDisplayName(name);
+        }
         setEmail(staffData.email || "");
       }
     } catch (error) {
@@ -89,17 +94,11 @@ export const useProfileEditorState = (
         throw new Error("No active session");
       }
       
-      // Split display name into first and last name
-      const nameParts = displayName.trim().split(/\s+/);
-      const firstName = nameParts[0] || "";
-      const lastName = nameParts.slice(1).join(" ") || "";
-      
       // Update profile information
       const { error: profileError } = await supabase
         .from("staff")
         .update({
-          first_name: firstName,
-          last_name: lastName,
+          display_name: displayName,
         })
         .eq("id", session.user.id);
         

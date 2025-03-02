@@ -1,5 +1,4 @@
 
-
 export interface PendingStaffMember {
   id: string;
   email: string;
@@ -22,6 +21,7 @@ export interface StaffMember {
   email: string;
   first_name: string | null;
   last_name: string | null;
+  display_name: string | null;
   role: string;
   created_at: string | null;
 }

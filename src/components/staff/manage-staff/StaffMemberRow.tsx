@@ -9,6 +9,7 @@ interface StaffMember {
   email: string;
   first_name: string | null;
   last_name: string | null;
+  display_name: string | null;
   role: string;
   created_at: string | null;
 }
@@ -113,14 +114,20 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
     return "Make Moderator"; // Default for "staff" role
   };
 
+  // Get display name (prioritize display_name, then fall back to first/last name)
+  const getDisplayName = () => {
+    if (staff.display_name) {
+      return staff.display_name;
+    }
+    return (staff.first_name || staff.last_name 
+      ? `${staff.first_name || ''} ${staff.last_name || ''}`.trim() 
+      : '-');
+  };
+
   return (
     <tr className="border-b hover:bg-muted/50">
       <td className="p-2 pl-4">{staff.email}</td>
-      <td className="p-2">
-        {staff.first_name || staff.last_name 
-          ? `${staff.first_name || ''} ${staff.last_name || ''}`.trim() 
-          : '-'}
-      </td>
+      <td className="p-2">{getDisplayName()}</td>
       <td className="p-2 capitalize">
         {isSuperAdmin ? (
           <span className="font-semibold text-purple-600 dark:text-purple-400">Super Admin</span>

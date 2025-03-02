@@ -103,6 +103,16 @@ export const usePendingStaff = (onStaffUpdate: () => void) => {
 
   const handleApproval = async (pendingStaff: PendingStaffMember) => {
     try {
+      // Get user metadata to access the display name
+      const { data: authData, error: authError } = await supabase.auth.admin.getUserById(
+        pendingStaff.email
+      );
+      
+      let displayName = null;
+      if (!authError && authData && authData.user && authData.user.user_metadata) {
+        displayName = authData.user.user_metadata.display_name || null;
+      }
+      
       // Create staff record
       const { error: staffError } = await supabase
         .from("staff")
@@ -110,6 +120,7 @@ export const usePendingStaff = (onStaffUpdate: () => void) => {
           id: pendingStaff.email, // Use email as ID
           email: pendingStaff.email,
           role: "staff",
+          display_name: displayName
         });
 
       if (staffError) throw staffError;

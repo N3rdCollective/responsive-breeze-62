@@ -19,6 +19,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 const registrationSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
   lastName: z.string().min(2, "Last name must be at least 2 characters"),
+  displayName: z.string().min(2, "Display name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string().min(8, "Confirm password must be at least 8 characters"),
@@ -40,6 +41,7 @@ const StaffRegistration = () => {
     defaultValues: {
       firstName: "",
       lastName: "",
+      displayName: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -83,6 +85,7 @@ const StaffRegistration = () => {
           data: {
             first_name: values.firstName,
             last_name: values.lastName,
+            display_name: values.displayName,
             reason_to_join: values.reasonToJoin || "",
           }
         }
@@ -175,6 +178,27 @@ const StaffRegistration = () => {
                     )}
                   />
                 </div>
+                
+                <FormField
+                  control={form.control}
+                  name="displayName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Display Name</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="DJ Awesome" 
+                          {...field} 
+                          disabled={isLoading}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        This is how your name will appear on the site
+                      </p>
+                    </FormItem>
+                  )}
+                />
                 
                 <FormField
                   control={form.control}

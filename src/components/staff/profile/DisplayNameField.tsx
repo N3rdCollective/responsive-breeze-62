@@ -17,11 +17,11 @@ const DisplayNameField = ({ value, onChange, disabled = false }: DisplayNameFiel
         id="displayName"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Your display name"
+        placeholder="DJ Awesome"
         disabled={disabled}
       />
       <p className="text-xs text-muted-foreground">
-        This is how your name will appear throughout the system.
+        This is how your name will appear throughout the system and to the public.
       </p>
     </div>
   );
