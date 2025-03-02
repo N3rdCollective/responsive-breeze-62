@@ -133,8 +133,8 @@ export const useNewsData = () => {
         featured_image: featuredImageUrl || null,
         author: staffName || "Staff Member",
         updated_at: new Date().toISOString(),
-        excerpt: finalExcerpt, // Now this field exists in the database
-      } as Partial<Post>;
+        excerpt: finalExcerpt,
+      };
       
       console.log("Saving post data:", newsData);
       
@@ -143,12 +143,18 @@ export const useNewsData = () => {
       if (id) {
         // Update existing post
         console.log("Updating existing post with ID:", id);
-        // FIX: Use upsert instead of update to ensure we create the row if it doesn't exist
+        // Make sure to include title explicitly in the upsert operation
         result = await supabase
           .from("posts")
           .upsert({
             id,
-            ...newsData
+            title, // Explicitly include title to satisfy TypeScript
+            content,
+            status,
+            featured_image: featuredImageUrl || null,
+            author: staffName || "Staff Member",
+            updated_at: new Date().toISOString(),
+            excerpt: finalExcerpt,
           })
           .select();
           
@@ -162,7 +168,6 @@ export const useNewsData = () => {
         console.log("Creating new post");
         const newPost = {
           ...newsData,
-          title, // Explicitly include title to satisfy TypeScript
           created_at: new Date().toISOString(),
           post_date: new Date().toISOString(),
         };
@@ -170,7 +175,7 @@ export const useNewsData = () => {
         result = await supabase
           .from("posts")
           .insert([newPost])
-          .select();  // Add select() to get the inserted data
+          .select();
           
         console.log("Insert result:", result);
         
@@ -209,4 +214,3 @@ export const useNewsData = () => {
     extractTextFromHtml
   };
 };
-
