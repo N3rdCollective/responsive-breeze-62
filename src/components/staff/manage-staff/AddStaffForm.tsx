@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface AddStaffFormProps {
   onStaffAdded: () => void;
@@ -13,6 +15,7 @@ interface AddStaffFormProps {
 const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
   const [newEmail, setNewEmail] = useState("");
   const [isAddingStaff, setIsAddingStaff] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleAddStaff = async () => {
@@ -27,6 +30,7 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
 
     try {
       setIsAddingStaff(true);
+      setError(null);
       
       // Check if staff already exists
       const { data: existingStaff } = await supabase
@@ -48,11 +52,14 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
       const tempId = crypto.randomUUID();
 
       // Determine the default role based on current user's role
-      // Admin can add any role, moderators can only add moderators
-      const defaultRole = currentUserRole === "admin" ? "staff" : "moderator";
+      // Super admins and admins can add staff, moderators can only add moderators
+      let defaultRole = "staff";
+      if (currentUserRole !== "super_admin" && currentUserRole !== "admin") {
+        defaultRole = "moderator";
+      }
       
-      // In a real implementation, this would invite the user via email
-      // For now, we'll just add them to the staff table
+      // Use service role or RPC function to bypass RLS
+      // For now, we'll try to insert with the current user's session
       const { error } = await supabase
         .from("staff")
         .insert({ 
@@ -61,7 +68,11 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
           role: defaultRole
         });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error adding staff:", error);
+        setError("Failed to add staff member. You may not have permission to add new staff.");
+        return;
+      }
       
       toast({
         title: "Staff Added",
@@ -72,30 +83,36 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
       onStaffAdded();
     } catch (error) {
       console.error("Error adding staff:", error);
-      toast({
-        title: "Error",
-        description: "Failed to add staff member. Please try again.",
-        variant: "destructive",
-      });
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsAddingStaff(false);
     }
   };
 
   return (
-    <div className="flex gap-2">
-      <Input
-        placeholder="staff@radiofm.com"
-        value={newEmail}
-        onChange={(e) => setNewEmail(e.target.value)}
-        disabled={isAddingStaff}
-      />
-      <Button 
-        onClick={handleAddStaff} 
-        disabled={isAddingStaff}
-      >
-        {isAddingStaff ? "Adding..." : "Add Staff"}
-      </Button>
+    <div className="space-y-4">
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      
+      <div className="flex gap-2">
+        <Input
+          placeholder="staff@radiofm.com"
+          value={newEmail}
+          onChange={(e) => setNewEmail(e.target.value)}
+          disabled={isAddingStaff}
+        />
+        <Button 
+          onClick={handleAddStaff} 
+          disabled={isAddingStaff}
+        >
+          {isAddingStaff ? "Adding..." : "Add Staff"}
+        </Button>
+      </div>
     </div>
   );
 };
