@@ -6,13 +6,13 @@ export const personalityFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   role: z.string().min(2, { message: "Role must be at least 2 characters" }),
   bio: z.string().optional(),
-  image_url: z.string().url({ message: "Please enter a valid URL" }).optional().or(z.literal("")),
+  image_url: z.string().optional().or(z.literal("")),
+  image_file: z.instanceof(File).optional(),
   social_links: z.object({
     twitter: z.string().url({ message: "Please enter a valid URL" }).optional().or(z.literal("")),
     instagram: z.string().url({ message: "Please enter a valid URL" }).optional().or(z.literal("")),
     facebook: z.string().url({ message: "Please enter a valid URL" }).optional().or(z.literal(""))
-  }).optional(),
-  start_date: z.string().optional().or(z.literal(""))
+  }).optional()
 });
 
 export type PersonalityFormValues = z.infer<typeof personalityFormSchema>;

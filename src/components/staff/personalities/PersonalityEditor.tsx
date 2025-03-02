@@ -6,7 +6,6 @@ import { Form } from "@/components/ui/form";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 import { BasicInfoFields } from "./components/BasicInfoFields";
 import { SocialMediaFields } from "./components/SocialMediaFields";
-import { DateFields } from "./components/DateFields";
 import { usePersonalityEditor } from "./hooks/usePersonalityEditor";
 
 const PersonalityEditor = () => {
@@ -48,9 +47,8 @@ const PersonalityEditor = () => {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <BasicInfoFields form={form} />
+              <BasicInfoFields form={form} currentImageUrl={personality?.image_url || ""} />
               <SocialMediaFields form={form} />
-              <DateFields form={form} />
               
               <CardFooter className="flex justify-end space-x-4 px-0">
                 <Button

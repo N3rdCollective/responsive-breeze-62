@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { personalityFormSchema, PersonalityFormValues, parseSocialLinks } from "../schema/personalityFormSchema";
+import { handleImageUpload } from "@/components/news/editor/ImageUploader";
 
 export const usePersonalityEditor = (personalityId: string) => {
   const navigate = useNavigate();
@@ -25,8 +26,7 @@ export const usePersonalityEditor = (personalityId: string) => {
         twitter: "",
         instagram: "",
         facebook: ""
-      },
-      start_date: ""
+      }
     }
   });
 
@@ -54,8 +54,7 @@ export const usePersonalityEditor = (personalityId: string) => {
         role: personality.role || "",
         bio: personality.bio || "",
         image_url: personality.image_url || "",
-        social_links: parseSocialLinks(personality.social_links),
-        start_date: personality.start_date || ""
+        social_links: parseSocialLinks(personality.social_links)
       });
     }
   }, [personality, form]);
@@ -64,15 +63,23 @@ export const usePersonalityEditor = (personalityId: string) => {
     try {
       setIsSubmitting(true);
       
+      // Handle image upload if a new image was provided
+      let imageUrl = values.image_url || null;
+      if (values.image_file) {
+        const uploadedUrl = await handleImageUpload(values.image_file);
+        if (uploadedUrl) {
+          imageUrl = uploadedUrl;
+        }
+      }
+      
       const { error } = await supabase
         .from("personalities")
         .update({
           name: values.name,
           role: values.role,
           bio: values.bio || null,
-          image_url: values.image_url || null,
+          image_url: imageUrl,
           social_links: values.social_links || null,
-          start_date: values.start_date || null,
           updated_at: new Date().toISOString()
         })
         .eq("id", personalityId);
