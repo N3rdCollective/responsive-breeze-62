@@ -111,15 +111,19 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
       // Generate an excerpt from content if none is provided
       const finalExcerpt = excerpt || extractTextFromHtml(content).substring(0, 150) + "...";
       
-      const newsData = {
+      // Prepare the data for the database
+      // Note: We're not directly including 'excerpt' in the database update/insert
+      // since it's not in the posts table schema
+      const newsData: Partial<Post & { excerpt?: string }> = {
         title,
         content,
-        excerpt: finalExcerpt,
         status,
         featured_image: featuredImageUrl,
         author: staffName || "Staff Member",
         updated_at: new Date().toISOString(),
       };
+      
+      console.log("Saving post data:", newsData);
       
       let result;
       
@@ -145,6 +149,8 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
         throw result.error;
       }
       
+      console.log("Save result:", result);
+      
       toast({
         title: "Success",
         description: id ? "News post updated" : "News post created",
@@ -155,7 +161,7 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
       console.error("Error saving news post:", error);
       toast({
         title: "Error",
-        description: "Failed to save news post",
+        description: "Failed to save news post. " + (error as Error)?.message || "",
         variant: "destructive",
       });
     } finally {

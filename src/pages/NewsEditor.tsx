@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
@@ -45,7 +46,10 @@ const NewsEditor = () => {
   
   useEffect(() => {
     if (authLoading) return;
-    if (!staffName) return;
+    if (!staffName) {
+      navigate("/staff-login");
+      return;
+    }
     
     fetchNewsPost();
   }, [id, staffName, authLoading]);
