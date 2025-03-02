@@ -36,13 +36,13 @@ jwt_expiry = 3600
 enable_refresh_token_rotation = true
 refresh_token_reuse_interval = 10
 
+# Remove the 'enabled' property from auth.email section
 [auth.email]
-enabled = true
 double_confirm_changes = true
 enable_confirmations = false
 
+# Remove the 'enabled' property from auth.sms section
 [auth.sms]
-enabled = false
 
 [auth.external.apple]
 enabled = false
@@ -101,5 +101,5 @@ port = 54327
 vector_port = 54328
 backend = "postgres"
 
+# Remove the 'pubsub' property from experimental section
 [experimental]
-pubsub = false
