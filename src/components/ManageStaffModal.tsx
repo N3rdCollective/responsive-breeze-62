@@ -7,6 +7,8 @@ import StaffTable from "./staff/manage-staff/StaffTable";
 import PendingStaffTable from "./staff/manage-staff/PendingStaffTable";
 import StaffSectionHeader from "./staff/manage-staff/StaffSectionHeader";
 import { StaffMember } from "./staff/manage-staff/types/pendingStaffTypes";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 interface ManageStaffModalProps {
   open: boolean;
@@ -15,7 +17,25 @@ interface ManageStaffModalProps {
 }
 
 const ManageStaffModal = ({ open, onOpenChange, currentUserRole }: ManageStaffModalProps) => {
-  const { staffMembers, loading, fetchStaffMembers } = useStaffManagement(open);
+  const { staffMembers, loading, fetchStaffMembers, error } = useStaffManagement(open);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (open) {
+      console.log("ManageStaffModal: Modal opened with role:", currentUserRole);
+    }
+  }, [open, currentUserRole]);
+
+  useEffect(() => {
+    if (error) {
+      console.error("ManageStaffModal: Error fetching staff:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load staff data. Please try again or contact support.",
+        variant: "destructive",
+      });
+    }
+  }, [error, toast]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

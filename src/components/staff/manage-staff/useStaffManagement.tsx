@@ -6,10 +6,13 @@ import { StaffMember } from "./types/pendingStaffTypes";
 const useStaffManagement = (isModalOpen: boolean) => {
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<Error | null>(null);
 
   const fetchStaffMembers = async () => {
     try {
+      console.log("useStaffManagement: Fetching staff members");
       setLoading(true);
+      setError(null);
       
       const { data, error } = await supabase
         .from("staff")
@@ -17,11 +20,16 @@ const useStaffManagement = (isModalOpen: boolean) => {
         .order("role", { ascending: false })
         .order("email", { ascending: true });
       
-      if (error) throw error;
+      if (error) {
+        console.error("useStaffManagement: Fetch error:", error);
+        throw error;
+      }
       
+      console.log("useStaffManagement: Staff data fetched:", data?.length || 0, "records");
       setStaffMembers(data || []);
     } catch (error) {
-      console.error("Error fetching staff:", error);
+      console.error("useStaffManagement: Error fetching staff:", error);
+      setError(error instanceof Error ? error : new Error(String(error)));
     } finally {
       setLoading(false);
     }
@@ -29,6 +37,7 @@ const useStaffManagement = (isModalOpen: boolean) => {
 
   useEffect(() => {
     if (isModalOpen) {
+      console.log("useStaffManagement: Modal opened, fetching staff");
       fetchStaffMembers();
     }
   }, [isModalOpen]);
@@ -36,7 +45,8 @@ const useStaffManagement = (isModalOpen: boolean) => {
   return {
     staffMembers,
     loading,
-    fetchStaffMembers
+    fetchStaffMembers,
+    error
   };
 };
 
