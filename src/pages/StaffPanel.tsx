@@ -12,6 +12,7 @@ import ContentManagementCard from "@/components/staff/ContentManagementCard";
 import ShowManagementCard from "@/components/staff/ShowManagementCard";
 import AdminCard from "@/components/staff/AdminCard";
 import NewsManagementCard from "@/components/staff/NewsManagementCard";
+import PersonalityManagementCard from "@/components/staff/PersonalityManagementCard";
 import StatsPanel from "@/components/staff/StatsPanel";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 
@@ -39,6 +40,7 @@ const StaffPanel = () => {
             <ContentManagementCard />
             <ShowManagementCard />
             <NewsManagementCard />
+            <PersonalityManagementCard />
             <AdminCard 
               onManageStaff={handleManageUsers} 
               onLogout={handleLogout} 
