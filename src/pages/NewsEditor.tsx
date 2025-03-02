@@ -15,6 +15,7 @@ interface NewsPost {
   content: string;
   excerpt?: string;
   status: "published" | "draft";
+  category?: string;
   featured_image?: string;
   created_at: string;
   updated_at: string;
@@ -35,6 +36,8 @@ const NewsEditor = () => {
     setExcerpt,
     status,
     setStatus,
+    category,
+    setCategory,
     currentFeaturedImageUrl,
     isLoading,
     isSaving,
@@ -103,6 +106,8 @@ const NewsEditor = () => {
         setExcerpt={setExcerpt}
         status={status}
         setStatus={setStatus}
+        category={category}
+        setCategory={setCategory}
         currentFeaturedImageUrl={currentFeaturedImageUrl}
         onImageSelected={handleImageSelected}
         onSave={handleSave}

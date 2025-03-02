@@ -1,60 +1,70 @@
 
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { NewsStatus } from "../NewsForm";
 
-/**
- * Callbacks for updating post data state
- */
-export interface FetchNewsPostCallbacks {
+interface FetchNewsPostCallbacks {
   setTitle: (title: string) => void;
   setContent: (content: string) => void;
   setExcerpt: (excerpt: string) => void;
-  setStatus: (status: any) => void;
+  setStatus: (status: NewsStatus) => void;
+  setCategory: (category: string) => void;
   setCurrentFeaturedImageUrl: (url: string) => void;
   setIsLoading: (isLoading: boolean) => void;
 }
 
-/**
- * Hook for fetching news post data
- * @returns Function to fetch news post by ID
- */
 export const useFetchNewsPost = () => {
   const { toast } = useToast();
 
-  /**
-   * Fetches a news post by ID and updates state via callbacks
-   * @param id Post ID to fetch
-   * @param callbacks Object containing state setter functions
-   */
-  const fetchNewsPost = async (id: string, callbacks: FetchNewsPostCallbacks) => {
-    const { setTitle, setContent, setExcerpt, setStatus, setCurrentFeaturedImageUrl, setIsLoading } = callbacks;
+  const fetchNewsPost = async (postId: string, callbacks: FetchNewsPostCallbacks) => {
+    const {
+      setTitle,
+      setContent,
+      setExcerpt,
+      setStatus,
+      setCategory,
+      setCurrentFeaturedImageUrl,
+      setIsLoading
+    } = callbacks;
     
-    if (!id) return; // Exit early if no ID (creating a new post)
-    
-    setIsLoading(true);
     try {
-      console.log("Fetching post with ID:", id);
+      console.log("Fetching news post with ID:", postId);
+      
       const { data, error } = await supabase
         .from("posts")
         .select("*")
-        .eq("id", id)
+        .eq("id", postId)
         .single();
-        
-      if (error) throw error;
       
-      console.log("Fetched post data:", data);
+      if (error) {
+        console.error("Error fetching news post:", error);
+        toast({
+          title: "Error",
+          description: `Failed to load news post: ${error.message}`,
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log("Post data fetched:", data);
+      
       if (data) {
-        setTitle(data.title);
+        setTitle(data.title || "");
         setContent(data.content || "");
         setExcerpt(data.excerpt || "");
-        setStatus(data.status || "draft");
         
-        if (data.featured_image) {
-          setCurrentFeaturedImageUrl(data.featured_image);
+        if (data.status === "published" || data.status === "draft") {
+          setStatus(data.status);
+        } else {
+          setStatus("draft");
         }
+        
+        setCategory(data.category || "");
+        setCurrentFeaturedImageUrl(data.featured_image || "");
       }
     } catch (error) {
-      console.error("Error fetching news post:", error);
+      console.error("Error in fetchNewsPost:", error);
       toast({
         title: "Error",
         description: "Failed to load news post",

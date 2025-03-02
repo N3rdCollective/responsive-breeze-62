@@ -23,6 +23,7 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
     content, setContent,
     excerpt, setExcerpt,
     status, setStatus,
+    category, setCategory,
     featuredImage, setFeaturedImage,
     currentFeaturedImageUrl, setCurrentFeaturedImageUrl,
     isLoading, setIsLoading,
@@ -40,6 +41,7 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
       setContent,
       setExcerpt,
       setStatus,
+      setCategory,
       setCurrentFeaturedImageUrl,
       setIsLoading
     });
@@ -59,6 +61,7 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
         content,
         excerpt,
         status,
+        category,
         featuredImage,
         currentFeaturedImageUrl,
         staffName
@@ -82,6 +85,8 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
     setExcerpt,
     status,
     setStatus,
+    category,
+    setCategory,
     currentFeaturedImageUrl,
     isLoading,
     isSaving,

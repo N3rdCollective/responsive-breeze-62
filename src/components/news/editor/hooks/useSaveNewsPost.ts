@@ -12,6 +12,7 @@ export interface NewsPostData {
   content: string;
   excerpt: string;
   status: string;
+  category: string;
   featuredImage: File | null;
   currentFeaturedImageUrl: string;
   staffName: string;
@@ -43,7 +44,7 @@ export const useSaveNewsPost = () => {
     postData: NewsPostData,
     callbacks: SaveNewsPostCallbacks
   ) => {
-    const { id, title, content, excerpt, status, featuredImage, currentFeaturedImageUrl, staffName } = postData;
+    const { id, title, content, excerpt, status, category, featuredImage, currentFeaturedImageUrl, staffName } = postData;
     const { uploadImage, setIsSaving, setIsUploading, onSuccess } = callbacks;
     
     if (!title || !content) {
@@ -88,15 +89,14 @@ export const useSaveNewsPost = () => {
       console.log("Generated excerpt:", finalExcerpt);
       
       // Prepare the data for the database
-      // Store author as string directly in 'category' field temporarily
-      // since author is a UUID column and we don't have user UUIDs yet
       const newsData = {
         title,
         content,
         status,
+        category,
         featured_image: featuredImageUrl || null,
         author: null, // Set to null since we don't have a valid UUID
-        category: staffName || "Staff", // Store the author name as category as a workaround
+        category: category || staffName || "Staff", // Use category field or default to staff name
         updated_at: new Date().toISOString(),
         excerpt: finalExcerpt,
       };

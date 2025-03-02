@@ -1,15 +1,15 @@
 
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, User } from "lucide-react";
-import { format } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
+import { Badge } from "@/components/ui/badge";
 
 interface NewsPreviewProps {
   title: string;
   content: string;
-  excerpt: string;
+  excerpt?: string;
   currentFeaturedImageUrl: string;
   authorName?: string;
+  category?: string;
 }
 
 const NewsPreview: React.FC<NewsPreviewProps> = ({
@@ -18,56 +18,49 @@ const NewsPreview: React.FC<NewsPreviewProps> = ({
   excerpt,
   currentFeaturedImageUrl,
   authorName = "Staff Author",
+  category,
 }) => {
   return (
-    <div>
-      <Card className="border rounded-lg overflow-hidden">
-        <CardContent className="p-0">
-          <div className="relative">
-            {currentFeaturedImageUrl && (
-              <div className="w-full h-[300px] overflow-hidden">
-                <img
-                  src={currentFeaturedImageUrl}
-                  alt={title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+    <div className="max-w-4xl mx-auto">
+      <div className="space-y-4">
+        {currentFeaturedImageUrl && (
+          <div className="w-full h-64 md:h-80 lg:h-96 overflow-hidden rounded-lg">
+            <img
+              src={currentFeaturedImageUrl}
+              alt={title}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+
+        <div className="space-y-4">
+          <h1 className="text-3xl font-bold">{title}</h1>
+          
+          <div className="flex flex-wrap gap-2 items-center text-sm text-muted-foreground">
+            <span>By {authorName}</span>
+            <span>•</span>
+            <span>{formatDistanceToNow(new Date(), { addSuffix: true })}</span>
+            {category && (
+              <>
+                <span>•</span>
+                <Badge variant="outline" className="font-normal">
+                  {category}
+                </Badge>
+              </>
             )}
           </div>
           
-          <div className="p-6">
-            <h1 className="text-3xl font-bold mb-4">{title || "Post Title"}</h1>
-            
-            <div className="flex flex-wrap gap-x-6 gap-y-2 mb-6 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
-                <time dateTime={new Date().toISOString()}>
-                  {format(new Date(), "MMMM dd, yyyy")}
-                </time>
-              </div>
-              
-              <div className="flex items-center gap-1">
-                <User className="h-4 w-4" />
-                <span>{authorName}</span>
-              </div>
-            </div>
-            
-            {excerpt && (
-              <div className="text-lg text-muted-foreground mb-6 italic">
-                {excerpt}
-              </div>
-            )}
-            
-            <div 
-              className="prose prose-lg max-w-none dark:prose-invert"
-              dangerouslySetInnerHTML={{ __html: content }}
-            />
-          </div>
-        </CardContent>
-      </Card>
-      
-      <div className="mt-4 text-sm text-muted-foreground">
-        <p>This is a preview of how your post will appear when published.</p>
+          {excerpt && (
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              {excerpt}
+            </p>
+          )}
+          
+          <div 
+            className="prose prose-gray max-w-none pt-6"
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
+        </div>
       </div>
     </div>
   );

@@ -19,6 +19,8 @@ interface NewsFormBasicFieldsProps {
   setExcerpt: (excerpt: string) => void;
   status: NewsStatus;
   setStatus: (status: NewsStatus) => void;
+  category: string;
+  setCategory: (category: string) => void;
 }
 
 const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
@@ -28,6 +30,8 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
   setExcerpt,
   status,
   setStatus,
+  category,
+  setCategory,
 }) => {
   return (
     <div className="space-y-6">
@@ -49,6 +53,16 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
           onChange={(e) => setExcerpt(e.target.value)}
           placeholder="Brief summary of the post"
           className="h-20"
+        />
+      </div>
+      
+      <div>
+        <Label htmlFor="category">Category</Label>
+        <Input
+          id="category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          placeholder="e.g. News, Events, Announcements"
         />
       </div>
       
