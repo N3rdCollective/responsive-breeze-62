@@ -45,10 +45,7 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
       if (data) {
         setTitle(data.title);
         setContent(data.content || "");
-        // Type assertion to avoid TypeScript error, since excerpt might not exist in the database
-        const postData = data as any;
-        // Use the excerpt if it exists, otherwise generate one from content
-        setExcerpt(postData.excerpt || data.content?.substring(0, 150) + "..." || "");
+        setExcerpt(data.excerpt || "");
         setStatus((data.status as NewsStatus) || "draft");
         
         if (data.featured_image) {
@@ -133,11 +130,14 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
           .insert([{
             ...newsData,
             created_at: new Date().toISOString(),
-            post_date: new Date().toISOString(), // Add post_date for new posts
+            post_date: new Date().toISOString(),
           }]);
       }
       
-      if (result.error) throw result.error;
+      if (result.error) {
+        console.error("Database error:", result.error);
+        throw result.error;
+      }
       
       toast({
         title: "Success",
