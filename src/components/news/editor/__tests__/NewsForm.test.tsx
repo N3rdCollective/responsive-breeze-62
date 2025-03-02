@@ -3,7 +3,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
-import NewsForm from '../NewsForm';
+import NewsForm, { NewsStatus } from '../NewsForm';
 import { BrowserRouter } from 'react-router-dom';
 
 // Mock RichTextEditor component
@@ -56,7 +56,7 @@ describe('NewsForm', () => {
     setContent: vi.fn(),
     excerpt: 'Test excerpt',
     setExcerpt: vi.fn(),
-    status: 'draft',
+    status: 'draft' as NewsStatus,
     setStatus: vi.fn(),
     currentFeaturedImageUrl: '',
     onImageSelected: vi.fn(),

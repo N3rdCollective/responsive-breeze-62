@@ -2,6 +2,7 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { useNewsState } from '../../hooks/useNewsState';
+import { NewsStatus } from '../../NewsForm';
 
 describe('useNewsState', () => {
   it('initializes with default values when no initialData is provided', () => {
@@ -24,7 +25,7 @@ describe('useNewsState', () => {
       title: 'Test Title',
       content: '<p>Test Content</p>',
       excerpt: 'Test Excerpt',
-      status: 'published',
+      status: 'published' as NewsStatus,
       featuredImageUrl: 'https://example.com/image.jpg',
     };
     
