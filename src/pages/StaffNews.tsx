@@ -14,6 +14,7 @@ const StaffNews = () => {
   const { userRole, isLoading: authLoading } = useStaffAuth();
   const isAdmin = userRole === "admin";
   const isModerator = userRole === "moderator";
+  const isSuperAdmin = userRole === "super_admin";
   
   const {
     posts,
@@ -29,7 +30,7 @@ const StaffNews = () => {
     return <LoadingSpinner />;
   }
 
-  if (!isAdmin && !isModerator) {
+  if (!isAdmin && !isModerator && !isSuperAdmin) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
