@@ -6,7 +6,8 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Calendar, User } from "lucide-react";
+import { ArrowLeft, Calendar, User, Tag } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface Post {
   id: string;
@@ -17,6 +18,7 @@ interface Post {
   category: string | null;
   author: string | null;
   status: string;
+  tags?: string[];
 }
 
 const NewsPost = () => {
@@ -128,6 +130,20 @@ const NewsPost = () => {
           </span>
         )}
       </div>
+      
+      {/* Display tags if available */}
+      {post.tags && post.tags.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Tag className="h-4 w-4 text-muted-foreground" />
+            {post.tags.map(tag => (
+              <Badge key={tag} variant="outline" className="mr-1">
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
       
       {post.featured_image && (
         <div className="mb-8">

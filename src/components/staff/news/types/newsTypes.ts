@@ -9,6 +9,7 @@ export interface Post {
   author: string | null;
   status: string;
   created_at: string;
+  tags?: string[]; // Add tags property
 }
 
 export interface PaginationMeta {

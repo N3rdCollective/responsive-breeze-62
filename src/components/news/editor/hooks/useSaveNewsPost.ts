@@ -95,7 +95,7 @@ export const useSaveNewsPost = () => {
         content,
         status,
         featured_image: featuredImageUrl || null,
-        tags,
+        tags: tags || [], // Make sure tags is properly included
         author: null, // Set to null since we don't have a valid UUID
         updated_at: new Date().toISOString(),
         excerpt: finalExcerpt,

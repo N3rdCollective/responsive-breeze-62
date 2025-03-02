@@ -4,6 +4,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import CategoryDisplay from "./CategoryDisplay";
 import PostStatusBadge from "./PostStatusBadge";
 import NewsTableActions from "./NewsTableActions";
+import { Badge } from "@/components/ui/badge";
 
 interface Post {
   id: string;
@@ -15,6 +16,7 @@ interface Post {
   author: string | null;
   status: string;
   created_at: string;
+  tags?: string[];
 }
 
 interface PostRowProps {
@@ -31,6 +33,15 @@ const PostRow = ({ post, refetch }: PostRowProps) => {
           <span className="text-xs text-muted-foreground">
             By {post.author || "Unknown"}
           </span>
+          {post.tags && post.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {post.tags.map(tag => (
+                <Badge key={tag} variant="outline" className="text-xs">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
       </TableCell>
       <TableCell>

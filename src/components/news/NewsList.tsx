@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
+import { Badge } from "@/components/ui/badge";
 
 interface Post {
   id: string;
@@ -17,6 +18,7 @@ interface Post {
   category: string | null;
   author: string | null;
   status: string;
+  tags?: string[];
 }
 
 export const NewsList = () => {
@@ -168,6 +170,17 @@ export const NewsList = () => {
                   <p className="text-muted-foreground line-clamp-3">
                     {post.content.replace(/<[^>]*>/g, '')}
                   </p>
+                  
+                  {/* Display tags if available */}
+                  {post.tags && post.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-3">
+                      {post.tags.map(tag => (
+                        <Badge key={tag} variant="outline" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
                 <CardFooter>
                   <Button asChild variant="outline" className="w-full">
