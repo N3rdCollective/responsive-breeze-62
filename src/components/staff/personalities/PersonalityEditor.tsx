@@ -6,14 +6,12 @@ import { Form } from "@/components/ui/form";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 import { BasicInfoFields } from "./components/BasicInfoFields";
 import { SocialMediaFields } from "./components/SocialMediaFields";
+import { DateFields } from "./components/DateFields";
 import { usePersonalityEditor } from "./hooks/usePersonalityEditor";
 
 const PersonalityEditor = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
-  console.log("PersonalityEditor: Personality ID from params:", id);
-  
   const {
     form,
     personality,
@@ -28,7 +26,6 @@ const PersonalityEditor = () => {
   }
 
   if (error) {
-    console.error("Error in PersonalityEditor:", error);
     return (
       <div className="container mx-auto p-4">
         <Card>
@@ -42,23 +39,6 @@ const PersonalityEditor = () => {
     );
   }
 
-  if (!personality) {
-    console.error("No personality data found for ID:", id);
-    return (
-      <div className="container mx-auto p-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center text-red-500">
-              Personality not found. Please check the URL and try again.
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  console.log("PersonalityEditor: Rendering form with data:", personality);
-
   return (
     <div className="max-w-3xl mx-auto">
       <Card>
@@ -68,11 +48,9 @@ const PersonalityEditor = () => {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <BasicInfoFields 
-                form={form} 
-                currentImageUrl={personality?.image_url || ""} 
-              />
+              <BasicInfoFields form={form} />
               <SocialMediaFields form={form} />
+              <DateFields form={form} />
               
               <CardFooter className="flex justify-end space-x-4 px-0">
                 <Button

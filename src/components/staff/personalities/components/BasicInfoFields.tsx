@@ -4,42 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
 import { PersonalityFormValues } from "../schema/personalityFormSchema";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useState, useEffect } from "react";
 
 interface BasicInfoFieldsProps {
   form: UseFormReturn<PersonalityFormValues>;
-  currentImageUrl?: string;
 }
 
-export const BasicInfoFields = ({ form, currentImageUrl }: BasicInfoFieldsProps) => {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null);
-
-  // Update preview URL when currentImageUrl changes
-  useEffect(() => {
-    if (currentImageUrl) {
-      setPreviewUrl(currentImageUrl);
-    }
-  }, [currentImageUrl]);
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      console.log("Image file selected:", file.name);
-      form.setValue("image_file", file);
-      
-      // Create a preview URL
-      const objectUrl = URL.createObjectURL(file);
-      setPreviewUrl(objectUrl);
-      
-      // Clean up the old image_url to make sure we use the new uploaded image
-      form.setValue("image_url", "");
-      
-      // Mark the field as touched and validate
-      form.trigger("image_file");
-    }
-  };
-
+export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
   return (
     <>
       <FormField
@@ -91,28 +61,17 @@ export const BasicInfoFields = ({ form, currentImageUrl }: BasicInfoFieldsProps)
       
       <FormField
         control={form.control}
-        name="image_file"
-        render={() => (
+        name="image_url"
+        render={({ field }) => (
           <FormItem>
-            <FormLabel>Profile Image</FormLabel>
-            <div className="flex flex-col space-y-4">
+            <FormLabel>Profile Image URL</FormLabel>
+            <FormControl>
               <Input 
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
+                placeholder="https://example.com/image.jpg" 
+                {...field}
+                value={field.value || ""}
               />
-              {previewUrl && (
-                <div className="flex items-center space-x-4">
-                  <Avatar className="h-20 w-20">
-                    <AvatarImage src={previewUrl} alt="Preview" />
-                    <AvatarFallback>
-                      {form.getValues("name")?.charAt(0) || "?"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm text-muted-foreground">Preview</span>
-                </div>
-              )}
-            </div>
+            </FormControl>
             <FormMessage />
           </FormItem>
         )}
