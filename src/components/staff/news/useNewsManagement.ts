@@ -8,6 +8,7 @@ import { Post, PaginationMeta } from "./types/newsTypes";
 export const useNewsManagement = () => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft">("all");
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10; // Number of posts per page
   
@@ -42,11 +43,18 @@ export const useNewsManagement = () => {
 
   const posts = data?.posts || [];
   
-  // Filter posts based on search term
-  const filteredPosts = posts.filter(post => 
-    post.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (post.category && post.category.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  // Filter posts based on search term and status
+  const filteredPosts = posts.filter(post => {
+    const matchesSearch = 
+      post.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      (post.category && post.category.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesStatus = 
+      statusFilter === "all" || 
+      post.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
 
   // Calculate pagination metadata based on filtered posts
   const paginationMeta: PaginationMeta = {
@@ -77,6 +85,8 @@ export const useNewsManagement = () => {
     refetch,
     searchTerm,
     setSearchTerm,
+    statusFilter,
+    setStatusFilter,
     currentPage,
     handlePageChange
   };

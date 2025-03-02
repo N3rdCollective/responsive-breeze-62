@@ -26,6 +26,8 @@ const StaffNews = () => {
     refetch,
     searchTerm,
     setSearchTerm,
+    statusFilter,
+    setStatusFilter,
     handlePageChange
   } = useNewsManagement();
 
@@ -56,7 +58,9 @@ const StaffNews = () => {
             <NewsTableHeader 
               postsCount={filteredPosts?.length} 
               searchTerm={searchTerm} 
-              setSearchTerm={setSearchTerm} 
+              setSearchTerm={setSearchTerm}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
             />
           </CardHeader>
           
