@@ -65,11 +65,14 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
       // Default role for new staff is "staff"
       const defaultRole = "staff";
       
-      // Insert the new staff member WITHOUT specifying an ID
-      // Let Supabase handle this to avoid foreign key constraint issues
+      // Generate a UUID for the new staff member since the schema requires it
+      const newStaffId = crypto.randomUUID();
+      
+      // Insert the new staff member
       const { error: insertError } = await supabase
         .from("staff")
         .insert({ 
+          id: newStaffId,
           email: values.email,
           role: defaultRole
         });
