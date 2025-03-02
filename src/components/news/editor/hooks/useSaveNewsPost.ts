@@ -93,10 +93,9 @@ export const useSaveNewsPost = () => {
         title,
         content,
         status,
-        category,
         featured_image: featuredImageUrl || null,
         author: null, // Set to null since we don't have a valid UUID
-        category: category || staffName || "Staff", // Use category field or default to staff name
+        category: category || staffName || "Staff", // Use category field
         updated_at: new Date().toISOString(),
         excerpt: finalExcerpt,
       };

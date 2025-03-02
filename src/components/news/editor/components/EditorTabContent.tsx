@@ -87,8 +87,6 @@ const EditorTabContent: React.FC<EditorTabContentProps> = ({
           <ImageUploader
             onImageSelected={onImageSelected}
             currentImageUrl={currentFeaturedImageUrl}
-            label="Featured Image"
-            description="Select an image to be displayed as the featured image for this post."
           />
         </TabsContent>
       </Tabs>

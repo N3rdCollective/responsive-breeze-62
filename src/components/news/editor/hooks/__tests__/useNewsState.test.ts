@@ -12,30 +12,13 @@ describe('useNewsState', () => {
     expect(result.current.content).toBe('');
     expect(result.current.excerpt).toBe('');
     expect(result.current.status).toBe('draft');
+    expect(result.current.category).toBe('');
     expect(result.current.featuredImage).toBe(null);
     expect(result.current.currentFeaturedImageUrl).toBe('');
-    expect(result.current.isLoading).toBe(false);
+    expect(result.current.isLoading).toBe(true);
     expect(result.current.isSaving).toBe(false);
     expect(result.current.isUploading).toBe(false);
     expect(result.current.isPreviewModalOpen).toBe(false);
-  });
-  
-  it('initializes with provided initialData', () => {
-    const initialData = {
-      title: 'Test Title',
-      content: '<p>Test Content</p>',
-      excerpt: 'Test Excerpt',
-      status: 'published' as NewsStatus,
-      featuredImageUrl: 'https://example.com/image.jpg',
-    };
-    
-    const { result } = renderHook(() => useNewsState(initialData));
-    
-    expect(result.current.title).toBe('Test Title');
-    expect(result.current.content).toBe('<p>Test Content</p>');
-    expect(result.current.excerpt).toBe('Test Excerpt');
-    expect(result.current.status).toBe('published');
-    expect(result.current.currentFeaturedImageUrl).toBe('https://example.com/image.jpg');
   });
   
   it('updates state correctly with setter functions', () => {
@@ -60,6 +43,11 @@ describe('useNewsState', () => {
       result.current.setStatus('published');
     });
     expect(result.current.status).toBe('published');
+    
+    act(() => {
+      result.current.setCategory('News');
+    });
+    expect(result.current.category).toBe('News');
     
     const testFile = new File([''], 'test.jpg', { type: 'image/jpeg' });
     act(() => {

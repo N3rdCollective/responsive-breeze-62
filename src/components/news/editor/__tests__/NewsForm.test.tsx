@@ -120,6 +120,8 @@ describe('NewsForm', () => {
     setExcerpt: vi.fn(),
     status: 'draft' as NewsStatus,
     setStatus: vi.fn(),
+    category: 'Test Category',
+    setCategory: vi.fn(),
     currentFeaturedImageUrl: '',
     onImageSelected: vi.fn(),
     onSave: vi.fn(),
