@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import { MinimizedPlayer } from "./player/MinimizedPlayer";
@@ -59,7 +60,7 @@ const MusicPlayer = () => {
   if (isMobile) {
     return (
       <div className={`
-        fixed transition-all duration-300 z-50
+        fixed transition-all duration-300 z-40
         ${isFullscreen 
           ? 'top-0 left-0 right-0 bottom-0 h-screen' 
           : 'bottom-0 left-0 right-0 h-16 bg-background border-t border-border'
@@ -93,7 +94,7 @@ const MusicPlayer = () => {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-20 bg-background border-t border-border shadow-lg z-50">
+    <div className="fixed bottom-0 left-0 right-0 h-20 bg-background border-t border-border shadow-lg z-40">
       <DesktopPlayer
         isPlaying={isPlaying}
         volume={volume}
