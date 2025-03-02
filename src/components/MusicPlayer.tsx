@@ -55,7 +55,8 @@ const MusicPlayer = () => {
     }
   };
 
-  const isMobile = window.innerWidth < 768;
+  // Get window width for responsive layout
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
 
   if (isMobile) {
     return (
