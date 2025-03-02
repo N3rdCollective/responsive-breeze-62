@@ -95,10 +95,16 @@ export const useSaveNewsPost = () => {
         status,
         featured_image: featuredImageUrl || null,
         author: null, // Set to null since we don't have a valid UUID
-        category: category || staffName || "Staff", // Use category field
         updated_at: new Date().toISOString(),
         excerpt: finalExcerpt,
       };
+      
+      // Only set category for new posts or when it's explicitly changed
+      if (!id || category) {
+        // For new posts, use provided category or default to 'Uncategorized'
+        // For edits, only update category if it was explicitly set
+        newsData['category'] = category || 'Uncategorized';
+      }
       
       console.log("Saving post data:", newsData);
       
@@ -125,6 +131,7 @@ export const useSaveNewsPost = () => {
           ...newsData,
           created_at: new Date().toISOString(),
           post_date: new Date().toISOString(),
+          category: category || 'Uncategorized', // For new posts, ensure category is set
         };
         
         result = await supabase
