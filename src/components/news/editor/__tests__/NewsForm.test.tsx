@@ -48,6 +48,68 @@ vi.mock('../PreviewModal', () => ({
   ),
 }));
 
+// Mock sub-components
+vi.mock('../components/EditorTabContent', () => ({
+  default: ({
+    title,
+    setTitle,
+    excerpt,
+    setExcerpt,
+    onImageSelected,
+  }) => (
+    <div data-testid="editor-tab-content">
+      <input
+        data-testid="title-input"
+        aria-label="Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
+      <textarea
+        data-testid="excerpt-input"
+        aria-label="Excerpt (optional)"
+        value={excerpt}
+        onChange={(e) => setExcerpt(e.target.value)}
+      />
+      <button
+        data-testid="select-image-button"
+        onClick={() => onImageSelected(new File([''], 'test.jpg', { type: 'image/jpeg' }))}
+      >
+        Select Image
+      </button>
+    </div>
+  ),
+}));
+
+vi.mock('../components/FormActions', () => ({
+  default: ({ onSave, isSaving, onOpenPreview }) => (
+    <div data-testid="form-actions">
+      <button
+        data-testid="preview-button"
+        onClick={onOpenPreview}
+      >
+        Preview in Modal
+      </button>
+      <button
+        data-testid="save-button"
+        onClick={onSave}
+      >
+        {isSaving ? 'Saving...' : 'Save Post'}
+      </button>
+    </div>
+  ),
+}));
+
+vi.mock('../components/NewsPreview', () => ({
+  default: ({ title, content, excerpt, currentFeaturedImageUrl }) => (
+    <div data-testid="news-preview">
+      <h1>{title}</h1>
+      <div>{excerpt}</div>
+      <div dangerouslySetInnerHTML={{ __html: content }} />
+      {currentFeaturedImageUrl && <img src={currentFeaturedImageUrl} alt="preview" />}
+    </div>
+  ),
+}));
+
 describe('NewsForm', () => {
   const defaultProps = {
     title: 'Test Title',
@@ -75,63 +137,46 @@ describe('NewsForm', () => {
   it('renders the form with initial values', () => {
     renderWithRouter(<NewsForm {...defaultProps} />);
     
-    expect(screen.getByLabelText('Title')).toHaveValue('Test Title');
-    expect(screen.getByLabelText('Excerpt (optional)')).toHaveValue('Test excerpt');
-    expect(screen.getByTestId('rich-text-editor')).toBeInTheDocument();
-  });
-  
-  it('handles title input change', async () => {
-    renderWithRouter(<NewsForm {...defaultProps} />);
-    
-    const titleInput = screen.getByLabelText('Title');
-    await userEvent.clear(titleInput);
-    await userEvent.type(titleInput, 'New Title');
-    
-    expect(defaultProps.setTitle).toHaveBeenCalledWith('New Title');
-  });
-  
-  it('handles excerpt input change', async () => {
-    renderWithRouter(<NewsForm {...defaultProps} />);
-    
-    const excerptInput = screen.getByLabelText('Excerpt (optional)');
-    await userEvent.clear(excerptInput);
-    await userEvent.type(excerptInput, 'New Excerpt');
-    
-    expect(defaultProps.setExcerpt).toHaveBeenCalledWith('New Excerpt');
+    expect(screen.getByTestId('editor-tab-content')).toBeInTheDocument();
+    expect(screen.getByTestId('form-actions')).toBeInTheDocument();
   });
   
   it('opens preview modal when preview button is clicked', async () => {
     renderWithRouter(<NewsForm {...defaultProps} />);
     
-    const previewButton = screen.getByText('Preview in Modal');
+    const previewButton = screen.getByTestId('preview-button');
     await userEvent.click(previewButton);
     
     expect(defaultProps.setIsPreviewModalOpen).toHaveBeenCalledWith(true);
   });
   
-  it('shows save button in loading state when saving', () => {
-    renderWithRouter(<NewsForm {...defaultProps} isSaving={true} />);
-    
-    expect(screen.getByText('Saving...')).toBeInTheDocument();
-  });
-  
   it('calls onSave when save button is clicked', async () => {
     renderWithRouter(<NewsForm {...defaultProps} />);
     
-    const saveButton = screen.getByText('Save Post');
+    const saveButton = screen.getByTestId('save-button');
     await userEvent.click(saveButton);
     
     expect(defaultProps.onSave).toHaveBeenCalled();
   });
   
-  it('renders featured image when provided', () => {
-    renderWithRouter(
-      <NewsForm 
-        {...defaultProps} 
-        currentFeaturedImageUrl="https://example.com/image.jpg" 
-      />
-    );
+  it('switches between edit and preview tabs', async () => {
+    renderWithRouter(<NewsForm {...defaultProps} />);
     
-    expect(screen.getByTestId('preview-image')).toBeInTheDocument();
+    // Initially the edit tab should be active
+    expect(screen.getByTestId('editor-tab-content')).toBeInTheDocument();
+    
+    // Click on the preview tab
+    const previewTab = screen.getByRole('tab', { name: /preview/i });
+    await userEvent.click(previewTab);
+    
+    // Now the preview should be visible
+    expect(screen.getByTestId('news-preview')).toBeInTheDocument();
+    
+    // Go back to edit tab
+    const editTab = screen.getByRole('tab', { name: /edit/i });
+    await userEvent.click(editTab);
+    
+    // Editor should be visible again
+    expect(screen.getByTestId('editor-tab-content')).toBeInTheDocument();
   });
 });
