@@ -98,6 +98,10 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
       else if (errorMessage.includes("Invalid JSON")) {
         displayErrorMessage = "Invalid data format. Please try again with a valid email address.";
       }
+      // Check for empty request
+      else if (errorMessage.includes("Empty request")) {
+        displayErrorMessage = "Empty request sent to server. Please try again with a valid email address.";
+      }
       
       setError(`Failed to add staff member: ${displayErrorMessage}`);
       

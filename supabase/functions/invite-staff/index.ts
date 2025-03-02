@@ -29,20 +29,54 @@ serve(async (req) => {
       throw new Error('Request must be application/json');
     }
     
-    // Parse request body
+    // Parse request body with better error handling
     let email;
+    let requestBody;
+    
     try {
-      const body = await req.json();
-      email = body.email;
+      const text = await req.text();
+      console.log('Request body text:', text);
+      
+      if (!text || text.trim() === '') {
+        console.error('Empty request body');
+        throw new Error('Empty request body');
+      }
+      
+      try {
+        requestBody = JSON.parse(text);
+      } catch (jsonError) {
+        console.error('JSON parse error:', jsonError, 'for text:', text);
+        throw new Error(`Invalid JSON in request body: ${jsonError.message}`);
+      }
+      
+      email = requestBody.email;
     } catch (parseError) {
-      console.error('Error parsing JSON:', parseError);
-      throw new Error('Invalid JSON in request body');
+      console.error('Error parsing request:', parseError);
+      return new Response(
+        JSON.stringify({ 
+          error: parseError instanceof Error ? parseError.message : 'Invalid request format',
+          success: false
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
     
     // Validate email
     if (!email || typeof email !== 'string' || !email.includes('@')) {
       console.error('Invalid email:', email);
-      throw new Error('Invalid email address');
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid email address',
+          success: false
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
     console.log(`Processing invitation for email: ${email}`);
@@ -54,12 +88,30 @@ serve(async (req) => {
     
     if (!supabaseUrl || !supabaseServiceKey) {
       console.error('Missing Supabase environment variables');
-      throw new Error('Server configuration error: Missing credentials');
+      return new Response(
+        JSON.stringify({ 
+          error: 'Server configuration error: Missing credentials',
+          success: false
+        }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
     if (!resendApiKey) {
       console.error('Missing Resend API key');
-      throw new Error('Server configuration error: Missing email service credentials');
+      return new Response(
+        JSON.stringify({ 
+          error: 'Server configuration error: Missing email service credentials',
+          success: false
+        }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
     const supabaseAdmin = createClient(
@@ -80,7 +132,16 @@ serve(async (req) => {
       
     if (pendingError) {
       console.error('Error checking pending staff:', pendingError);
-      throw new Error(`Database error: ${pendingError.message}`);
+      return new Response(
+        JSON.stringify({ 
+          error: `Database error: ${pendingError.message}`,
+          success: false
+        }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
     if (existingPending) {
@@ -95,14 +156,29 @@ serve(async (req) => {
         
       if (staffError) {
         console.error('Error checking existing staff:', staffError);
-        throw new Error(`Database error: ${staffError.message}`);
+        return new Response(
+          JSON.stringify({ 
+            error: `Database error: ${staffError.message}`,
+            success: false
+          }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
       }
         
       if (existingStaff) {
         console.log(`Email ${email} already exists as staff member`);
         return new Response(
-          JSON.stringify({ error: 'This email is already registered as a staff member' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ 
+            error: 'This email is already registered as a staff member',
+            success: false
+          }),
+          { 
+            status: 400, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
         );
       }
       
@@ -117,7 +193,16 @@ serve(async (req) => {
 
       if (insertError) {
         console.error('Error inserting to pending staff:', insertError);
-        throw new Error(`Failed to add to pending staff: ${insertError.message}`);
+        return new Response(
+          JSON.stringify({ 
+            error: `Failed to add to pending staff: ${insertError.message}`,
+            success: false
+          }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
       }
       
       console.log(`Added ${email} to pending_staff table`);
@@ -140,7 +225,16 @@ serve(async (req) => {
 
     if (signupError) {
       console.error('Error generating signup link:', signupError);
-      throw new Error(`Failed to generate signup link: ${signupError.message}`);
+      return new Response(
+        JSON.stringify({ 
+          error: `Failed to generate signup link: ${signupError.message}`,
+          success: false
+        }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
     const signupUrl = signupData.properties.action_link;
@@ -175,10 +269,11 @@ serve(async (req) => {
 
       if (emailError) {
         console.error('Error sending email:', emailError);
-        throw new Error(`Failed to send invitation email: ${emailError.message}`);
+        // Continue even if email fails - we'll return the signup URL to the client
+        console.log('Continuing despite email error, will return signup URL to client');
+      } else {
+        console.log('Email sent successfully:', emailData);
       }
-
-      console.log('Email sent successfully:', emailData);
     } catch (emailError) {
       console.error('Error with email service:', emailError);
       // Continue even if email fails - we'll return the signup URL to the client
