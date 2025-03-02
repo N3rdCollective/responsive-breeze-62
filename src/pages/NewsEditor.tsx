@@ -54,6 +54,7 @@ const NewsEditor = () => {
       return;
     }
     
+    // Call fetchNewsPost which now handles both new and existing posts
     fetchNewsPost();
   }, [id, staffName, authLoading]);
   
@@ -69,7 +70,8 @@ const NewsEditor = () => {
     return null;
   }
   
-  if (isLoading) {
+  // Only show loading spinner when editing an existing post and data is being fetched
+  if (id && isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <LoadingSpinner />
@@ -83,11 +85,11 @@ const NewsEditor = () => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate('/staff-panel')}
+          onClick={() => navigate('/staff/news')}
           className="gap-1 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Staff Panel
+          Back to News Management
         </Button>
       </div>
       

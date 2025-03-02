@@ -34,7 +34,11 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
 
   // Fetch the news post data
   const fetchNewsPostData = async () => {
-    if (!id) return; // Exit early if no ID (creating a new post)
+    if (!id) {
+      // Set default state for new post
+      setIsLoading(false);
+      return;
+    }
     
     await fetchNewsPost(id, {
       setTitle,
