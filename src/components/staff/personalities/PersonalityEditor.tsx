@@ -154,7 +154,7 @@ export const PersonalityEditor = () => {
       setIsSaving(true);
       
       // Format the data for Supabase
-      const days = values.days.split(",").map(day => day.trim());
+      const dayArray = values.days.split(",").map(day => day.trim());
       
       const updateData = {
         name: values.name,
@@ -165,22 +165,28 @@ export const PersonalityEditor = () => {
           twitter: values.twitter,
           instagram: values.instagram,
           facebook: values.facebook
-        },
+        } as Json,
         show_times: {
-          days,
+          days: dayArray,
           start: values.start,
           end: values.end
-        },
+        } as Json,
         start_date: values.start_date || null,
         updated_at: new Date().toISOString()
       };
+      
+      console.log("Updating personality with ID:", values.id);
+      console.log("Update data:", updateData);
       
       const { error } = await supabase
         .from("personalities")
         .update(updateData)
         .eq("id", values.id);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
       
       toast({
         title: "Success",
@@ -188,7 +194,7 @@ export const PersonalityEditor = () => {
       });
       
       // Refresh the personalities list
-      fetchPersonalities();
+      await fetchPersonalities();
       
     } catch (error) {
       console.error("Error updating personality:", error);
@@ -235,7 +241,7 @@ export const PersonalityEditor = () => {
       setIsSaving(true);
       
       // Format the data for Supabase
-      const days = values.days ? values.days.split(",").map(day => day.trim()) : [];
+      const dayArray = values.days ? values.days.split(",").map(day => day.trim()) : [];
       
       const newPersonality = {
         name: values.name,
@@ -246,21 +252,26 @@ export const PersonalityEditor = () => {
           twitter: values.twitter,
           instagram: values.instagram,
           facebook: values.facebook
-        },
+        } as Json,
         show_times: {
-          days,
+          days: dayArray,
           start: values.start,
           end: values.end
-        },
+        } as Json,
         start_date: values.start_date || null
       };
+      
+      console.log("Creating new personality:", newPersonality);
       
       const { data, error } = await supabase
         .from("personalities")
         .insert(newPersonality)
         .select();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
       
       toast({
         title: "Success",
@@ -268,7 +279,7 @@ export const PersonalityEditor = () => {
       });
       
       // Refresh the personalities list
-      fetchPersonalities();
+      await fetchPersonalities();
       
       // Select the newly created personality
       if (data && data.length > 0) {
@@ -304,12 +315,17 @@ export const PersonalityEditor = () => {
     try {
       setIsSaving(true);
       
+      console.log("Deleting personality with ID:", id);
+      
       const { error } = await supabase
         .from("personalities")
         .delete()
         .eq("id", id);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
       
       toast({
         title: "Success",
@@ -317,7 +333,7 @@ export const PersonalityEditor = () => {
       });
       
       // Refresh the personalities list
-      fetchPersonalities();
+      await fetchPersonalities();
       handleCreateNew();
       
     } catch (error) {
