@@ -1,3 +1,4 @@
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import MusicPlayer from "./components/MusicPlayer";
@@ -19,6 +20,7 @@ import StaffPersonalities from "./pages/StaffPersonalities";
 import StaffRegistration from "./pages/StaffRegistration";
 import StaffSignup from "./pages/StaffSignup";
 import NewsEditor from "./pages/NewsEditor";
+import StaffAboutEditor from "./pages/StaffAboutEditor";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +46,7 @@ function App() {
             <Route path="/staff/news/new" element={<NewsEditor />} />
             <Route path="/staff/registration" element={<StaffRegistration />} />
             <Route path="/staff/signup" element={<StaffSignup />} />
+            <Route path="/staff/about-editor" element={<StaffAboutEditor />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <MusicPlayer />

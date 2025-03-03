@@ -18,10 +18,14 @@ const ContentManagementCard = () => {
   const canManageContent = isAdmin || isModerator || isSuperAdmin;
 
   const handleEditPage = (page: string) => {
-    toast({
-      title: `Edit ${page}`,
-      description: `In a full implementation, this would open the editor for the ${page} page.`,
-    });
+    if (page === "About") {
+      navigate("/staff/about-editor");
+    } else {
+      toast({
+        title: `Edit ${page}`,
+        description: `In a full implementation, this would open the editor for the ${page} page.`,
+      });
+    }
   };
 
   return (
@@ -40,6 +44,7 @@ const ContentManagementCard = () => {
           variant="outline" 
           className="w-full bg-white dark:bg-[#222222] text-black dark:text-white hover:bg-gray-100 dark:hover:bg-[#444444]"
           onClick={() => handleEditPage("About")}
+          disabled={!canManageContent}
         >
           Edit About Page
         </Button>
