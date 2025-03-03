@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { MoreHorizontal, Star, SkipBack, Play, Pause, SkipForward, ChevronDown } from "lucide-react";
+import { MoreHorizontal, Star, SkipBack, Play, Pause, SkipForward, ChevronDown, Minimize2 } from "lucide-react";
 import { PlayerControls } from "./PlayerControls";
 import { VolumeControl } from "./VolumeControl";
 import { StreamMetadata } from "@/types/player";
@@ -48,18 +48,21 @@ export const FullscreenPlayer = ({
         ? 'bg-gradient-to-b from-[#1A1F2C] to-[#121520] text-white'
         : 'bg-gradient-to-b from-[#F1F0FB] to-[#E6E4F0] text-foreground'
     }`}>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={toggleFullscreen}
-        className={`absolute top-4 right-4 ${
-          theme === 'dark' 
-            ? 'text-white/60 hover:text-white' 
-            : 'text-muted-foreground hover:text-foreground'
-        }`}
-      >
-        <ChevronDown size={24} />
-      </Button>
+      <div className="absolute top-4 right-4 flex gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleFullscreen}
+          className={`${
+            theme === 'dark' 
+              ? 'text-white/60 hover:text-white' 
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+          aria-label="Minimize player"
+        >
+          <Minimize2 size={24} />
+        </Button>
+      </div>
 
       <div className="flex-1 flex items-center justify-center overflow-visible">
         <div className="w-[85vw] aspect-square max-w-[400px] rounded-2xl overflow-hidden shadow-lg">
