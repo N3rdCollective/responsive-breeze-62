@@ -176,26 +176,39 @@ export const PersonalityEditor = () => {
       const dayArray = values.days ? values.days.split(",").map(day => day.trim()).filter(day => day !== "") : [];
       console.log("Processed day array:", dayArray);
       
+      // Explicitly cast the objects to Json to ensure compatibility with Supabase
+      const socialLinks: Json = {
+        twitter: values.twitter || "",
+        instagram: values.instagram || "",
+        facebook: values.facebook || ""
+      };
+      
+      const showTimes: Json = {
+        days: dayArray,
+        start: values.start || "",
+        end: values.end || ""
+      };
+      
       const updateData = {
         name: values.name,
         role: values.role,
         bio: values.bio || null,
         image_url: imageUrl,
-        social_links: {
-          twitter: values.twitter || "",
-          instagram: values.instagram || "",
-          facebook: values.facebook || ""
-        },
-        show_times: {
-          days: dayArray,
-          start: values.start || "",
-          end: values.end || ""
-        },
+        social_links: socialLinks,
+        show_times: showTimes,
         updated_at: new Date().toISOString()
       };
       
       console.log("Updating personality with ID:", values.id);
       console.log("Update data:", updateData);
+      
+      // Make sure the id is valid before proceeding
+      if (!values.id) {
+        throw new Error("Invalid personality ID");
+      }
+      
+      // Add delay to avoid potential timing issues
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       const { data, error } = await supabase
         .from("personalities")
@@ -220,9 +233,10 @@ export const PersonalityEditor = () => {
       
       // Re-select the updated personality to reflect changes in the UI
       if (values.id) {
+        // Use longer timeout to ensure data is refreshed
         setTimeout(() => {
           handleSelectPersonality(values.id);
-        }, 100);
+        }, 500);
       }
       
     } catch (error) {
@@ -283,21 +297,26 @@ export const PersonalityEditor = () => {
       // Format the data for Supabase
       const dayArray = values.days ? values.days.split(",").map(day => day.trim()).filter(day => day !== "") : [];
       
+      // Explicitly cast to Json for type safety
+      const socialLinks: Json = {
+        twitter: values.twitter || "",
+        instagram: values.instagram || "",
+        facebook: values.facebook || ""
+      };
+      
+      const showTimes: Json = {
+        days: dayArray,
+        start: values.start || "",
+        end: values.end || ""
+      };
+      
       const newPersonality = {
         name: values.name,
         role: values.role,
-        bio: values.bio,
+        bio: values.bio || null,
         image_url: imageUrl,
-        social_links: {
-          twitter: values.twitter,
-          instagram: values.instagram,
-          facebook: values.facebook
-        } as Json,
-        show_times: {
-          days: dayArray,
-          start: values.start,
-          end: values.end
-        } as Json
+        social_links: socialLinks,
+        show_times: showTimes
       };
       
       console.log("Creating new personality:", newPersonality);
