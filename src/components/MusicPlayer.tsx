@@ -28,6 +28,7 @@ const MusicPlayer = () => {
 
   useEffect(() => {
     const body = document.body;
+    const navbar = document.querySelector('nav');
     
     if (body) {
       if (isMobile && !isFullscreen) {
@@ -39,9 +40,22 @@ const MusicPlayer = () => {
       }
     }
     
+    // Hide/show navbar based on fullscreen state
+    if (navbar) {
+      if (isMobile && isFullscreen) {
+        navbar.style.display = 'none';
+      } else {
+        navbar.style.display = 'block';
+      }
+    }
+    
     return () => {
       if (body) {
         body.style.paddingBottom = "0";
+      }
+      // Restore navbar visibility on component unmount
+      if (navbar) {
+        navbar.style.display = 'block';
       }
     };
   }, [isFullscreen, isMobile]);
