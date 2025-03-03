@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -15,6 +14,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
+import { AboutPageContent } from "@/types/about";
 
 const aboutFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -35,6 +35,7 @@ const StaffAboutEditor = () => {
   const { isLoading, userRole } = useStaffAuth();
   const [isSaving, setIsSaving] = useState(false);
   const [initialData, setInitialData] = useState<AboutFormValues | null>(null);
+  const [recordId, setRecordId] = useState<string | null>(null);
   
   // Check if user has permissions to edit
   const canEdit = userRole === "admin" || userRole === "super_admin" || userRole === "moderator";
@@ -84,6 +85,7 @@ const StaffAboutEditor = () => {
             possibilities_stats: data.possibilities_stats || "∞",
           };
           
+          setRecordId(data.id);
           setInitialData(formData);
           form.reset(formData);
         }
@@ -108,29 +110,19 @@ const StaffAboutEditor = () => {
     setIsSaving(true);
 
     try {
-      // Check if about page content exists
-      const { data: existingData, error: checkError } = await supabase
-        .from("about_page")
-        .select("id")
-        .single();
-
-      if (checkError && checkError.code !== "PGRST116") { // PGRST116 is "not found"
-        throw checkError;
-      }
-
       let updateResult;
       
-      if (existingData) {
+      if (recordId) {
         // Update existing record
         updateResult = await supabase
           .from("about_page")
           .update(values)
-          .eq("id", existingData.id);
+          .eq("id", recordId);
       } else {
         // Insert new record
         updateResult = await supabase
           .from("about_page")
-          .insert([values]);
+          .insert([values as AboutPageContent]);
       }
 
       if (updateResult.error) {

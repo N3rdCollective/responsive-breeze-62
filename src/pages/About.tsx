@@ -1,21 +1,10 @@
-
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
-
-interface AboutPageContent {
-  title: string;
-  subtitle: string;
-  mission: string;
-  soundscape: string;
-  backstory: string;
-  global_stats: string;
-  genre_stats: string;
-  possibilities_stats: string;
-}
+import { AboutPageContent } from "@/types/about";
 
 const defaultContent: AboutPageContent = {
   title: "About Rappin' Lounge",

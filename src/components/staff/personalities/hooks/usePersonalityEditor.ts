@@ -1,331 +1,153 @@
-
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Personality, FormValues } from "../types";
-import { handleImageUpload } from "@/components/news/editor/ImageUploader";
-import { preparePersonalityFormData, prepareUpdateData } from "../utils/personalityUtils";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { PersonalityFormData } from "../types";
+import { ShowTimes } from "../types/ShowTimes";
+import { SocialLinks } from "../types/SocialLinks";
 
-export const usePersonalityEditor = (canEdit: boolean) => {
+const defaultSocialLinks = [
+  { platform: "facebook", url: "" },
+  { platform: "twitter", url: "" },
+  { platform: "instagram", url: "" },
+  { platform: "youtube", url: "" },
+  { platform: "website", url: "" },
+];
+
+export const usePersonalityEditor = (personalityId?: string) => {
   const { toast } = useToast();
-  const [personalities, setPersonalities] = useState<Personality[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedPersonality, setSelectedPersonality] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  
-  const form = useForm<FormValues>({
-    defaultValues: {
-      id: "",
-      name: "",
-      role: "",
-      bio: "",
-      image_url: "",
-      twitter: "",
-      instagram: "",
-      facebook: "",
-      days: "",
-      start: "",
-      end: "",
-    }
-  });
+  const navigate = useNavigate();
 
-  const fetchPersonalities = async () => {
+  const [name, setName] = useState("");
+  const [role, setRole] = useState("");
+  const [bio, setBio] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [showTimes, setShowTimes] = useState<ShowTimes>([]);
+  const [socialLinks, setSocialLinks] = useState<SocialLinks>(defaultSocialLinks);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (personalityId) {
+      loadPersonality(personalityId);
+    } else {
+      resetForm();
+    }
+  }, [personalityId]);
+
+  const loadPersonality = async (id: string) => {
+    setIsLoading(true);
     try {
-      setLoading(true);
-      console.log("Fetching personalities from database...");
-      
       const { data, error } = await supabase
         .from("personalities")
         .select("*")
-        .order("name");
-      
-      if (error) {
-        console.error("Error fetching personalities:", error);
-        throw error;
-      }
-      
-      console.log("Fetched personalities:", data);
-      
-      if (data) {
-        // Convert database data to the expected Personality type
-        const typedPersonalities: Personality[] = data.map(item => {
-          return {
-            ...item,
-            show_times: item.show_times as unknown as ShowTimes,
-            social_links: item.social_links as unknown as SocialLinks
-          };
-        });
-        
-        setPersonalities(typedPersonalities);
-        console.log("Personalities set in state:", typedPersonalities);
-      }
-    } catch (error) {
-      console.error("Error fetching personalities:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load personalities. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchPersonalities();
-  }, []);
-
-  const handleSelectPersonality = (id: string) => {
-    console.log("Selecting personality with ID:", id);
-    const personality = personalities.find(p => p.id === id);
-    if (!personality) {
-      console.error("Personality not found with ID:", id);
-      return;
-    }
-    
-    console.log("Found personality:", personality);
-    setSelectedPersonality(id);
-    setSelectedImage(null);
-    
-    // Reset form with personality data
-    form.reset(preparePersonalityFormData(personality));
-    
-    console.log("Form reset with personality data");
-  };
-
-  const handleImageSelected = (file: File) => {
-    setSelectedImage(file);
-  };
-
-  const handleSubmit = async (values: FormValues) => {
-    if (!canEdit) {
-      toast({
-        title: "Permission Denied",
-        description: "You don't have permission to edit personalities.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      setIsSaving(true);
-      
-      console.log("Starting personality update process for ID:", values.id);
-      console.log("Form values:", values);
-      
-      // Process image upload if there's a new image
-      let imageUrl = values.image_url;
-      if (selectedImage) {
-        console.log("Uploading new image...");
-        const uploadedImageUrl = await handleImageUpload(selectedImage);
-        if (uploadedImageUrl) {
-          imageUrl = uploadedImageUrl;
-          console.log("New image uploaded:", imageUrl);
-        } else {
-          throw new Error("Failed to upload image");
-        }
-      }
-      
-      const updateData = prepareUpdateData(values, imageUrl);
-      
-      console.log("Updating personality with ID:", values.id);
-      console.log("Update data:", updateData);
-      
-      // Make sure the id is valid before proceeding
-      if (!values.id) {
-        throw new Error("Invalid personality ID");
-      }
-      
-      // Debug: Test direct query to verify the row exists
-      const { data: existingData, error: existingError } = await supabase
-        .from("personalities")
-        .select("id, name")
-        .eq("id", values.id)
+        .eq("id", id)
         .single();
-        
-      if (existingError) {
-        console.error("Error verifying personality exists:", existingError);
-        throw new Error(`Record with ID ${values.id} not found in database`);
-      }
-      
-      console.log("Found existing personality for update:", existingData);
-      
-      // Add delay to avoid potential timing issues
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      const { data, error } = await supabase
-        .from("personalities")
-        .update(updateData)
-        .eq("id", values.id)
-        .select();
-      
+
       if (error) {
-        console.error("Supabase update error:", error);
-        throw error;
+        throw new Error(error.message);
       }
-      
-      console.log("Update response data:", data);
-      
-      if (!data || data.length === 0) {
-        console.warn("Update succeeded but no data returned");
+
+      if (data) {
+        setName(data.name || "");
+        setRole(data.role || "");
+        setBio(data.bio || "");
+        setImageUrl(data.image_url || "");
+        setStartDate(data.start_date ? new Date(data.start_date) : null);
+        setShowTimes((data.show_times as ShowTimes) || []);
+        setSocialLinks((data.social_links as SocialLinks) || defaultSocialLinks);
       }
-      
+    } catch (error: any) {
+      toast({
+        title: "Error loading personality",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setName("");
+    setRole("");
+    setBio("");
+    setImageUrl("");
+    setStartDate(null);
+    setShowTimes([]);
+    setSocialLinks(defaultSocialLinks);
+  };
+
+  const handleSave = async (data: PersonalityFormData) => {
+    setIsSaving(true);
+    try {
+      const personalityData = {
+        ...data,
+        show_times: data.showTimes,
+        social_links: data.socialLinks,
+        start_date: data.startDate ? data.startDate.toISOString() : null,
+      };
+
+      let result;
+
+      if (personalityId) {
+        result = await supabase
+          .from("personalities")
+          .update(personalityData)
+          .eq("id", personalityId);
+      } else {
+        result = await supabase.from("personalities").insert(personalityData);
+      }
+
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+
       toast({
         title: "Success",
-        description: `${values.name} has been updated successfully.`
+        description: `Personality ${
+          personalityId ? "updated" : "created"
+        } successfully!`,
       });
-      
-      // Refresh the personalities list
-      await fetchPersonalities();
-      
-      // Re-select the updated personality to reflect changes in the UI
-      if (values.id) {
-        // Use longer timeout to ensure data is refreshed
-        setTimeout(() => {
-          handleSelectPersonality(values.id);
-        }, 1000); // Increased timeout for reliable refresh
-      }
-      
-    } catch (error) {
-      console.error("Error updating personality:", error);
+
+      navigate("/staff/personalities");
+    } catch (error: any) {
       toast({
-        title: "Error",
-        description: "Failed to update personality. Please try again.",
-        variant: "destructive"
+        title: "Error saving personality",
+        description: error.message,
+        variant: "destructive",
       });
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleCreateNew = () => {
-    // Reset form for new personality
-    form.reset({
-      id: "",
-      name: "",
-      role: "Host",
-      bio: "",
-      image_url: "",
-      twitter: "",
-      instagram: "",
-      facebook: "",
-      days: "",
-      start: "",
-      end: "",
-    });
-    setSelectedPersonality(null);
-    setSelectedImage(null);
-  };
+  const handleDelete = async () => {
+    if (!personalityId) return;
 
-  const handleSaveNew = async (values: FormValues) => {
-    if (!canEdit) {
-      toast({
-        title: "Permission Denied",
-        description: "You don't have permission to create personalities.",
-        variant: "destructive"
-      });
-      return;
-    }
-
+    setIsSaving(true);
     try {
-      setIsSaving(true);
-      
-      // Process image upload if there's a new image
-      let imageUrl = values.image_url;
-      if (selectedImage) {
-        const uploadedImageUrl = await handleImageUpload(selectedImage);
-        if (uploadedImageUrl) {
-          imageUrl = uploadedImageUrl;
-        } else {
-          throw new Error("Failed to upload image");
-        }
-      }
-      
-      const newPersonalityData = prepareUpdateData(values, imageUrl);
-      
-      console.log("Creating new personality:", newPersonalityData);
-      
-      const { data, error } = await supabase
-        .from("personalities")
-        .insert(newPersonalityData)
-        .select();
-      
-      if (error) {
-        console.error("Supabase error:", error);
-        throw error;
-      }
-      
-      toast({
-        title: "Success",
-        description: `${values.name} has been created successfully.`
-      });
-      
-      // Refresh the personalities list
-      await fetchPersonalities();
-      
-      // Select the newly created personality
-      if (data && data.length > 0) {
-        handleSelectPersonality(data[0].id);
-      }
-      
-    } catch (error) {
-      console.error("Error creating personality:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create personality. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!canEdit) {
-      toast({
-        title: "Permission Denied",
-        description: "You don't have permission to delete personalities.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (!window.confirm("Are you sure you want to delete this personality? This action cannot be undone.")) {
-      return;
-    }
-
-    try {
-      setIsSaving(true);
-      
-      console.log("Deleting personality with ID:", id);
-      
       const { error } = await supabase
         .from("personalities")
         .delete()
-        .eq("id", id);
-      
+        .eq("id", personalityId);
+
       if (error) {
-        console.error("Supabase error:", error);
-        throw error;
+        throw new Error(error.message);
       }
-      
+
       toast({
         title: "Success",
-        description: "Personality has been deleted successfully."
+        description: "Personality deleted successfully!",
       });
-      
-      // Refresh the personalities list
-      await fetchPersonalities();
-      handleCreateNew();
-      
-    } catch (error) {
-      console.error("Error deleting personality:", error);
+
+      navigate("/staff/personalities");
+    } catch (error: any) {
       toast({
-        title: "Error",
-        description: "Failed to delete personality. Please try again.",
-        variant: "destructive"
+        title: "Error deleting personality",
+        description: error.message,
+        variant: "destructive",
       });
     } finally {
       setIsSaving(false);
@@ -333,18 +155,23 @@ export const usePersonalityEditor = (canEdit: boolean) => {
   };
 
   return {
-    form,
-    personalities,
-    loading,
-    selectedPersonality,
+    name,
+    setName,
+    role,
+    setRole,
+    bio,
+    setBio,
+    imageUrl,
+    setImageUrl,
+    startDate,
+    setStartDate,
+    showTimes,
+    setShowTimes,
+    socialLinks,
+    setSocialLinks,
     isSaving,
-    handleSelectPersonality,
-    handleImageSelected,
-    handleSubmit,
-    handleCreateNew,
-    handleSaveNew,
-    handleDelete
+    isLoading,
+    handleSave,
+    handleDelete,
   };
 };
-
-export default usePersonalityEditor;

@@ -9,6 +9,48 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      about_page: {
+        Row: {
+          backstory: string
+          created_at: string | null
+          genre_stats: string
+          global_stats: string
+          id: string
+          mission: string
+          possibilities_stats: string
+          soundscape: string
+          subtitle: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          backstory?: string
+          created_at?: string | null
+          genre_stats?: string
+          global_stats?: string
+          id?: string
+          mission?: string
+          possibilities_stats?: string
+          soundscape?: string
+          subtitle?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Update: {
+          backstory?: string
+          created_at?: string | null
+          genre_stats?: string
+          global_stats?: string
+          id?: string
+          mission?: string
+          possibilities_stats?: string
+          soundscape?: string
+          subtitle?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       analytics: {
         Row: {
           country: string | null
