@@ -38,3 +38,24 @@ export interface FormValues {
   start: string;
   end: string;
 }
+
+// Add the missing PersonalityFormData type
+export interface PersonalityFormData {
+  name: string;
+  role: string;
+  bio: string;
+  image_url: string;
+  show_times?: {
+    days: string[];
+    start: string;
+    end: string;
+  };
+  social_links?: {
+    twitter: string;
+    instagram: string;
+    facebook: string;
+  };
+  startDate?: Date | null;
+  showTimes?: any[];
+  socialLinks?: any[];
+}

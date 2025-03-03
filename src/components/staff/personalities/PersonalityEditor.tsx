@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
 import PersonalityList from "./components/PersonalityList";
 import PersonalityForm from "./components/PersonalityForm";
-import usePersonalityEditor from "./hooks/usePersonalityEditor";
+import { usePersonalityEditor } from "./hooks/usePersonalityEditor";
 import { FormValues } from "./types";
 
 export const PersonalityEditor = () => {

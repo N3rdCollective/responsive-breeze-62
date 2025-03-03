@@ -1,10 +1,11 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { PersonalityFormData } from "../types";
-import { ShowTimes } from "../types/ShowTimes";
-import { SocialLinks } from "../types/SocialLinks";
+import { ShowTimes, ShowTime } from "../types/ShowTimes";
+import { SocialLinks, SocialLink } from "../types/SocialLinks";
 
 const defaultSocialLinks = [
   { platform: "facebook", url: "" },
@@ -55,8 +56,20 @@ export const usePersonalityEditor = (personalityId?: string) => {
         setBio(data.bio || "");
         setImageUrl(data.image_url || "");
         setStartDate(data.start_date ? new Date(data.start_date) : null);
-        setShowTimes((data.show_times as ShowTimes) || []);
-        setSocialLinks((data.social_links as SocialLinks) || defaultSocialLinks);
+        
+        // Properly handle type conversion for show_times
+        if (data.show_times) {
+          setShowTimes(data.show_times as unknown as ShowTimes);
+        } else {
+          setShowTimes([]);
+        }
+        
+        // Properly handle type conversion for social_links
+        if (data.social_links) {
+          setSocialLinks(data.social_links as unknown as SocialLinks);
+        } else {
+          setSocialLinks(defaultSocialLinks);
+        }
       }
     } catch (error: any) {
       toast({
