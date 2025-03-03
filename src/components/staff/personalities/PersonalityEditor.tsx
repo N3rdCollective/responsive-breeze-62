@@ -168,7 +168,7 @@ export const PersonalityEditor = () => {
       }
       
       // Format the data for Supabase
-      const dayArray = values.days.split(",").map(day => day.trim());
+      const dayArray = values.days.split(",").map(day => day.trim()).filter(day => day !== "");
       
       const updateData = {
         name: values.name,
@@ -208,6 +208,9 @@ export const PersonalityEditor = () => {
       
       // Refresh the personalities list
       await fetchPersonalities();
+      
+      // Select the updated personality to reflect changes in the UI
+      handleSelectPersonality(values.id);
       
     } catch (error) {
       console.error("Error updating personality:", error);
@@ -265,7 +268,7 @@ export const PersonalityEditor = () => {
       }
       
       // Format the data for Supabase
-      const dayArray = values.days ? values.days.split(",").map(day => day.trim()) : [];
+      const dayArray = values.days ? values.days.split(",").map(day => day.trim()).filter(day => day !== "") : [];
       
       const newPersonality = {
         name: values.name,
