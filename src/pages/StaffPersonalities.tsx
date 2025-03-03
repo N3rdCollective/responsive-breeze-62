@@ -18,7 +18,15 @@ const StaffPersonalities = () => {
   useEffect(() => {
     // Add a check to ensure the component is properly mounted
     console.log("StaffPersonalities mounted with role:", userRole);
-  }, [userRole]);
+    
+    // Show a toast notification when the page loads
+    if (userRole && !isLoading) {
+      toast({
+        title: "Personality Management",
+        description: "You can now edit radio personalities and their details."
+      });
+    }
+  }, [userRole, isLoading, toast]);
 
   if (isLoading) {
     return (

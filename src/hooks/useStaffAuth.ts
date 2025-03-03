@@ -26,9 +26,11 @@ export const useStaffAuth = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        console.log("Checking staff authentication...");
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session) {
+          console.log("No session found, not authenticated");
           // If not already on login page, redirect to it
           if (!window.location.pathname.includes('/staff/login')) {
             navigate("/staff/login");
@@ -37,6 +39,7 @@ export const useStaffAuth = () => {
           return;
         }
         
+        console.log("Session found, fetching staff data...");
         const { data: staffData, error: staffError } = await supabase
           .from("staff")
           .select("*")
@@ -44,6 +47,7 @@ export const useStaffAuth = () => {
           .single();
           
         if (staffError || !staffData) {
+          console.error("Error fetching staff data or staff not found:", staffError);
           await supabase.auth.signOut();
           if (!window.location.pathname.includes('/staff/login')) {
             navigate("/staff/login");
@@ -52,12 +56,16 @@ export const useStaffAuth = () => {
           return;
         }
         
+        console.log("Staff data retrieved:", staffData);
+        
         // Check if this is DJEpidemik user - they should be Super Admin
         const isDJEpidemik = staffData.email.toLowerCase().includes("djepide") || 
                            staffData.email.toLowerCase().includes("dj_epide");
         
         // Set the userRole based on whether this is DJEpidemik
         const userRole = isDJEpidemik ? "super_admin" : staffData.role;
+        
+        console.log("Setting user role:", userRole);
         
         setState({
           staffName: staffData.first_name || staffData.email,
@@ -84,6 +92,7 @@ export const useStaffAuth = () => {
     
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("Auth state changed:", event);
         if (event === "SIGNED_OUT") {
           if (!window.location.pathname.includes('/staff/login')) {
             navigate("/staff/login");
@@ -110,13 +119,18 @@ export const useStaffAuth = () => {
 
   const makeUserSuperAdmin = async (userId: string) => {
     try {
+      console.log("Making user super admin:", userId);
       const { error } = await supabase
         .from("staff")
         .update({ role: "super_admin" })
         .eq("id", userId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error making user super admin:", error);
+        throw error;
+      }
       
+      console.log("User successfully made super admin");
       setState(prev => ({ ...prev, isAdmin: true, userRole: "super_admin" }));
       toast({
         title: "Super Admin Access Granted",

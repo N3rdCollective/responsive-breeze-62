@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { useStaffAuth } from "@/hooks/useStaffAuth";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import { Loader2, ImageIcon } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Json } from "@/integrations/supabase/types";
 import ImageUploader, { handleImageUpload } from "@/components/news/editor/ImageUploader";
 
@@ -82,12 +82,19 @@ export const PersonalityEditor = () => {
   const fetchPersonalities = async () => {
     try {
       setLoading(true);
+      console.log("Fetching personalities from database...");
+      
       const { data, error } = await supabase
         .from("personalities")
         .select("*")
         .order("name");
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching personalities:", error);
+        throw error;
+      }
+      
+      console.log("Fetched personalities:", data);
       
       if (data) {
         // Convert database data to the expected Personality type
@@ -100,6 +107,7 @@ export const PersonalityEditor = () => {
         });
         
         setPersonalities(typedPersonalities);
+        console.log("Personalities set in state:", typedPersonalities);
       }
     } catch (error) {
       console.error("Error fetching personalities:", error);
@@ -118,12 +126,21 @@ export const PersonalityEditor = () => {
   }, []);
 
   const handleSelectPersonality = (id: string) => {
+    console.log("Selecting personality with ID:", id);
     const personality = personalities.find(p => p.id === id);
-    if (!personality) return;
+    if (!personality) {
+      console.error("Personality not found with ID:", id);
+      return;
+    }
     
+    console.log("Found personality:", personality);
     setSelectedPersonality(id);
     setSelectedImage(null);
     
+    // Ensure we properly handle null values
+    const days = personality.show_times?.days ? 
+                personality.show_times.days.join(", ") : "";
+                
     form.reset({
       id: personality.id,
       name: personality.name,
@@ -133,10 +150,12 @@ export const PersonalityEditor = () => {
       twitter: personality.social_links?.twitter || "",
       instagram: personality.social_links?.instagram || "",
       facebook: personality.social_links?.facebook || "",
-      days: personality.show_times?.days.join(", ") || "",
+      days: days,
       start: personality.show_times?.start || "",
       end: personality.show_times?.end || "",
     });
+    
+    console.log("Form reset with personality data");
   };
 
   const handleImageSelected = (file: File) => {
@@ -207,6 +226,20 @@ export const PersonalityEditor = () => {
         throw new Error("Invalid personality ID");
       }
       
+      // Debug: Test direct query to verify the row exists
+      const { data: existingData, error: existingError } = await supabase
+        .from("personalities")
+        .select("id, name")
+        .eq("id", values.id)
+        .single();
+        
+      if (existingError) {
+        console.error("Error verifying personality exists:", existingError);
+        throw new Error(`Record with ID ${values.id} not found in database`);
+      }
+      
+      console.log("Found existing personality for update:", existingData);
+      
       // Add delay to avoid potential timing issues
       await new Promise(resolve => setTimeout(resolve, 100));
       
@@ -217,11 +250,15 @@ export const PersonalityEditor = () => {
         .select();
       
       if (error) {
-        console.error("Supabase error:", error);
+        console.error("Supabase update error:", error);
         throw error;
       }
       
       console.log("Update response data:", data);
+      
+      if (!data || data.length === 0) {
+        console.warn("Update succeeded but no data returned");
+      }
       
       toast({
         title: "Success",
@@ -236,7 +273,7 @@ export const PersonalityEditor = () => {
         // Use longer timeout to ensure data is refreshed
         setTimeout(() => {
           handleSelectPersonality(values.id);
-        }, 500);
+        }, 1000); // Increased timeout for reliable refresh
       }
       
     } catch (error) {
