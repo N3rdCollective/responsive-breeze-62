@@ -9,8 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { useStaffAuth } from "@/hooks/useStaffAuth";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import { Loader2 } from "lucide-react";
+import { Loader2, ImageIcon } from "lucide-react";
 import { Json } from "@/integrations/supabase/types";
+import ImageUploader, { handleImageUpload } from "@/components/news/editor/ImageUploader";
 
 interface ShowTimes {
   days: string[];
@@ -34,7 +35,6 @@ interface Personality {
   social_links: SocialLinks | null;
   created_at: string | null;
   updated_at: string | null;
-  start_date: string | null;
 }
 
 interface FormValues {
@@ -49,7 +49,6 @@ interface FormValues {
   days: string;
   start: string;
   end: string;
-  start_date: string;
 }
 
 export const PersonalityEditor = () => {
@@ -59,6 +58,7 @@ export const PersonalityEditor = () => {
   const [loading, setLoading] = useState(true);
   const [selectedPersonality, setSelectedPersonality] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   
   const form = useForm<FormValues>({
     defaultValues: {
@@ -73,7 +73,6 @@ export const PersonalityEditor = () => {
       days: "",
       start: "",
       end: "",
-      start_date: ""
     }
   });
 
@@ -123,6 +122,7 @@ export const PersonalityEditor = () => {
     if (!personality) return;
     
     setSelectedPersonality(id);
+    setSelectedImage(null);
     
     form.reset({
       id: personality.id,
@@ -136,8 +136,11 @@ export const PersonalityEditor = () => {
       days: personality.show_times?.days.join(", ") || "",
       start: personality.show_times?.start || "",
       end: personality.show_times?.end || "",
-      start_date: personality.start_date ? new Date(personality.start_date).toISOString().split("T")[0] : ""
     });
+  };
+
+  const handleImageSelected = (file: File) => {
+    setSelectedImage(file);
   };
 
   const onSubmit = async (values: FormValues) => {
@@ -153,6 +156,17 @@ export const PersonalityEditor = () => {
     try {
       setIsSaving(true);
       
+      // Process image upload if there's a new image
+      let imageUrl = values.image_url;
+      if (selectedImage) {
+        const uploadedImageUrl = await handleImageUpload(selectedImage);
+        if (uploadedImageUrl) {
+          imageUrl = uploadedImageUrl;
+        } else {
+          throw new Error("Failed to upload image");
+        }
+      }
+      
       // Format the data for Supabase
       const dayArray = values.days.split(",").map(day => day.trim());
       
@@ -160,7 +174,7 @@ export const PersonalityEditor = () => {
         name: values.name,
         role: values.role,
         bio: values.bio,
-        image_url: values.image_url,
+        image_url: imageUrl,
         social_links: {
           twitter: values.twitter,
           instagram: values.instagram,
@@ -171,7 +185,6 @@ export const PersonalityEditor = () => {
           start: values.start,
           end: values.end
         } as Json,
-        start_date: values.start_date || null,
         updated_at: new Date().toISOString()
       };
       
@@ -222,9 +235,9 @@ export const PersonalityEditor = () => {
       days: "",
       start: "",
       end: "",
-      start_date: ""
     });
     setSelectedPersonality(null);
+    setSelectedImage(null);
   };
 
   const handleSaveNew = async (values: FormValues) => {
@@ -240,6 +253,17 @@ export const PersonalityEditor = () => {
     try {
       setIsSaving(true);
       
+      // Process image upload if there's a new image
+      let imageUrl = values.image_url;
+      if (selectedImage) {
+        const uploadedImageUrl = await handleImageUpload(selectedImage);
+        if (uploadedImageUrl) {
+          imageUrl = uploadedImageUrl;
+        } else {
+          throw new Error("Failed to upload image");
+        }
+      }
+      
       // Format the data for Supabase
       const dayArray = values.days ? values.days.split(",").map(day => day.trim()) : [];
       
@@ -247,7 +271,7 @@ export const PersonalityEditor = () => {
         name: values.name,
         role: values.role,
         bio: values.bio,
-        image_url: values.image_url,
+        image_url: imageUrl,
         social_links: {
           twitter: values.twitter,
           instagram: values.instagram,
@@ -257,8 +281,7 @@ export const PersonalityEditor = () => {
           days: dayArray,
           start: values.start,
           end: values.end
-        } as Json,
-        start_date: values.start_date || null
+        } as Json
       };
       
       console.log("Creating new personality:", newPersonality);
@@ -466,9 +489,18 @@ export const PersonalityEditor = () => {
                     name="image_url"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Image URL</FormLabel>
+                        <FormLabel>Profile Image</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="https://example.com/image.jpg" />
+                          <div>
+                            <input 
+                              type="hidden" 
+                              {...field} 
+                            />
+                            <ImageUploader
+                              currentImageUrl={field.value}
+                              onImageSelected={handleImageSelected}
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -564,20 +596,6 @@ export const PersonalityEditor = () => {
                       )}
                     />
                   </div>
-                  
-                  <FormField
-                    control={form.control}
-                    name="start_date"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Start Date</FormLabel>
-                        <FormControl>
-                          <Input {...field} type="date" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                   
                   <CardFooter className="flex justify-between px-0">
                     <div>
