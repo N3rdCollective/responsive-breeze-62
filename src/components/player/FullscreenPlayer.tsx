@@ -55,6 +55,20 @@ export const FullscreenPlayer = ({
         ? 'bg-gradient-to-b from-[#1A1F2C] to-[#121520] text-white'
         : 'bg-gradient-to-b from-[#F1F0FB] to-[#E6E4F0] text-foreground'
     }`}>
+      {/* Minimize button with improved visibility */}
+      <div className="fixed top-6 left-0 right-0 flex justify-center z-50">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={handleMinimize}
+          className="rounded-full px-6 py-2 bg-black/20 hover:bg-black/30 backdrop-blur-sm text-white shadow-lg flex items-center gap-2"
+          aria-label="Minimize player"
+        >
+          <ChevronDown size={20} />
+          <span>Minimize</span>
+        </Button>
+      </div>
+
       <div className="absolute top-4 right-4 flex gap-2">
         <Button
           variant="ghost"
@@ -71,7 +85,7 @@ export const FullscreenPlayer = ({
         </Button>
       </div>
 
-      <div className="flex-1 flex items-center justify-center overflow-visible">
+      <div className="flex-1 flex items-center justify-center overflow-visible mt-10">
         <div className="w-[85vw] aspect-square max-w-[400px] rounded-2xl overflow-hidden shadow-lg">
           <AspectRatio ratio={1/1}>
             <img
