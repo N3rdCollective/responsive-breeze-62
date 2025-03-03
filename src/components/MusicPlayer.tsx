@@ -4,9 +4,12 @@ import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import { MinimizedPlayer } from "./player/MinimizedPlayer";
 import { FullscreenPlayer } from "./player/FullscreenPlayer";
 import { DesktopPlayer } from "./player/DesktopPlayer";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const MusicPlayer = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const isMobile = useIsMobile();
+  
   const {
     isPlaying,
     volume,
@@ -18,14 +21,13 @@ const MusicPlayer = () => {
   } = useAudioPlayer();
 
   useEffect(() => {
-    if (isPlaying && window.innerWidth < 768) {
+    if (isPlaying && isMobile) {
       setIsFullscreen(true);
     }
-  }, [isPlaying]);
+  }, [isPlaying, isMobile]);
 
   useEffect(() => {
     const body = document.body;
-    const isMobile = window.innerWidth < 768;
     
     if (body) {
       if (isMobile && !isFullscreen) {
@@ -42,21 +44,19 @@ const MusicPlayer = () => {
         body.style.paddingBottom = "0";
       }
     };
-  }, [isFullscreen]);
+  }, [isFullscreen, isMobile]);
 
   const toggleFullscreen = () => {
+    console.log("Toggling fullscreen state:", !isFullscreen);
     setIsFullscreen(!isFullscreen);
   };
 
   const handlePlayPause = () => {
     togglePlayPause();
-    if (!isPlaying && window.innerWidth < 768) {
+    if (!isPlaying && isMobile) {
       setIsFullscreen(true);
     }
   };
-
-  // Get window width for responsive layout
-  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
 
   if (isMobile) {
     return (

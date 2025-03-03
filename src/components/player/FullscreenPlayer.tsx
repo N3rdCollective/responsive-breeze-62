@@ -8,6 +8,7 @@ import { StreamMetadata } from "@/types/player";
 import { Slider } from "@/components/ui/slider";
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "next-themes";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface FullscreenPlayerProps {
   isPlaying: boolean;
@@ -29,9 +30,10 @@ export const FullscreenPlayer = ({
   togglePlayPause,
   handleVolumeChange,
   toggleMute,
-  toggleFullscreen
+  toggleFullscreen,
+  isFullscreen
 }: FullscreenPlayerProps) => {
-  const isMobile = window.innerWidth < 768;
+  const isMobile = useIsMobile();
   const [shouldScroll, setShouldScroll] = useState(false);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const { theme } = useTheme();
@@ -41,6 +43,11 @@ export const FullscreenPlayer = ({
       setShouldScroll(titleRef.current.scrollWidth > titleRef.current.clientWidth);
     }
   }, [metadata.title]);
+
+  const handleMinimize = () => {
+    console.log("Minimizing player from FullscreenPlayer");
+    toggleFullscreen();
+  };
   
   return (
     <div className={`h-full flex flex-col justify-between py-8 px-6 ${
@@ -52,7 +59,7 @@ export const FullscreenPlayer = ({
         <Button
           variant="ghost"
           size="icon"
-          onClick={toggleFullscreen}
+          onClick={handleMinimize}
           className={`${
             theme === 'dark' 
               ? 'text-white/60 hover:text-white' 
