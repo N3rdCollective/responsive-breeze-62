@@ -5,12 +5,20 @@ import StaffHeader from "@/components/staff/StaffHeader";
 import PersonalityEditor from "@/components/staff/personalities/PersonalityEditor";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
 import { Navigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 const StaffPersonalities = () => {
   const { isLoading, userRole, staffName } = useStaffAuth();
+  const { toast } = useToast();
   
   // Check authentication
   const isAuthenticated = userRole !== "";
+  
+  useEffect(() => {
+    // Add a check to ensure the component is properly mounted
+    console.log("StaffPersonalities mounted with role:", userRole);
+  }, [userRole]);
 
   if (isLoading) {
     return (

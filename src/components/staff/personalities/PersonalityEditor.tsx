@@ -156,50 +156,59 @@ export const PersonalityEditor = () => {
     try {
       setIsSaving(true);
       
+      console.log("Starting personality update process for ID:", values.id);
+      console.log("Form values:", values);
+      
       // Process image upload if there's a new image
       let imageUrl = values.image_url;
       if (selectedImage) {
+        console.log("Uploading new image...");
         const uploadedImageUrl = await handleImageUpload(selectedImage);
         if (uploadedImageUrl) {
           imageUrl = uploadedImageUrl;
+          console.log("New image uploaded:", imageUrl);
         } else {
           throw new Error("Failed to upload image");
         }
       }
       
       // Format the data for Supabase
-      const dayArray = values.days.split(",").map(day => day.trim()).filter(day => day !== "");
+      const dayArray = values.days ? values.days.split(",").map(day => day.trim()).filter(day => day !== "") : [];
+      console.log("Processed day array:", dayArray);
       
       const updateData = {
         name: values.name,
         role: values.role,
-        bio: values.bio,
+        bio: values.bio || null,
         image_url: imageUrl,
         social_links: {
-          twitter: values.twitter,
-          instagram: values.instagram,
-          facebook: values.facebook
-        } as Json,
+          twitter: values.twitter || "",
+          instagram: values.instagram || "",
+          facebook: values.facebook || ""
+        },
         show_times: {
           days: dayArray,
-          start: values.start,
-          end: values.end
-        } as Json,
+          start: values.start || "",
+          end: values.end || ""
+        },
         updated_at: new Date().toISOString()
       };
       
       console.log("Updating personality with ID:", values.id);
       console.log("Update data:", updateData);
       
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("personalities")
         .update(updateData)
-        .eq("id", values.id);
+        .eq("id", values.id)
+        .select();
       
       if (error) {
         console.error("Supabase error:", error);
         throw error;
       }
+      
+      console.log("Update response data:", data);
       
       toast({
         title: "Success",
@@ -209,8 +218,12 @@ export const PersonalityEditor = () => {
       // Refresh the personalities list
       await fetchPersonalities();
       
-      // Select the updated personality to reflect changes in the UI
-      handleSelectPersonality(values.id);
+      // Re-select the updated personality to reflect changes in the UI
+      if (values.id) {
+        setTimeout(() => {
+          handleSelectPersonality(values.id);
+        }, 100);
+      }
       
     } catch (error) {
       console.error("Error updating personality:", error);
