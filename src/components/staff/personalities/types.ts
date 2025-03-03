@@ -23,6 +23,7 @@ export interface Personality {
   social_links: SocialLinks | null;
   created_at: string | null;
   updated_at: string | null;
+  start_date: string | null;
 }
 
 export interface FormValues {
@@ -56,6 +57,6 @@ export interface PersonalityFormData {
     facebook: string;
   };
   startDate?: Date | null;
-  showTimes?: any[];
-  socialLinks?: any[];
+  showTimes?: ShowTimes;
+  socialLinks?: SocialLinks;
 }

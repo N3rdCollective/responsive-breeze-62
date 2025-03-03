@@ -4,7 +4,7 @@ import { useStaffAuth } from "@/hooks/useStaffAuth";
 import PersonalityList from "./components/PersonalityList";
 import PersonalityForm from "./components/PersonalityForm";
 import { usePersonalityEditor } from "./hooks/usePersonalityEditor";
-import { FormValues } from "./types";
+import { FormValues, Personality } from "./types";
 
 export const PersonalityEditor = () => {
   const { userRole } = useStaffAuth();
@@ -67,7 +67,7 @@ export const PersonalityEditor = () => {
           <PersonalityForm 
             form={form}
             isSaving={isSaving}
-            selectedPersonality={selectedPersonality}
+            selectedPersonality={selectedPersonality ? selectedPersonality.id : null}
             onImageSelected={handleImageSelected}
             onSubmit={onSubmit}
             onDelete={handleDelete}

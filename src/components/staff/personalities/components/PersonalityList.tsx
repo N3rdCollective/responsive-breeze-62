@@ -6,8 +6,8 @@ import { Personality } from "../types";
 interface PersonalityListProps {
   personalities: Personality[];
   loading: boolean;
-  selectedPersonality: string | null;
-  onSelectPersonality: (id: string) => void;
+  selectedPersonality: Personality | null;
+  onSelectPersonality: (personality: Personality) => void;
 }
 
 const PersonalityList = ({ 
@@ -28,10 +28,10 @@ const PersonalityList = ({
           {personalities.map(personality => (
             <div 
               key={personality.id}
-              className={`p-3 rounded-md cursor-pointer ${selectedPersonality === personality.id ? 
+              className={`p-3 rounded-md cursor-pointer ${selectedPersonality?.id === personality.id ? 
                 'bg-[#FFD700]/20 border border-[#FFD700]' : 
                 'hover:bg-white/50 dark:hover:bg-[#444444]'}`}
-              onClick={() => onSelectPersonality(personality.id)}
+              onClick={() => onSelectPersonality(personality)}
             >
               <p className="font-medium">{personality.name}</p>
               <p className="text-sm text-gray-500 dark:text-gray-400">{personality.role}</p>
