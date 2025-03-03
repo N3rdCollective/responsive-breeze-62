@@ -45,12 +45,12 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     <div className="space-y-2" data-testid={id}>
       {label && <Label htmlFor={id}>{label}</Label>}
       
-      <div className="border rounded-md">
+      <div className="border rounded-md bg-background">
         <EditorToolbar editor={editor} />
         
         <div 
           style={{ minHeight: height }} 
-          className="p-4 prose prose-sm sm:prose max-w-none focus:outline-none overflow-y-auto"
+          className="p-4 prose prose-sm sm:prose max-w-none focus:outline-none overflow-y-auto dark:prose-invert prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-em:text-foreground prose-li:text-foreground"
         >
           <EditorContent editor={editor} />
         </div>

@@ -68,7 +68,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
   };
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-foreground">
       <div>
         <Label htmlFor="title">Title</Label>
         <Input
@@ -76,6 +76,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Enter post title"
+          className="text-foreground bg-background"
         />
       </div>
       
@@ -86,7 +87,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
           value={excerpt}
           onChange={(e) => setExcerpt(e.target.value)}
           placeholder="Brief summary of the post"
-          className="h-20"
+          className="h-20 text-foreground bg-background"
         />
       </div>
       
@@ -96,10 +97,10 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
           value={category}
           onValueChange={(value: string) => setCategory(value)}
         >
-          <SelectTrigger id="category">
+          <SelectTrigger id="category" className="text-foreground bg-background">
             <SelectValue placeholder="Select a category" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-popover text-popover-foreground">
             {PREDEFINED_CATEGORIES.map((cat) => (
               <SelectItem key={cat} value={cat}>{cat}</SelectItem>
             ))}
@@ -111,7 +112,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
         <Label htmlFor="tags">Tags</Label>
         <div className="mb-2 flex flex-wrap gap-2">
           {tags.map((tag) => (
-            <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+            <Badge key={tag} variant="secondary" className="flex items-center gap-1 bg-muted text-muted-foreground">
               {tag}
               <button 
                 type="button" 
@@ -129,6 +130,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
           onChange={(e) => setTagInput(e.target.value)}
           placeholder="Add tags (press Enter to add)"
           onKeyDown={handleAddTag}
+          className="text-foreground bg-background"
         />
       </div>
       
@@ -138,10 +140,10 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
           value={status}
           onValueChange={(value: NewsStatus) => setStatus(value)}
         >
-          <SelectTrigger id="status">
+          <SelectTrigger id="status" className="text-foreground bg-background">
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-popover text-popover-foreground">
             <SelectItem value="draft">Draft</SelectItem>
             <SelectItem value="published">Published</SelectItem>
           </SelectContent>
