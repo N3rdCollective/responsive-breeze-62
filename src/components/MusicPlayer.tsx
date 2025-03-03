@@ -29,9 +29,9 @@ const MusicPlayer = () => {
     
     if (body) {
       if (isMobile && !isFullscreen) {
-        body.style.paddingBottom = "4rem"; // 16px (h-16)
+        body.style.paddingBottom = "3rem"; // Reduced from 4rem (16px) to 3rem (12px)
       } else if (!isMobile) {
-        body.style.paddingBottom = "5rem"; // 20px (h-20)
+        body.style.paddingBottom = "4rem"; // Reduced from 5rem (20px) to 4rem (16px)
       } else {
         body.style.paddingBottom = "0";
       }
