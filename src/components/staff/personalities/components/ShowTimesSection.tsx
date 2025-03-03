@@ -9,6 +9,13 @@ interface ShowTimesSectionProps {
 }
 
 const ShowTimesSection = ({ form }: ShowTimesSectionProps) => {
+  const role = form.watch('role');
+  
+  // Skip rendering show times for hosts
+  if (role?.toLowerCase() === 'host') {
+    return null;
+  }
+
   return (
     <>
       <h3 className="text-lg font-semibold pt-4">Show Information</h3>
