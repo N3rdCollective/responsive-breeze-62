@@ -8,7 +8,27 @@ import HomeNewsSection from "@/components/home/HomeNewsSection";
 import PersonalitySlider from "@/components/home/PersonalitySlider";
 import VideoGallery from "@/components/VideoGallery";
 import { supabase } from "@/integrations/supabase/client";
-import { HomeSettings, defaultSettings } from "@/components/staff/home/context/HomeSettingsContext";
+import { HomeSettings, defaultSettings, VideoData } from "@/components/staff/home/context/HomeSettingsContext";
+import { Json } from "@/integrations/supabase/types";
+
+// Helper function to convert Json to VideoData[]
+const parseVideoData = (jsonData: Json | null): VideoData[] => {
+  if (!jsonData || !Array.isArray(jsonData)) {
+    return defaultSettings.featured_videos;
+  }
+  
+  try {
+    return jsonData.map((video: any) => ({
+      id: video.id || "",
+      title: video.title || "Untitled Video",
+      credit: video.credit,
+      thumbnail: video.thumbnail
+    }));
+  } catch (error) {
+    console.error("Error parsing video data:", error);
+    return defaultSettings.featured_videos;
+  }
+};
 
 const Index = () => {
   const [settings, setSettings] = useState<HomeSettings>(defaultSettings);
@@ -26,14 +46,12 @@ const Index = () => {
           console.error("Error fetching home settings:", error);
           setSettings(defaultSettings);
         } else if (data) {
-          // Handle missing featured_videos in existing data
-          if (!data.featured_videos) {
-            data.featured_videos = defaultSettings.featured_videos;
-          }
+          // Convert featured_videos from Json to VideoData[]
+          const parsedVideos = parseVideoData(data.featured_videos);
           
           setSettings({
             ...data,
-            featured_videos: data.featured_videos
+            featured_videos: parsedVideos
           } as HomeSettings);
         }
       } catch (error) {

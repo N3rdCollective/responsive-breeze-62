@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
+import { Json } from "@/integrations/supabase/types";
 
 export interface VideoData {
   id: string;
