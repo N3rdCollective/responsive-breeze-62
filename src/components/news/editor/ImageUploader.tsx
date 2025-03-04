@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -14,39 +14,13 @@ interface ImageUploaderProps {
 
 const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageSelected }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
   const { toast } = useToast();
-
-  // Cleanup blob URLs when component unmounts
-  useEffect(() => {
-    return () => {
-      if (localPreviewUrl && localPreviewUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(localPreviewUrl);
-      }
-    };
-  }, [localPreviewUrl]);
-
-  // Reset local preview when permanent URL changes
-  useEffect(() => {
-    if (currentImageUrl && !currentImageUrl.startsWith('blob:')) {
-      setLocalPreviewUrl(null);
-    }
-  }, [currentImageUrl]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
       const file = files[0];
       setSelectedFile(file);
-      
-      // Clean up previous blob URL if it exists
-      if (localPreviewUrl && localPreviewUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(localPreviewUrl);
-      }
-      
-      // Create new blob URL for preview only
-      const objectUrl = URL.createObjectURL(file);
-      setLocalPreviewUrl(objectUrl);
     }
   };
 
@@ -66,9 +40,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageS
       description: "Image will be uploaded when you save",
     });
   };
-
-  // Use local preview URL for immediate feedback, fallback to permanent URL
-  const displayImageUrl = localPreviewUrl || currentImageUrl;
 
   return (
     <div className="space-y-4">
@@ -101,14 +72,14 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageS
         </div>
       </div>
       
-      {displayImageUrl && (
+      {currentImageUrl && !currentImageUrl.startsWith('blob:') && (
         <div className="mt-4 border rounded-md p-4 bg-muted/20">
           <div className="flex items-center gap-2 mb-2">
             <Image className="h-4 w-4" />
             <p className="text-sm font-medium">Current image:</p>
           </div>
           <img
-            src={displayImageUrl}
+            src={currentImageUrl}
             alt="Selected"
             className="w-full max-w-md rounded-md"
           />

@@ -36,7 +36,6 @@ export const useImageHandler = () => {
         description: "Image was successfully uploaded",
       });
       
-      // Return the absolute URL to ensure it works everywhere
       return uploadedUrl;
     } catch (error) {
       console.error("Error in handleImageUpload:", error);

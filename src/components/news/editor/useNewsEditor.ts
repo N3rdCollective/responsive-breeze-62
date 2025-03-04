@@ -59,13 +59,6 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
     console.log("Image selected:", file.name, file.size);
     setFeaturedImage(file);
     
-    // Create a temporary preview URL
-    const previewUrl = URL.createObjectURL(file);
-    console.log("Created preview URL:", previewUrl);
-    
-    // Update the current featured image URL for preview purposes
-    setCurrentFeaturedImageUrl(previewUrl);
-    
     toast({
       title: "Image Selected",
       description: "Image will be uploaded when you save the post",

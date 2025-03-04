@@ -14,7 +14,6 @@ interface PersonalityFormProps {
   onImageSelected: (file: File) => void;
   onSubmit: (values: FormValues) => void;
   onDelete: (id: string) => void;
-  previewUrl?: string | null;
 }
 
 const PersonalityForm = ({ 
@@ -23,8 +22,7 @@ const PersonalityForm = ({
   selectedPersonality, 
   onImageSelected, 
   onSubmit, 
-  onDelete,
-  previewUrl
+  onDelete
 }: PersonalityFormProps) => {
   const handleSubmit = form.handleSubmit(onSubmit);
 
@@ -41,7 +39,6 @@ const PersonalityForm = ({
             <PersonalityFormContent 
               form={form} 
               onImageSelected={onImageSelected} 
-              previewUrl={previewUrl}
             />
           </CardContent>
           <CardFooter className="flex justify-between">

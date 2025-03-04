@@ -3,24 +3,15 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "../types";
 import ImageUploader from "@/components/news/editor/ImageUploader";
-import { useEffect } from "react";
 
 interface ImageSectionProps {
   form: UseFormReturn<FormValues>;
   onImageSelected: (file: File) => void;
-  previewUrl?: string | null;
 }
 
-const ImageSection = ({ form, onImageSelected, previewUrl }: ImageSectionProps) => {
+const ImageSection = ({ form, onImageSelected }: ImageSectionProps) => {
   // Get the current value from the form
   const currentImageUrl = form.watch("image_url");
-  
-  // Update the form value if we have a new permanent URL
-  useEffect(() => {
-    if (currentImageUrl && !currentImageUrl.startsWith("blob:")) {
-      form.setValue("image_url", currentImageUrl);
-    }
-  }, [currentImageUrl, form]);
 
   return (
     <FormField
@@ -36,7 +27,7 @@ const ImageSection = ({ form, onImageSelected, previewUrl }: ImageSectionProps) 
                 {...field} 
               />
               <ImageUploader
-                currentImageUrl={previewUrl || field.value}
+                currentImageUrl={field.value}
                 onImageSelected={onImageSelected}
               />
             </div>
