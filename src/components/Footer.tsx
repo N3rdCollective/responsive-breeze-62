@@ -59,11 +59,13 @@ const Footer = () => {
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-[#FFD700]">Contact</h3>
-            <ul className="space-y-2 text-gray-700 dark:text-white">
-              <li>123 Radio Street</li>
-              <li>City, State 12345</li>
-            </ul>
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-[#FFD700]">Careers</h3>
+            <p className="text-gray-700 dark:text-white italic">Coming soon</p>
+            <div className="mt-2">
+              <Link to="/careers" className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors">
+                View opportunities
+              </Link>
+            </div>
           </div>
           
           <div>
