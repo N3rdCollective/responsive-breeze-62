@@ -30,8 +30,8 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark">
-        <div className="bg-background">
-          <div className="App">
+        <div className="bg-background min-h-screen flex flex-col">
+          <div className="App flex-1 flex flex-col">
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Index />} />
