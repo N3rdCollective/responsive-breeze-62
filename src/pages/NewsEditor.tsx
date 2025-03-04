@@ -45,6 +45,8 @@ const NewsEditor = () => {
     isLoading,
     isSaving,
     isUploading,
+    isPreviewModalOpen,
+    setIsPreviewModalOpen,
     fetchNewsPost,
     handleImageSelected,
     handleSave
@@ -120,6 +122,9 @@ const NewsEditor = () => {
         onSave={handleSave}
         isSaving={isSaving}
         isUploading={isUploading}
+        isPreviewModalOpen={isPreviewModalOpen}
+        setIsPreviewModalOpen={setIsPreviewModalOpen}
+        authorName={staffName}
       />
     </div>
   );

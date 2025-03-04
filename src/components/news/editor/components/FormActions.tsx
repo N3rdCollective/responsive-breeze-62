@@ -29,7 +29,7 @@ const FormActions: React.FC<FormActionsProps> = ({
           onClick={onOpenPreview}
           className="flex items-center gap-2"
         >
-          <Eye className="h-4 w-4" /> Preview in Modal
+          <Eye className="h-4 w-4" /> Preview on Site
         </Button>
       </div>
       
