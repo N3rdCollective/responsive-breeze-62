@@ -1,73 +1,73 @@
 
-import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "../types";
 import PersonalityFormContent from "./PersonalityFormContent";
-import { Loader2, Save, Trash } from "lucide-react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, Trash } from "lucide-react";
 
 interface PersonalityFormProps {
   form: UseFormReturn<FormValues>;
   isSaving: boolean;
+  isUploading?: boolean;
   selectedPersonality: string | null;
-  onImageSelected: (file: File) => void;
+  previewUrl?: string;
   onSubmit: (values: FormValues) => void;
   onDelete: (id: string) => void;
+  onImageSelected: (file: File) => void;
 }
 
 const PersonalityForm = ({ 
   form, 
   isSaving, 
+  isUploading = false,
   selectedPersonality, 
-  onImageSelected, 
+  previewUrl,
   onSubmit, 
-  onDelete
+  onDelete,
+  onImageSelected 
 }: PersonalityFormProps) => {
-  const handleSubmit = form.handleSubmit(onSubmit);
-
-  const isNewPersonality = !selectedPersonality;
-
+  const isEditing = !!selectedPersonality;
+  const title = isEditing ? "Edit Personality" : "Create New Personality";
+  
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{isNewPersonality ? "Create New Personality" : "Edit Personality"}</CardTitle>
+        <CardTitle>{title}</CardTitle>
       </CardHeader>
       <Form {...form}>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-6">
             <PersonalityFormContent 
               form={form} 
               onImageSelected={onImageSelected} 
+              isUploading={isUploading}
             />
           </CardContent>
           <CardFooter className="flex justify-between">
-            <div>
-              {!isNewPersonality && (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={() => selectedPersonality && onDelete(selectedPersonality)}
-                  disabled={isSaving}
-                >
-                  <Trash className="h-4 w-4 mr-2" />
-                  Delete
-                </Button>
-              )}
+            {isEditing && (
+              <Button 
+                type="button" 
+                variant="destructive" 
+                onClick={() => onDelete(selectedPersonality)}
+                disabled={isSaving || isUploading}
+              >
+                <Trash className="h-4 w-4 mr-2" />
+                Delete
+              </Button>
+            )}
+            <div className="ml-auto">
+              <Button 
+                type="submit" 
+                disabled={isSaving || isUploading}
+              >
+                {(isSaving || isUploading) && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {isEditing ? 'Save Changes' : 'Create Personality'}
+              </Button>
             </div>
-            <Button type="submit" disabled={isSaving}>
-              {isSaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4 mr-2" />
-                  {isNewPersonality ? "Create Personality" : "Save Changes"}
-                </>
-              )}
-            </Button>
           </CardFooter>
         </form>
       </Form>

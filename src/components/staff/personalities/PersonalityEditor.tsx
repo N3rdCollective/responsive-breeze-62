@@ -18,6 +18,7 @@ export const PersonalityEditor = () => {
     loading,
     selectedPersonality,
     isSaving,
+    isUploading,
     previewUrl,
     handleSelectPersonality,
     handleImageSelected,
@@ -68,6 +69,7 @@ export const PersonalityEditor = () => {
           <PersonalityForm 
             form={form}
             isSaving={isSaving}
+            isUploading={isUploading}
             selectedPersonality={selectedPersonality ? selectedPersonality.id : null}
             onImageSelected={handleImageSelected}
             onSubmit={onSubmit}
