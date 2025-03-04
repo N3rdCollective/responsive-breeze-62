@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import { ThemeProvider } from "@/components/providers/ThemeProvider"
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import MusicPlayer from "@/components/MusicPlayer";
 
 // Import Components
 import Index from "@/pages/Index";
@@ -70,6 +71,7 @@ function App() {
             {/* 404 Route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <MusicPlayer />
           <Toaster />
         </QueryClientProvider>
       </ThemeProvider>
