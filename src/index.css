@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -47,9 +48,9 @@
     --foreground: 0 0% 98%; /* Brightened to almost white for better readability */
     
     /* Card & Container colors */
-    --card: 215 25% 15%; /* Darkened for more contrast */
+    --card: 0 0% 20%; /* Adjusted to #333333 */
     --card-foreground: 0 0% 98%; /* Using brighter text for cards */
-    --popover: 215 25% 15%;
+    --popover: 0 0% 20%;
     --popover-foreground: 0 0% 98%;
     
     /* Primary brand colors - maintain gold accent */
@@ -57,9 +58,9 @@
     --primary-foreground: 0 0% 13%;
     
     /* Secondary & Accent colors - improved for better contrast */
-    --secondary: 215 25% 20%;
+    --secondary: 0 0% 25%;
     --secondary-foreground: 0 0% 98%;
-    --accent: 215 25% 25%;
+    --accent: 0 0% 25%;
     --accent-foreground: 0 0% 98%;
     
     /* UI feedback colors - adjusted for better visibility */
@@ -67,13 +68,13 @@
     --destructive-foreground: 0 0% 98%;
     
     /* Neutral tones - improved for better readability */
-    --muted: 215 25% 20%;
-    --muted-foreground: 215 5% 85%; /* Brightened muted text */
+    --muted: 0 0% 25%;
+    --muted-foreground: 0 0% 75%; /* Brightened muted text */
     
     /* Border & Input colors - improved contrast */
-    --border: 215 25% 30%;
-    --input: 215 25% 25%;
-    --ring: 215 25% 50%;
+    --border: 0 0% 30%;
+    --input: 0 0% 25%;
+    --ring: 0 0% 83.9%;
   }
 }
  

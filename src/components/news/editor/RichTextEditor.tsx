@@ -50,10 +50,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         
         <div 
           style={{ minHeight: height }} 
-          className="p-4 prose prose-sm sm:prose max-w-none focus:outline-none overflow-y-auto 
-            dark:prose-invert prose-headings:text-foreground prose-p:text-foreground 
-            prose-strong:text-foreground prose-em:text-foreground prose-li:text-foreground
-            dark:bg-slate-800 dark:text-slate-50"
+          className="p-4 prose prose-sm sm:prose max-w-none focus:outline-none overflow-y-auto dark:prose-invert prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-em:text-foreground prose-li:text-foreground"
         >
           <EditorContent editor={editor} />
         </div>
