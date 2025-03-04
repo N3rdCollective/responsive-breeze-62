@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format, parseISO, compareAsc, parse } from "date-fns";
+import { format, parse } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -90,11 +90,6 @@ const Schedule = () => {
   }, [shows]);
 
   const formatTime = (timeString: string) => {
-    // Handle different time formats - could be "HH:mm:ss" from database or ISO string from API
-    if (timeString.includes("T")) {
-      return format(parseISO(timeString), "h:mm a");
-    }
-    
     // Parse time string (HH:mm:ss)
     const date = parse(timeString, "HH:mm:ss", new Date());
     return format(date, "h:mm a");
