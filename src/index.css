@@ -43,13 +43,13 @@
   }
  
   .dark {
-    /* Base colors */
+    /* Base colors - improved contrast for better readability */
     --background: 0 0% 13%; /* Adjusted to #222222 */
-    --foreground: 0 0% 98%;
+    --foreground: 0 0% 98%; /* Brightened to almost white for better readability */
     
     /* Card & Container colors */
     --card: 0 0% 20%; /* Adjusted to #333333 */
-    --card-foreground: 0 0% 98%;
+    --card-foreground: 0 0% 98%; /* Using brighter text for cards */
     --popover: 0 0% 20%;
     --popover-foreground: 0 0% 98%;
     
@@ -57,23 +57,23 @@
     --primary: 45 100% 50%;
     --primary-foreground: 0 0% 13%;
     
-    /* Secondary & Accent colors - back to grey */
-    --secondary: 0 0% 20%;
+    /* Secondary & Accent colors - improved for better contrast */
+    --secondary: 0 0% 25%;
     --secondary-foreground: 0 0% 98%;
-    --accent: 0 0% 20%;
+    --accent: 0 0% 25%;
     --accent-foreground: 0 0% 98%;
     
-    /* UI feedback colors */
-    --destructive: 0 62.8% 30.6%;
+    /* UI feedback colors - adjusted for better visibility */
+    --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 98%;
     
-    /* Neutral tones - back to grey */
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 63%;
+    /* Neutral tones - improved for better readability */
+    --muted: 0 0% 25%;
+    --muted-foreground: 0 0% 75%; /* Brightened muted text */
     
-    /* Border & Input colors */
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
+    /* Border & Input colors - improved contrast */
+    --border: 0 0% 30%;
+    --input: 0 0% 25%;
     --ring: 0 0% 83.9%;
   }
 }

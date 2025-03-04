@@ -17,7 +17,6 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
   const { toast } = useToast();
   
   const handleEdit = () => {
-    // Fix the path to match the route in App.tsx
     navigate(`/staff/news/edit/${post.id}`);
   };
   
@@ -61,6 +60,7 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
         size="icon"
         onClick={handleEdit}
         title="Edit"
+        className="hover:bg-secondary hover:text-secondary-foreground"
       >
         <Edit className="h-4 w-4" />
       </Button>
@@ -70,6 +70,7 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
         size="icon"
         onClick={handleView}
         title="View"
+        className="hover:bg-secondary hover:text-secondary-foreground"
       >
         <Eye className="h-4 w-4" />
       </Button>
@@ -79,7 +80,7 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
         size="icon"
         onClick={handleDelete}
         title="Delete"
-        className="text-red-500 hover:text-red-700 hover:bg-red-100"
+        className="text-red-500 hover:text-red-100 hover:bg-red-700 dark:hover:text-red-100 dark:hover:bg-red-700"
       >
         <Trash2 className="h-4 w-4" />
       </Button>
