@@ -144,6 +144,51 @@ const VideosTabContent: React.FC = () => {
     });
   };
 
+  // Function to update a video's title from YouTube based on its ID
+  const refreshVideoTitle = async (index: number) => {
+    const video = featuredVideos[index];
+    setIsValidating(true);
+    
+    try {
+      const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${video.youtube_id}&format=json`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Update in database
+        const { error } = await supabase
+          .from("featured_videos")
+          .update({ title: data.title })
+          .eq("id", video.id);
+          
+        if (error) throw error;
+        
+        // Update in local state
+        handleUpdateVideoField(index, 'title', data.title);
+        
+        toast({
+          title: "Title updated",
+          description: `Updated title to "${data.title}"`,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Could not fetch video information from YouTube",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error refreshing video title:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update video title",
+        variant: "destructive",
+      });
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -193,6 +238,15 @@ const VideosTabContent: React.FC = () => {
                       <Button
                         variant="ghost"
                         size="icon"
+                        onClick={() => refreshVideoTitle(index)}
+                        title="Refresh title from YouTube"
+                        className="h-8 w-8"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-refresh-cw"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => handleRemoveVideo(index)}
                         className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                       >
@@ -210,7 +264,10 @@ const VideosTabContent: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor={`video-title-${index}`}>Title</Label>
+                    <Label htmlFor={`video-title-${index}`} className="flex items-center gap-1">
+                      Title
+                      <span className="text-xs text-muted-foreground font-normal">(Auto-fetched from YouTube)</span>
+                    </Label>
                     <Input
                       id={`video-title-${index}`}
                       value={video.title}
