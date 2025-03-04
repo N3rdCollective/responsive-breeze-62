@@ -1,11 +1,11 @@
 
-import { UseFormReturn } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SystemSettingsFormValues } from "@/types/settings";
 
 interface LocalizationSettingsTabProps {
-  form: UseFormReturn<SystemSettingsFormValues>;
+  form: any; // Keep for backward compatibility
 }
 
 const LANGUAGES = [
@@ -33,7 +33,9 @@ const TIMEZONES = [
   { value: "Australia/Sydney", label: "AEST (Australian Eastern Standard Time)" },
 ];
 
-const LocalizationSettingsTab = ({ form }: LocalizationSettingsTabProps) => {
+const LocalizationSettingsTab = () => {
+  const form = useFormContext<SystemSettingsFormValues>();
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium">Localization Settings</h3>

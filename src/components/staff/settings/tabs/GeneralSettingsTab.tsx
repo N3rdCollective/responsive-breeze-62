@@ -1,14 +1,16 @@
 
-import { UseFormReturn } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { SystemSettingsFormValues } from "@/types/settings";
 
 interface GeneralSettingsTabProps {
-  form: UseFormReturn<SystemSettingsFormValues>;
+  form: any; // Keep for backward compatibility
 }
 
-const GeneralSettingsTab = ({ form }: GeneralSettingsTabProps) => {
+const GeneralSettingsTab = () => {
+  const form = useFormContext<SystemSettingsFormValues>();
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium">General Settings</h3>

@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
 import { Card } from "@/components/ui/card";
@@ -33,6 +33,7 @@ const formSchema = z.object({
 const SystemSettingsForm = () => {
   const { settings, isLoading, isSaving, updateSettings } = useSystemSettings();
   const [activeTab, setActiveTab] = useState("general");
+  const [isFormReady, setIsFormReady] = useState(false);
 
   const form = useForm<SystemSettingsFormValues>({
     resolver: zodResolver(formSchema),
@@ -66,6 +67,7 @@ const SystemSettingsForm = () => {
         language: settings.language,
         time_zone: settings.time_zone
       });
+      setIsFormReady(true);
     }
   }, [settings, form]);
 
@@ -85,51 +87,60 @@ const SystemSettingsForm = () => {
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)}>
-      <Card className="p-6">
-        <Tabs 
-          defaultValue="general" 
-          value={activeTab} 
-          onValueChange={setActiveTab}
-        >
-          <TabsList className="grid grid-cols-4 mb-6">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="contact">Contact Info</TabsTrigger>
-            <TabsTrigger value="copyright">Copyright</TabsTrigger>
-            <TabsTrigger value="localization">Localization</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="general">
-            <GeneralSettingsTab form={form} />
-          </TabsContent>
-          
-          <TabsContent value="contact">
-            <ContactSettingsTab form={form} />
-          </TabsContent>
-          
-          <TabsContent value="copyright">
-            <CopyrightSettingsTab form={form} />
-          </TabsContent>
-          
-          <TabsContent value="localization">
-            <LocalizationSettingsTab form={form} />
-          </TabsContent>
-          
-          <div className="flex justify-end mt-6">
-            <Button 
-              type="submit" 
-              disabled={isSaving}
-              className="w-full sm:w-auto"
+    <FormProvider {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <Card className="p-6">
+          {isFormReady ? (
+            <Tabs 
+              defaultValue="general" 
+              value={activeTab} 
+              onValueChange={setActiveTab}
             >
-              {isSaving && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              Save Settings
-            </Button>
-          </div>
-        </Tabs>
-      </Card>
-    </form>
+              <TabsList className="grid grid-cols-4 mb-6">
+                <TabsTrigger value="general">General</TabsTrigger>
+                <TabsTrigger value="contact">Contact Info</TabsTrigger>
+                <TabsTrigger value="copyright">Copyright</TabsTrigger>
+                <TabsTrigger value="localization">Localization</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="general">
+                <GeneralSettingsTab form={form} />
+              </TabsContent>
+              
+              <TabsContent value="contact">
+                <ContactSettingsTab form={form} />
+              </TabsContent>
+              
+              <TabsContent value="copyright">
+                <CopyrightSettingsTab form={form} />
+              </TabsContent>
+              
+              <TabsContent value="localization">
+                <LocalizationSettingsTab form={form} />
+              </TabsContent>
+              
+              <div className="flex justify-end mt-6">
+                <Button 
+                  type="submit" 
+                  disabled={isSaving}
+                  className="w-full sm:w-auto"
+                >
+                  {isSaving && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  Save Settings
+                </Button>
+              </div>
+            </Tabs>
+          ) : (
+            <div className="flex justify-center items-center h-60">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span className="ml-2 text-lg">Preparing settings form...</span>
+            </div>
+          )}
+        </Card>
+      </form>
+    </FormProvider>
   );
 };
 
