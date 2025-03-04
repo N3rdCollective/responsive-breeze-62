@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Calendar, User, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 
 interface Post {
   id: string;
@@ -28,6 +30,12 @@ const NewsPost = () => {
   const { data: post, isLoading, error } = useQuery({
     queryKey: ["news-post", id],
     queryFn: async () => {
+      console.log("Fetching post with ID:", id);
+      
+      if (!id) {
+        throw new Error("Post ID is required");
+      }
+      
       const { data, error } = await supabase
         .from("posts")
         .select("*")
@@ -36,6 +44,7 @@ const NewsPost = () => {
         .maybeSingle();
       
       if (error) {
+        console.error("Supabase error fetching post:", error);
         toast({
           title: "Error fetching post",
           description: error.message,
@@ -45,11 +54,15 @@ const NewsPost = () => {
       }
       
       if (!data) {
+        console.error("Post not found with ID:", id);
         throw new Error("Post not found");
       }
       
+      console.log("Post data loaded:", data);
       return data as Post;
     },
+    retry: 1,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   if (isLoading) {
@@ -85,10 +98,13 @@ const NewsPost = () => {
   }
 
   if (error || !post) {
+    console.error("Error displaying post:", error);
     return (
       <div className="max-w-4xl mx-auto px-4 py-12 text-center">
         <h2 className="text-2xl font-bold text-destructive mb-4">Post Not Found</h2>
-        <p className="text-muted-foreground mb-6">The post you're looking for doesn't exist or has been removed.</p>
+        <p className="text-muted-foreground mb-6">
+          The post you're looking for doesn't exist or has been removed.
+        </p>
         <Button onClick={() => navigate('/news')}>
           Back to News
         </Button>
@@ -168,8 +184,8 @@ const NewsPost = () => {
       />
       
       <div className="border-t pt-6 mt-6">
-        <Button onClick={() => navigate('/news')}>
-          Back to News
+        <Button asChild>
+          <Link to="/news">Back to News</Link>
         </Button>
       </div>
     </article>

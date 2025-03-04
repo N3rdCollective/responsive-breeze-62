@@ -4,6 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Post } from "../types/newsTypes";
+import { Link } from "react-router-dom";
 
 interface NewsCardProps {
   post: Post;
@@ -59,7 +60,7 @@ export const NewsCard = ({ post }: NewsCardProps) => {
       </CardContent>
       <CardFooter>
         <Button asChild variant="outline" className="w-full">
-          <a href={`/news/${post.id}`}>Read More</a>
+          <Link to={`/news/${post.id}`}>Read More</Link>
         </Button>
       </CardFooter>
     </Card>

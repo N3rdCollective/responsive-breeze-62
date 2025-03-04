@@ -8,6 +8,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Newspaper } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Link } from "react-router-dom";
 
 interface NewsPost {
   id: string;
@@ -59,7 +60,7 @@ const HomeNewsSection = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Latest News</h2>
         <Button variant="outline" asChild>
-          <a href="/news">View All News</a>
+          <Link to="/news">View All News</Link>
         </Button>
       </div>
       
@@ -102,7 +103,7 @@ const HomeNewsSection = () => {
                   {post.content.replace(/<[^>]*>/g, '')}
                 </p>
                 <Button variant="link" asChild className="p-0 h-auto mt-2">
-                  <a href={`/news/${post.id}`}>Read More</a>
+                  <Link to={`/news/${post.id}`}>Read More</Link>
                 </Button>
               </CardContent>
             </Card>
