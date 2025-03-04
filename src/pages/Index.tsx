@@ -9,13 +9,17 @@ import PersonalitySlider from "@/components/home/PersonalitySlider";
 import { supabase } from "@/integrations/supabase/client";
 
 interface HomeSettings {
+  id: string;
   show_hero: boolean;
   show_news_section: boolean;
   show_personalities: boolean;
   show_live_banner: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 const defaultSettings: HomeSettings = {
+  id: "home-settings",
   show_hero: true,
   show_news_section: true,
   show_personalities: true,
@@ -38,7 +42,7 @@ const Index = () => {
           console.error("Error fetching home settings:", error);
           setSettings(defaultSettings);
         } else if (data) {
-          setSettings(data);
+          setSettings(data as HomeSettings);
         }
       } catch (error) {
         console.error("Error in home settings fetch:", error);

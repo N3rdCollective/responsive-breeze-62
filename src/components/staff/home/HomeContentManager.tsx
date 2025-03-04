@@ -46,7 +46,7 @@ const HomeContentManager = () => {
         if (error) throw error;
         
         if (data) {
-          setSettings(data);
+          setSettings(data as HomeSettings);
           return data;
         }
         
@@ -60,7 +60,7 @@ const HomeContentManager = () => {
         if (insertError) throw insertError;
         
         if (newData) {
-          setSettings(newData);
+          setSettings(newData as HomeSettings);
           return newData;
         }
         
