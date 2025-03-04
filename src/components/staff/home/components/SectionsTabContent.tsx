@@ -1,11 +1,13 @@
 
 import React from "react";
+import { useHomeSettings } from "../context/HomeSettingsContext";
 import { useHomeSettingsData } from "../hooks/useHomeSettingsData";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
 const SectionsTabContent: React.FC = () => {
-  const { handleToggle, settings } = useHomeSettingsData();
+  const { handleToggle } = useHomeSettingsData();
+  const { settings } = useHomeSettings();
   
   return (
     <div className="space-y-6">

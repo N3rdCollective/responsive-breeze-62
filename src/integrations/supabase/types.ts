@@ -90,6 +90,7 @@ export type Database = {
       home_settings: {
         Row: {
           created_at: string | null
+          featured_videos: Json | null
           id: string
           show_hero: boolean
           show_live_banner: boolean
@@ -99,6 +100,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          featured_videos?: Json | null
           id?: string
           show_hero?: boolean
           show_live_banner?: boolean
@@ -108,6 +110,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          featured_videos?: Json | null
           id?: string
           show_hero?: boolean
           show_live_banner?: boolean

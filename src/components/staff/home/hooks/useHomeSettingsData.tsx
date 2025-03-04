@@ -20,6 +20,11 @@ export const useHomeSettingsData = () => {
         if (error) throw error;
         
         if (data) {
+          // Ensure featured_videos exists and is valid
+          if (!data.featured_videos || !Array.isArray(data.featured_videos)) {
+            data.featured_videos = defaultSettings.featured_videos;
+          }
+          
           setSettings(data as HomeSettings);
           return data;
         }
@@ -88,6 +93,7 @@ export const useHomeSettingsData = () => {
     isLoading,
     handleSaveSettings,
     handleToggle,
-    isSaving
+    isSaving,
+    settings
   };
 };
