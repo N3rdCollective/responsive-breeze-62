@@ -4,8 +4,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RichTextEditor from "../RichTextEditor";
 import NewsFormBasicFields from "./NewsFormBasicFields";
 import ImageUploader from "../ImageUploader";
-import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
 import { NewsStatus } from "../NewsForm";
 
 interface EditorTabContentProps {
@@ -60,18 +58,7 @@ const EditorTabContent: React.FC<EditorTabContentProps> = ({
             label="Content"
           />
           
-          <div className="mt-4 flex justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              onClick={onOpenPreview}
-            >
-              <Eye className="h-4 w-4" />
-              Preview
-            </Button>
-          </div>
+          {/* Removed the preview button from here */}
         </TabsContent>
         
         <TabsContent value="settings" className="mt-6">
