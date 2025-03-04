@@ -1,3 +1,4 @@
+
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ const News = () => {
             <div className="max-w-3xl">
               <h1 className="text-4xl font-bold mb-4 text-foreground">Latest News</h1>
               <p className="text-xl font-medium text-foreground bg-background/50 backdrop-blur-sm p-4 rounded-lg inline-block">
-                Stay updated with the latest happenings in music, entertainment, and local events
+                Stay updated with the latest happenings in music, entertainment, and local events. Use the search bar to find specific content.
               </p>
             </div>
           </div>

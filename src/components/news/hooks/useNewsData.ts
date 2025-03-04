@@ -8,6 +8,7 @@ import { Post } from "../types/newsTypes";
 export const useNewsData = () => {
   const { toast } = useToast();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>("");
   
   const { data: categories } = useQuery({
     queryKey: ["news-categories"],
@@ -37,7 +38,7 @@ export const useNewsData = () => {
   });
 
   const { data: posts, isLoading, error } = useQuery({
-    queryKey: ["news-posts", selectedCategory],
+    queryKey: ["news-posts", selectedCategory, searchTerm],
     queryFn: async () => {
       let query = supabase
         .from("posts")
@@ -60,12 +61,26 @@ export const useNewsData = () => {
         return [];
       }
       
-      return data as Post[];
+      // Filter by search term if provided
+      let filteredData = data as Post[];
+      if (searchTerm.trim() !== "") {
+        const term = searchTerm.toLowerCase();
+        filteredData = filteredData.filter(post => 
+          post.title.toLowerCase().includes(term) || 
+          post.content.toLowerCase().includes(term)
+        );
+      }
+      
+      return filteredData;
     },
   });
 
   const handleCategoryFilter = (category: string | null) => {
     setSelectedCategory(category === selectedCategory ? null : category);
+  };
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
   };
 
   return {
@@ -74,7 +89,9 @@ export const useNewsData = () => {
     isLoading,
     error,
     selectedCategory,
+    searchTerm,
     handleCategoryFilter,
+    handleSearch,
   };
 };
 

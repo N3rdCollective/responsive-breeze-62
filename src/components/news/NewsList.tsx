@@ -2,6 +2,7 @@
 import CategoryFilters from "./components/CategoryFilters";
 import NewsLoadingSkeleton from "./components/NewsLoadingSkeleton";
 import NewsGrid from "./components/NewsGrid";
+import SearchBar from "./components/SearchBar";
 import useNewsData from "./hooks/useNewsData";
 
 export const NewsList = () => {
@@ -12,6 +13,7 @@ export const NewsList = () => {
     error,
     selectedCategory,
     handleCategoryFilter,
+    handleSearch,
   } = useNewsData();
 
   if (error) {
@@ -25,6 +27,11 @@ export const NewsList = () => {
 
   return (
     <div className="space-y-8">
+      {/* Search bar */}
+      <div className="flex justify-center">
+        <SearchBar onSearch={handleSearch} />
+      </div>
+      
       {/* Category filters */}
       <CategoryFilters 
         categories={categories} 
