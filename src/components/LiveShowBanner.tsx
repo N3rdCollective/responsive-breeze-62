@@ -30,7 +30,7 @@ const LiveShowBanner = () => {
       <CardContent className="p-0">
         <div className="flex flex-col md:flex-row">
           {currentShow.artwork ? (
-            <div className="w-full md:w-1/4 h-40 md:h-auto">
+            <div className="w-full md:w-1/5 h-32 md:h-auto">
               <img 
                 src={currentShow.artwork} 
                 alt={currentShow.showName}
@@ -42,7 +42,7 @@ const LiveShowBanner = () => {
               />
             </div>
           ) : (
-            <div className="w-full md:w-1/4 h-40 md:h-auto bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+            <div className="w-full md:w-1/5 h-32 md:h-auto bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
               <Disc3 size={48} className="text-gray-400 dark:text-gray-500" />
             </div>
           )}
@@ -54,12 +54,12 @@ const LiveShowBanner = () => {
                 <span className="text-sm text-muted-foreground">{currentShow.timeSlot}</span>
               </div>
               
-              <h3 className="text-lg font-bold text-black dark:text-[#FFD700] mb-1">
+              <h3 className="text-xl md:text-2xl font-bold text-black dark:text-[#FFD700] mb-1">
                 {currentShow.showName}
               </h3>
               
               {currentShow.hostName && (
-                <p className="text-sm text-gray-600 dark:text-gray-300">
+                <p className="text-base md:text-lg text-gray-600 dark:text-gray-300">
                   Hosted by: {currentShow.hostName}
                 </p>
               )}

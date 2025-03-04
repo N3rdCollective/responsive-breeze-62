@@ -4,10 +4,6 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescripti
 import { Input } from "@/components/ui/input";
 import { SystemSettingsFormValues } from "@/types/settings";
 
-interface CopyrightSettingsTabProps {
-  form: any; // Keep for backward compatibility
-}
-
 const CopyrightSettingsTab = () => {
   const form = useFormContext<SystemSettingsFormValues>();
 
