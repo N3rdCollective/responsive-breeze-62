@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
+import { Eye, Save, X } from "lucide-react";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 import { useNavigate } from "react-router-dom";
 
@@ -21,38 +21,43 @@ const FormActions: React.FC<FormActionsProps> = ({
   const navigate = useNavigate();
   
   return (
-    <div className="space-y-6">
-      <div className="flex justify-end">
-        <Button 
-          type="button"
-          variant="outline"
-          onClick={onOpenPreview}
-          className="flex items-center gap-2"
-        >
-          <Eye className="h-4 w-4" /> Preview on Site
-        </Button>
-      </div>
-      
-      <div className="flex justify-end space-x-4 pt-4">
+    <div className="sticky bottom-0 bg-background border-t p-4 shadow-md">
+      <div className="max-w-5xl mx-auto flex items-center justify-between">
         <Button
           variant="outline"
+          className="flex items-center gap-2"
           onClick={() => navigate("/staff/news")}
         >
-          Cancel
+          <X className="h-4 w-4" /> Cancel
         </Button>
-        <Button
-          onClick={onSave}
-          disabled={isSaving || isUploading}
-        >
-          {isSaving ? (
-            <>
-              <LoadingSpinner />
-              <span className="ml-2">Saving...</span>
-            </>
-          ) : (
-            "Save Post"
-          )}
-        </Button>
+        
+        <div className="flex gap-3">
+          <Button 
+            type="button"
+            variant="outline"
+            onClick={onOpenPreview}
+            className="flex items-center gap-2"
+          >
+            <Eye className="h-4 w-4" /> Preview on Site
+          </Button>
+          
+          <Button
+            onClick={onSave}
+            disabled={isSaving || isUploading}
+            className="flex items-center gap-2"
+          >
+            {isSaving ? (
+              <>
+                <LoadingSpinner />
+                <span>Saving...</span>
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4" /> Save Post
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );

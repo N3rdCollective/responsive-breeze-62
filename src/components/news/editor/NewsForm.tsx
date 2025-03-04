@@ -60,47 +60,49 @@ const NewsForm: React.FC<NewsFormProps> = ({
   };
   
   return (
-    <div className="space-y-6">
-      <Tabs defaultValue="edit" className="w-full" onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="edit">Edit</TabsTrigger>
-          <TabsTrigger value="preview">Preview</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="edit" className="space-y-6">
-          <EditorTabContent
-            title={title}
-            setTitle={setTitle}
-            content={content}
-            setContent={setContent}
-            excerpt={excerpt}
-            setExcerpt={setExcerpt}
-            status={status}
-            setStatus={setStatus}
-            category={category}
-            setCategory={setCategory}
-            tags={tags}
-            setTags={setTags}
-            currentFeaturedImageUrl={currentFeaturedImageUrl}
-            onImageSelected={onImageSelected}
-            onOpenPreview={handleOpenPreview}
-          />
-        </TabsContent>
-        
-        <TabsContent value="preview">
-          <NewsPreview
-            title={title}
-            content={content}
-            excerpt={excerpt}
-            currentFeaturedImageUrl={currentFeaturedImageUrl}
-            authorName={authorName}
-            category={category}
-            tags={tags}
-          />
-        </TabsContent>
-      </Tabs>
+    <div className="flex flex-col min-h-[calc(100vh-8rem)]">
+      <div className="flex-grow">
+        <Tabs defaultValue="edit" className="w-full" onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="edit">Edit</TabsTrigger>
+            <TabsTrigger value="preview">Preview</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="edit" className="space-y-6">
+            <EditorTabContent
+              title={title}
+              setTitle={setTitle}
+              content={content}
+              setContent={setContent}
+              excerpt={excerpt}
+              setExcerpt={setExcerpt}
+              status={status}
+              setStatus={setStatus}
+              category={category}
+              setCategory={setCategory}
+              tags={tags}
+              setTags={setTags}
+              currentFeaturedImageUrl={currentFeaturedImageUrl}
+              onImageSelected={onImageSelected}
+              onOpenPreview={handleOpenPreview}
+            />
+          </TabsContent>
+          
+          <TabsContent value="preview">
+            <NewsPreview
+              title={title}
+              content={content}
+              excerpt={excerpt}
+              currentFeaturedImageUrl={currentFeaturedImageUrl}
+              authorName={authorName}
+              category={category}
+              tags={tags}
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
       
-      {/* Form actions always visible regardless of which tab is active */}
+      {/* Form actions as a sticky footer */}
       <FormActions
         onSave={onSave}
         isSaving={isSaving}
