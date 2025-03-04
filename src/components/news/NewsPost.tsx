@@ -23,7 +23,7 @@ interface Post {
 }
 
 const NewsPost = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
 
