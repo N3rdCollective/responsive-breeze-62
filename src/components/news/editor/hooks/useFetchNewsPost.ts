@@ -50,7 +50,7 @@ export const useFetchNewsPost = () => {
       }
       
       if (!data) {
-        console.error("News post not found");
+        console.error("News post not found with ID:", postId);
         toast({
           title: "Error",
           description: "News post not found",
@@ -60,7 +60,7 @@ export const useFetchNewsPost = () => {
         return;
       }
       
-      console.log("Post data fetched:", data);
+      console.log("Post data fetched successfully:", data);
       
       setTitle(data.title || "");
       setContent(data.content || "");

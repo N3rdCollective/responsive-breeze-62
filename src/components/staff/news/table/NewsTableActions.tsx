@@ -17,6 +17,7 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
   const { toast } = useToast();
   
   const handleEdit = () => {
+    console.log("Navigating to edit post with ID:", post.id);
     navigate(`/staff/news/edit/${post.id}`);
   };
   
