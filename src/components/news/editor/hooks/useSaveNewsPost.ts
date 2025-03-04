@@ -58,7 +58,6 @@ export const useSaveNewsPost = () => {
     }
     
     setIsSaving(true);
-    setIsUploading(!!featuredImage);
     
     try {
       let featuredImageUrl = currentFeaturedImageUrl;
@@ -66,11 +65,13 @@ export const useSaveNewsPost = () => {
       // Upload the featured image if a new one was selected
       if (featuredImage) {
         console.log("Uploading new featured image");
+        setIsUploading(true);
+        
         try {
           const uploadedUrl = await uploadImage(featuredImage);
           if (uploadedUrl) {
             featuredImageUrl = uploadedUrl;
-            console.log("Image uploaded successfully:", featuredImageUrl);
+            console.log("Image uploaded successfully, updating featured_image to:", featuredImageUrl);
           } else {
             console.error("Image upload failed, but continuing with save");
           }
@@ -81,8 +82,9 @@ export const useSaveNewsPost = () => {
             description: "Continuing to save post without the new image",
             variant: "destructive",
           });
+        } finally {
+          setIsUploading(false);
         }
-        setIsUploading(false);
       }
       
       // Generate an excerpt from content if none is provided
@@ -90,15 +92,15 @@ export const useSaveNewsPost = () => {
       console.log("Generated excerpt:", finalExcerpt);
       
       // Prepare the data for the database
-      const newsData = {
+      const newsData: any = {
         title,
         content,
         status,
-        featured_image: featuredImageUrl, // Ensure this is always included
-        tags: tags || [], 
+        excerpt: finalExcerpt,
+        featured_image: featuredImageUrl || null, // Ensure this is always included
+        tags: tags || [],
         author: null, // Set to null since we don't have a valid UUID
         updated_at: new Date().toISOString(),
-        excerpt: finalExcerpt,
       };
       
       // For category updates
@@ -108,7 +110,7 @@ export const useSaveNewsPost = () => {
         newsData['category'] = category || 'Uncategorized';
       }
       
-      console.log("Saving post data:", newsData);
+      console.log("Saving post data with featured_image:", newsData.featured_image);
       
       let result;
       
@@ -168,7 +170,6 @@ export const useSaveNewsPost = () => {
       });
     } finally {
       setIsSaving(false);
-      setIsUploading(false);
     }
   };
 

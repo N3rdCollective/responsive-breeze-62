@@ -63,7 +63,7 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
     const previewUrl = URL.createObjectURL(file);
     console.log("Created preview URL:", previewUrl);
     
-    // We don't update currentFeaturedImageUrl here to avoid confusion
+    // Set the preview URL temporarily for UI preview
     // The actual URL will be set after upload during save
   };
   
