@@ -4,10 +4,6 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { SystemSettingsFormValues } from "@/types/settings";
 
-interface GeneralSettingsTabProps {
-  form: any; // Keep for backward compatibility
-}
-
 const GeneralSettingsTab = () => {
   const form = useFormContext<SystemSettingsFormValues>();
 

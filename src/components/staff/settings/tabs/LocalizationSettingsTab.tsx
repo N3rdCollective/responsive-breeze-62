@@ -4,10 +4,6 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescripti
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SystemSettingsFormValues } from "@/types/settings";
 
-interface LocalizationSettingsTabProps {
-  form: any; // Keep for backward compatibility
-}
-
 const LANGUAGES = [
   { value: "en", label: "English" },
   { value: "es", label: "Spanish" },

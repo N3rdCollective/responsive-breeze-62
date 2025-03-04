@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, FormProvider } from "react-hook-form";
@@ -54,7 +53,6 @@ const SystemSettingsForm = () => {
     }
   });
 
-  // Update form values when settings are loaded
   useEffect(() => {
     if (settings) {
       form.reset({
@@ -104,19 +102,19 @@ const SystemSettingsForm = () => {
               </TabsList>
 
               <TabsContent value="general">
-                <GeneralSettingsTab form={form} />
+                <GeneralSettingsTab />
               </TabsContent>
               
               <TabsContent value="contact">
-                <ContactSettingsTab form={form} />
+                <ContactSettingsTab />
               </TabsContent>
               
               <TabsContent value="copyright">
-                <CopyrightSettingsTab form={form} />
+                <CopyrightSettingsTab />
               </TabsContent>
               
               <TabsContent value="localization">
-                <LocalizationSettingsTab form={form} />
+                <LocalizationSettingsTab />
               </TabsContent>
               
               <div className="flex justify-end mt-6">
