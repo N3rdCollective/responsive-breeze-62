@@ -83,6 +83,9 @@ export const Personalities = () => {
           {personalities?.map((personality, index) => {
             const showTimes = personality.show_times ? (personality.show_times as unknown) as ShowTimes : null;
             const socialLinks = personality.social_links ? (personality.social_links as unknown) as SocialLinks : null;
+            
+            // Clean up the bio if it contains "• -"
+            const cleanBio = personality.bio === "• -" ? null : personality.bio;
 
             return (
               <div 
@@ -101,11 +104,11 @@ export const Personalities = () => {
                   <h3 className="text-2xl font-semibold text-gray-900 dark:text-foreground mb-2">{personality.name}</h3>
                   <p className="text-lg text-[#FFD700] mb-4 font-medium">{personality.role}</p>
                   
-                  {personality.bio && personality.bio !== "• -" ? (
+                  {cleanBio && (
                     <p className="text-gray-700 dark:text-muted-foreground mb-6 line-clamp-3">
-                      {personality.bio}
+                      {cleanBio}
                     </p>
-                  ) : null}
+                  )}
                   
                   {showTimes && (
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
