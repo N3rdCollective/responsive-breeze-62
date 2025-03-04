@@ -1,9 +1,10 @@
 
-import React from "react";
-import { supabase } from "@/integrations/supabase/client";
+import React, { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Upload, Image } from "lucide-react";
 
 interface ImageUploaderProps {
   currentImageUrl: string;
@@ -11,29 +12,70 @@ interface ImageUploaderProps {
 }
 
 const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageSelected }) => {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const { toast } = useToast();
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      setSelectedFile(files[0]);
+    }
+  };
+
+  const handleUpload = () => {
+    if (!selectedFile) {
+      toast({
+        title: "No image selected",
+        description: "Please select an image file first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    onImageSelected(selectedFile);
+    toast({
+      title: "Image selected",
+      description: "Image will be uploaded when you save the post",
+    });
+  };
+
   return (
-    <div>
-      <Label htmlFor="featured-image">Featured Image</Label>
-      <div className="mt-2">
-        <Input
-          id="featured-image"
-          type="file"
-          accept="image/*"
-          onChange={(e) => {
-            const files = e.target.files;
-            if (files && files.length > 0) {
-              onImageSelected(files[0]);
-            }
-          }}
-        />
-        <p className="text-sm text-muted-foreground mt-1">
-          Select an image to use as the featured image for this post
-        </p>
+    <div className="space-y-4">
+      <Label htmlFor="featured-image" className="text-base font-medium">Featured Image</Label>
+      
+      <div className="flex flex-col gap-4">
+        <div className="flex gap-2 items-start">
+          <div className="flex-1">
+            <Input
+              id="featured-image"
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="flex-1"
+            />
+            <p className="text-sm text-muted-foreground mt-1">
+              Select an image to use as the featured image for this post
+            </p>
+          </div>
+          
+          <Button 
+            type="button" 
+            onClick={handleUpload}
+            disabled={!selectedFile}
+            className="mt-0"
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Upload
+          </Button>
+        </div>
       </div>
       
       {currentImageUrl && (
-        <div className="mt-4">
-          <p className="text-sm text-muted-foreground mb-2">Current image:</p>
+        <div className="mt-4 border rounded-md p-4 bg-muted/20">
+          <div className="flex items-center gap-2 mb-2">
+            <Image className="h-4 w-4" />
+            <p className="text-sm font-medium">Current featured image:</p>
+          </div>
           <img
             src={currentImageUrl}
             alt="Featured"

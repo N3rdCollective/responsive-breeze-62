@@ -8,6 +8,11 @@ export const useImageHandler = () => {
   const handleImageUpload = async (file: File): Promise<string | null> => {
     if (!file) {
       console.error("No file provided to handleImageUpload");
+      toast({
+        title: "Upload Error",
+        description: "No file provided for upload",
+        variant: "destructive",
+      });
       return null;
     }
     
@@ -25,6 +30,11 @@ export const useImageHandler = () => {
       }
       
       console.log("Image uploaded successfully, URL:", uploadedUrl);
+      
+      toast({
+        title: "Image Uploaded",
+        description: "Image was successfully uploaded",
+      });
       
       // Return the absolute URL to ensure it works everywhere
       return uploadedUrl;

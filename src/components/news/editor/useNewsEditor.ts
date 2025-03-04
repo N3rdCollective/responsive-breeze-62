@@ -63,8 +63,13 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
     const previewUrl = URL.createObjectURL(file);
     console.log("Created preview URL:", previewUrl);
     
-    // Set the preview URL temporarily for UI preview
-    // The actual URL will be set after upload during save
+    // Update the current featured image URL for preview purposes
+    setCurrentFeaturedImageUrl(previewUrl);
+    
+    toast({
+      title: "Image Selected",
+      description: "Image will be uploaded when you save the post",
+    });
   };
   
   // Save the news post
@@ -89,7 +94,13 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
         uploadImage: handleImageUpload,
         setIsSaving,
         setIsUploading,
-        onSuccess: () => navigate("/staff/news")
+        onSuccess: () => {
+          toast({
+            title: "Success",
+            description: id ? "News post updated successfully" : "News post created successfully",
+          });
+          navigate("/staff/news");
+        }
       }
     );
   };
