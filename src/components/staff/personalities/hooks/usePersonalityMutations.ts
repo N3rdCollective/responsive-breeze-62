@@ -39,11 +39,11 @@ export const usePersonalityMutations = (
         facebook: values.facebook || ""
       };
       
-      // Set up the new personality data
+      // Set up the new personality data and ensure we don't save "• -"
       const newPersonality = {
         name: values.name,
         role: values.role,
-        bio: values.bio && values.bio.trim() !== "" && values.bio !== "• -" ? values.bio : null,
+        bio: (values.bio && values.bio.trim() !== "" && values.bio !== "• -") ? values.bio : null,
         image_url: imageUrl || null,
         social_links: socialLinks
       };
@@ -91,11 +91,11 @@ export const usePersonalityMutations = (
         facebook: values.facebook || ""
       };
       
-      // Set up the personality update data
+      // Set up the personality update data and ensure we don't save "• -"
       const updatedPersonality = {
         name: values.name,
         role: values.role,
-        bio: values.bio && values.bio.trim() !== "" && values.bio !== "• -" ? values.bio : null,
+        bio: (values.bio && values.bio.trim() !== "" && values.bio !== "• -") ? values.bio : null,
         image_url: imageUrl || null,
         social_links: socialLinks,
         updated_at: new Date().toISOString()

@@ -49,29 +49,34 @@ const PersonalityFormContent = ({ form, onImageSelected, isUploading = false }: 
       <FormField
         control={form.control}
         name="bio"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Biography</FormLabel>
-            <FormControl>
-              <Textarea 
-                {...field} 
-                placeholder="Enter biography here..." 
-                className="min-h-[120px]"
-                onChange={(e) => {
-                  // Prevent setting the value to "• -" and clean up if it's already there
-                  const value = e.target.value;
-                  if (value === "• -") {
-                    field.onChange("");
-                  } else {
-                    field.onChange(value);
-                  }
-                }}
-                value={field.value === "• -" ? "" : field.value}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
+        render={({ field }) => {
+          // Clean up the field value if it's "• -"
+          const displayValue = field.value === "• -" ? "" : field.value;
+          
+          return (
+            <FormItem>
+              <FormLabel>Biography</FormLabel>
+              <FormControl>
+                <Textarea 
+                  {...field} 
+                  placeholder="Enter biography here..." 
+                  className="min-h-[120px]"
+                  onChange={(e) => {
+                    // Prevent setting the value to "• -" and clean up if it's already there
+                    const value = e.target.value;
+                    if (value === "• -") {
+                      field.onChange("");
+                    } else {
+                      field.onChange(value);
+                    }
+                  }}
+                  value={displayValue}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          );
+        }}
       />
       
       <ImageSection 

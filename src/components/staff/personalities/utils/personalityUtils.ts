@@ -7,7 +7,8 @@ export const preparePersonalityFormData = (personality: Personality): FormValues
     id: personality.id,
     name: personality.name,
     role: personality.role,
-    bio: personality.bio || "",
+    // Clean up bio if it's "• -"
+    bio: personality.bio === "• -" ? "" : (personality.bio || ""),
     image_url: personality.image_url || "",
     twitter: personality.social_links?.twitter || "",
     instagram: personality.social_links?.instagram || "",
@@ -30,10 +31,15 @@ export const prepareUpdateData = (values: FormValues, imageUrl: string): {
     facebook: values.facebook || ""
   };
   
+  // Don't save "• -" as bio, convert empty or "• -" to null
+  const bioValue = (values.bio && values.bio.trim() !== "" && values.bio !== "• -") 
+    ? values.bio.trim() 
+    : null;
+  
   return {
     name: values.name,
     role: values.role,
-    bio: values.bio || null,
+    bio: bioValue,
     image_url: imageUrl,
     social_links: socialLinks,
     updated_at: new Date().toISOString()
