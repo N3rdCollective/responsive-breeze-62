@@ -37,7 +37,7 @@ export interface FormValues {
   facebook: string;
 }
 
-// Add the missing PersonalityFormData type
+// PersonalityFormData represents the data structure used in the form
 export interface PersonalityFormData {
   name: string;
   role: string;

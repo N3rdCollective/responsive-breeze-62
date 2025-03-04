@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { FormValues, Personality } from "../types";
+import { prepareUpdateData } from "../utils/personalityUtils";
 
 export const usePersonalityMutations = (onSuccess: () => Promise<void>) => {
   const { toast } = useToast();
@@ -12,25 +13,10 @@ export const usePersonalityMutations = (onSuccess: () => Promise<void>) => {
     try {
       setIsSaving(true);
 
+      const updateData = prepareUpdateData(values, imageUrl);
       const { error } = await supabase
         .from("personalities")
-        .update({
-          name: values.name,
-          role: values.role,
-          bio: values.bio,
-          image_url: imageUrl,
-          show_times: {
-            days: values.days.split(",").map(day => day.trim()),
-            start: values.start,
-            end: values.end
-          },
-          social_links: {
-            twitter: values.twitter,
-            instagram: values.instagram,
-            facebook: values.facebook
-          },
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq("id", selectedPersonalityId);
 
       if (error) throw error;
@@ -58,26 +44,14 @@ export const usePersonalityMutations = (onSuccess: () => Promise<void>) => {
     try {
       setIsSaving(true);
 
+      const createData = {
+        ...prepareUpdateData(values, imageUrl),
+        created_at: new Date().toISOString()
+      };
+      
       const { data, error } = await supabase
         .from("personalities")
-        .insert({
-          name: values.name,
-          role: values.role,
-          bio: values.bio,
-          image_url: imageUrl,
-          show_times: {
-            days: values.days.split(",").map(day => day.trim()),
-            start: values.start,
-            end: values.end
-          },
-          social_links: {
-            twitter: values.twitter,
-            instagram: values.instagram,
-            facebook: values.facebook
-          },
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
+        .insert(createData)
         .select();
 
       if (error) throw error;
