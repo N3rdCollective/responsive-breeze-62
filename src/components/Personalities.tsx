@@ -66,7 +66,7 @@ export const Personalities = () => {
     <section className="py-24 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-foreground mb-4">Meet Our Team</h2>
+          <h2 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-foreground mb-4">Meet Our DJs/Personalities</h2>
           <p className="text-xl text-gray-700 dark:text-muted-foreground max-w-2xl mx-auto">
             Get to know the voices that make our station unique and bring you the best in music and entertainment.
           </p>

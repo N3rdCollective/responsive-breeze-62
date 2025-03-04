@@ -1,72 +1,41 @@
 
 import { useState } from "react";
-import { FormValues, Personality, ShowTimes, SocialLinks } from "../types";
 import { supabase } from "@/integrations/supabase/client";
+import { PersonalityFormData, Personality, SocialLinks } from "../types";
 import { useToast } from "@/hooks/use-toast";
-import { Json } from "@/integrations/supabase/types";
 
-export const usePersonalityMutations = (
-  refreshPersonalities: () => Promise<void>
-) => {
-  const [isSaving, setIsSaving] = useState(false);
+export const usePersonalityMutations = () => {
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  // Transform Supabase data to match Personality type
-  const transformData = (data: any): Personality => {
-    return {
-      id: data.id,
-      name: data.name,
-      role: data.role || "",
-      bio: data.bio === "• -" ? null : data.bio || null,
-      image_url: data.image_url || null,
-      show_times: data.show_times as unknown as ShowTimes || null,
-      social_links: data.social_links as unknown as SocialLinks || null,
-      created_at: data.created_at,
-      updated_at: data.updated_at,
-      start_date: data.start_date
-    };
-  };
-
-  // Create a new personality
-  const createPersonality = async (values: FormValues, imageUrl: string): Promise<Personality | null> => {
+  const createPersonality = async (formData: PersonalityFormData) => {
     try {
-      setIsSaving(true);
+      setLoading(true);
       
-      // Create the social links object
-      const socialLinks = {
-        twitter: values.twitter || "",
-        instagram: values.instagram || "",
-        facebook: values.facebook || ""
+      // Prepare the data for insertion
+      const personalityData = {
+        name: formData.name,
+        role: formData.role,
+        bio: formData.bio || null,
+        image_url: formData.image_url || null,
+        social_links: formData.socialLinks || null,
+        start_date: formData.startDate ? new Date(formData.startDate).toISOString() : null,
       };
       
-      // Set up the new personality data and ensure we don't save "• -"
-      const newPersonality = {
-        name: values.name,
-        role: values.role,
-        bio: (values.bio && values.bio.trim() !== "" && values.bio !== "• -") ? values.bio : null,
-        image_url: imageUrl || null,
-        social_links: socialLinks
-      };
-      
-      // Insert the new personality into the database
       const { data, error } = await supabase
         .from("personalities")
-        .insert(newPersonality)
+        .insert(personalityData)
         .select()
         .single();
       
       if (error) throw error;
       
       toast({
-        title: "Success!",
-        description: "New personality has been created.",
+        title: "Success",
+        description: "Personality created successfully",
       });
       
-      // Refresh the personalities list
-      await refreshPersonalities();
-      
-      // Transform the data to match the Personality type
-      return data ? transformData(data) : null;
+      return data as Personality;
     } catch (error: any) {
       toast({
         title: "Error",
@@ -75,64 +44,55 @@ export const usePersonalityMutations = (
       });
       return null;
     } finally {
-      setIsSaving(false);
+      setLoading(false);
     }
   };
-
-  // Update an existing personality
-  const updatePersonality = async (values: FormValues, id: string, imageUrl: string): Promise<void> => {
+  
+  const updatePersonality = async (id: string, formData: PersonalityFormData) => {
     try {
-      setIsSaving(true);
+      setLoading(true);
       
-      // Create the social links object
-      const socialLinks = {
-        twitter: values.twitter || "",
-        instagram: values.instagram || "",
-        facebook: values.facebook || ""
+      // Prepare the data for update
+      const personalityData = {
+        name: formData.name,
+        role: formData.role,
+        bio: formData.bio || null,
+        image_url: formData.image_url || null,
+        social_links: formData.socialLinks || null,
+        start_date: formData.startDate ? new Date(formData.startDate).toISOString() : null,
       };
       
-      // Set up the personality update data and ensure we don't save "• -"
-      const updatedPersonality = {
-        name: values.name,
-        role: values.role,
-        bio: (values.bio && values.bio.trim() !== "" && values.bio !== "• -") ? values.bio : null,
-        image_url: imageUrl || null,
-        social_links: socialLinks,
-        updated_at: new Date().toISOString()
-      };
-      
-      // Update the personality in the database
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("personalities")
-        .update(updatedPersonality)
-        .eq("id", id);
+        .update(personalityData)
+        .eq("id", id)
+        .select()
+        .single();
       
       if (error) throw error;
       
       toast({
-        title: "Success!",
-        description: "Personality has been updated.",
+        title: "Success",
+        description: "Personality updated successfully",
       });
       
-      // Refresh the personalities list
-      await refreshPersonalities();
+      return data as Personality;
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
+      return null;
     } finally {
-      setIsSaving(false);
+      setLoading(false);
     }
   };
-
-  // Delete a personality
-  const deletePersonality = async (id: string): Promise<boolean> => {
+  
+  const deletePersonality = async (id: string) => {
     try {
-      setIsSaving(true);
+      setLoading(true);
       
-      // Delete the personality from the database
       const { error } = await supabase
         .from("personalities")
         .delete()
@@ -141,12 +101,9 @@ export const usePersonalityMutations = (
       if (error) throw error;
       
       toast({
-        title: "Success!",
-        description: "Personality has been deleted.",
+        title: "Success",
+        description: "Personality deleted successfully",
       });
-      
-      // Refresh the personalities list
-      await refreshPersonalities();
       
       return true;
     } catch (error: any) {
@@ -157,12 +114,12 @@ export const usePersonalityMutations = (
       });
       return false;
     } finally {
-      setIsSaving(false);
+      setLoading(false);
     }
   };
-
+  
   return {
-    isSaving,
+    loading,
     createPersonality,
     updatePersonality,
     deletePersonality
