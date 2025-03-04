@@ -20,6 +20,8 @@ const ContentManagementCard = () => {
   const handleEditPage = (page: string) => {
     if (page === "About") {
       navigate("/staff/about-editor");
+    } else if (page === "Home") {
+      navigate("/staff/home-editor");
     } else {
       toast({
         title: `Edit ${page}`,
@@ -37,6 +39,7 @@ const ContentManagementCard = () => {
           variant="outline" 
           className="w-full bg-white dark:bg-[#222222] text-black dark:text-white hover:bg-gray-100 dark:hover:bg-[#444444]"
           onClick={() => handleEditPage("Home")}
+          disabled={!canManageContent}
         >
           Edit Home Page
         </Button>

@@ -19,6 +19,7 @@ import StaffNews from "@/pages/StaffNews";
 import NewsEditor from "@/pages/NewsEditor";
 import StaffAboutEditor from "@/pages/StaffAboutEditor";
 import StaffPersonalities from "@/pages/StaffPersonalities";
+import StaffHomePage from "@/pages/StaffHomePage";
 import NotFound from "@/pages/NotFound";
 import MusicPlayer from "@/components/MusicPlayer";
 import { Toaster } from "@/components/ui/toaster";
@@ -52,6 +53,7 @@ function App() {
               <Route path="/staff/news/edit/:id" element={<NewsEditor />} />
               <Route path="/staff/news/new" element={<NewsEditor />} />
               <Route path="/staff/about-editor" element={<StaffAboutEditor />} />
+              <Route path="/staff/home-editor" element={<StaffHomePage />} />
               <Route path="/staff/personalities" element={<StaffPersonalities />} />
               <Route path="/staff/sponsors" element={<StaffSponsors />} />
 
