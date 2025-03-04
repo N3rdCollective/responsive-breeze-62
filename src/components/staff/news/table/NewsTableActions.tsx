@@ -18,8 +18,11 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
   const { toast } = useToast();
   const { userRole } = useStaffAuth();
   
-  // Check if user has permission to delete posts
+  // Check if user has permission to delete posts - ensure super_admin is included
   const canDeletePost = userRole === 'admin' || userRole === 'super_admin' || userRole === 'moderator';
+  
+  console.log("NewsTableActions - Current user role:", userRole);
+  console.log("NewsTableActions - Can delete post:", canDeletePost);
   
   const handleEdit = () => {
     console.log("Navigating to edit post with ID:", post.id);
@@ -31,8 +34,9 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
   };
   
   const handleDelete = async () => {
-    // Check for delete permissions
+    // Double check that user has delete permissions
     if (!canDeletePost) {
+      console.error("Permission denied: User role", userRole, "cannot delete posts");
       toast({
         title: "Permission denied",
         description: "You don't have permission to delete posts",
@@ -46,8 +50,25 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
     }
     
     console.log("Attempting to delete post with ID:", post.id);
+    console.log("User role performing delete:", userRole);
     
     try {
+      // Try to get the session to confirm we're authenticated
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !sessionData.session) {
+        console.error("Authentication error:", sessionError);
+        toast({
+          title: "Authentication error",
+          description: "Please log in again to perform this action",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      console.log("Authenticated as:", sessionData.session.user.email);
+      console.log("Auth ID:", sessionData.session.user.id);
+      
       // Execute the delete operation with detailed logging
       console.log("Sending delete request to Supabase for post ID:", post.id);
       
@@ -55,7 +76,7 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
       console.log("Post ID type:", typeof post.id);
       console.log("Post ID value:", post.id);
       
-      // Make sure we're using the correct table name - should be "posts" not "post"
+      // Improved delete operation with explicit error handling
       const { error, data } = await supabase
         .from("posts")
         .delete()
@@ -66,7 +87,22 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
       
       if (error) {
         console.error("Supabase error deleting post:", error);
-        throw error;
+        
+        // Check for permissions errors specifically
+        if (error.message.includes("permission") || error.code === "42501") {
+          toast({
+            title: "Permission error",
+            description: `You don't have permission to delete this post. Error: ${error.message}`,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: `Failed to delete post: ${error.message}`,
+            variant: "destructive",
+          });
+        }
+        return;
       }
       
       console.log("Post deleted successfully from database");
