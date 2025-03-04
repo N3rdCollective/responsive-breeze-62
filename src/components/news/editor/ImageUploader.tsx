@@ -43,7 +43,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageS
 
   return (
     <div className="space-y-4">
-      <Label htmlFor="featured-image" className="text-base font-medium">Image</Label>
+      <Label htmlFor="featured-image" className="text-base font-medium">Featured Image</Label>
       
       <div className="flex flex-col gap-4">
         <div className="flex gap-2 items-start">
@@ -56,7 +56,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageS
               className="flex-1"
             />
             <p className="text-sm text-muted-foreground mt-1">
-              Select an image to use
+              Select an image for the featured image
             </p>
           </div>
           
@@ -67,7 +67,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageS
             className="mt-0"
           >
             <Upload className="h-4 w-4 mr-2" />
-            Upload
+            Select
           </Button>
         </div>
       </div>
@@ -76,7 +76,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageS
         <div className="mt-4 border rounded-md p-4 bg-muted/20">
           <div className="flex items-center gap-2 mb-2">
             <Image className="h-4 w-4" />
-            <p className="text-sm font-medium">Current image:</p>
+            <p className="text-sm font-medium">Current featured image:</p>
           </div>
           <img
             src={currentImageUrl}
@@ -92,7 +92,10 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageS
 export default ImageUploader;
 
 export const handleImageUpload = async (file: File): Promise<string | null> => {
-  if (!file) return null;
+  if (!file) {
+    console.error("No file provided to handleImageUpload");
+    return null;
+  }
   
   try {
     console.log("Starting image upload process for:", file.name);
@@ -127,6 +130,8 @@ export const handleImageUpload = async (file: File): Promise<string | null> => {
       throw new Error("Failed to access storage configuration");
     }
     
+    console.log("Available buckets:", buckets?.map(b => b.name).join(', '));
+    
     const mediaBucketExists = buckets?.some(bucket => bucket.name === "media");
     
     if (!mediaBucketExists) {
@@ -141,7 +146,7 @@ export const handleImageUpload = async (file: File): Promise<string | null> => {
       .from("media")
       .upload(filePath, file, {
         cacheControl: "3600",
-        upsert: false
+        upsert: true // Change to true to replace files with the same name
       });
       
     if (uploadError) {

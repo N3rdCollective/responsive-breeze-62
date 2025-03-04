@@ -18,10 +18,20 @@ export const useImageHandler = () => {
     }
     
     try {
-      console.log("Uploading image file:", file.name, file.size);
+      console.log("Uploading image file:", file.name, file.size, file.type);
       
       // Check authentication before proceeding
-      const { data: sessionData } = await supabase.auth.getSession();
+      const { data: sessionData, error: authError } = await supabase.auth.getSession();
+      if (authError) {
+        console.error("Auth error:", authError);
+        toast({
+          title: "Authentication Error",
+          description: "Failed to verify your session",
+          variant: "destructive",
+        });
+        return null;
+      }
+      
       if (!sessionData.session) {
         console.error("No active session found - user not authenticated");
         toast({
@@ -47,7 +57,7 @@ export const useImageHandler = () => {
         return null;
       }
       
-      console.log("Available storage buckets:", buckets);
+      console.log("Available storage buckets:", buckets?.map(b => b.name).join(', '));
       
       const mediaBucketExists = buckets?.some(bucket => bucket.name === "media");
       if (!mediaBucketExists) {
@@ -62,9 +72,52 @@ export const useImageHandler = () => {
       
       console.log("Media bucket verified, proceeding with upload");
       
+      // Direct file upload approach as a test
+      const fileExt = file.name.split('.').pop();
+      const filePath = `news/direct_${Date.now()}.${fileExt}`;
+      
+      console.log("Attempting direct upload to path:", filePath);
+      
+      const { error: directUploadError, data: directUploadData } = await supabase.storage
+        .from("media")
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: true
+        });
+        
+      if (directUploadError) {
+        console.error("Direct upload error:", directUploadError);
+        toast({
+          title: "Direct Upload Failed",
+          description: `Error: ${directUploadError.message}`,
+          variant: "destructive",
+        });
+        
+        // Still try the regular upload method as fallback
+        console.log("Trying fallback upload method...");
+      } else {
+        console.log("Direct upload successful:", directUploadData);
+        
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from("media")
+          .getPublicUrl(filePath);
+          
+        console.log("Direct upload URL:", urlData.publicUrl);
+        
+        toast({
+          title: "Image Uploaded",
+          description: "Image was successfully uploaded directly",
+        });
+        
+        return urlData.publicUrl;
+      }
+      
+      // Fallback to the original upload method
       const uploadedUrl = await uploadImage(file);
       
       if (!uploadedUrl) {
+        console.error("Both upload methods failed");
         toast({
           title: "Image Upload Failed",
           description: "Unable to upload the image. Please try again.",
