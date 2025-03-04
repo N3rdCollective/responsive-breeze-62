@@ -31,7 +31,10 @@ const Index = () => {
             data.featured_videos = defaultSettings.featured_videos;
           }
           
-          setSettings(data as HomeSettings);
+          setSettings({
+            ...data,
+            featured_videos: data.featured_videos
+          } as HomeSettings);
         }
       } catch (error) {
         console.error("Error in home settings fetch:", error);
@@ -47,7 +50,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      {settings.show_hero && <Hero />}
+      {settings.show_hero && <Hero videoBackgrounds={settings.featured_videos} />}
       
       {/* VideoGallery is always shown for now, but uses dynamic video data */}
       <VideoGallery videos={settings.featured_videos} />

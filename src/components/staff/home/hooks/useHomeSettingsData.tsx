@@ -25,21 +25,30 @@ export const useHomeSettingsData = () => {
             data.featured_videos = defaultSettings.featured_videos;
           }
           
-          setSettings(data as HomeSettings);
+          // Convert the Json type to VideoData[] type
+          setSettings({
+            ...data,
+            featured_videos: data.featured_videos
+          } as HomeSettings);
+          
           return data;
         }
         
         // If no settings exist, create default settings
         const { data: newData, error: insertError } = await supabase
           .from("home_settings")
-          .insert(defaultSettings)
+          .insert([defaultSettings])
           .select()
           .single();
           
         if (insertError) throw insertError;
         
         if (newData) {
-          setSettings(newData as HomeSettings);
+          setSettings({
+            ...newData,
+            featured_videos: newData.featured_videos
+          } as HomeSettings);
+          
           return newData;
         }
         
@@ -61,7 +70,10 @@ export const useHomeSettingsData = () => {
     try {
       const { error } = await supabase
         .from("home_settings")
-        .upsert(settings)
+        .upsert({
+          ...settings,
+          featured_videos: settings.featured_videos
+        })
         .select();
         
       if (error) throw error;

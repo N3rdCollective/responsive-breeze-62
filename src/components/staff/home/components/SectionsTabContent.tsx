@@ -29,7 +29,7 @@ const SectionsTabContent: React.FC = () => {
         <div>
           <Label htmlFor="show-video-gallery">Featured Videos Section</Label>
           <p className="text-sm text-muted-foreground">
-            Display a gallery of featured videos below the hero section
+            Display a gallery of featured videos below the hero section (these videos are also used in the hero background)
           </p>
         </div>
         <Switch

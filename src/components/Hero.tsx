@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAudioPlayer } from "@/hooks/useAudioPlayer";
+import { VideoData } from "@/components/staff/home/context/HomeSettingsContext";
 
 type GreetingData = {
   [key: string]: {
@@ -13,13 +14,11 @@ type GreetingData = {
   }
 };
 
-type VideoBackground = {
-  id: string;
-  title: string;
-  credit?: string;
+interface HeroProps {
+  videoBackgrounds?: VideoData[];
 }
 
-const videoBackgrounds: VideoBackground[] = [
+const defaultVideoBackgrounds: VideoData[] = [
   { id: "uaGvGnOiY04", title: "Aerial city view at night" },
   { id: "j4Vg274kOvc", title: "Busy city street scene" },
   { id: "PNIBFEJ6UYc", title: "Urban night life" },
@@ -54,7 +53,7 @@ const greetings: GreetingData = {
   }
 };
 
-const Hero = () => {
+const Hero = ({ videoBackgrounds = defaultVideoBackgrounds }: HeroProps) => {
   const [location, setLocation] = useState<string>("default");
   const [greeting, setGreeting] = useState<string>("");
   const { togglePlayPause, isPlaying } = useAudioPlayer();
@@ -77,15 +76,18 @@ const Hero = () => {
   }, []);
 
   useEffect(() => {
+    // Ensure we always have videos, even if passed an empty array
+    const videos = videoBackgrounds.length > 0 ? videoBackgrounds : defaultVideoBackgrounds;
+    
     // Rotate videos every 45 seconds
     const videoRotationInterval = setInterval(() => {
       setCurrentVideoIndex((prevIndex) => 
-        (prevIndex + 1) % videoBackgrounds.length
+        (prevIndex + 1) % videos.length
       );
     }, 45000);
 
     return () => clearInterval(videoRotationInterval);
-  }, []);
+  }, [videoBackgrounds]);
 
   useEffect(() => {
     const getTimeBasedGreeting = () => {
@@ -111,7 +113,9 @@ const Hero = () => {
     return () => clearInterval(interval);
   }, [location]);
 
-  const currentVideo = videoBackgrounds[currentVideoIndex];
+  // Ensure we always have videos, even if passed an empty array
+  const videos = videoBackgrounds.length > 0 ? videoBackgrounds : defaultVideoBackgrounds;
+  const currentVideo = videos[currentVideoIndex % videos.length];
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
