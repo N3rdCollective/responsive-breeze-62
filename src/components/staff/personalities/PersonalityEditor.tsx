@@ -19,7 +19,7 @@ export const PersonalityEditor = () => {
     selectedPersonality,
     isSaving,
     isUploading,
-    previewUrl,
+    imageUrl,
     handleSelectPersonality,
     handleImageSelected,
     handleSubmit,
@@ -74,7 +74,7 @@ export const PersonalityEditor = () => {
             onImageSelected={handleImageSelected}
             onSubmit={onSubmit}
             onDelete={handleDelete}
-            previewUrl={previewUrl}
+            previewUrl={imageUrl}
           />
         </div>
       </div>
