@@ -263,12 +263,10 @@ export type Database = {
       }
       shows: {
         Row: {
-          artwork_url: string | null
           created_at: string | null
           days: string[]
           description: string | null
           end_time: string
-          external_id: string | null
           id: string
           personality_id: string | null
           start_time: string
@@ -276,12 +274,10 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          artwork_url?: string | null
           created_at?: string | null
           days: string[]
           description?: string | null
           end_time: string
-          external_id?: string | null
           id?: string
           personality_id?: string | null
           start_time: string
@@ -289,12 +285,10 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
-          artwork_url?: string | null
           created_at?: string | null
           days?: string[]
           description?: string | null
           end_time?: string
-          external_id?: string | null
           id?: string
           personality_id?: string | null
           start_time?: string
