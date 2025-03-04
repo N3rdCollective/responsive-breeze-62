@@ -9,17 +9,10 @@ interface Personality {
   role: string;
   bio: string | null;
   image_url: string | null;
-  show_times: Json | null;
   social_links: Json | null;
   created_at: string | null;
   updated_at: string | null;
   start_date: string | null;
-}
-
-interface ShowTimes {
-  days: string[];
-  start: string;
-  end: string;
 }
 
 interface SocialLinks {
@@ -81,7 +74,6 @@ export const Personalities = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
           {personalities?.map((personality, index) => {
-            const showTimes = personality.show_times ? (personality.show_times as unknown) as ShowTimes : null;
             const socialLinks = personality.social_links ? (personality.social_links as unknown) as SocialLinks : null;
             
             // Clean up the bio if it contains "• -"
@@ -110,11 +102,6 @@ export const Personalities = () => {
                     </p>
                   )}
                   
-                  {showTimes && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                      {showTimes.days.join(", ")} • {showTimes.start} - {showTimes.end}
-                    </p>
-                  )}
                   <div className="flex items-center justify-between">
                     <a 
                       href={`/personalities/${personality.id}`}

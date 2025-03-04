@@ -152,7 +152,6 @@ export type Database = {
           image_url: string | null
           name: string
           role: string
-          show_times: Json | null
           social_links: Json | null
           start_date: string | null
           updated_at: string | null
@@ -164,7 +163,6 @@ export type Database = {
           image_url?: string | null
           name: string
           role?: string
-          show_times?: Json | null
           social_links?: Json | null
           start_date?: string | null
           updated_at?: string | null
@@ -176,7 +174,6 @@ export type Database = {
           image_url?: string | null
           name?: string
           role?: string
-          show_times?: Json | null
           social_links?: Json | null
           start_date?: string | null
           updated_at?: string | null
