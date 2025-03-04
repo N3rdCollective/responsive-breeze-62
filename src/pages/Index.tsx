@@ -44,6 +44,7 @@ const Index = () => {
       
       {settings.show_hero && <Hero />}
       
+      {/* VideoGallery now properly positioned below Hero */}
       <VideoGallery />
       
       <div className="container mx-auto px-4 py-8">
@@ -57,9 +58,7 @@ const Index = () => {
         </div>
       </div>
       
-      <div className="mb-20">
-        <Footer />
-      </div>
+      <Footer />
     </div>
   );
 };

@@ -1,8 +1,39 @@
 
 import { Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
 import SponsorsSection from './footer/SponsorsSection';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { supabase } from "@/integrations/supabase/client";
 
 const Footer = () => {
+  const [aboutSubtitle, setAboutSubtitle] = useState<string>("");
+  
+  useEffect(() => {
+    const fetchAboutContent = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("about_page")
+          .select("subtitle")
+          .single();
+
+        if (error) {
+          console.error("Error fetching about subtitle:", error);
+          // Fallback to default text if there's an error
+          setAboutSubtitle("Founded by the visionary DJ Epidemik, Rappin' Lounge Radio offers a unique listening experience, blending the heart of hip-hop with a vibrant mix of genres that reflect the diversity of our global community.");
+          return;
+        }
+
+        if (data && data.subtitle) {
+          setAboutSubtitle(data.subtitle);
+        }
+      } catch (err) {
+        console.error("Unexpected error:", err);
+      }
+    };
+
+    fetchAboutContent();
+  }, []);
+
   return (
     <footer className="bg-[#F5F5F5] dark:bg-[#333333] border-t border-[#666666]/20 dark:border-white/10 pb-8 md:pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -10,7 +41,10 @@ const Footer = () => {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-[#FFD700]">About Us</h3>
             <p className="text-gray-700 dark:text-white">
-              We bring you the best in music, entertainment, and news.
+              {aboutSubtitle}
+              <Link to="/about" className="ml-1 text-[#FFD700] hover:underline inline-block">
+                Learn more
+              </Link>
             </p>
           </div>
           
