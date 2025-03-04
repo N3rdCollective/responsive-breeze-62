@@ -59,8 +59,8 @@ const StaffLogin = () => {
           description: `Welcome back, ${staffData.first_name || email}!`,
         });
         
-        // Redirect to staff panel
-        navigate("/staff/panel");
+        // Redirect to staff panel - Fix the path to match App.tsx route
+        navigate("/staff");
       }
     } catch (error: any) {
       console.error("Login error:", error);
