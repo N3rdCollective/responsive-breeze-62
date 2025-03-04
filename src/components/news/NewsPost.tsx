@@ -96,9 +96,9 @@ const NewsPost = () => {
     );
   }
 
-  const imageUrl = post.featured_image && post.featured_image.startsWith('blob:') 
-    ? null  // Don't display blob URLs as they won't work in production
-    : post.featured_image;
+  const imageUrl = post.featured_image && 
+    !post.featured_image.startsWith('blob:') ? 
+    post.featured_image : null;
 
   return (
     <article className="max-w-4xl mx-auto px-4 py-8">

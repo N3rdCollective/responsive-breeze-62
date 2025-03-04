@@ -141,10 +141,10 @@ export const NewsList = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {posts && posts.length > 0 ? (
             posts.map((post) => {
-              // Check if featured_image is a blob URL and skip it
-              const imageUrl = post.featured_image && post.featured_image.startsWith('blob:') 
-                ? null 
-                : post.featured_image;
+              // Only use image URL if it's not a blob URL
+              const imageUrl = post.featured_image && 
+                !post.featured_image.startsWith('blob:') ? 
+                post.featured_image : null;
                 
               return (
                 <Card key={post.id} className="overflow-hidden h-full flex flex-col hover:shadow-md transition-shadow duration-300">

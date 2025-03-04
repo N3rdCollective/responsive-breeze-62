@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
@@ -14,12 +13,18 @@ interface ImageUploaderProps {
 
 const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageSelected }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      setSelectedFile(files[0]);
+      const file = files[0];
+      setSelectedFile(file);
+      
+      // Create preview URL
+      const objectUrl = URL.createObjectURL(file);
+      setPreviewUrl(objectUrl);
     }
   };
 
@@ -40,10 +45,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageS
     });
   };
 
-  // Don't display blob URLs in production as they won't work
-  const displayImageUrl = currentImageUrl && currentImageUrl.startsWith('blob:') 
-    ? URL.createObjectURL(selectedFile as File) // Show local preview for blob URLs
-    : currentImageUrl;
+  // If we have a preview URL, show that (for newly selected files)
+  // Otherwise, show the currentImageUrl (for existing/persisted images)
+  const displayImageUrl = previewUrl || currentImageUrl;
 
   return (
     <div className="space-y-4">
