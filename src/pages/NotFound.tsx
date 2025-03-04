@@ -19,6 +19,13 @@ const NotFound = () => {
       navigate("/staff/news/new");
       return;
     }
+    
+    // Redirect /staff/panel to /staff
+    if (location.pathname === "/staff/panel") {
+      console.log("Redirecting from /staff/panel to /staff");
+      navigate("/staff");
+      return;
+    }
   }, [location.pathname, navigate]);
 
   return (

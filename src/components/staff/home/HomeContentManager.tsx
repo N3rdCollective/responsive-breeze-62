@@ -3,14 +3,16 @@ import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, X } from "lucide-react";
 import { HomeSettingsProvider } from "./context/HomeSettingsContext";
 import { useHomeSettingsData } from "./hooks/useHomeSettingsData";
 import SectionsTabContent from "./components/SectionsTabContent";
 import PreviewTabContent from "./components/PreviewTabContent";
+import { useNavigate } from "react-router-dom";
 
 const HomeContentManagerContent: React.FC = () => {
   const { isLoading, handleSaveSettings, isSaving } = useHomeSettingsData();
+  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -47,7 +49,15 @@ const HomeContentManagerContent: React.FC = () => {
         </CardContent>
       </Card>
       
-      <div className="flex justify-end">
+      <div className="flex justify-between">
+        <Button 
+          variant="outline" 
+          onClick={() => navigate("/staff")} 
+          className="gap-2"
+        >
+          <X className="h-4 w-4" /> Cancel
+        </Button>
+        
         <Button 
           onClick={handleSaveSettings} 
           disabled={isSaving}
