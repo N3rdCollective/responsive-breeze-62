@@ -36,13 +36,13 @@ const Careers = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <Navbar />
       <div className="max-w-4xl mx-auto px-4 pt-24 pb-16">
         <div className="space-y-8">
           <div className="space-y-4 text-center">
-            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl">Join Our Team</h1>
-            <p className="text-gray-500 max-w-2xl mx-auto">
+            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl text-foreground">Join Our Team</h1>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
               We're always looking for talented individuals to join our radio family. 
               Whether you're a seasoned broadcaster or just starting out, we'd love to hear from you.
             </p>
@@ -50,8 +50,8 @@ const Careers = () => {
 
           <div className="grid gap-8 md:grid-cols-2">
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold">Why Join Us?</h2>
-              <ul className="space-y-2 text-gray-600">
+              <h2 className="text-2xl font-semibold text-foreground">Why Join Us?</h2>
+              <ul className="space-y-2 text-muted-foreground">
                 <li>• Creative and dynamic work environment</li>
                 <li>• Opportunity to reach millions of listeners</li>
                 <li>• State-of-the-art broadcasting equipment</li>
@@ -61,7 +61,7 @@ const Careers = () => {
               </ul>
             </div>
 
-            <div className="bg-gray-50 p-6 rounded-lg">
+            <div className="bg-card p-6 rounded-lg border border-border">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
@@ -118,7 +118,7 @@ const Careers = () => {
                     accept=".pdf,.doc,.docx"
                     required
                   />
-                  <p className="text-xs text-gray-500">Accepted formats: PDF, DOC, DOCX</p>
+                  <p className="text-xs text-muted-foreground">Accepted formats: PDF, DOC, DOCX</p>
                 </div>
 
                 <Button type="submit" className="w-full">

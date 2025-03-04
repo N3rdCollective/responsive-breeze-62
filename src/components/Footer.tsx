@@ -4,9 +4,11 @@ import SponsorsSection from './footer/SponsorsSection';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Footer = () => {
   const [aboutSubtitle, setAboutSubtitle] = useState<string>("");
+  const { toast } = useToast();
   
   useEffect(() => {
     const fetchAboutContent = async () => {
@@ -34,6 +36,14 @@ const Footer = () => {
     fetchAboutContent();
   }, []);
 
+  const handleCareersClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    toast({
+      title: "Coming Soon",
+      description: "Career opportunities will be available in the near future. Please check back later!",
+    });
+  };
+
   return (
     <footer className="bg-[#F5F5F5] dark:bg-[#333333] border-t border-[#666666]/20 dark:border-white/10 pb-8 md:pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -60,11 +70,14 @@ const Footer = () => {
           
           <div>
             <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-[#FFD700]">Careers</h3>
-            <p className="text-gray-700 dark:text-white italic">Coming soon</p>
             <div className="mt-2">
-              <Link to="/careers" className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors">
+              <a 
+                href="#" 
+                onClick={handleCareersClick} 
+                className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors"
+              >
                 View opportunities
-              </Link>
+              </a>
             </div>
           </div>
           
