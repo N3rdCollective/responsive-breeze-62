@@ -1,105 +1,85 @@
 
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Edit, Eye, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Edit, Trash2, Eye } from "lucide-react";
+import { Post } from "../types/newsTypes";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 
 interface NewsTableActionsProps {
-  postId: string;
-  status: string;
-  refetch: () => void;
+  post: Post;
+  onRefetch: () => void;
 }
 
-const NewsTableActions = ({ postId, status, refetch }: NewsTableActionsProps) => {
+const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  const deletePost = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this post?")) return;
-    
-    const { error } = await supabase
-      .from("posts")
-      .delete()
-      .eq("id", id);
-      
-    if (error) {
-      toast({
-        title: "Error deleting post",
-        description: error.message,
-        variant: "destructive",
-      });
+  
+  const handleEdit = () => {
+    // Fix the path to match the route in App.tsx
+    navigate(`/staff/news/edit/${post.id}`);
+  };
+  
+  const handleView = () => {
+    navigate(`/news/${post.id}`);
+  };
+  
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this post?")) {
       return;
     }
     
-    toast({
-      title: "Post deleted",
-      description: "The post has been successfully deleted.",
-    });
-    
-    refetch();
-  };
-
-  const publishPost = async (id: string, currentStatus: string) => {
-    const newStatus = currentStatus === "published" ? "draft" : "published";
-    
-    const { error } = await supabase
-      .from("posts")
-      .update({ status: newStatus })
-      .eq("id", id);
+    try {
+      const { error } = await supabase
+        .from("posts")
+        .delete()
+        .eq("id", post.id);
+        
+      if (error) throw error;
       
-    if (error) {
       toast({
-        title: "Error updating post",
-        description: error.message,
+        title: "Post deleted",
+        description: "The post has been successfully deleted",
+      });
+      
+      onRefetch();
+    } catch (error: any) {
+      console.error("Error deleting post:", error);
+      toast({
+        title: "Error",
+        description: `Failed to delete post: ${error.message}`,
         variant: "destructive",
       });
-      return;
     }
-    
-    toast({
-      title: `Post ${newStatus === "published" ? "published" : "unpublished"}`,
-      description: `The post has been ${newStatus === "published" ? "published" : "unpublished"}.`,
-    });
-    
-    refetch();
   };
-
+  
   return (
-    <div className="flex justify-end items-center gap-2">
-      <Button
-        variant="ghost" 
-        size="icon"
-        onClick={() => navigate(`/news/${postId}`)}
-        title="View post"
-        className="h-8 w-8"
-      >
-        <Eye className="h-4 w-4" />
-      </Button>
+    <div className="flex space-x-2">
       <Button
         variant="ghost"
         size="icon"
-        onClick={() => navigate(`/staff/news/edit/${postId}`)}
-        title="Edit post"
-        className="h-8 w-8"
+        onClick={handleEdit}
+        title="Edit"
       >
         <Edit className="h-4 w-4" />
       </Button>
+      
       <Button
-        variant={status === "published" ? "secondary" : "default"}
-        size="sm"
-        onClick={() => publishPost(postId, status)}
-        title={status === "published" ? "Unpublish" : "Publish"}
-        className="h-8 text-xs px-2"
-      >
-        {status === "published" ? "Unpublish" : "Publish"}
-      </Button>
-      <Button
-        variant="destructive"
+        variant="ghost"
         size="icon"
-        onClick={() => deletePost(postId)}
-        title="Delete post"
-        className="h-8 w-8"
+        onClick={handleView}
+        title="View"
+      >
+        <Eye className="h-4 w-4" />
+      </Button>
+      
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={handleDelete}
+        title="Delete"
+        className="text-red-500 hover:text-red-700 hover:bg-red-100"
       >
         <Trash2 className="h-4 w-4" />
       </Button>
