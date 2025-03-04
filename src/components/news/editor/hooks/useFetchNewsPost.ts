@@ -36,7 +36,7 @@ export const useFetchNewsPost = () => {
         .from("posts")
         .select("*")
         .eq("id", postId)
-        .single();
+        .maybeSingle();
       
       if (error) {
         console.error("Error fetching news post:", error);
@@ -49,30 +49,39 @@ export const useFetchNewsPost = () => {
         return;
       }
       
+      if (!data) {
+        console.error("News post not found");
+        toast({
+          title: "Error",
+          description: "News post not found",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+      
       console.log("Post data fetched:", data);
       
-      if (data) {
-        setTitle(data.title || "");
-        setContent(data.content || "");
-        setExcerpt(data.excerpt || "");
-        
-        if (data.status === "published" || data.status === "draft") {
-          setStatus(data.status);
-        } else {
-          setStatus("draft");
-        }
-        
-        setCategory(data.category || "");
-        
-        // Handle tags from the database
-        if (data.tags && Array.isArray(data.tags)) {
-          setTags(data.tags);
-        } else {
-          setTags([]);
-        }
-        
-        setCurrentFeaturedImageUrl(data.featured_image || "");
+      setTitle(data.title || "");
+      setContent(data.content || "");
+      setExcerpt(data.excerpt || "");
+      
+      if (data.status === "published" || data.status === "draft") {
+        setStatus(data.status);
+      } else {
+        setStatus("draft");
       }
+      
+      setCategory(data.category || "");
+      
+      // Handle tags from the database
+      if (data.tags && Array.isArray(data.tags)) {
+        setTags(data.tags);
+      } else {
+        setTags([]);
+      }
+      
+      setCurrentFeaturedImageUrl(data.featured_image || "");
     } catch (error) {
       console.error("Error in fetchNewsPost:", error);
       toast({

@@ -29,12 +29,13 @@ const NewsPost = () => {
   const { data: post, isLoading, error } = useQuery({
     queryKey: ["news-post", id],
     queryFn: async () => {
+      // Use maybeSingle() instead of single() to handle the case of no matching rows
       const { data, error } = await supabase
         .from("posts")
         .select("*")
         .eq("id", id)
         .eq("status", "published")
-        .single();
+        .maybeSingle();
       
       if (error) {
         toast({
@@ -43,6 +44,10 @@ const NewsPost = () => {
           variant: "destructive",
         });
         throw error;
+      }
+      
+      if (!data) {
+        throw new Error("Post not found");
       }
       
       return data as Post;
