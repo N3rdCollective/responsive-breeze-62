@@ -44,6 +44,10 @@ const Footer = () => {
     });
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <footer className="bg-[#F5F5F5] dark:bg-[#333333] border-t border-[#666666]/20 dark:border-white/10 pb-8 md:pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -52,7 +56,11 @@ const Footer = () => {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-[#FFD700]">About Us</h3>
             <p className="text-gray-700 dark:text-white">
               {aboutSubtitle}
-              <Link to="/about" className="ml-1 text-[#E6B800] hover:text-[#CC9900] dark:text-[#FFD700] dark:hover:text-[#FFF3B0] hover:underline inline-block transition-colors">
+              <Link 
+                to="/about" 
+                className="ml-1 text-[#E6B800] hover:text-[#CC9900] dark:text-[#FFD700] dark:hover:text-[#FFF3B0] hover:underline inline-block transition-colors"
+                onClick={scrollToTop}
+              >
                 Learn more
               </Link>
             </p>
