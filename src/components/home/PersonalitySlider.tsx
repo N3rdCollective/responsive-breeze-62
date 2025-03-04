@@ -101,9 +101,9 @@ const PersonalitySlider = () => {
                     <h3 className="font-bold truncate">{personality.name}</h3>
                     <p className="text-sm text-muted-foreground">{personality.role}</p>
                     
-                    {personality.bio && personality.bio !== "• -" && (
+                    {personality.bio && personality.bio !== "• -" ? (
                       <p className="text-sm mt-2 line-clamp-2">{personality.bio}</p>
-                    )}
+                    ) : null}
                     
                     {personality.social_links && (
                       <div className="flex space-x-2 mt-3">

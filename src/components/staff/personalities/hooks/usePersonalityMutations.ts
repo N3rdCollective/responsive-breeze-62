@@ -17,7 +17,7 @@ export const usePersonalityMutations = (
       id: data.id,
       name: data.name,
       role: data.role || "",
-      bio: data.bio || null,
+      bio: data.bio === "• -" ? null : data.bio || null,
       image_url: data.image_url || null,
       show_times: data.show_times as unknown as ShowTimes || null,
       social_links: data.social_links as unknown as SocialLinks || null,

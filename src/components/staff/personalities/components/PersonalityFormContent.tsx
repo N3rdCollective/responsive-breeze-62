@@ -58,12 +58,15 @@ const PersonalityFormContent = ({ form, onImageSelected, isUploading = false }: 
                 placeholder="Enter biography here..." 
                 className="min-h-[120px]"
                 onChange={(e) => {
-                  // Prevent setting the value to "• -"
+                  // Prevent setting the value to "• -" and clean up if it's already there
                   const value = e.target.value;
-                  if (value !== "• -") {
+                  if (value === "• -") {
+                    field.onChange("");
+                  } else {
                     field.onChange(value);
                   }
                 }}
+                value={field.value === "• -" ? "" : field.value}
               />
             </FormControl>
             <FormMessage />

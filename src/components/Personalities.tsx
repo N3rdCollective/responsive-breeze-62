@@ -101,9 +101,9 @@ export const Personalities = () => {
                   <h3 className="text-2xl font-semibold text-gray-900 dark:text-foreground mb-2">{personality.name}</h3>
                   <p className="text-lg text-[#FFD700] mb-4 font-medium">{personality.role}</p>
                   
-                  {personality.bio ? (
+                  {personality.bio && personality.bio !== "• -" ? (
                     <p className="text-gray-700 dark:text-muted-foreground mb-6 line-clamp-3">
-                      {personality.bio === "• -" ? "" : personality.bio}
+                      {personality.bio}
                     </p>
                   ) : null}
                   
