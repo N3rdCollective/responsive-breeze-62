@@ -16,13 +16,13 @@ const AdminCard = ({ onManageStaff, onLogout }: AdminCardProps) => {
   const navigate = useNavigate();
 
   return (
-    <Card className="bg-[#F5F5F5] dark:bg-[#333333] border-[#666666]/20 dark:border-white/10 p-6 space-y-4">
-      <h3 className="text-xl font-semibold text-black dark:text-[#FFD700]">Administration</h3>
-      <p className="text-gray-500 dark:text-gray-400">Manage users and system settings.</p>
+    <Card className="bg-card border-border p-6 space-y-4">
+      <h3 className="text-xl font-semibold text-foreground">Administration</h3>
+      <p className="text-muted-foreground">Manage users and system settings.</p>
       <div className="space-y-2">
         <Button 
           variant="outline" 
-          className="w-full bg-white dark:bg-[#222222] text-black dark:text-white hover:bg-gray-100 dark:hover:bg-[#444444]"
+          className="w-full bg-background hover:bg-muted"
           onClick={onManageStaff}
         >
           <Users className="h-4 w-4 mr-2" />
@@ -30,7 +30,7 @@ const AdminCard = ({ onManageStaff, onLogout }: AdminCardProps) => {
         </Button>
         <Button 
           variant="outline" 
-          className="w-full bg-white dark:bg-[#222222] text-black dark:text-white hover:bg-gray-100 dark:hover:bg-[#444444]"
+          className="w-full bg-background hover:bg-muted"
           onClick={() => navigate("/staff/sponsors")}
         >
           <Box className="h-4 w-4 mr-2" />
@@ -38,7 +38,7 @@ const AdminCard = ({ onManageStaff, onLogout }: AdminCardProps) => {
         </Button>
         <Button 
           variant="outline" 
-          className="w-full bg-white dark:bg-[#222222] text-black dark:text-white hover:bg-gray-100 dark:hover:bg-[#444444]"
+          className="w-full bg-background hover:bg-muted"
           onClick={() => {
             toast({
               title: "System Settings",
@@ -51,7 +51,7 @@ const AdminCard = ({ onManageStaff, onLogout }: AdminCardProps) => {
         </Button>
         <Button 
           variant="destructive" 
-          className="w-full bg-red-500/90 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700"
+          className="w-full"
           onClick={onLogout}
         >
           <LogOut className="h-4 w-4 mr-2" />

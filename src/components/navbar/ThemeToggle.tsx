@@ -29,12 +29,12 @@ const ThemeToggle = ({ isHomePage, isScrolled, mobile = false }: ThemeToggleProp
         className="justify-start px-0 hover:bg-transparent"
       >
         {theme === "light" ? (
-          <div className="flex items-center text-[#333333] hover:text-[#FFD700]">
+          <div className="flex items-center text-foreground">
             <Moon className="h-5 w-5 mr-2" />
             <span>Dark Mode</span>
           </div>
         ) : (
-          <div className="flex items-center text-white hover:text-[#FFD700]">
+          <div className="flex items-center text-foreground">
             <Sun className="h-5 w-5 mr-2" />
             <span>Light Mode</span>
           </div>
@@ -48,13 +48,7 @@ const ThemeToggle = ({ isHomePage, isScrolled, mobile = false }: ThemeToggleProp
       variant="ghost"
       size="icon"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className={`
-        ${isHomePage && !isScrolled
-          ? "text-white hover:text-[#FFD700]"
-          : "text-[#333333] hover:text-[#FFD700]"
-        }
-        dark:text-white dark:hover:text-[#FFD700]
-      `}
+      className="text-foreground"
     >
       {theme === "light" ? (
         <Moon className="h-5 w-5" />

@@ -31,13 +31,13 @@ const ContentManagementCard = () => {
   };
 
   return (
-    <Card className="bg-[#F5F5F5] dark:bg-[#333333] border-[#666666]/20 dark:border-white/10 p-6 space-y-4">
-      <h3 className="text-xl font-semibold text-black dark:text-[#FFD700]">Content Management</h3>
-      <p className="text-gray-500 dark:text-gray-400">Edit website pages and manage content.</p>
+    <Card className="bg-card border-border p-6 space-y-4">
+      <h3 className="text-xl font-semibold text-foreground">Content Management</h3>
+      <p className="text-muted-foreground">Edit website pages and manage content.</p>
       <div className="space-y-2">
         <Button 
           variant="outline" 
-          className="w-full bg-white dark:bg-[#222222] text-black dark:text-white hover:bg-gray-100 dark:hover:bg-[#444444]"
+          className="w-full bg-background hover:bg-muted"
           onClick={() => handleEditPage("Home")}
           disabled={!canManageContent}
         >
@@ -45,7 +45,7 @@ const ContentManagementCard = () => {
         </Button>
         <Button 
           variant="outline" 
-          className="w-full bg-white dark:bg-[#222222] text-black dark:text-white hover:bg-gray-100 dark:hover:bg-[#444444]"
+          className="w-full bg-background hover:bg-muted"
           onClick={() => handleEditPage("About")}
           disabled={!canManageContent}
         >
@@ -53,7 +53,7 @@ const ContentManagementCard = () => {
         </Button>
         <Button 
           variant="outline" 
-          className="w-full bg-white dark:bg-[#222222] text-black dark:text-white hover:bg-gray-100 dark:hover:bg-[#444444]"
+          className="w-full bg-background hover:bg-muted"
           onClick={() => navigate("/staff/news")}
           disabled={!canManageNews}
         >
@@ -61,7 +61,7 @@ const ContentManagementCard = () => {
         </Button>
         <Button 
           variant="outline" 
-          className="w-full bg-white dark:bg-[#222222] text-black dark:text-white hover:bg-gray-100 dark:hover:bg-[#444444]"
+          className="w-full bg-background hover:bg-muted"
           onClick={() => navigate("/staff/personalities")}
           disabled={!canManageContent}
         >
