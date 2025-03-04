@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
@@ -11,6 +12,20 @@ type GreetingData = {
     slang: string[];
   }
 };
+
+type VideoBackground = {
+  id: string;
+  title: string;
+  credit?: string;
+}
+
+const videoBackgrounds: VideoBackground[] = [
+  { id: "uaGvGnOiY04", title: "Aerial city view at night" },
+  { id: "j4Vg274kOvc", title: "Busy city street scene" },
+  { id: "PNIBFEJ6UYc", title: "Urban night life" },
+  { id: "5CqqZRXO7aM", title: "Downtown buildings" },
+  { id: "x06cnZm-Ic4", title: "City skyline" },
+];
 
 const greetings: GreetingData = {
   "US-CA": {
@@ -43,6 +58,7 @@ const Hero = () => {
   const [location, setLocation] = useState<string>("default");
   const [greeting, setGreeting] = useState<string>("");
   const { togglePlayPause, isPlaying } = useAudioPlayer();
+  const [currentVideoIndex, setCurrentVideoIndex] = useState<number>(0);
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -58,6 +74,17 @@ const Hero = () => {
     };
 
     fetchLocation();
+  }, []);
+
+  useEffect(() => {
+    // Rotate videos every 45 seconds
+    const videoRotationInterval = setInterval(() => {
+      setCurrentVideoIndex((prevIndex) => 
+        (prevIndex + 1) % videoBackgrounds.length
+      );
+    }, 45000);
+
+    return () => clearInterval(videoRotationInterval);
   }, []);
 
   useEffect(() => {
@@ -84,17 +111,35 @@ const Hero = () => {
     return () => clearInterval(interval);
   }, [location]);
 
+  const currentVideo = videoBackgrounds[currentVideoIndex];
+
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* YouTube iframe for background video */}
+      <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
+        <div className="relative w-full h-full">
+          <iframe
+            src={`https://www.youtube.com/embed/${currentVideo.id}?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&iv_load_policy=3&playlist=${currentVideo.id}&disablekb=1&modestbranding=1&start=15`}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            className="absolute w-[300%] h-[300%] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+            title={currentVideo.title}
+          />
+        </div>
+      </div>
+      
+      {/* Fallback image in case video doesn't load */}
       <img 
         src="/lovable-uploads/2d39862c-be68-49df-afe5-b212fd22bfbe.png"
-        alt="Times Square at night with vibrant blue and purple neon lights"
-        className="absolute inset-0 w-full h-full object-cover object-center"
+        alt="City skyline fallback image"
+        className="absolute inset-0 w-full h-full object-cover object-center opacity-0"
+        style={{ opacity: 0 }}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60" />
       
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
-        <span className="inline-block mb-4 px-4 py-1 rounded-full bg-[#666666]/10 dark:bg-[#666666]/20 text-sm font-medium tracking-wide animate-fadeIn text-white">
+      {/* Overlay gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/80 z-10" />
+      
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center z-20">
+        <span className="inline-block mb-4 px-4 py-1 rounded-full bg-[#666666]/30 dark:bg-[#666666]/40 text-sm font-medium tracking-wide animate-fadeIn text-white">
           {greeting}
         </span>
         <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight animate-fadeIn [animation-delay:200ms] text-white">
