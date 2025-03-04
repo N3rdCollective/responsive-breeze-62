@@ -44,96 +44,65 @@ export const useImageHandler = () => {
       
       console.log("Authenticated as:", sessionData.session.user.email);
       
-      // Check if the media bucket exists and is accessible
-      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+      // Skip checking buckets since we know media exists (we just tried to create it)
+      console.log("Proceeding with upload to the media bucket");
       
-      if (bucketsError) {
-        console.error("Error fetching storage buckets:", bucketsError);
-        toast({
-          title: "Storage Access Error",
-          description: "Unable to access storage. Please try again later.",
-          variant: "destructive",
-        });
-        return null;
-      }
-      
-      console.log("Available storage buckets:", buckets?.map(b => b.name).join(', '));
-      
-      const mediaBucketExists = buckets?.some(bucket => bucket.name === "media");
-      if (!mediaBucketExists) {
-        console.error("Media bucket not found in available buckets");
-        toast({
-          title: "Configuration Error",
-          description: "Storage is not properly configured. Please contact support.",
-          variant: "destructive",
-        });
-        return null;
-      }
-      
-      console.log("Media bucket verified, proceeding with upload");
-      
-      // Direct file upload approach as a test
+      // Direct file upload approach
       const fileExt = file.name.split('.').pop();
-      const filePath = `news/direct_${Date.now()}.${fileExt}`;
+      // Ensure unique filenames by adding timestamp and random string
+      const uniqueId = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+      const filePath = `news/${uniqueId}.${fileExt}`;
       
-      console.log("Attempting direct upload to path:", filePath);
+      console.log("Attempting upload to path:", filePath);
       
-      const { error: directUploadError, data: directUploadData } = await supabase.storage
+      const { error: uploadError, data: uploadData } = await supabase.storage
         .from("media")
         .upload(filePath, file, {
           cacheControl: "3600",
           upsert: true
         });
         
-      if (directUploadError) {
-        console.error("Direct upload error:", directUploadError);
-        toast({
-          title: "Direct Upload Failed",
-          description: `Error: ${directUploadError.message}`,
-          variant: "destructive",
-        });
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
         
-        // Still try the regular upload method as fallback
-        console.log("Trying fallback upload method...");
-      } else {
-        console.log("Direct upload successful:", directUploadData);
-        
-        // Get public URL
-        const { data: urlData } = supabase.storage
-          .from("media")
-          .getPublicUrl(filePath);
-          
-        console.log("Direct upload URL:", urlData.publicUrl);
-        
-        toast({
-          title: "Image Uploaded",
-          description: "Image was successfully uploaded directly",
-        });
-        
-        return urlData.publicUrl;
-      }
-      
-      // Fallback to the original upload method
-      const uploadedUrl = await uploadImage(file);
-      
-      if (!uploadedUrl) {
-        console.error("Both upload methods failed");
-        toast({
-          title: "Image Upload Failed",
-          description: "Unable to upload the image. Please try again.",
-          variant: "destructive",
-        });
+        // Handle common upload errors
+        if (uploadError.message.includes("storage/object_exists")) {
+          toast({
+            title: "File Exists",
+            description: "A file with this name already exists. Please try again with a different file.",
+            variant: "destructive",
+          });
+        } else if (uploadError.message.includes("storage/unauthorized")) {
+          toast({
+            title: "Upload Unauthorized",
+            description: "You don't have permission to upload to this location.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Upload Failed",
+            description: `Error: ${uploadError.message}`,
+            variant: "destructive",
+          });
+        }
         return null;
       }
       
-      console.log("Image uploaded successfully, URL:", uploadedUrl);
+      console.log("Upload successful:", uploadData);
+      
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from("media")
+        .getPublicUrl(filePath);
+        
+      console.log("Upload URL:", urlData.publicUrl);
       
       toast({
         title: "Image Uploaded",
         description: "Image was successfully uploaded",
       });
       
-      return uploadedUrl;
+      return urlData.publicUrl;
     } catch (error) {
       console.error("Error in handleImageUpload:", error);
       toast({
