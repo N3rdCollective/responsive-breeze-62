@@ -26,11 +26,14 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageS
             }
           }}
         />
+        <p className="text-sm text-muted-foreground mt-1">
+          Select an image to use as the featured image for this post
+        </p>
       </div>
       
       {currentImageUrl && (
         <div className="mt-4">
-          <p className="text-sm text-gray-500 mb-2">Current image:</p>
+          <p className="text-sm text-muted-foreground mb-2">Current image:</p>
           <img
             src={currentImageUrl}
             alt="Featured"
@@ -49,20 +52,32 @@ export const handleImageUpload = async (file: File): Promise<string | null> => {
   if (!file) return null;
   
   try {
+    console.log("Starting image upload process for:", file.name);
     const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+    const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
     const filePath = `news/${fileName}`;
     
-    const { error: uploadError } = await supabase.storage
+    console.log("Generated file path:", filePath);
+    
+    const { error: uploadError, data: uploadData } = await supabase.storage
       .from("media")
-      .upload(filePath, file);
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: false
+      });
       
-    if (uploadError) throw uploadError;
+    if (uploadError) {
+      console.error("Supabase upload error:", uploadError);
+      throw uploadError;
+    }
+    
+    console.log("Upload successful:", uploadData);
     
     const { data } = supabase.storage
       .from("media")
       .getPublicUrl(filePath);
       
+    console.log("Public URL generated:", data.publicUrl);
     return data.publicUrl;
   } catch (error) {
     console.error("Error uploading image:", error);

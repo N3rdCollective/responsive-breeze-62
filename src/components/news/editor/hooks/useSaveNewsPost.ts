@@ -94,14 +94,14 @@ export const useSaveNewsPost = () => {
         title,
         content,
         status,
-        featured_image: featuredImageUrl || null,
-        tags: tags || [], // Make sure tags is properly included
+        featured_image: featuredImageUrl, // Ensure this is always included
+        tags: tags || [], 
         author: null, // Set to null since we don't have a valid UUID
         updated_at: new Date().toISOString(),
         excerpt: finalExcerpt,
       };
       
-      // Only set category for new posts or when it's explicitly changed
+      // For category updates
       if (!id || category) {
         // For new posts, use provided category or default to 'Uncategorized'
         // For edits, only update category if it was explicitly set

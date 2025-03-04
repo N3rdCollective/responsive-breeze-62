@@ -41,6 +41,7 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
       return;
     }
     
+    console.log("Fetching post data for ID:", id);
     await fetchNewsPost(id, {
       setTitle,
       setContent,
@@ -55,11 +56,22 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
 
   // Handle image selection
   const handleImageSelected = (file: File) => {
+    console.log("Image selected:", file.name, file.size);
     setFeaturedImage(file);
+    
+    // Create a temporary preview URL
+    const previewUrl = URL.createObjectURL(file);
+    console.log("Created preview URL:", previewUrl);
+    
+    // We don't update currentFeaturedImageUrl here to avoid confusion
+    // The actual URL will be set after upload during save
   };
   
   // Save the news post
   const handleSave = async () => {
+    console.log("Save requested with featured image:", featuredImage?.name);
+    console.log("Current featured image URL:", currentFeaturedImageUrl);
+    
     await saveNewsPost(
       {
         id,
