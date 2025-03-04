@@ -96,9 +96,11 @@ export const handleImageUpload = async (file: File): Promise<string | null> => {
   
   try {
     console.log("Starting image upload process for:", file.name);
+    
     // Sanitize filename to remove non-ASCII characters
     const sanitizedFileName = file.name.replace(/[^\x00-\x7F]/g, '');
     const fileExt = sanitizedFileName.split('.').pop();
+    // Generate a unique filename to prevent collisions
     const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
     const filePath = `news/${fileName}`;
     
@@ -113,6 +115,18 @@ export const handleImageUpload = async (file: File): Promise<string | null> => {
     
     console.log("Authenticated as:", sessionData.session.user.email);
     
+    // Check if the media bucket exists
+    const { data: buckets } = await supabase.storage.listBuckets();
+    const mediaBucketExists = buckets?.some(bucket => bucket.name === "media");
+    
+    if (!mediaBucketExists) {
+      console.error("Media bucket does not exist");
+      throw new Error("Storage configuration issue: Media bucket not found");
+    }
+    
+    console.log("Media bucket found, proceeding with upload");
+    
+    // Upload the file to Supabase storage
     const { error: uploadError, data: uploadData } = await supabase.storage
       .from("media")
       .upload(filePath, file, {
@@ -127,6 +141,7 @@ export const handleImageUpload = async (file: File): Promise<string | null> => {
     
     console.log("Upload successful:", uploadData);
     
+    // Get the public URL for the uploaded file
     const { data } = supabase.storage
       .from("media")
       .getPublicUrl(filePath);

@@ -34,6 +34,10 @@ export const useImageHandler = () => {
       
       console.log("Authenticated as:", sessionData.session.user.email);
       
+      // Check if the storage bucket exists
+      const { data: buckets } = await supabase.storage.listBuckets();
+      console.log("Available storage buckets:", buckets);
+      
       const uploadedUrl = await uploadImage(file);
       
       if (!uploadedUrl) {
