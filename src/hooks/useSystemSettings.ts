@@ -29,7 +29,18 @@ export const useSystemSettings = () => {
         return;
       }
 
-      setSettings(data);
+      if (data) {
+        // Convert the data to match the SystemSettings type
+        const typedSettings: SystemSettings = {
+          ...data,
+          social_media_links: typeof data.social_media_links === 'string'
+            ? JSON.parse(data.social_media_links)
+            : data.social_media_links as any,
+          contact_email: data.contact_email || null,
+          contact_phone: data.contact_phone || null
+        };
+        setSettings(typedSettings);
+      }
     } catch (error) {
       console.error('Error in fetchSettings:', error);
       toast({

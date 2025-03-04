@@ -17,7 +17,7 @@ const StaffSystemSettings = () => {
   }
 
   if (!hasAccess) {
-    return <AccessDenied message="You don't have permission to access system settings" />;
+    return <AccessDenied />;
   }
 
   return (

@@ -1,11 +1,12 @@
+
 import React from 'react';
 import {
   BrowserRouter,
   Routes,
   Route,
 } from "react-router-dom";
-import { ThemeProvider } from "@/components/ui/theme-provider"
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { ThemeProvider } from "@/components/providers/ThemeProvider"
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Import Components
 import Index from "@/pages/Index";
@@ -25,10 +26,10 @@ import StaffRegistration from "@/pages/StaffRegistration";
 import StaffPanel from "@/pages/StaffPanel";
 import StaffPersonalities from "@/pages/StaffPersonalities";
 import StaffNews from "@/pages/StaffNews";
-import NewsEditor from "@/pages/staff/NewsEditor";
-import StaffHomePage from "@/pages/staff/StaffHomePage";
-import StaffAboutEditor from "@/pages/staff/StaffAboutEditor";
-import StaffSponsors from "@/pages/staff/StaffSponsors";
+import NewsEditor from "@/pages/NewsEditor";
+import StaffHomePage from "@/pages/StaffHomePage";
+import StaffAboutEditor from "@/pages/StaffAboutEditor";
+import StaffSponsors from "@/pages/StaffSponsors";
 
 // Import UI Components
 import { Toaster } from "@/components/ui/sonner"
