@@ -42,7 +42,7 @@ const Footer = () => {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-[#FFD700]">About Us</h3>
             <p className="text-gray-700 dark:text-white">
               {aboutSubtitle}
-              <Link to="/about" className="ml-1 text-[#FFD700] hover:underline inline-block">
+              <Link to="/about" className="ml-1 text-[#E6B800] hover:text-[#CC9900] dark:text-[#FFD700] dark:hover:text-[#FFF3B0] hover:underline inline-block transition-colors">
                 Learn more
               </Link>
             </p>
