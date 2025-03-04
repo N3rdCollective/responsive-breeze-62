@@ -16,6 +16,16 @@ export const useImageUpload = () => {
       
       // Upload the file to Supabase storage
       const fileName = `${Date.now()}-${file.name.replace(/[^\x00-\x7F]/g, '')}`;
+      
+      // Get the current user session to confirm we're authenticated
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        console.error("No active session found - user not authenticated");
+        throw new Error("Authentication required. Please log in again.");
+      }
+      
+      console.log("Authenticated as:", sessionData.session.user.email);
+      
       const { data, error } = await supabase.storage
         .from("personalities")
         .upload(fileName, file);
