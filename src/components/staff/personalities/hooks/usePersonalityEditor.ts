@@ -29,7 +29,7 @@ export const usePersonalityEditor = (canEdit: boolean) => {
   // Use the smaller hooks
   const { personalities, loading, fetchPersonalities, fetchPersonalityById } = useFetchPersonalities();
   const { imageUrl, setImageUrl, handleImageSelected, isUploading } = useImageUpload();
-  const { isSaving, updatePersonality, createPersonality, deletePersonality } = usePersonalityMutations(fetchPersonalities);
+  const { isSaving, createPersonality, updatePersonality, deletePersonality } = usePersonalityMutations();
 
   const form = useForm<FormValues>({
     defaultValues: defaultFormValues
@@ -78,7 +78,22 @@ export const usePersonalityEditor = (canEdit: boolean) => {
 
   const handleSubmit = async (values: FormValues) => {
     if (!selectedPersonality) return;
-    await updatePersonality(values, selectedPersonality.id, imageUrl);
+    
+    // Create PersonalityFormData object from form values
+    const formData = {
+      name: values.name,
+      role: values.role,
+      bio: values.bio,
+      image_url: imageUrl,
+      socialLinks: {
+        twitter: values.twitter,
+        instagram: values.instagram,
+        facebook: values.facebook
+      },
+      startDate: startDate
+    };
+    
+    await updatePersonality(selectedPersonality.id, formData);
   };
 
   const handleCreateNew = () => {
@@ -92,7 +107,21 @@ export const usePersonalityEditor = (canEdit: boolean) => {
   };
 
   const handleSaveNew = async (values: FormValues) => {
-    const newPersonality = await createPersonality(values, imageUrl);
+    // Create PersonalityFormData object from form values
+    const formData = {
+      name: values.name,
+      role: values.role,
+      bio: values.bio,
+      image_url: imageUrl,
+      socialLinks: {
+        twitter: values.twitter,
+        instagram: values.instagram,
+        facebook: values.facebook
+      },
+      startDate: startDate
+    };
+    
+    const newPersonality = await createPersonality(formData);
     if (newPersonality) {
       setSelectedPersonality(newPersonality);
     }

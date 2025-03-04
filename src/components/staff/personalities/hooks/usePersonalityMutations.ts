@@ -3,6 +3,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PersonalityFormData, Personality, SocialLinks } from "../types";
 import { useToast } from "@/hooks/use-toast";
+import { Json } from "@/integrations/supabase/types";
 
 export const usePersonalityMutations = () => {
   const [loading, setLoading] = useState(false);
@@ -18,7 +19,7 @@ export const usePersonalityMutations = () => {
         role: formData.role,
         bio: formData.bio || null,
         image_url: formData.image_url || null,
-        social_links: formData.socialLinks || null,
+        social_links: formData.socialLinks ? formData.socialLinks as unknown as Json : null,
         start_date: formData.startDate ? new Date(formData.startDate).toISOString() : null,
       };
       
@@ -58,7 +59,7 @@ export const usePersonalityMutations = () => {
         role: formData.role,
         bio: formData.bio || null,
         image_url: formData.image_url || null,
-        social_links: formData.socialLinks || null,
+        social_links: formData.socialLinks ? formData.socialLinks as unknown as Json : null,
         start_date: formData.startDate ? new Date(formData.startDate).toISOString() : null,
       };
       
@@ -120,6 +121,7 @@ export const usePersonalityMutations = () => {
   
   return {
     loading,
+    isSaving: loading, // Add the isSaving property that usePersonalityEditor expects
     createPersonality,
     updatePersonality,
     deletePersonality

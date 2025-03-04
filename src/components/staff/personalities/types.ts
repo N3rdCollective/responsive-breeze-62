@@ -36,11 +36,6 @@ export interface PersonalityFormData {
   role: string;
   bio: string;
   image_url: string;
-  social_links?: {
-    twitter: string;
-    instagram: string;
-    facebook: string;
-  };
-  startDate?: Date | null;
   socialLinks?: SocialLinks;
+  startDate?: Date | null;
 }
