@@ -6,7 +6,6 @@ import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "../types";
 import ImageSection from "./ImageSection";
 import SocialLinksSection from "./SocialLinksSection";
-import ShowTimesSection from "./ShowTimesSection";
 
 interface PersonalityFormContentProps {
   form: UseFormReturn<FormValues>;
@@ -72,8 +71,6 @@ const PersonalityFormContent = ({ form, onImageSelected, isUploading = false }: 
       />
       
       <SocialLinksSection form={form} />
-      
-      <ShowTimesSection form={form} />
     </>
   );
 };

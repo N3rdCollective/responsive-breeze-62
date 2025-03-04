@@ -15,10 +15,7 @@ const defaultFormValues: FormValues = {
   image_url: "",
   twitter: "",
   instagram: "",
-  facebook: "",
-  days: "",
-  start: "",
-  end: ""
+  facebook: ""
 };
 
 export const usePersonalityEditor = (canEdit: boolean) => {
@@ -62,20 +59,6 @@ export const usePersonalityEditor = (canEdit: boolean) => {
       form.setValue("role", personalityData.role || "");
       form.setValue("bio", personalityData.bio || "");
       form.setValue("image_url", personalityData.image_url || "");
-      
-      // Type conversion for show_times
-      if (personalityData.show_times) {
-        const showTimesData = personalityData.show_times;
-        
-        // Update form values for show times
-        form.setValue("days", showTimesData.days ? showTimesData.days.join(", ") : "");
-        form.setValue("start", showTimesData.start || "");
-        form.setValue("end", showTimesData.end || "");
-      } else {
-        form.setValue("days", "");
-        form.setValue("start", "");
-        form.setValue("end", "");
-      }
       
       // Type conversion for social_links
       if (personalityData.social_links) {
