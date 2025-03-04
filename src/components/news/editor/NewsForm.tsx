@@ -60,7 +60,7 @@ const NewsForm: React.FC<NewsFormProps> = ({
   };
   
   return (
-    <div className="flex flex-col min-h-[calc(100vh-8rem)]">
+    <div className="flex flex-col min-h-[calc(100vh-8rem)] pb-28">
       <div className="flex-grow">
         <Tabs defaultValue="edit" className="w-full" onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2 mb-6">
