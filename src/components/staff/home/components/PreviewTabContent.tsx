@@ -13,6 +13,10 @@ const PreviewTabContent: React.FC = () => {
           Hero Section {!settings.show_hero && '(Hidden)'}
         </div>
         
+        <div className="p-3 rounded-lg border bg-indigo-50 border-indigo-200 dark:bg-indigo-900/20 dark:border-indigo-800">
+          Featured Videos Section ({settings.featured_videos.length} videos)
+        </div>
+        
         <div className={`p-3 rounded-lg border ${settings.show_live_banner ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800' : 'bg-gray-100 border-gray-200 text-gray-500 dark:bg-gray-800/50 dark:border-gray-700'}`}>
           Live Show Banner {!settings.show_live_banner && '(Hidden)'}
         </div>

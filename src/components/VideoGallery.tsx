@@ -10,15 +10,9 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Play, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { VideoData } from "@/components/staff/home/context/HomeSettingsContext";
 
-type VideoData = {
-  id: string;
-  title: string;
-  credit?: string;
-  thumbnail?: string;
-};
-
-const videos: VideoData[] = [
+const defaultVideos: VideoData[] = [
   { id: "uaGvGnOiY04", title: "Aerial City View at Night" },
   { id: "j4Vg274kOvc", title: "Busy City Street Scene" },
   { id: "PNIBFEJ6UYc", title: "Urban Night Life" },
@@ -26,7 +20,11 @@ const videos: VideoData[] = [
   { id: "x06cnZm-Ic4", title: "City Skyline" },
 ];
 
-const VideoGallery = () => {
+interface VideoGalleryProps {
+  videos?: VideoData[];
+}
+
+const VideoGallery: React.FC<VideoGalleryProps> = ({ videos = defaultVideos }) => {
   const [openVideoId, setOpenVideoId] = useState<string | null>(null);
   const [videoTitles, setVideoTitles] = useState<{[key: string]: string}>({});
   
@@ -55,7 +53,7 @@ const VideoGallery = () => {
     };
     
     fetchVideoTitles();
-  }, []);
+  }, [videos]);
   
   return (
     <section className="py-12 bg-gradient-to-b from-background to-muted dark:from-black/90 dark:to-black/95">

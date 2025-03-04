@@ -1,12 +1,20 @@
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
+export interface VideoData {
+  id: string;
+  title: string;
+  credit?: string;
+  thumbnail?: string;
+}
+
 export interface HomeSettings {
   id: string;
   show_hero: boolean;
   show_news_section: boolean;
   show_personalities: boolean;
   show_live_banner: boolean;
+  featured_videos: VideoData[];
   created_at?: string;
   updated_at?: string;
 }
@@ -16,7 +24,14 @@ export const defaultSettings: HomeSettings = {
   show_hero: true,
   show_news_section: true,
   show_personalities: true,
-  show_live_banner: true
+  show_live_banner: true,
+  featured_videos: [
+    { id: "uaGvGnOiY04", title: "Aerial City View at Night" },
+    { id: "j4Vg274kOvc", title: "Busy City Street Scene" },
+    { id: "PNIBFEJ6UYc", title: "Urban Night Life" },
+    { id: "5CqqZRXO7aM", title: "Downtown Buildings" },
+    { id: "x06cnZm-Ic4", title: "City Skyline" },
+  ]
 };
 
 interface HomeSettingsContextType {

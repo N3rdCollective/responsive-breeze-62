@@ -26,6 +26,11 @@ const Index = () => {
           console.error("Error fetching home settings:", error);
           setSettings(defaultSettings);
         } else if (data) {
+          // Handle missing featured_videos in existing data
+          if (!data.featured_videos) {
+            data.featured_videos = defaultSettings.featured_videos;
+          }
+          
           setSettings(data as HomeSettings);
         }
       } catch (error) {
@@ -44,8 +49,8 @@ const Index = () => {
       
       {settings.show_hero && <Hero />}
       
-      {/* VideoGallery now properly positioned below Hero */}
-      <VideoGallery />
+      {/* VideoGallery is always shown for now, but uses dynamic video data */}
+      <VideoGallery videos={settings.featured_videos} />
       
       <div className="container mx-auto px-4 py-8">
         {settings.show_live_banner && <LiveShowBanner />}

@@ -8,6 +8,7 @@ import { HomeSettingsProvider } from "./context/HomeSettingsContext";
 import { useHomeSettingsData } from "./hooks/useHomeSettingsData";
 import SectionsTabContent from "./components/SectionsTabContent";
 import PreviewTabContent from "./components/PreviewTabContent";
+import VideosTabContent from "./components/VideosTabContent";
 import { useNavigate } from "react-router-dom";
 
 const HomeContentManagerContent: React.FC = () => {
@@ -33,13 +34,18 @@ const HomeContentManagerContent: React.FC = () => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="sections" className="w-full">
-            <TabsList className="grid w-full grid-cols-1 md:grid-cols-2">
+            <TabsList className="grid w-full grid-cols-1 md:grid-cols-3">
               <TabsTrigger value="sections">Section Visibility</TabsTrigger>
+              <TabsTrigger value="videos">Featured Videos</TabsTrigger>
               <TabsTrigger value="preview">Preview</TabsTrigger>
             </TabsList>
             
             <TabsContent value="sections" className="space-y-4 pt-4">
               <SectionsTabContent />
+            </TabsContent>
+            
+            <TabsContent value="videos" className="space-y-4 pt-4">
+              <VideosTabContent />
             </TabsContent>
             
             <TabsContent value="preview" className="pt-4">
