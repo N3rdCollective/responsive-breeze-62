@@ -341,6 +341,48 @@ export type Database = {
         }
         Relationships: []
       }
+      system_settings: {
+        Row: {
+          contact_email: string | null
+          contact_phone: string | null
+          copyright_text: string | null
+          created_at: string | null
+          id: string
+          language: string | null
+          site_tagline: string
+          site_title: string
+          social_media_links: Json | null
+          time_zone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          copyright_text?: string | null
+          created_at?: string | null
+          id?: string
+          language?: string | null
+          site_tagline?: string
+          site_title?: string
+          social_media_links?: Json | null
+          time_zone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          copyright_text?: string | null
+          created_at?: string | null
+          id?: string
+          language?: string | null
+          site_tagline?: string
+          site_title?: string
+          social_media_links?: Json | null
+          time_zone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

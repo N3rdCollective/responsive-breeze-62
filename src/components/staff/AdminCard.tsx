@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ShieldCheck, Users, LogOut, Box } from "lucide-react";
+import { ShieldCheck, Users, LogOut, Box, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -39,14 +39,9 @@ const AdminCard = ({ onManageStaff, onLogout }: AdminCardProps) => {
         <Button 
           variant="outline" 
           className="w-full bg-background hover:bg-muted"
-          onClick={() => {
-            toast({
-              title: "System Settings",
-              description: "This would open the system settings panel.",
-            });
-          }}
+          onClick={() => navigate("/staff/system-settings")}
         >
-          <ShieldCheck className="h-4 w-4 mr-2" />
+          <Settings className="h-4 w-4 mr-2" />
           System Settings
         </Button>
         <Button 
