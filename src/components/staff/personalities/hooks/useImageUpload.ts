@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,15 +6,18 @@ export const useImageUpload = () => {
   const { toast } = useToast();
   const [imageUrl, setImageUrl] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleImageSelected = async (file: File) => {
     try {
+      setIsUploading(true);
+      
       // Create a local preview URL for immediate display
       const localPreviewUrl = URL.createObjectURL(file);
       setPreviewUrl(localPreviewUrl);
       
       // Upload the file to Supabase storage
-      const fileName = `${Date.now()}-${file.name}`;
+      const fileName = `${Date.now()}-${file.name.replace(/[^\x00-\x7F]/g, '')}`;
       const { data, error } = await supabase.storage
         .from("personalities")
         .upload(fileName, file);
@@ -31,9 +33,8 @@ export const useImageUpload = () => {
         // Store the permanent URL
         setImageUrl(urlData.publicUrl);
         
-        // Clean up the temporary blob URL to prevent memory leaks
-        URL.revokeObjectURL(localPreviewUrl);
-        
+        // Keep the preview URL for display during this session
+        // but return the permanent URL for database storage
         return urlData.publicUrl;
       }
       return "";
@@ -44,6 +45,8 @@ export const useImageUpload = () => {
         variant: "destructive",
       });
       return "";
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -52,12 +55,22 @@ export const useImageUpload = () => {
     return previewUrl || imageUrl;
   };
 
+  // Cleanup function to revoke any blob URLs before component unmounts
+  const cleanup = () => {
+    if (previewUrl && previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+  };
+
   return {
     imageUrl,
     setImageUrl,
     previewUrl,
     setPreviewUrl,
     getDisplayUrl,
-    handleImageSelected
+    handleImageSelected,
+    isUploading,
+    cleanup
   };
 };

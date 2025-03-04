@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
@@ -16,6 +17,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageS
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
   const { toast } = useToast();
 
+  // Cleanup blob URLs when component unmounts
   useEffect(() => {
     return () => {
       if (localPreviewUrl && localPreviewUrl.startsWith('blob:')) {
@@ -24,6 +26,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageS
     };
   }, [localPreviewUrl]);
 
+  // Reset local preview when permanent URL changes
   useEffect(() => {
     if (currentImageUrl && !currentImageUrl.startsWith('blob:')) {
       setLocalPreviewUrl(null);
@@ -36,10 +39,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageS
       const file = files[0];
       setSelectedFile(file);
       
+      // Clean up previous blob URL if it exists
       if (localPreviewUrl && localPreviewUrl.startsWith('blob:')) {
         URL.revokeObjectURL(localPreviewUrl);
       }
       
+      // Create new blob URL for preview only
       const objectUrl = URL.createObjectURL(file);
       setLocalPreviewUrl(objectUrl);
     }
@@ -62,8 +67,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageS
     });
   };
 
-  const displayImageUrl = localPreviewUrl || 
-    (currentImageUrl && !currentImageUrl.startsWith('blob:') ? currentImageUrl : null);
+  // Use local preview URL for immediate feedback, fallback to permanent URL
+  const displayImageUrl = localPreviewUrl || currentImageUrl;
 
   return (
     <div className="space-y-4">
@@ -120,7 +125,9 @@ export const handleImageUpload = async (file: File): Promise<string | null> => {
   
   try {
     console.log("Starting image upload process for:", file.name);
-    const fileExt = file.name.split('.').pop();
+    // Sanitize filename to remove non-ASCII characters
+    const sanitizedFileName = file.name.replace(/[^\x00-\x7F]/g, '');
+    const fileExt = sanitizedFileName.split('.').pop();
     const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
     const filePath = `news/${fileName}`;
     
