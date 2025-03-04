@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,7 +28,6 @@ const NewsPost = () => {
   const { data: post, isLoading, error } = useQuery({
     queryKey: ["news-post", id],
     queryFn: async () => {
-      // Use maybeSingle() instead of single() to handle the case of no matching rows
       const { data, error } = await supabase
         .from("posts")
         .select("*")
@@ -98,6 +96,10 @@ const NewsPost = () => {
     );
   }
 
+  const imageUrl = post.featured_image && post.featured_image.startsWith('blob:') 
+    ? null  // Don't display blob URLs as they won't work in production
+    : post.featured_image;
+
   return (
     <article className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex items-center mb-6">
@@ -150,10 +152,10 @@ const NewsPost = () => {
         </div>
       )}
       
-      {post.featured_image && (
+      {imageUrl && (
         <div className="mb-8">
           <img
-            src={post.featured_image}
+            src={imageUrl}
             alt={post.title}
             className="w-full h-auto rounded-lg object-cover max-h-[500px]"
           />

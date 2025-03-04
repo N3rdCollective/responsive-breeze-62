@@ -140,55 +140,62 @@ export const NewsList = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {posts && posts.length > 0 ? (
-            posts.map((post) => (
-              <Card key={post.id} className="overflow-hidden h-full flex flex-col hover:shadow-md transition-shadow duration-300">
-                {post.featured_image && (
-                  <div className="h-48 overflow-hidden">
-                    <img 
-                      src={post.featured_image} 
-                      alt={post.title} 
-                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                    />
-                  </div>
-                )}
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-xl font-bold">{post.title}</h3>
-                      {post.category && (
-                        <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full mt-1 inline-block">
-                          {post.category}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(post.post_date), { addSuffix: true })}
-                    </p>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <p className="text-muted-foreground line-clamp-3">
-                    {post.content.replace(/<[^>]*>/g, '')}
-                  </p>
-                  
-                  {/* Display tags if available */}
-                  {post.tags && post.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-3">
-                      {post.tags.map(tag => (
-                        <Badge key={tag} variant="outline" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
+            posts.map((post) => {
+              // Check if featured_image is a blob URL and skip it
+              const imageUrl = post.featured_image && post.featured_image.startsWith('blob:') 
+                ? null 
+                : post.featured_image;
+                
+              return (
+                <Card key={post.id} className="overflow-hidden h-full flex flex-col hover:shadow-md transition-shadow duration-300">
+                  {imageUrl && (
+                    <div className="h-48 overflow-hidden">
+                      <img 
+                        src={imageUrl} 
+                        alt={post.title} 
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                      />
                     </div>
                   )}
-                </CardContent>
-                <CardFooter>
-                  <Button asChild variant="outline" className="w-full">
-                    <a href={`/news/${post.id}`}>Read More</a>
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-xl font-bold">{post.title}</h3>
+                        {post.category && (
+                          <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full mt-1 inline-block">
+                            {post.category}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(post.post_date), { addSuffix: true })}
+                      </p>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="flex-grow">
+                    <p className="text-muted-foreground line-clamp-3">
+                      {post.content.replace(/<[^>]*>/g, '')}
+                    </p>
+                    
+                    {/* Display tags if available */}
+                    {post.tags && post.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-3">
+                        {post.tags.map(tag => (
+                          <Badge key={tag} variant="outline" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                  <CardFooter>
+                    <Button asChild variant="outline" className="w-full">
+                      <a href={`/news/${post.id}`}>Read More</a>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })
           ) : (
             <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12">
               <h3 className="text-xl font-semibold">No posts found</h3>

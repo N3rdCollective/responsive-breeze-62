@@ -40,6 +40,11 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageS
     });
   };
 
+  // Don't display blob URLs in production as they won't work
+  const displayImageUrl = currentImageUrl && currentImageUrl.startsWith('blob:') 
+    ? URL.createObjectURL(selectedFile as File) // Show local preview for blob URLs
+    : currentImageUrl;
+
   return (
     <div className="space-y-4">
       <Label htmlFor="featured-image" className="text-base font-medium">Featured Image</Label>
@@ -71,14 +76,14 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageS
         </div>
       </div>
       
-      {currentImageUrl && (
+      {displayImageUrl && (
         <div className="mt-4 border rounded-md p-4 bg-muted/20">
           <div className="flex items-center gap-2 mb-2">
             <Image className="h-4 w-4" />
             <p className="text-sm font-medium">Current featured image:</p>
           </div>
           <img
-            src={currentImageUrl}
+            src={displayImageUrl}
             alt="Featured"
             className="w-full max-w-md rounded-md"
           />
