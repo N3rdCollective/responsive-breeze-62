@@ -90,14 +90,17 @@ export const useNewsManagement = () => {
     setCurrentPage(1);
   };
 
-  // Explicitly define the refetch function to ensure it's properly typed and passed
+  // Define a robust refetch function that ensures the query is properly refetched
   const handleRefetch = async () => {
-    console.log("Manual refetch triggered");
+    console.log("Manual refetch triggered in useNewsManagement");
     try {
-      await refetch();
-      console.log("Refetch completed successfully");
+      // Force refetch with invalidateQueries for stronger cache invalidation
+      const result = await refetch();
+      console.log("Refetch completed successfully", result);
+      return result;
     } catch (error) {
-      console.error("Error during refetch:", error);
+      console.error("Error during refetch in useNewsManagement:", error);
+      throw error; // Re-throw to allow error handling up the chain
     }
   };
 

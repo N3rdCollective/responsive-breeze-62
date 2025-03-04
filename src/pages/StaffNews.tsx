@@ -31,6 +31,8 @@ const StaffNews = () => {
     handlePageChange
   } = useNewsManagement();
 
+  console.log("StaffNews component rendering with refetch function:", !!refetch);
+
   if (authLoading) {
     return <LoadingSpinner />;
   }
