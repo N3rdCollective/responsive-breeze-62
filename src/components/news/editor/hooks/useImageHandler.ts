@@ -1,6 +1,7 @@
 
 import { handleImageUpload as uploadImage } from "../ImageUploader";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useImageHandler = () => {
   const { toast } = useToast();
@@ -18,6 +19,21 @@ export const useImageHandler = () => {
     
     try {
       console.log("Uploading image file:", file.name, file.size);
+      
+      // Check authentication before proceeding
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        console.error("No active session found - user not authenticated");
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to upload images",
+          variant: "destructive",
+        });
+        return null;
+      }
+      
+      console.log("Authenticated as:", sessionData.session.user.email);
+      
       const uploadedUrl = await uploadImage(file);
       
       if (!uploadedUrl) {

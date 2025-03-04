@@ -104,6 +104,15 @@ export const handleImageUpload = async (file: File): Promise<string | null> => {
     
     console.log("Generated file path:", filePath);
     
+    // Get the current user session to confirm we're authenticated
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      console.error("No active session found - user not authenticated");
+      throw new Error("Authentication required. Please log in again.");
+    }
+    
+    console.log("Authenticated as:", sessionData.session.user.email);
+    
     const { error: uploadError, data: uploadData } = await supabase.storage
       .from("media")
       .upload(filePath, file, {
