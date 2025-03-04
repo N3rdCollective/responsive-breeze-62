@@ -30,18 +30,19 @@ const LiveShowBanner = () => {
       <CardContent className="p-0">
         <div className="flex flex-col md:flex-row">
           {currentShow.artwork ? (
-            <div className="w-full md:w-1/4 h-32 md:h-auto">
+            <div className="w-full md:w-1/4 h-40 md:h-auto">
               <img 
                 src={currentShow.artwork} 
                 alt={currentShow.showName}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  e.currentTarget.src = "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05";
+                  // Use a high-quality fallback image if the artwork fails to load
+                  e.currentTarget.src = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&q=100";
                 }}
               />
             </div>
           ) : (
-            <div className="w-full md:w-1/4 h-32 md:h-auto bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+            <div className="w-full md:w-1/4 h-40 md:h-auto bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
               <Disc3 size={48} className="text-gray-400 dark:text-gray-500" />
             </div>
           )}

@@ -32,6 +32,23 @@ const fetchSchedule = async () => {
   return data.data as ShowItem[];
 };
 
+// Helper function to ensure high quality images
+const getHighQualityImage = (artworkUrl: string | null): string | null => {
+  if (!artworkUrl) return null;
+  
+  // If it's already a high-quality image, return it as is
+  if (artworkUrl.includes("?auto=format&fit=crop&q=")) {
+    return artworkUrl;
+  }
+  
+  // If it's an Unsplash image, append quality parameters
+  if (artworkUrl.includes("images.unsplash.com")) {
+    return `${artworkUrl}${artworkUrl.includes('?') ? '&' : '?'}auto=format&fit=crop&q=100`;
+  }
+  
+  return artworkUrl;
+};
+
 export const useCurrentShow = () => {
   const [currentShow, setCurrentShow] = useState<CurrentShow | null>(null);
   
@@ -66,7 +83,7 @@ export const useCurrentShow = () => {
       setCurrentShow({
         showName: show.playlist.name,
         hostName: show.playlist.artist || null,
-        artwork: show.playlist.artwork,
+        artwork: getHighQualityImage(show.playlist.artwork),
         timeSlot: `${format(parseISO(show.start), 'h:mm a')} - ${format(parseISO(show.end), 'h:mm a')}`,
         isLive: true
       });
