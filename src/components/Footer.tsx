@@ -2,13 +2,14 @@
 import { Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
 import SponsorsSection from './footer/SponsorsSection';
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 const Footer = () => {
   const [aboutSubtitle, setAboutSubtitle] = useState<string>("");
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   useEffect(() => {
     const fetchAboutContent = async () => {
@@ -46,6 +47,11 @@ const Footer = () => {
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleStaffLogin = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate('/staff/login');
   };
 
   return (
@@ -106,7 +112,12 @@ const Footer = () => {
               </a>
             </div>
             <div>
-              <a href="/staff/login" className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors text-sm">Staff Login</a>
+              <button 
+                onClick={handleStaffLogin} 
+                className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors text-sm"
+              >
+                Staff Login
+              </button>
             </div>
           </div>
         </div>

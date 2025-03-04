@@ -27,12 +27,18 @@ export const useStaffAuth = () => {
     const checkAuth = async () => {
       try {
         console.log("Checking staff authentication...");
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          throw sessionError;
+        }
         
         if (!session) {
           console.log("No session found, not authenticated");
           // If not already on login page, redirect to it
           if (!window.location.pathname.includes('/staff/login')) {
+            console.log("Redirecting to login page");
             navigate("/staff/login");
           }
           setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false }));
@@ -115,7 +121,7 @@ export const useStaffAuth = () => {
         authListener.subscription.unsubscribe();
       }
     };
-  }, [navigate]);
+  }, [navigate, toast]);
 
   const makeUserSuperAdmin = async (userId: string) => {
     try {
@@ -143,6 +149,7 @@ export const useStaffAuth = () => {
 
   const handleLogout = async () => {
     try {
+      console.log("Logging out user");
       await supabase.auth.signOut();
       toast({
         title: "Logged Out",
