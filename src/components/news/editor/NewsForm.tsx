@@ -85,13 +85,6 @@ const NewsForm: React.FC<NewsFormProps> = ({
             onImageSelected={onImageSelected}
             onOpenPreview={handleOpenPreview}
           />
-          
-          <FormActions
-            onSave={onSave}
-            isSaving={isSaving}
-            isUploading={isUploading}
-            onOpenPreview={handleOpenPreview}
-          />
         </TabsContent>
         
         <TabsContent value="preview">
@@ -106,6 +99,14 @@ const NewsForm: React.FC<NewsFormProps> = ({
           />
         </TabsContent>
       </Tabs>
+      
+      {/* Form actions always visible regardless of which tab is active */}
+      <FormActions
+        onSave={onSave}
+        isSaving={isSaving}
+        isUploading={isUploading}
+        onOpenPreview={handleOpenPreview}
+      />
       
       <PreviewModal
         isOpen={isPreviewModalOpen}
