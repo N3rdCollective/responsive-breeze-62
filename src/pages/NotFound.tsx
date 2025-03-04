@@ -14,9 +14,16 @@ const NotFound = () => {
     
     // Handle specific route cases
     if (location.pathname === "/staff/news/edit") {
-      // Redirect to the new post editor
-      console.log("Redirecting from /staff/news/edit to /staff/news/new");
-      navigate("/staff/news/new");
+      // Redirect to the news editor
+      console.log("Redirecting from /staff/news/edit to /staff/news/create");
+      navigate("/staff/news/create");
+      return;
+    }
+    
+    // Handle the /staff/news/new route
+    if (location.pathname === "/staff/news/new") {
+      console.log("Redirecting from /staff/news/new to /staff/news/create");
+      navigate("/staff/news/create");
       return;
     }
     

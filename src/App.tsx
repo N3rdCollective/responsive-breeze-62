@@ -63,6 +63,7 @@ function App() {
             <Route path="/staff/news" element={<StaffNews />} />
             <Route path="/staff/news/edit/:postId" element={<NewsEditor />} />
             <Route path="/staff/news/create" element={<NewsEditor />} />
+            <Route path="/staff/news/new" element={<NewsEditor />} />
             <Route path="/staff/home-editor" element={<StaffHomePage />} />
             <Route path="/staff/about-editor" element={<StaffAboutEditor />} />
             <Route path="/staff/sponsors" element={<StaffSponsors />} />

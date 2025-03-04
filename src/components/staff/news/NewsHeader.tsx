@@ -15,7 +15,7 @@ const NewsHeader = () => {
       </div>
       
       <Button 
-        onClick={() => navigate("/staff/news/new")} 
+        onClick={() => navigate("/staff/news/create")} 
         className="flex items-center gap-2"
       >
         <PlusCircle className="h-4 w-4" />
