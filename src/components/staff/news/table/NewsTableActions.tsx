@@ -51,11 +51,16 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
       // Execute the delete operation with detailed logging
       console.log("Sending delete request to Supabase for post ID:", post.id);
       
-      // Make sure we're using the correct FROM and WHERE clauses
+      // Debug the post ID format and type
+      console.log("Post ID type:", typeof post.id);
+      console.log("Post ID value:", post.id);
+      
+      // Make sure we're using the correct table name - should be "posts" not "post"
       const { error, data } = await supabase
         .from("posts")
         .delete()
-        .eq("id", post.id);
+        .eq("id", post.id)
+        .select();
       
       console.log("Delete response from Supabase:", { error, data });
       

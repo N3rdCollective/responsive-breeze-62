@@ -13,7 +13,17 @@ interface PostRowProps {
 }
 
 const PostRow = ({ post, refetch }: PostRowProps) => {
-  console.log("PostRow rendering with post:", post.id, "and refetch function:", !!refetch);
+  console.log("PostRow rendering with post:", post.id, "and refetch function type:", typeof refetch);
+  
+  const handleRefetch = async () => {
+    console.log("PostRow: handleRefetch called for post:", post.id);
+    try {
+      await refetch();
+      console.log("PostRow: refetch completed successfully");
+    } catch (error) {
+      console.error("PostRow: Error in refetch:", error);
+    }
+  };
   
   return (
     <TableRow key={post.id} className="hover:bg-muted/30">
@@ -48,7 +58,7 @@ const PostRow = ({ post, refetch }: PostRowProps) => {
       <TableCell className="text-right">
         <NewsTableActions 
           post={post} 
-          onRefetch={refetch} 
+          onRefetch={handleRefetch} 
         />
       </TableCell>
     </TableRow>

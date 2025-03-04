@@ -27,6 +27,18 @@ const NewsTableContent = ({
   setSearchTerm,
   refetch
 }: NewsTableContentProps) => {
+  console.log("NewsTableContent rendering with refetch function type:", typeof refetch);
+  
+  const handleRefetch = async () => {
+    console.log("NewsTableContent: handleRefetch called");
+    try {
+      await refetch();
+      console.log("NewsTableContent: refetch completed successfully");
+    } catch (error) {
+      console.error("NewsTableContent: Error in refetch:", error);
+    }
+  };
+  
   return (
     <div className="overflow-x-auto rounded-md">
       <Table>
@@ -45,7 +57,7 @@ const NewsTableContent = ({
               <PostRow 
                 key={post.id} 
                 post={post} 
-                refetch={refetch} 
+                refetch={handleRefetch} 
               />
             ))
           ) : (

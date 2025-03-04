@@ -42,6 +42,9 @@ export const useNewsManagement = () => {
         } 
       };
     },
+    // Disable caching to ensure fresh data
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   });
 
   const posts = data?.posts || [];
@@ -94,7 +97,7 @@ export const useNewsManagement = () => {
   const handleRefetch = async () => {
     console.log("Manual refetch triggered in useNewsManagement");
     try {
-      // Force refetch with invalidateQueries for stronger cache invalidation
+      // Force refetch with explicit await
       const result = await refetch();
       console.log("Refetch completed successfully", result);
       return result;
