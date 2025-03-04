@@ -1,12 +1,14 @@
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import { Json } from "@/integrations/supabase/types";
 
 export interface VideoData {
   id: string;
+  youtube_id: string;
   title: string;
   credit?: string;
   thumbnail?: string;
+  display_order: number;
+  is_active: boolean;
 }
 
 export interface HomeSettings {
@@ -15,7 +17,6 @@ export interface HomeSettings {
   show_news_section: boolean;
   show_personalities: boolean;
   show_live_banner: boolean;
-  featured_videos: VideoData[];
   created_at?: string;
   updated_at?: string;
 }
@@ -25,19 +26,14 @@ export const defaultSettings: HomeSettings = {
   show_hero: true,
   show_news_section: true,
   show_personalities: true,
-  show_live_banner: true,
-  featured_videos: [
-    { id: "uaGvGnOiY04", title: "Aerial City View at Night" },
-    { id: "j4Vg274kOvc", title: "Busy City Street Scene" },
-    { id: "PNIBFEJ6UYc", title: "Urban Night Life" },
-    { id: "5CqqZRXO7aM", title: "Downtown Buildings" },
-    { id: "x06cnZm-Ic4", title: "City Skyline" },
-  ]
+  show_live_banner: true
 };
 
 interface HomeSettingsContextType {
   settings: HomeSettings;
   setSettings: React.Dispatch<React.SetStateAction<HomeSettings>>;
+  featuredVideos: VideoData[];
+  setFeaturedVideos: React.Dispatch<React.SetStateAction<VideoData[]>>;
   isSaving: boolean;
   setIsSaving: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -46,10 +42,18 @@ const HomeSettingsContext = createContext<HomeSettingsContextType | undefined>(u
 
 export const HomeSettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<HomeSettings>(defaultSettings);
+  const [featuredVideos, setFeaturedVideos] = useState<VideoData[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
   return (
-    <HomeSettingsContext.Provider value={{ settings, setSettings, isSaving, setIsSaving }}>
+    <HomeSettingsContext.Provider value={{ 
+      settings, 
+      setSettings, 
+      featuredVideos, 
+      setFeaturedVideos, 
+      isSaving, 
+      setIsSaving 
+    }}>
       {children}
     </HomeSettingsContext.Provider>
   );

@@ -3,90 +3,62 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { HomeSettings, defaultSettings, useHomeSettings, VideoData } from "../context/HomeSettingsContext";
-import { Json } from "@/integrations/supabase/types";
-
-// Helper function to convert VideoData[] to plain objects for storage
-const videoDataToJson = (videos: VideoData[]): Json => {
-  return videos.map(video => ({
-    id: video.id,
-    title: video.title,
-    credit: video.credit,
-    thumbnail: video.thumbnail
-  })) as Json;
-};
-
-// Helper function to convert Json to VideoData[]
-const parseVideoData = (jsonData: Json | null): VideoData[] => {
-  if (!jsonData || !Array.isArray(jsonData)) {
-    return defaultSettings.featured_videos;
-  }
-  
-  try {
-    // Convert JSON array to VideoData[]
-    return jsonData.map((video: any) => ({
-      id: video.id || "",
-      title: video.title || "Untitled Video",
-      credit: video.credit,
-      thumbnail: video.thumbnail
-    }));
-  } catch (error) {
-    console.error("Error parsing video data:", error);
-    return defaultSettings.featured_videos;
-  }
-};
 
 export const useHomeSettingsData = () => {
-  const { setSettings, settings, isSaving, setIsSaving } = useHomeSettings();
+  const { 
+    setSettings, 
+    settings, 
+    isSaving, 
+    setIsSaving, 
+    setFeaturedVideos, 
+    featuredVideos 
+  } = useHomeSettings();
   const { toast } = useToast();
 
   const { isLoading } = useQuery({
     queryKey: ["home-settings"],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
+        // First, fetch the home settings
+        const { data: settingsData, error: settingsError } = await supabase
           .from("home_settings")
           .select("*")
           .maybeSingle();
           
-        if (error) throw error;
+        if (settingsError) throw settingsError;
         
-        if (data) {
-          // Convert the Json type to VideoData[] type using our helper function
-          const parsedVideos = parseVideoData(data.featured_videos);
+        // Fetch the featured videos
+        const { data: videoData, error: videoError } = await supabase
+          .from("featured_videos")
+          .select("*")
+          .order("display_order", { ascending: true })
+          .eq("is_active", true);
           
-          setSettings({
-            ...data,
-            featured_videos: parsedVideos
-          } as HomeSettings);
-          
-          return data;
+        if (videoError) throw videoError;
+        
+        // Set the videos in state
+        setFeaturedVideos(videoData || []);
+        
+        if (settingsData) {
+          setSettings(settingsData as HomeSettings);
+          return { settingsData, videoData };
         }
         
         // If no settings exist, create default settings
         const { data: newData, error: insertError } = await supabase
           .from("home_settings")
-          .insert([{
-            ...defaultSettings,
-            // Convert VideoData[] to a plain array of objects for storage
-            featured_videos: videoDataToJson(defaultSettings.featured_videos)
-          }])
+          .insert([defaultSettings])
           .select()
           .single();
           
         if (insertError) throw insertError;
         
         if (newData) {
-          const parsedVideos = parseVideoData(newData.featured_videos);
-          
-          setSettings({
-            ...newData,
-            featured_videos: parsedVideos
-          } as HomeSettings);
-          
-          return newData;
+          setSettings(newData as HomeSettings);
+          return { settingsData: newData, videoData };
         }
         
-        return defaultSettings;
+        return { settingsData: defaultSettings, videoData };
       } catch (error) {
         console.error("Error fetching home settings:", error);
         toast({
@@ -94,7 +66,7 @@ export const useHomeSettingsData = () => {
           description: "Failed to load home page settings",
           variant: "destructive",
         });
-        return defaultSettings;
+        return { settingsData: defaultSettings, videoData: [] };
       }
     },
   });
@@ -102,17 +74,32 @@ export const useHomeSettingsData = () => {
   const handleSaveSettings = async () => {
     setIsSaving(true);
     try {
-      // When saving, ensure we're passing a plain object that can be stored as JSON
-      const { error } = await supabase
+      // Save the home settings
+      const { error: settingsError } = await supabase
         .from("home_settings")
-        .upsert({
-          ...settings,
-          // Convert VideoData[] to Json for storage
-          featured_videos: videoDataToJson(settings.featured_videos)
-        })
+        .upsert(settings)
         .select();
         
-      if (error) throw error;
+      if (settingsError) throw settingsError;
+      
+      // Save any changes to the featured videos
+      // Note: This is a simplified approach; a more complete solution would handle
+      // creation, updates, and deletion of videos
+      for (const video of featuredVideos) {
+        const { error: videoError } = await supabase
+          .from("featured_videos")
+          .upsert({
+            id: video.id,
+            youtube_id: video.youtube_id,
+            title: video.title,
+            credit: video.credit,
+            thumbnail: video.thumbnail,
+            display_order: video.display_order,
+            is_active: video.is_active
+          });
+          
+        if (videoError) throw videoError;
+      }
       
       toast({
         title: "Success",
@@ -142,6 +129,8 @@ export const useHomeSettingsData = () => {
     handleSaveSettings,
     handleToggle,
     isSaving,
-    settings
+    settings,
+    featuredVideos,
+    setFeaturedVideos
   };
 };

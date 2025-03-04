@@ -8,33 +8,59 @@ import { Trash2, Plus, X, Move } from "lucide-react";
 import { useHomeSettings } from "../context/HomeSettingsContext";
 import { VideoData } from "../context/HomeSettingsContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const VideosTabContent: React.FC = () => {
-  const { settings, setSettings } = useHomeSettings();
+  const { featuredVideos, setFeaturedVideos } = useHomeSettings();
   const { toast } = useToast();
   const [newVideoId, setNewVideoId] = useState("");
   const [isValidating, setIsValidating] = useState(false);
   const [errorVideoId, setErrorVideoId] = useState("");
 
-  const handleUpdateVideoField = (index: number, field: keyof VideoData, value: string) => {
-    setSettings(prev => {
-      const updatedVideos = [...prev.featured_videos];
+  const handleUpdateVideoField = (index: number, field: keyof VideoData, value: string | number | boolean) => {
+    setFeaturedVideos(prev => {
+      const updatedVideos = [...prev];
       updatedVideos[index] = { ...updatedVideos[index], [field]: value };
-      return { ...prev, featured_videos: updatedVideos };
+      return updatedVideos;
     });
   };
 
-  const handleRemoveVideo = (index: number) => {
-    setSettings(prev => {
-      const updatedVideos = [...prev.featured_videos];
-      updatedVideos.splice(index, 1);
-      return { ...prev, featured_videos: updatedVideos };
-    });
+  const handleRemoveVideo = async (index: number) => {
+    const videoToRemove = featuredVideos[index];
     
-    toast({
-      title: "Video removed",
-      description: "The video has been removed from the featured list",
-    });
+    // If the video has an ID, mark it as inactive instead of removing from state
+    if (videoToRemove.id) {
+      try {
+        const { error } = await supabase
+          .from("featured_videos")
+          .update({ is_active: false })
+          .eq("id", videoToRemove.id);
+          
+        if (error) throw error;
+        
+        // Remove from local state
+        setFeaturedVideos(prev => prev.filter((_, i) => i !== index));
+        
+        toast({
+          title: "Video removed",
+          description: "The video has been removed from the featured list",
+        });
+      } catch (error) {
+        console.error("Error removing video:", error);
+        toast({
+          title: "Error",
+          description: "Failed to remove video",
+          variant: "destructive",
+        });
+      }
+    } else {
+      // If it's a new video not yet saved to the database, just remove from state
+      setFeaturedVideos(prev => prev.filter((_, i) => i !== index));
+      toast({
+        title: "Video removed",
+        description: "The video has been removed from the featured list",
+      });
+    }
   };
 
   const validateAndAddVideo = async () => {
@@ -59,10 +85,23 @@ const VideosTabContent: React.FC = () => {
       
       if (response.ok) {
         const data = await response.json();
-        setSettings(prev => ({
-          ...prev,
-          featured_videos: [...prev.featured_videos, { id: newVideoId, title: data.title }]
-        }));
+        
+        // Create a new video in the database
+        const { data: newVideo, error } = await supabase
+          .from("featured_videos")
+          .insert({
+            youtube_id: newVideoId,
+            title: data.title,
+            display_order: featuredVideos.length + 1,
+            is_active: true
+          })
+          .select()
+          .single();
+          
+        if (error) throw error;
+        
+        // Add to local state
+        setFeaturedVideos(prev => [...prev, newVideo]);
         
         setNewVideoId("");
         toast({
@@ -80,19 +119,28 @@ const VideosTabContent: React.FC = () => {
     }
   };
 
-  const moveVideo = (index: number, direction: 'up' | 'down') => {
+  const moveVideo = async (index: number, direction: 'up' | 'down') => {
     if (
       (direction === 'up' && index === 0) || 
-      (direction === 'down' && index === settings.featured_videos.length - 1)
+      (direction === 'down' && index === featuredVideos.length - 1)
     ) {
       return;
     }
 
-    setSettings(prev => {
-      const videos = [...prev.featured_videos];
-      const newIndex = direction === 'up' ? index - 1 : index + 1;
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    
+    setFeaturedVideos(prev => {
+      const videos = [...prev];
+      
+      // Update display order in the array
+      const temp = videos[index].display_order;
+      videos[index].display_order = videos[newIndex].display_order;
+      videos[newIndex].display_order = temp;
+      
+      // Swap positions in the array
       [videos[index], videos[newIndex]] = [videos[newIndex], videos[index]];
-      return { ...prev, featured_videos: videos };
+      
+      return videos;
     });
   };
 
@@ -102,19 +150,19 @@ const VideosTabContent: React.FC = () => {
         <div className="flex flex-col space-y-1.5">
           <h3 className="text-lg font-semibold">Manage Featured Videos</h3>
           <p className="text-sm text-muted-foreground">
-            Add, remove, or edit YouTube videos shown in the Featured Videos section
+            Add, remove, or edit YouTube videos shown in the Hero section and Featured Videos gallery
           </p>
         </div>
 
         <Card>
           <CardContent className="pt-4">
             <div className="space-y-4">
-              {settings.featured_videos.map((video, index) => (
+              {featuredVideos.map((video, index) => (
                 <div key={`${video.id}-${index}`} className="flex flex-col gap-2 p-3 border rounded-md">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <img 
-                        src={`https://img.youtube.com/vi/${video.id}/default.jpg`} 
+                        src={`https://img.youtube.com/vi/${video.youtube_id}/default.jpg`} 
                         alt={video.title} 
                         className="w-16 h-12 object-cover rounded"
                         onError={(e) => {
@@ -137,7 +185,7 @@ const VideosTabContent: React.FC = () => {
                         variant="ghost"
                         size="icon"
                         onClick={() => moveVideo(index, 'down')}
-                        disabled={index === settings.featured_videos.length - 1}
+                        disabled={index === featuredVideos.length - 1}
                         className="h-8 w-8"
                       >
                         <Move className="h-4 w-4 -rotate-90" />
@@ -156,9 +204,9 @@ const VideosTabContent: React.FC = () => {
                     <Label htmlFor={`video-id-${index}`}>YouTube Video ID</Label>
                     <Input
                       id={`video-id-${index}`}
-                      value={video.id}
+                      value={video.youtube_id}
                       className="mt-1"
-                      onChange={(e) => handleUpdateVideoField(index, 'id', e.target.value)}
+                      onChange={(e) => handleUpdateVideoField(index, 'youtube_id', e.target.value)}
                     />
                   </div>
                   <div>

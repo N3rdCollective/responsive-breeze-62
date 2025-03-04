@@ -87,10 +87,45 @@ export type Database = {
         }
         Relationships: []
       }
+      featured_videos: {
+        Row: {
+          created_at: string | null
+          credit: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          thumbnail: string | null
+          title: string
+          updated_at: string | null
+          youtube_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          credit?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          thumbnail?: string | null
+          title: string
+          updated_at?: string | null
+          youtube_id: string
+        }
+        Update: {
+          created_at?: string | null
+          credit?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          thumbnail?: string | null
+          title?: string
+          updated_at?: string | null
+          youtube_id?: string
+        }
+        Relationships: []
+      }
       home_settings: {
         Row: {
           created_at: string | null
-          featured_videos: Json | null
           id: string
           show_hero: boolean
           show_live_banner: boolean
@@ -100,7 +135,6 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
-          featured_videos?: Json | null
           id?: string
           show_hero?: boolean
           show_live_banner?: boolean
@@ -110,7 +144,6 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
-          featured_videos?: Json | null
           id?: string
           show_hero?: boolean
           show_live_banner?: boolean

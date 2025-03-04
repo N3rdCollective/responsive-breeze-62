@@ -1,9 +1,9 @@
-
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import { VideoData } from "@/components/staff/home/context/HomeSettingsContext";
+import { supabase } from "@/integrations/supabase/client";
 
 type GreetingData = {
   [key: string]: {
@@ -18,13 +18,7 @@ interface HeroProps {
   videoBackgrounds?: VideoData[];
 }
 
-const defaultVideoBackgrounds: VideoData[] = [
-  { id: "uaGvGnOiY04", title: "Aerial city view at night" },
-  { id: "j4Vg274kOvc", title: "Busy city street scene" },
-  { id: "PNIBFEJ6UYc", title: "Urban night life" },
-  { id: "5CqqZRXO7aM", title: "Downtown buildings" },
-  { id: "x06cnZm-Ic4", title: "City skyline" },
-];
+const defaultVideoBackgrounds: VideoData[] = [];
 
 const greetings: GreetingData = {
   "US-CA": {
@@ -58,6 +52,35 @@ const Hero = ({ videoBackgrounds = defaultVideoBackgrounds }: HeroProps) => {
   const [greeting, setGreeting] = useState<string>("");
   const { togglePlayPause, isPlaying } = useAudioPlayer();
   const [currentVideoIndex, setCurrentVideoIndex] = useState<number>(0);
+  const [videos, setVideos] = useState<VideoData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchVideos = async () => {
+      if (videoBackgrounds && videoBackgrounds.length > 0) {
+        setVideos(videoBackgrounds);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from("featured_videos")
+          .select("*")
+          .order("display_order", { ascending: true })
+          .eq("is_active", true);
+
+        if (error) throw error;
+        setVideos(data || []);
+      } catch (error) {
+        console.error("Error fetching featured videos:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchVideos();
+  }, [videoBackgrounds]);
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -76,10 +99,8 @@ const Hero = ({ videoBackgrounds = defaultVideoBackgrounds }: HeroProps) => {
   }, []);
 
   useEffect(() => {
-    // Ensure we always have videos, even if passed an empty array
-    const videos = videoBackgrounds.length > 0 ? videoBackgrounds : defaultVideoBackgrounds;
+    if (videos.length === 0) return;
     
-    // Rotate videos every 45 seconds
     const videoRotationInterval = setInterval(() => {
       setCurrentVideoIndex((prevIndex) => 
         (prevIndex + 1) % videos.length
@@ -87,7 +108,7 @@ const Hero = ({ videoBackgrounds = defaultVideoBackgrounds }: HeroProps) => {
     }, 45000);
 
     return () => clearInterval(videoRotationInterval);
-  }, [videoBackgrounds]);
+  }, [videos]);
 
   useEffect(() => {
     const getTimeBasedGreeting = () => {
@@ -113,17 +134,56 @@ const Hero = ({ videoBackgrounds = defaultVideoBackgrounds }: HeroProps) => {
     return () => clearInterval(interval);
   }, [location]);
 
-  // Ensure we always have videos, even if passed an empty array
-  const videos = videoBackgrounds.length > 0 ? videoBackgrounds : defaultVideoBackgrounds;
+  if (isLoading || videos.length === 0) {
+    return (
+      <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
+        <img 
+          src="/lovable-uploads/2d39862c-be68-49df-afe5-b212fd22bfbe.png"
+          alt="City skyline fallback image"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/80 z-10" />
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center z-20">
+          <span className="inline-block mb-4 px-4 py-1 rounded-full bg-[#666666]/30 dark:bg-[#666666]/40 text-sm font-medium tracking-wide animate-fadeIn text-white">
+            {greeting}
+          </span>
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight animate-fadeIn [animation-delay:200ms] text-white">
+            Experience the Power of Sound
+          </h1>
+          <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto animate-fadeIn [animation-delay:400ms]">
+            Join us on a journey through music, stories, and connections that move you.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fadeIn [animation-delay:600ms]">
+            <Button
+              className="bg-[#FFD700] text-black hover:bg-[#FFD700]/90 dark:bg-[#FFD700] dark:text-black dark:hover:bg-[#FFD700]/90 px-8 py-6 text-lg"
+              onClick={togglePlayPause}
+            >
+              {isPlaying ? "Pause" : "Listen Live"}
+            </Button>
+            <Link to="/schedule">
+              <Button
+                variant="outline"
+                className="border-2 border-[#FFD700] text-[#FFD700] bg-black/40 hover:bg-black/60 px-8 py-6 text-lg dark:border-[#FFD700] dark:text-white dark:hover:bg-[#FFD700]/10"
+              >
+                View Schedule
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const currentVideo = videos[currentVideoIndex % videos.length];
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* YouTube iframe for background video */}
       <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
         <div className="relative w-full h-full">
           <iframe
-            src={`https://www.youtube.com/embed/${currentVideo.id}?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&iv_load_policy=3&playlist=${currentVideo.id}&disablekb=1&modestbranding=1&start=15`}
+            src={`https://www.youtube.com/embed/${currentVideo.youtube_id}?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&iv_load_policy=3&playlist=${currentVideo.youtube_id}&disablekb=1&modestbranding=1&start=15`}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             className="absolute w-[300%] h-[300%] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
             title={currentVideo.title}
@@ -131,7 +191,6 @@ const Hero = ({ videoBackgrounds = defaultVideoBackgrounds }: HeroProps) => {
         </div>
       </div>
       
-      {/* Fallback image in case video doesn't load */}
       <img 
         src="/lovable-uploads/2d39862c-be68-49df-afe5-b212fd22bfbe.png"
         alt="City skyline fallback image"
@@ -139,7 +198,6 @@ const Hero = ({ videoBackgrounds = defaultVideoBackgrounds }: HeroProps) => {
         style={{ opacity: 0 }}
       />
       
-      {/* Overlay gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/80 z-10" />
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center z-20">
