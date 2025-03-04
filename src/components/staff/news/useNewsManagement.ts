@@ -15,12 +15,14 @@ export const useNewsManagement = () => {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["staff-news-posts"],
     queryFn: async () => {
+      console.log("Fetching posts from Supabase");
       const { data, error } = await supabase
         .from("posts")
         .select("*")
         .order("created_at", { ascending: false });
       
       if (error) {
+        console.error("Error fetching posts:", error);
         toast({
           title: "Error fetching posts",
           description: error.message,
@@ -29,6 +31,7 @@ export const useNewsManagement = () => {
         return { posts: [], pagination: { currentPage: 1, totalPages: 1, pageSize, totalItems: 0 } };
       }
       
+      console.log(`Fetched ${data.length} posts successfully`);
       return { 
         posts: data as Post[],
         pagination: { 
@@ -75,6 +78,18 @@ export const useNewsManagement = () => {
     setCurrentPage(page);
   };
 
+  // Ensure we reset to page 1 when filters change
+  const handleFilterChange = (status: "all" | "published" | "draft") => {
+    setStatusFilter(status);
+    setCurrentPage(1);
+  };
+
+  // Ensure we reset to page 1 when search term changes
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term);
+    setCurrentPage(1);
+  };
+
   return {
     posts,
     filteredPosts,
@@ -84,9 +99,9 @@ export const useNewsManagement = () => {
     error,
     refetch,
     searchTerm,
-    setSearchTerm,
+    setSearchTerm: handleSearchChange,
     statusFilter,
-    setStatusFilter,
+    setStatusFilter: handleFilterChange,
     currentPage,
     handlePageChange
   };
