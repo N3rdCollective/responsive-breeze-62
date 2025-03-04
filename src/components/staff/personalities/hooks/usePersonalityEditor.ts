@@ -31,7 +31,7 @@ export const usePersonalityEditor = (canEdit: boolean) => {
 
   // Use the smaller hooks
   const { personalities, loading, fetchPersonalities, fetchPersonalityById } = useFetchPersonalities();
-  const { imageUrl, setImageUrl, handleImageSelected } = useImageUpload();
+  const { imageUrl, setImageUrl, previewUrl, setPreviewUrl, handleImageSelected } = useImageUpload();
   const { isSaving, updatePersonality, createPersonality, deletePersonality } = usePersonalityMutations(fetchPersonalities);
 
   const form = useForm<FormValues>({
@@ -54,6 +54,7 @@ export const usePersonalityEditor = (canEdit: boolean) => {
       setRole(personalityData.role || "");
       setBio(personalityData.bio || "");
       setImageUrl(personalityData.image_url || "");
+      setPreviewUrl(null); // Clear any preview when selecting an existing personality
       setStartDate(personalityData.start_date ? new Date(personalityData.start_date) : null);
       
       // Update form values
@@ -68,9 +69,9 @@ export const usePersonalityEditor = (canEdit: boolean) => {
         const showTimesData = personalityData.show_times;
         
         // Update form values for show times
-        form.setValue("days", showTimesData.days.join(", "));
-        form.setValue("start", showTimesData.start);
-        form.setValue("end", showTimesData.end);
+        form.setValue("days", showTimesData.days ? showTimesData.days.join(", ") : "");
+        form.setValue("start", showTimesData.start || "");
+        form.setValue("end", showTimesData.end || "");
       } else {
         form.setValue("days", "");
         form.setValue("start", "");
@@ -104,6 +105,7 @@ export const usePersonalityEditor = (canEdit: boolean) => {
     setRole("");
     setBio("");
     setImageUrl("");
+    setPreviewUrl(null);
     setStartDate(null);
     form.reset(defaultFormValues);
   };
@@ -135,6 +137,8 @@ export const usePersonalityEditor = (canEdit: boolean) => {
     setBio,
     imageUrl, 
     setImageUrl,
+    previewUrl,
+    setPreviewUrl,
     startDate, 
     setStartDate,
     form,

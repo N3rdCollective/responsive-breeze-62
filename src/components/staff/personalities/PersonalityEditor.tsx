@@ -18,6 +18,7 @@ export const PersonalityEditor = () => {
     loading,
     selectedPersonality,
     isSaving,
+    previewUrl,
     handleSelectPersonality,
     handleImageSelected,
     handleSubmit,
@@ -71,6 +72,7 @@ export const PersonalityEditor = () => {
             onImageSelected={handleImageSelected}
             onSubmit={onSubmit}
             onDelete={handleDelete}
+            previewUrl={previewUrl}
           />
         </div>
       </div>

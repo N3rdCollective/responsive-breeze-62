@@ -11,9 +11,10 @@ import ShowTimesSection from "./ShowTimesSection";
 interface PersonalityFormContentProps {
   form: UseFormReturn<FormValues>;
   onImageSelected: (file: File) => void;
+  previewUrl?: string | null;
 }
 
-const PersonalityFormContent = ({ form, onImageSelected }: PersonalityFormContentProps) => {
+const PersonalityFormContent = ({ form, onImageSelected, previewUrl }: PersonalityFormContentProps) => {
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -64,7 +65,11 @@ const PersonalityFormContent = ({ form, onImageSelected }: PersonalityFormConten
         )}
       />
       
-      <ImageSection form={form} onImageSelected={onImageSelected} />
+      <ImageSection 
+        form={form} 
+        onImageSelected={onImageSelected} 
+        previewUrl={previewUrl}
+      />
       
       <SocialLinksSection form={form} />
       

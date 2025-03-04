@@ -1,20 +1,20 @@
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
 import { UseFormReturn } from "react-hook-form";
-import { Loader2 } from "lucide-react";
 import { FormValues } from "../types";
 import PersonalityFormContent from "./PersonalityFormContent";
+import { Loader2, Save, Trash } from "lucide-react";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface PersonalityFormProps {
   form: UseFormReturn<FormValues>;
   isSaving: boolean;
   selectedPersonality: string | null;
   onImageSelected: (file: File) => void;
-  onSubmit: (values: FormValues) => Promise<void>;
-  onDelete: (id: string) => Promise<void>;
+  onSubmit: (values: FormValues) => void;
+  onDelete: (id: string) => void;
+  previewUrl?: string | null;
 }
 
 const PersonalityForm = ({ 
@@ -23,64 +23,57 @@ const PersonalityForm = ({
   selectedPersonality, 
   onImageSelected, 
   onSubmit, 
-  onDelete 
+  onDelete,
+  previewUrl
 }: PersonalityFormProps) => {
+  const handleSubmit = form.handleSubmit(onSubmit);
+
+  const isNewPersonality = !selectedPersonality;
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{selectedPersonality ? "Edit Personality" : "Create New Personality"}</CardTitle>
-        <CardDescription>
-          {selectedPersonality ? "Update information for this personality" : "Fill in details to create a new personality"}
-        </CardDescription>
+        <CardTitle>{isNewPersonality ? "Create New Personality" : "Edit Personality"}</CardTitle>
       </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <input type="hidden" {...form.register("id")} />
-            
+      <Form {...form}>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-6">
             <PersonalityFormContent 
               form={form} 
               onImageSelected={onImageSelected} 
+              previewUrl={previewUrl}
             />
-            
-            <CardFooter className="flex justify-between px-0">
-              <div>
-                {selectedPersonality && (
-                  <Button 
-                    type="button" 
-                    variant="destructive" 
-                    onClick={() => onDelete(selectedPersonality)}
-                    disabled={isSaving}
-                  >
-                    {isSaving ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Deleting...
-                      </>
-                    ) : (
-                      "Delete Personality"
-                    )}
-                  </Button>
-                )}
-              </div>
-              <Button 
-                type="submit" 
-                disabled={isSaving}
-                className="bg-[#FFD700] text-black hover:bg-[#FFD700]/80"
-              >
-                {isSaving ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  selectedPersonality ? "Update Personality" : "Create Personality"
-                )}
-              </Button>
-            </CardFooter>
-          </form>
-        </Form>
-      </CardContent>
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <div>
+              {!isNewPersonality && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => selectedPersonality && onDelete(selectedPersonality)}
+                  disabled={isSaving}
+                >
+                  <Trash className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              )}
+            </div>
+            <Button type="submit" disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  {isNewPersonality ? "Create Personality" : "Save Changes"}
+                </>
+              )}
+            </Button>
+          </CardFooter>
+        </form>
+      </Form>
     </Card>
   );
 };

@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Upload, Image } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 
 interface ImageUploaderProps {
   currentImageUrl: string;
@@ -13,8 +12,22 @@ interface ImageUploaderProps {
 
 const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageSelected }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    return () => {
+      if (localPreviewUrl && localPreviewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(localPreviewUrl);
+      }
+    };
+  }, [localPreviewUrl]);
+
+  useEffect(() => {
+    if (currentImageUrl && !currentImageUrl.startsWith('blob:')) {
+      setLocalPreviewUrl(null);
+    }
+  }, [currentImageUrl]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -22,9 +35,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageS
       const file = files[0];
       setSelectedFile(file);
       
-      // Create preview URL
+      if (localPreviewUrl && localPreviewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(localPreviewUrl);
+      }
+      
       const objectUrl = URL.createObjectURL(file);
-      setPreviewUrl(objectUrl);
+      setLocalPreviewUrl(objectUrl);
     }
   };
 
@@ -41,17 +57,16 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageS
     onImageSelected(selectedFile);
     toast({
       title: "Image selected",
-      description: "Image will be uploaded when you save the post",
+      description: "Image will be uploaded when you save",
     });
   };
 
-  // If we have a preview URL, show that (for newly selected files)
-  // Otherwise, show the currentImageUrl (for existing/persisted images)
-  const displayImageUrl = previewUrl || currentImageUrl;
+  const displayImageUrl = localPreviewUrl || 
+    (currentImageUrl && !currentImageUrl.startsWith('blob:') ? currentImageUrl : null);
 
   return (
     <div className="space-y-4">
-      <Label htmlFor="featured-image" className="text-base font-medium">Featured Image</Label>
+      <Label htmlFor="featured-image" className="text-base font-medium">Image</Label>
       
       <div className="flex flex-col gap-4">
         <div className="flex gap-2 items-start">
@@ -64,7 +79,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageS
               className="flex-1"
             />
             <p className="text-sm text-muted-foreground mt-1">
-              Select an image to use as the featured image for this post
+              Select an image to use
             </p>
           </div>
           
@@ -84,11 +99,11 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageS
         <div className="mt-4 border rounded-md p-4 bg-muted/20">
           <div className="flex items-center gap-2 mb-2">
             <Image className="h-4 w-4" />
-            <p className="text-sm font-medium">Current featured image:</p>
+            <p className="text-sm font-medium">Current image:</p>
           </div>
           <img
             src={displayImageUrl}
-            alt="Featured"
+            alt="Selected"
             className="w-full max-w-md rounded-md"
           />
         </div>
@@ -99,7 +114,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImageUrl, onImageS
 
 export default ImageUploader;
 
-// Export helper function to handle image uploads
 export const handleImageUpload = async (file: File): Promise<string | null> => {
   if (!file) return null;
   
