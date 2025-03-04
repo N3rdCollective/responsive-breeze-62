@@ -63,8 +63,6 @@ const Footer = () => {
             <ul className="space-y-2 text-gray-700 dark:text-white">
               <li>123 Radio Street</li>
               <li>City, State 12345</li>
-              <li>contact@radio.com</li>
-              <li>(555) 123-4567</li>
             </ul>
           </div>
           
