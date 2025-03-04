@@ -87,6 +87,36 @@ export type Database = {
         }
         Relationships: []
       }
+      home_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          show_hero: boolean
+          show_live_banner: boolean
+          show_news_section: boolean
+          show_personalities: boolean
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          show_hero?: boolean
+          show_live_banner?: boolean
+          show_news_section?: boolean
+          show_personalities?: boolean
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          show_hero?: boolean
+          show_live_banner?: boolean
+          show_news_section?: boolean
+          show_personalities?: boolean
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       pending_staff: {
         Row: {
           approved_at: string | null

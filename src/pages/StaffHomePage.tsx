@@ -9,14 +9,11 @@ import HomeContentManager from "@/components/staff/home/HomeContentManager";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 
 const StaffHomePage = () => {
-  const { userRole, isLoading } = useStaffAuth();
+  const { userRole, isLoading, staffName, isAdmin } = useStaffAuth();
   const navigate = useNavigate();
   
   // Check if user has appropriate permissions
-  const isAdmin = userRole === "admin";
-  const isModerator = userRole === "moderator";
-  const isSuperAdmin = userRole === "super_admin";
-  const canManageContent = isAdmin || isModerator || isSuperAdmin;
+  const isModeratorOrHigher = userRole === "admin" || userRole === "moderator" || userRole === "super_admin";
   
   if (isLoading) {
     return (
@@ -26,7 +23,7 @@ const StaffHomePage = () => {
     );
   }
   
-  if (!canManageContent) {
+  if (!isModeratorOrHigher) {
     return (
       <div className="container mx-auto p-4 max-w-4xl">
         <StaffHeader title="Access Denied" />
@@ -63,7 +60,11 @@ const StaffHomePage = () => {
         </Button>
       </div>
       
-      <StaffHeader title="Home Page Content Management" />
+      <StaffHeader 
+        title="Home Page Content Management" 
+        staffName={staffName}
+        isAdmin={isAdmin}
+      />
       
       <div className="mt-6">
         <HomeContentManager />
