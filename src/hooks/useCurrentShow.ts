@@ -1,18 +1,19 @@
 
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { format, parseISO } from "date-fns";
+import { format, parse } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
 
-interface ShowItem {
-  start: string;
-  end: string;
-  playlist: {
-    name: string;
-    colour: string;
-    artist: string;
-    title: string;
-    artwork: string | null;
-  };
+interface Show {
+  id: string;
+  title: string;
+  personality_id: string | null;
+  description: string | null;
+  start_time: string;
+  end_time: string;
+  days: string[];
+  external_id: string;
+  artwork_url: string | null;
 }
 
 interface CurrentShow {
@@ -22,15 +23,6 @@ interface CurrentShow {
   timeSlot: string;
   isLive: boolean;
 }
-
-const fetchSchedule = async () => {
-  const response = await fetch("https://public.radio.co/stations/s1a36378a0/embed/schedule");
-  if (!response.ok) {
-    throw new Error("Failed to fetch schedule");
-  }
-  const data = await response.json();
-  return data.data as ShowItem[];
-};
 
 // Helper function to ensure high quality images
 const getHighQualityImage = (artworkUrl: string | null): string | null => {
@@ -46,52 +38,79 @@ const getHighQualityImage = (artworkUrl: string | null): string | null => {
     return `${artworkUrl}${artworkUrl.includes('?') ? '&' : '?'}auto=format&fit=crop&q=100`;
   }
   
-  return artworkUrl;
+  // For radio.co images, get high quality version
+  const baseUrl = artworkUrl.split('?')[0];
+  return `${baseUrl}?quality=100&width=800&height=800`;
+};
+
+// Function to check if a show is currently live
+const isShowLiveNow = (show: Show): boolean => {
+  const now = new Date();
+  const currentDay = format(now, 'EEEE');
+  const currentTime = format(now, 'HH:mm:ss');
+  
+  // Check if the show is scheduled for today
+  if (!show.days.includes(currentDay)) {
+    return false;
+  }
+  
+  // Parse start and end times
+  const startTime = show.start_time;
+  const endTime = show.end_time;
+  
+  // Check if current time is between start and end time
+  return currentTime >= startTime && currentTime <= endTime;
 };
 
 export const useCurrentShow = () => {
   const [currentShow, setCurrentShow] = useState<CurrentShow | null>(null);
   
-  const { data: schedule, isLoading, error } = useQuery({
-    queryKey: ["schedule"],
-    queryFn: fetchSchedule,
+  // Fetch shows from our Supabase database
+  const fetchShows = async () => {
+    const { data, error } = await supabase
+      .from("shows")
+      .select("*");
+
+    if (error) {
+      throw new Error(`Failed to fetch shows: ${error.message}`);
+    }
+
+    return data as Show[];
+  };
+
+  const { data: shows, isLoading, error } = useQuery({
+    queryKey: ["shows"],
+    queryFn: fetchShows,
   });
 
   useEffect(() => {
-    if (!schedule) return;
+    if (!shows) return;
 
-    // Determine current show based on day and time
-    const now = new Date();
-    const currentDay = format(now, 'EEEE');
-    const currentTime = format(now, 'HH:mm');
+    // Find any shows that are currently live
+    const liveShows = shows.filter(isShowLiveNow);
 
-    // Filter the schedule for shows happening now
-    const currentShows = schedule.filter(item => {
-      const itemDate = parseISO(item.start);
-      const itemDay = format(itemDate, 'EEEE');
+    if (liveShows.length > 0) {
+      // Take the first live show if multiple are found
+      const show = liveShows[0];
       
-      if (itemDay !== currentDay) return false;
-
-      const startTime = format(parseISO(item.start), 'HH:mm');
-      const endTime = format(parseISO(item.end), 'HH:mm');
-      
-      return currentTime >= startTime && currentTime <= endTime;
-    });
-
-    if (currentShows.length > 0) {
-      const show = currentShows[0];
       setCurrentShow({
-        showName: show.playlist.name,
-        hostName: show.playlist.artist || null,
-        artwork: getHighQualityImage(show.playlist.artwork),
-        timeSlot: `${format(parseISO(show.start), 'h:mm a')} - ${format(parseISO(show.end), 'h:mm a')}`,
+        showName: show.title,
+        hostName: show.description,
+        artwork: getHighQualityImage(show.artwork_url),
+        timeSlot: `${formatTime(show.start_time)} - ${formatTime(show.end_time)}`,
         isLive: true
       });
     } else {
-      // If no current show, set to null or a default message
+      // If no current show, set to null
       setCurrentShow(null);
     }
-  }, [schedule]);
+  }, [shows]);
+
+  // Format time strings from database (HH:mm:ss) to display format (h:mm a)
+  const formatTime = (timeString: string) => {
+    const date = parse(timeString, "HH:mm:ss", new Date());
+    return format(date, "h:mm a");
+  };
 
   return {
     currentShow,
