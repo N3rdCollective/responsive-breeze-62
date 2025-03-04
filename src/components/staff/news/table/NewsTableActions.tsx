@@ -48,7 +48,7 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
     console.log("Attempting to delete post with ID:", post.id);
     
     try {
-      // Fix: Use the correct table name "posts" instead of "post"
+      // Ensure we're using the correct table name and syntax
       const { error } = await supabase
         .from("posts")
         .delete()
@@ -66,8 +66,12 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
         description: "The post has been successfully deleted",
       });
       
-      // Make sure we call the refetch function to update the UI
-      onRefetch();
+      // Explicitly call the refetch function to update the UI
+      if (typeof onRefetch === 'function') {
+        onRefetch();
+      } else {
+        console.error("onRefetch is not a function:", onRefetch);
+      }
     } catch (error: any) {
       console.error("Error deleting post:", error);
       toast({
