@@ -9,42 +9,12 @@ const ContactSettingsTab = () => {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-medium">Contact Information</h3>
+      <h3 className="text-lg font-medium">Social Media Links</h3>
       <p className="text-sm text-muted-foreground mb-4">
-        Configure contact information displayed on the website.
+        Configure social media links displayed on the website.
       </p>
       
-      <div className="grid gap-4">
-        <FormField
-          control={form.control}
-          name="contact_email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Contact Email</FormLabel>
-              <FormControl>
-                <Input type="email" placeholder="contact@example.com" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="contact_phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Contact Phone</FormLabel>
-              <FormControl>
-                <Input placeholder="(555) 123-4567" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <h4 className="text-base font-medium pt-2">Social Media Links</h4>
-        
+      <div className="grid gap-4">        
         <FormField
           control={form.control}
           name="social_media_links.facebook"
