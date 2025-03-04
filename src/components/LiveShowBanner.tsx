@@ -4,6 +4,7 @@ import { useCurrentShow } from "@/hooks/useCurrentShow";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Disc3 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const LiveShowBanner = () => {
   const { currentShow, isLoading } = useCurrentShow();
@@ -64,9 +65,9 @@ const LiveShowBanner = () => {
             </div>
             
             <div className="mt-2">
-              <a href="/schedule" className="text-sm text-blue-500 dark:text-blue-400 hover:underline">
+              <Link to="/schedule" className="text-sm text-blue-500 dark:text-blue-400 hover:underline">
                 View full schedule →
-              </a>
+              </Link>
             </div>
           </div>
         </div>

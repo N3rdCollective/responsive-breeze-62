@@ -1,6 +1,7 @@
-
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 
 type GreetingData = {
   [key: string]: {
@@ -41,6 +42,7 @@ const greetings: GreetingData = {
 const Hero = () => {
   const [location, setLocation] = useState<string>("default");
   const [greeting, setGreeting] = useState<string>("");
+  const { togglePlayPause, isPlaying } = useAudioPlayer();
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -104,15 +106,18 @@ const Hero = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fadeIn [animation-delay:600ms]">
           <Button
             className="bg-[#FFD700] text-black hover:bg-[#FFD700]/90 dark:bg-[#FFD700] dark:text-black dark:hover:bg-[#FFD700]/90 px-8 py-6 text-lg"
+            onClick={togglePlayPause}
           >
-            Listen Live
+            {isPlaying ? "Pause" : "Listen Live"}
           </Button>
-          <Button
-            variant="outline"
-            className="border-2 border-[#FFD700] text-[#FFD700] bg-black/40 hover:bg-black/60 px-8 py-6 text-lg dark:border-[#FFD700] dark:text-white dark:hover:bg-[#FFD700]/10"
-          >
-            View Schedule
-          </Button>
+          <Link to="/schedule">
+            <Button
+              variant="outline"
+              className="border-2 border-[#FFD700] text-[#FFD700] bg-black/40 hover:bg-black/60 px-8 py-6 text-lg dark:border-[#FFD700] dark:text-white dark:hover:bg-[#FFD700]/10"
+            >
+              View Schedule
+            </Button>
+          </Link>
         </div>
       </div>
     </div>
