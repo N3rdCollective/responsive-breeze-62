@@ -5,19 +5,7 @@ import CategoryDisplay from "./CategoryDisplay";
 import PostStatusBadge from "./PostStatusBadge";
 import NewsTableActions from "./NewsTableActions";
 import { Badge } from "@/components/ui/badge";
-
-interface Post {
-  id: string;
-  title: string;
-  content: string;
-  featured_image: string | null;
-  post_date: string;
-  category: string | null;
-  author: string | null;
-  status: string;
-  created_at: string;
-  tags?: string[];
-}
+import { Post } from "../types/newsTypes";
 
 interface PostRowProps {
   post: Post;
@@ -57,9 +45,8 @@ const PostRow = ({ post, refetch }: PostRowProps) => {
       </TableCell>
       <TableCell className="text-right">
         <NewsTableActions 
-          postId={post.id} 
-          status={post.status} 
-          refetch={refetch} 
+          post={post} 
+          onRefetch={refetch} 
         />
       </TableCell>
     </TableRow>
