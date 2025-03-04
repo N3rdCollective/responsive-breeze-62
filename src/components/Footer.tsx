@@ -1,5 +1,6 @@
 
 import { Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
+import SponsorsSection from './footer/SponsorsSection';
 
 const Footer = () => {
   return (
@@ -54,6 +55,9 @@ const Footer = () => {
             </div>
           </div>
         </div>
+        
+        {/* Sponsors Section - Will only render if sponsors exist */}
+        <SponsorsSection />
         
         <div className="mt-12 pt-8 border-t border-[#666666]/20 dark:border-white/10 text-center text-gray-700 dark:text-white">
           <p>&copy; {new Date().getFullYear()} Radio Station. All rights reserved.</p>
