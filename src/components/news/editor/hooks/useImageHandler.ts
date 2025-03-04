@@ -34,9 +34,33 @@ export const useImageHandler = () => {
       
       console.log("Authenticated as:", sessionData.session.user.email);
       
-      // Check if the storage bucket exists
-      const { data: buckets } = await supabase.storage.listBuckets();
+      // Check if the media bucket exists and is accessible
+      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+      
+      if (bucketsError) {
+        console.error("Error fetching storage buckets:", bucketsError);
+        toast({
+          title: "Storage Access Error",
+          description: "Unable to access storage. Please try again later.",
+          variant: "destructive",
+        });
+        return null;
+      }
+      
       console.log("Available storage buckets:", buckets);
+      
+      const mediaBucketExists = buckets?.some(bucket => bucket.name === "media");
+      if (!mediaBucketExists) {
+        console.error("Media bucket not found in available buckets");
+        toast({
+          title: "Configuration Error",
+          description: "Storage is not properly configured. Please contact support.",
+          variant: "destructive",
+        });
+        return null;
+      }
+      
+      console.log("Media bucket verified, proceeding with upload");
       
       const uploadedUrl = await uploadImage(file);
       

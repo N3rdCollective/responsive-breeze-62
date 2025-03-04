@@ -107,7 +107,12 @@ export const handleImageUpload = async (file: File): Promise<string | null> => {
     console.log("Generated file path:", filePath);
     
     // Get the current user session to confirm we're authenticated
-    const { data: sessionData } = await supabase.auth.getSession();
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      console.error("Session error:", sessionError);
+      throw new Error("Failed to verify authentication session");
+    }
+    
     if (!sessionData.session) {
       console.error("No active session found - user not authenticated");
       throw new Error("Authentication required. Please log in again.");
@@ -115,8 +120,13 @@ export const handleImageUpload = async (file: File): Promise<string | null> => {
     
     console.log("Authenticated as:", sessionData.session.user.email);
     
-    // Check if the media bucket exists
-    const { data: buckets } = await supabase.storage.listBuckets();
+    // Verify the media bucket exists
+    const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+    if (bucketsError) {
+      console.error("Error fetching buckets:", bucketsError);
+      throw new Error("Failed to access storage configuration");
+    }
+    
     const mediaBucketExists = buckets?.some(bucket => bucket.name === "media");
     
     if (!mediaBucketExists) {
