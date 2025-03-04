@@ -13,6 +13,8 @@ interface PostRowProps {
 }
 
 const PostRow = ({ post, refetch }: PostRowProps) => {
+  console.log("PostRow rendering with post:", post.id, "and refetch function:", !!refetch);
+  
   return (
     <TableRow key={post.id} className="hover:bg-muted/30">
       <TableCell className="font-medium">

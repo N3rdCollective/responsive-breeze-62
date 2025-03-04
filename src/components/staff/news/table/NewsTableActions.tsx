@@ -48,11 +48,15 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
     console.log("Attempting to delete post with ID:", post.id);
     
     try {
-      // Ensure we're using the correct table name and syntax
-      const { error } = await supabase
+      // Execute the delete operation with more detailed logging
+      console.log("Sending delete request to Supabase for post ID:", post.id);
+      
+      const { error, data } = await supabase
         .from("posts")
         .delete()
         .eq("id", post.id);
+        
+      console.log("Delete response:", { error, data });
         
       if (error) {
         console.error("Supabase error deleting post:", error);
@@ -66,7 +70,8 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
         description: "The post has been successfully deleted",
       });
       
-      // Explicitly call the refetch function to update the UI
+      // Call the refetch function to update the UI
+      console.log("Calling onRefetch function to update UI");
       if (typeof onRefetch === 'function') {
         onRefetch();
       } else {

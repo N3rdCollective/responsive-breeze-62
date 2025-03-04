@@ -90,6 +90,17 @@ export const useNewsManagement = () => {
     setCurrentPage(1);
   };
 
+  // Explicitly define the refetch function to ensure it's properly typed and passed
+  const handleRefetch = async () => {
+    console.log("Manual refetch triggered");
+    try {
+      await refetch();
+      console.log("Refetch completed successfully");
+    } catch (error) {
+      console.error("Error during refetch:", error);
+    }
+  };
+
   return {
     posts,
     filteredPosts,
@@ -97,7 +108,7 @@ export const useNewsManagement = () => {
     pagination: paginationMeta,
     isLoading,
     error,
-    refetch,
+    refetch: handleRefetch,
     searchTerm,
     setSearchTerm: handleSearchChange,
     statusFilter,

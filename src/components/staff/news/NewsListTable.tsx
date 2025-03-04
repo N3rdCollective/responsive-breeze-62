@@ -50,6 +50,8 @@ const NewsListTable = ({
 }: NewsListTableProps) => {
   const { currentPage, totalPages } = pagination;
 
+  console.log("NewsListTable render with refetch function:", !!refetch);
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center p-12">
@@ -153,7 +155,11 @@ const NewsListTable = ({
           <TableBody>
             {filteredPosts && filteredPosts.length > 0 ? (
               paginatedPosts && paginatedPosts.map((post) => (
-                <PostRow key={post.id} post={post} refetch={refetch} />
+                <PostRow 
+                  key={post.id} 
+                  post={post} 
+                  refetch={refetch} 
+                />
               ))
             ) : (
               <TableRow>
