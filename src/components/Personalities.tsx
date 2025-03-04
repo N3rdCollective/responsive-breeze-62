@@ -38,6 +38,7 @@ export const Personalities = () => {
         .order("name");
       
       if (error) throw error;
+      console.log("Fetched personalities data:", data);
       return data as Personality[];
     },
   });
@@ -99,9 +100,13 @@ export const Personalities = () => {
                 <div className="p-8">
                   <h3 className="text-2xl font-semibold text-gray-900 dark:text-foreground mb-2">{personality.name}</h3>
                   <p className="text-lg text-[#FFD700] mb-4 font-medium">{personality.role}</p>
-                  {personality.bio && (
-                    <p className="text-gray-700 dark:text-muted-foreground mb-6 line-clamp-3">{personality.bio}</p>
-                  )}
+                  
+                  {personality.bio ? (
+                    <p className="text-gray-700 dark:text-muted-foreground mb-6 line-clamp-3">
+                      {personality.bio === "• -" ? "" : personality.bio}
+                    </p>
+                  ) : null}
+                  
                   {showTimes && (
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                       {showTimes.days.join(", ")} • {showTimes.start} - {showTimes.end}
