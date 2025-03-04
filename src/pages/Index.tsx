@@ -7,24 +7,7 @@ import LiveShowBanner from "@/components/LiveShowBanner";
 import HomeNewsSection from "@/components/home/HomeNewsSection";
 import PersonalitySlider from "@/components/home/PersonalitySlider";
 import { supabase } from "@/integrations/supabase/client";
-
-interface HomeSettings {
-  id: string;
-  show_hero: boolean;
-  show_news_section: boolean;
-  show_personalities: boolean;
-  show_live_banner: boolean;
-  created_at?: string;
-  updated_at?: string;
-}
-
-const defaultSettings: HomeSettings = {
-  id: "home-settings",
-  show_hero: true,
-  show_news_section: true,
-  show_personalities: true,
-  show_live_banner: true
-};
+import { HomeSettings, defaultSettings } from "@/components/staff/home/context/HomeSettingsContext";
 
 const Index = () => {
   const [settings, setSettings] = useState<HomeSettings>(defaultSettings);
