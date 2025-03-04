@@ -5,6 +5,16 @@ import { useToast } from "@/hooks/use-toast";
 import { HomeSettings, defaultSettings, useHomeSettings, VideoData } from "../context/HomeSettingsContext";
 import { Json } from "@/integrations/supabase/types";
 
+// Helper function to convert VideoData[] to plain objects for storage
+const videoDataToJson = (videos: VideoData[]): Json => {
+  return videos.map(video => ({
+    id: video.id,
+    title: video.title,
+    credit: video.credit,
+    thumbnail: video.thumbnail
+  })) as Json;
+};
+
 // Helper function to convert Json to VideoData[]
 const parseVideoData = (jsonData: Json | null): VideoData[] => {
   if (!jsonData || !Array.isArray(jsonData)) {
@@ -58,7 +68,7 @@ export const useHomeSettingsData = () => {
           .insert([{
             ...defaultSettings,
             // Convert VideoData[] to a plain array of objects for storage
-            featured_videos: defaultSettings.featured_videos
+            featured_videos: videoDataToJson(defaultSettings.featured_videos)
           }])
           .select()
           .single();
@@ -97,8 +107,8 @@ export const useHomeSettingsData = () => {
         .from("home_settings")
         .upsert({
           ...settings,
-          // No type conversion needed here as it's already in the correct format for storage
-          featured_videos: settings.featured_videos
+          // Convert VideoData[] to Json for storage
+          featured_videos: videoDataToJson(settings.featured_videos)
         })
         .select();
         
