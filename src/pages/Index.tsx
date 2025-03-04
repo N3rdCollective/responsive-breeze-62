@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import LiveShowBanner from "@/components/LiveShowBanner";
 import HomeNewsSection from "@/components/home/HomeNewsSection";
 import PersonalitySlider from "@/components/home/PersonalitySlider";
+import VideoGallery from "@/components/VideoGallery";
 import { supabase } from "@/integrations/supabase/client";
 import { HomeSettings, defaultSettings } from "@/components/staff/home/context/HomeSettingsContext";
 
@@ -42,6 +43,8 @@ const Index = () => {
       <Navbar />
       
       {settings.show_hero && <Hero />}
+      
+      <VideoGallery />
       
       <div className="container mx-auto px-4 py-8">
         {settings.show_live_banner && <LiveShowBanner />}
