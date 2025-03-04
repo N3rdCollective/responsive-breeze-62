@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,15 +48,13 @@ const PersonalitySlider = () => {
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Meet Our Team</h2>
+          <h2 className="text-2xl font-bold">Meet Our Host/Personalities</h2>
           <Skeleton className="h-10 w-24" />
         </div>
-        <div className="relative">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-64 rounded-lg" />
-            ))}
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-64 rounded-lg" />
+          ))}
         </div>
       </div>
     );
@@ -70,7 +67,7 @@ const PersonalitySlider = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Meet Our Team</h2>
+        <h2 className="text-2xl font-bold">Meet Our Host/Personalities</h2>
         <Button variant="outline" asChild>
           <a href="/personalities">View All</a>
         </Button>
