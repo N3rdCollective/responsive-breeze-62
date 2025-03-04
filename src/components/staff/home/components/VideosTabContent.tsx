@@ -80,13 +80,13 @@ const VideosTabContent: React.FC = () => {
     setErrorVideoId("");
 
     try {
-      // Validate by trying to fetch the video thumbnail
+      // Fetch video info from YouTube's oEmbed API
       const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${newVideoId}&format=json`);
       
       if (response.ok) {
         const data = await response.json();
         
-        // Create a new video in the database
+        // Create a new video in the database with the YouTube-provided title
         const { data: newVideo, error } = await supabase
           .from("featured_videos")
           .insert({
