@@ -3,44 +3,34 @@ import { useState } from "react";
 import { VideoData } from "../context/HomeSettingsContext";
 import { useHomeSettings } from "../context/HomeSettingsContext";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useVideoUtils } from "./useVideoUtils";
 
 export const useVideoTitleRefresh = () => {
-  const { featuredVideos, setFeaturedVideos } = useHomeSettings();
+  const { featuredVideos } = useHomeSettings();
   const { toast } = useToast();
   const [isValidating, setIsValidating] = useState(false);
-
-  const updateVideoField = (index: number, field: keyof VideoData, value: string | number | boolean) => {
-    setFeaturedVideos(prev => {
-      const updatedVideos = [...prev];
-      updatedVideos[index] = { ...updatedVideos[index], [field]: value };
-      return updatedVideos;
-    });
-  };
+  const { updateVideoField, fetchYoutubeVideoInfo, updateVideoInDb } = useVideoUtils();
 
   const refreshVideoTitle = async (index: number) => {
     const video = featuredVideos[index];
     setIsValidating(true);
     
     try {
-      const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${video.youtube_id}&format=json`);
+      const data = await fetchYoutubeVideoInfo(video.youtube_id);
       
-      if (response.ok) {
-        const data = await response.json();
+      if (data) {
+        const success = await updateVideoInDb(video.id, { title: data.title });
         
-        const { error } = await supabase
-          .from("featured_videos")
-          .update({ title: data.title })
-          .eq("id", video.id);
+        if (success) {
+          updateVideoField(index, 'title', data.title);
           
-        if (error) throw error;
-        
-        updateVideoField(index, 'title', data.title);
-        
-        toast({
-          title: "Title updated",
-          description: `Updated title to "${data.title}"`,
-        });
+          toast({
+            title: "Title updated",
+            description: `Updated title to "${data.title}"`,
+          });
+        } else {
+          throw new Error("Failed to update database");
+        }
       } else {
         toast({
           title: "Error",
@@ -70,20 +60,17 @@ export const useVideoTitleRefresh = () => {
         const video = featuredVideos[i];
         
         try {
-          const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${video.youtube_id}&format=json`);
+          const data = await fetchYoutubeVideoInfo(video.youtube_id);
           
-          if (response.ok) {
-            const data = await response.json();
+          if (data) {
+            const success = await updateVideoInDb(video.id, { title: data.title });
             
-            const { error } = await supabase
-              .from("featured_videos")
-              .update({ title: data.title })
-              .eq("id", video.id);
-              
-            if (error) throw error;
-            
-            updateVideoField(i, 'title', data.title);
-            successCount++;
+            if (success) {
+              updateVideoField(i, 'title', data.title);
+              successCount++;
+            } else {
+              failCount++;
+            }
           } else {
             failCount++;
             console.error(`Could not fetch info for video ID: ${video.youtube_id}`);

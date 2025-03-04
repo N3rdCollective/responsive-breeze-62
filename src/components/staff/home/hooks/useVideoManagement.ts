@@ -4,6 +4,7 @@ import { VideoData } from "../context/HomeSettingsContext";
 import { useHomeSettings } from "../context/HomeSettingsContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useVideoUtils } from "./useVideoUtils";
 
 export const useVideoManagement = () => {
   const { featuredVideos, setFeaturedVideos } = useHomeSettings();
@@ -11,14 +12,7 @@ export const useVideoManagement = () => {
   const [newVideoId, setNewVideoId] = useState("");
   const [isValidating, setIsValidating] = useState(false);
   const [errorVideoId, setErrorVideoId] = useState("");
-
-  const handleUpdateVideoField = (index: number, field: keyof VideoData, value: string | number | boolean) => {
-    setFeaturedVideos(prev => {
-      const updatedVideos = [...prev];
-      updatedVideos[index] = { ...updatedVideos[index], [field]: value };
-      return updatedVideos;
-    });
-  };
+  const { updateVideoField, fetchYoutubeVideoInfo } = useVideoUtils();
 
   const handleRemoveVideo = async (index: number) => {
     const videoToRemove = featuredVideos[index];
@@ -71,11 +65,9 @@ export const useVideoManagement = () => {
     setErrorVideoId("");
 
     try {
-      const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${newVideoId}&format=json`);
+      const data = await fetchYoutubeVideoInfo(newVideoId);
       
-      if (response.ok) {
-        const data = await response.json();
-        
+      if (data) {
         const { data: newVideo, error } = await supabase
           .from("featured_videos")
           .insert({
@@ -137,7 +129,7 @@ export const useVideoManagement = () => {
     isValidating,
     errorVideoId,
     setErrorVideoId,
-    handleUpdateVideoField,
+    handleUpdateVideoField: updateVideoField,
     handleRemoveVideo,
     validateAndAddVideo,
     moveVideo
