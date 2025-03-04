@@ -1,10 +1,9 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Trash2, Plus, X, Move } from "lucide-react";
+import { Trash2, Plus, X, Move, RefreshCw } from "lucide-react";
 import { useHomeSettings } from "../context/HomeSettingsContext";
 import { VideoData } from "../context/HomeSettingsContext";
 import { useToast } from "@/hooks/use-toast";
@@ -28,7 +27,6 @@ const VideosTabContent: React.FC = () => {
   const handleRemoveVideo = async (index: number) => {
     const videoToRemove = featuredVideos[index];
     
-    // If the video has an ID, mark it as inactive instead of removing from state
     if (videoToRemove.id) {
       try {
         const { error } = await supabase
@@ -38,7 +36,6 @@ const VideosTabContent: React.FC = () => {
           
         if (error) throw error;
         
-        // Remove from local state
         setFeaturedVideos(prev => prev.filter((_, i) => i !== index));
         
         toast({
@@ -54,7 +51,6 @@ const VideosTabContent: React.FC = () => {
         });
       }
     } else {
-      // If it's a new video not yet saved to the database, just remove from state
       setFeaturedVideos(prev => prev.filter((_, i) => i !== index));
       toast({
         title: "Video removed",
@@ -69,7 +65,6 @@ const VideosTabContent: React.FC = () => {
       return;
     }
 
-    // YouTube ID validation regex
     const youtubeIdRegex = /^[a-zA-Z0-9_-]{11}$/;
     if (!youtubeIdRegex.test(newVideoId)) {
       setErrorVideoId("Please enter a valid YouTube video ID (11 characters)");
@@ -80,13 +75,11 @@ const VideosTabContent: React.FC = () => {
     setErrorVideoId("");
 
     try {
-      // Fetch video info from YouTube's oEmbed API
       const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${newVideoId}&format=json`);
       
       if (response.ok) {
         const data = await response.json();
         
-        // Create a new video in the database with the YouTube-provided title
         const { data: newVideo, error } = await supabase
           .from("featured_videos")
           .insert({
@@ -100,7 +93,6 @@ const VideosTabContent: React.FC = () => {
           
         if (error) throw error;
         
-        // Add to local state
         setFeaturedVideos(prev => [...prev, newVideo]);
         
         setNewVideoId("");
@@ -132,19 +124,16 @@ const VideosTabContent: React.FC = () => {
     setFeaturedVideos(prev => {
       const videos = [...prev];
       
-      // Update display order in the array
       const temp = videos[index].display_order;
       videos[index].display_order = videos[newIndex].display_order;
       videos[newIndex].display_order = temp;
       
-      // Swap positions in the array
       [videos[index], videos[newIndex]] = [videos[newIndex], videos[index]];
       
       return videos;
     });
   };
 
-  // Function to update a video's title from YouTube based on its ID
   const refreshVideoTitle = async (index: number) => {
     const video = featuredVideos[index];
     setIsValidating(true);
@@ -155,7 +144,6 @@ const VideosTabContent: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         
-        // Update in database
         const { error } = await supabase
           .from("featured_videos")
           .update({ title: data.title })
@@ -163,7 +151,6 @@ const VideosTabContent: React.FC = () => {
           
         if (error) throw error;
         
-        // Update in local state
         handleUpdateVideoField(index, 'title', data.title);
         
         toast({
@@ -189,11 +176,78 @@ const VideosTabContent: React.FC = () => {
     }
   };
 
+  const refreshAllVideoTitles = async () => {
+    setIsValidating(true);
+    let successCount = 0;
+    let failCount = 0;
+    
+    try {
+      for (let i = 0; i < featuredVideos.length; i++) {
+        const video = featuredVideos[i];
+        
+        try {
+          const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${video.youtube_id}&format=json`);
+          
+          if (response.ok) {
+            const data = await response.json();
+            
+            const { error } = await supabase
+              .from("featured_videos")
+              .update({ title: data.title })
+              .eq("id", video.id);
+              
+            if (error) throw error;
+            
+            handleUpdateVideoField(i, 'title', data.title);
+            successCount++;
+          } else {
+            failCount++;
+            console.error(`Could not fetch info for video ID: ${video.youtube_id}`);
+          }
+        } catch (err) {
+          failCount++;
+          console.error(`Error processing video ${video.youtube_id}:`, err);
+        }
+      }
+      
+      toast({
+        title: "Titles updated",
+        description: `Successfully updated ${successCount} video titles${failCount > 0 ? `, ${failCount} failed` : ''}`,
+        variant: successCount > 0 ? "default" : "destructive",
+      });
+    } catch (error) {
+      console.error("Error refreshing video titles:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update video titles",
+        variant: "destructive",
+      });
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
         <div className="flex flex-col space-y-1.5">
-          <h3 className="text-lg font-semibold">Manage Featured Videos</h3>
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Manage Featured Videos</h3>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={refreshAllVideoTitles}
+              disabled={isValidating || featuredVideos.length === 0}
+              className="gap-1"
+            >
+              {isValidating ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+              Update All Titles
+            </Button>
+          </div>
           <p className="text-sm text-muted-foreground">
             Add, remove, or edit YouTube videos shown in the Hero section and Featured Videos gallery
           </p>
