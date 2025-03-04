@@ -1,7 +1,8 @@
+
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import Index from "@/pages/Index";
 import About from "@/pages/About";
 import Personalities from "@/pages/Personalities";
