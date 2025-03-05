@@ -21,6 +21,7 @@ export const usePendingStaff = (onStaffUpdate: () => void) => {
       const { data, error } = await supabase
         .from("pending_staff")
         .select("*")
+        .not("status", "eq", "approved") // Filter out approved staff
         .order("invited_at", { ascending: false });
 
       if (error) {
@@ -64,32 +65,20 @@ export const usePendingStaff = (onStaffUpdate: () => void) => {
     try {
       setProcessingId(pendingId);
       
-      // Get the pending staff record
-      const { data: pendingStaffData, error: fetchError } = await supabase
-        .from("pending_staff")
-        .select("*")
-        .eq("id", pendingId)
-        .single();
+      // Call the approve-staff edge function
+      const { data, error } = await supabase.functions.invoke('approve-staff', {
+        body: { pendingId, approved, currentUserRole }
+      });
       
-      if (fetchError || !pendingStaffData) {
-        throw new Error("Failed to fetch pending staff record");
-      }
+      if (error) throw new Error(error.message);
       
-      // Type cast the status to match our expected type
-      const pendingStaffMember: PendingStaffMember = {
-        ...pendingStaffData,
-        status: pendingStaffData.status as 'invited' | 'approved' | 'rejected' | 'requested'
-      };
+      // Show success message
+      toast({
+        title: approved ? "Staff Approved" : "Staff Rejected",
+        description: data.message,
+      });
       
-      // Handle based on status - this now handles both invited and requested statuses
-      if (approved) {
-        // If invited or requested and approved, move to staff
-        await handleApproval(pendingStaffMember);
-      } else {
-        // If rejected, update pending_staff status
-        await handleRejection(pendingStaffMember);
-      }
-      
+      // Refresh data
       fetchPendingStaff();
       onStaffUpdate();
       
@@ -97,81 +86,11 @@ export const usePendingStaff = (onStaffUpdate: () => void) => {
       console.error("Error processing staff action:", error);
       toast({
         title: "Error",
-        description: "Failed to process this action. Please try again.",
+        description: `Failed to ${approved ? 'approve' : 'reject'} staff member. Please try again.`,
         variant: "destructive",
       });
     } finally {
       setProcessingId(null);
-    }
-  };
-
-  const handleApproval = async (pendingStaff: PendingStaffMember) => {
-    try {
-      // Get user metadata to access the display name
-      const { data: authData, error: authError } = await supabase.auth.admin.getUserById(
-        pendingStaff.email
-      );
-      
-      let displayName = null;
-      if (!authError && authData && authData.user && authData.user.user_metadata) {
-        displayName = authData.user.user_metadata.display_name || null;
-      }
-      
-      // Create staff record
-      const { error: staffError } = await supabase
-        .from("staff")
-        .insert({
-          id: pendingStaff.email, // Use email as ID
-          email: pendingStaff.email,
-          role: "staff",
-          display_name: displayName
-        });
-
-      if (staffError) throw staffError;
-
-      // Update pending_staff status to 'approved'
-      const { error: updateError } = await supabase
-        .from("pending_staff")
-        .update({ status: "approved" })
-        .eq("id", pendingStaff.id);
-
-      if (updateError) throw updateError;
-
-      toast({
-        title: "Staff Approved",
-        description: `${pendingStaff.email} has been approved and added to staff.`,
-      });
-    } catch (error) {
-      console.error("Error approving staff:", error);
-      toast({
-        title: "Error",
-        description: "Failed to approve staff member. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleRejection = async (pendingStaff: PendingStaffMember) => {
-    try {
-      // Update pending_staff status to 'rejected'
-      const { error: rejectError } = await supabase
-        .from("pending_staff")
-        .update({ status: "rejected" })
-        .eq("id", pendingStaff.id);
-
-      if (rejectError) throw rejectError;
-
-      toast({
-        title: "Staff Rejected",
-        description: `${pendingStaff.email} has been rejected.`,
-      });
-    } catch (error) {
-      console.error("Error rejecting staff:", error);
-      toast({
-        title: "Error",
-        description: "Failed to reject staff member. Please try again.",
-        variant: "destructive",
-      });
     }
   };
 
