@@ -39,8 +39,8 @@ const Footer = () => {
 
   const handleCareersClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    navigate('/careers');
     toast({
-      title: "Coming Soon",
       description: "Career opportunities will be available in the near future. Please check back later!",
     });
   };
@@ -86,7 +86,7 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-[#FFD700]">Careers</h3>
             <div className="mt-2">
               <a 
-                href="#" 
+                href="/careers" 
                 onClick={handleCareersClick} 
                 className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors"
               >
