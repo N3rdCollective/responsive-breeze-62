@@ -7,7 +7,7 @@ import { useSystemSettings } from "@/hooks/useSystemSettings";
  * This component doesn't render anything visible
  */
 const TitleUpdater = () => {
-  const { settings, isLoading } = useSystemSettings();
+  const { settings, isLoading, refreshSettings } = useSystemSettings();
 
   useEffect(() => {
     // Set default title while loading
@@ -18,12 +18,17 @@ const TitleUpdater = () => {
 
     // Update the title when settings are loaded
     if (settings?.site_title) {
+      console.log("Setting document title to:", settings.site_title);
       document.title = settings.site_title;
     } else {
       // Fallback title if settings aren't available
+      console.log("No site_title found in settings, using fallback");
       document.title = "Radio Station";
+      
+      // Try refreshing settings if they weren't loaded properly
+      refreshSettings();
     }
-  }, [settings, isLoading]);
+  }, [settings, isLoading, refreshSettings]);
 
   // This component doesn't render anything visible
   return null;
