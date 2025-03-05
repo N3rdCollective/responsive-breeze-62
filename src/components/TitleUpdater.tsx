@@ -10,8 +10,16 @@ const TitleUpdater = () => {
   const { settings, isLoading, refreshSettings } = useSystemSettings();
 
   useEffect(() => {
+    // Initial fetch if settings aren't loaded
+    if (!settings && !isLoading) {
+      console.log("No settings found, triggering refresh");
+      refreshSettings();
+      return;
+    }
+
     // Set default title while loading
     if (isLoading) {
+      console.log("Settings loading, setting temporary title");
       document.title = "Loading...";
       return;
     }
@@ -30,7 +38,6 @@ const TitleUpdater = () => {
     }
   }, [settings, isLoading, refreshSettings]);
 
-  // This component doesn't render anything visible
   return null;
 };
 
