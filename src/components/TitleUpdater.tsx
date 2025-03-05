@@ -10,14 +10,8 @@ const TitleUpdater = () => {
   const { settings, isLoading, refreshSettings } = useSystemSettings();
 
   useEffect(() => {
-    // Initial fetch if settings aren't loaded
-    if (!settings && !isLoading) {
-      console.log("No settings found, triggering refresh");
-      refreshSettings();
-      return;
-    }
-
-    // Update the title when settings are loaded
+    // Only update title when we have valid settings
+    // Don't change the title during loading states to avoid flashing
     if (settings?.site_title) {
       console.log("Setting document title to:", settings.site_title);
       document.title = settings.site_title;
@@ -28,6 +22,7 @@ const TitleUpdater = () => {
     }
   }, [settings, isLoading, refreshSettings]);
 
+  // Don't render anything
   return null;
 };
 
