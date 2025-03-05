@@ -17,23 +17,13 @@ const TitleUpdater = () => {
       return;
     }
 
-    // Set default title while loading
-    if (isLoading) {
-      console.log("Settings loading, setting temporary title");
-      document.title = "Loading...";
-      return;
-    }
-
     // Update the title when settings are loaded
     if (settings?.site_title) {
       console.log("Setting document title to:", settings.site_title);
       document.title = settings.site_title;
-    } else {
-      // Fallback title if settings aren't available
-      console.log("No site_title found in settings, using fallback");
-      document.title = "Radio Station";
-      
-      // Try refreshing settings if they weren't loaded properly
+    } else if (!isLoading) {
+      // Only try refreshing if we're not already loading
+      console.log("No site_title found in settings, trying to refresh");
       refreshSettings();
     }
   }, [settings, isLoading, refreshSettings]);
