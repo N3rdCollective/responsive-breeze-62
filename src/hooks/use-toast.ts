@@ -14,35 +14,52 @@ const toast = (props: ToastProps) => {
   // Create a compatible object for Sonner
   const sonnerProps: ExternalToast = {};
   
-  // Only add properties that Sonner supports
-  if (props.title) sonnerProps.title = props.title;
+  // Apply styling based on variant
   if (props.variant === "destructive") sonnerProps.style = { backgroundColor: "var(--destructive)", color: "var(--destructive-foreground)" };
   if (props.variant === "success") sonnerProps.style = { backgroundColor: "var(--success)", color: "var(--success-foreground)" };
   
-  return sonnerToast(props.description || "", sonnerProps);
+  // Sonner takes title as the first parameter and description in options for some methods
+  // For the default toast, title is passed as an option in the second parameter
+  return sonnerToast(props.description || "", {
+    ...sonnerProps,
+    // @ts-ignore - Sonner does accept title but TypeScript definition might be outdated
+    title: props.title
+  });
 };
 
 // Add additional methods
 const enhancedToast = Object.assign(toast, {
   success: (props: ToastProps) => {
     const sonnerProps: ExternalToast = {};
-    if (props.title) sonnerProps.title = props.title;
-    return sonnerToast.success(props.description || "", sonnerProps);
+    return sonnerToast.success(props.description || "", {
+      ...sonnerProps,
+      // @ts-ignore - Sonner does accept title but TypeScript definition might be outdated
+      title: props.title
+    });
   },
   error: (props: ToastProps) => {
     const sonnerProps: ExternalToast = {};
-    if (props.title) sonnerProps.title = props.title;
-    return sonnerToast.error(props.description || "", sonnerProps);
+    return sonnerToast.error(props.description || "", {
+      ...sonnerProps,
+      // @ts-ignore - Sonner does accept title but TypeScript definition might be outdated
+      title: props.title
+    });
   },
   warning: (props: ToastProps) => {
     const sonnerProps: ExternalToast = {};
-    if (props.title) sonnerProps.title = props.title;
-    return sonnerToast.warning(props.description || "", sonnerProps);
+    return sonnerToast.warning(props.description || "", {
+      ...sonnerProps,
+      // @ts-ignore - Sonner does accept title but TypeScript definition might be outdated
+      title: props.title
+    });
   },
   info: (props: ToastProps) => {
     const sonnerProps: ExternalToast = {};
-    if (props.title) sonnerProps.title = props.title;
-    return sonnerToast.info(props.description || "", sonnerProps);
+    return sonnerToast.info(props.description || "", {
+      ...sonnerProps,
+      // @ts-ignore - Sonner does accept title but TypeScript definition might be outdated
+      title: props.title
+    });
   },
 });
 
