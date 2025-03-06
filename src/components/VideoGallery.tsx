@@ -72,13 +72,13 @@ const VideoGallery: React.FC<VideoGalleryProps> = ({ videos }) => {
       <div className="container mx-auto px-4">
         <h2 className="text-3xl font-bold mb-8 text-center text-foreground dark:text-white">Featured Videos</h2>
         
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="flex flex-nowrap overflow-x-auto gap-4 pb-4 md:justify-center">
           {galleryVideos.map((video) => (
             <Dialog key={video.id} open={openVideoId === video.id} onOpenChange={(open) => {
               if (!open) setOpenVideoId(null);
             }}>
               <DialogTrigger asChild>
-                <Card className="overflow-hidden hover:scale-105 transition-transform duration-300 cursor-pointer bg-card dark:bg-black border-border dark:border-gray-800 group h-full">
+                <Card className="overflow-hidden hover:scale-105 transition-transform duration-300 cursor-pointer bg-card dark:bg-black border-border dark:border-gray-800 group flex-shrink-0 min-w-[180px] sm:min-w-[220px] max-w-[280px]">
                   <CardContent className="p-0 relative h-full flex flex-col">
                     <div className="relative aspect-video">
                       <img
