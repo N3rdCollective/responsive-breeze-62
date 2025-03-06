@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { 
   Dialog,
@@ -22,7 +21,6 @@ const VideoGallery: React.FC<VideoGalleryProps> = ({ videos }) => {
   const [galleryVideos, setGalleryVideos] = useState<VideoData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Fetch videos if not provided via props
   useEffect(() => {
     const fetchVideos = async () => {
       if (videos && videos.length > 0) {
@@ -72,13 +70,13 @@ const VideoGallery: React.FC<VideoGalleryProps> = ({ videos }) => {
       <div className="container mx-auto px-4">
         <h2 className="text-3xl font-bold mb-8 text-center text-foreground dark:text-white">Featured Videos</h2>
         
-        <div className="flex flex-nowrap overflow-x-auto gap-4 pb-4 md:justify-center">
+        <div className="flex flex-wrap justify-center gap-4">
           {galleryVideos.map((video) => (
             <Dialog key={video.id} open={openVideoId === video.id} onOpenChange={(open) => {
               if (!open) setOpenVideoId(null);
             }}>
               <DialogTrigger asChild>
-                <Card className="overflow-hidden hover:scale-105 transition-transform duration-300 cursor-pointer bg-card dark:bg-black border-border dark:border-gray-800 group flex-shrink-0 min-w-[180px] sm:min-w-[220px] max-w-[280px]">
+                <Card className="overflow-hidden hover:scale-105 transition-transform duration-300 cursor-pointer bg-card dark:bg-black border-border dark:border-gray-800 group w-[160px] sm:w-[180px] md:w-[200px]">
                   <CardContent className="p-0 relative h-full flex flex-col">
                     <div className="relative aspect-video">
                       <img
@@ -86,7 +84,6 @@ const VideoGallery: React.FC<VideoGalleryProps> = ({ videos }) => {
                         alt={video.title}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          // Fallback to medium quality if mqdefault doesn't exist
                           (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`;
                         }}
                       />
