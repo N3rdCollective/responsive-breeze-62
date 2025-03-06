@@ -25,7 +25,8 @@ export const PersonalityEditor = () => {
     handleSubmit,
     handleCreateNew,
     handleSaveNew,
-    handleDelete
+    handleDelete,
+    handleReorderPersonalities
   } = usePersonalityEditor(canEdit);
 
   // Handle form submission based on whether we're creating or editing
@@ -63,6 +64,7 @@ export const PersonalityEditor = () => {
           loading={loading}
           selectedPersonality={selectedPersonality}
           onSelectPersonality={handleSelectPersonality}
+          onReorder={handleReorderPersonalities}
         />
 
         <div className="lg:col-span-3">

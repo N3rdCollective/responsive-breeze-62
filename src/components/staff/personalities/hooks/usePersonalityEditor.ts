@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { useFetchPersonalities } from "./useFetchPersonalities";
 import { useImageUpload } from "./useImageUpload";
 import { usePersonalityMutations } from "./usePersonalityMutations";
+import { useToast } from "@/hooks/use-toast";
 
 const defaultFormValues: FormValues = {
   id: "",
@@ -20,6 +21,7 @@ const defaultFormValues: FormValues = {
 
 export const usePersonalityEditor = (canEdit: boolean) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [selectedPersonality, setSelectedPersonality] = useState<Personality | null>(null);
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
@@ -29,7 +31,7 @@ export const usePersonalityEditor = (canEdit: boolean) => {
   // Use the smaller hooks
   const { personalities, loading, fetchPersonalities, fetchPersonalityById } = useFetchPersonalities();
   const { imageUrl, setImageUrl, handleImageSelected, isUploading } = useImageUpload();
-  const { isSaving, createPersonality, updatePersonality, deletePersonality } = usePersonalityMutations();
+  const { isSaving, createPersonality, updatePersonality, deletePersonality, updatePersonalityOrder } = usePersonalityMutations();
 
   const form = useForm<FormValues>({
     defaultValues: defaultFormValues
@@ -90,7 +92,8 @@ export const usePersonalityEditor = (canEdit: boolean) => {
         instagram: values.instagram,
         facebook: values.facebook
       },
-      startDate: startDate
+      startDate: startDate,
+      display_order: selectedPersonality.display_order
     };
     
     await updatePersonality(selectedPersonality.id, formData);
@@ -118,7 +121,11 @@ export const usePersonalityEditor = (canEdit: boolean) => {
         instagram: values.instagram,
         facebook: values.facebook
       },
-      startDate: startDate
+      startDate: startDate,
+      // Set display_order to be at the end of the list
+      display_order: personalities.length > 0 
+        ? Math.max(...personalities.map(p => p.display_order || 0)) + 1 
+        : 1
     };
     
     const newPersonality = await createPersonality(formData);
@@ -135,6 +142,44 @@ export const usePersonalityEditor = (canEdit: boolean) => {
     const success = await deletePersonality(id);
     if (success) {
       setSelectedPersonality(null);
+    }
+  };
+
+  const handleReorderPersonalities = async (sourceIndex: number, destinationIndex: number) => {
+    if (sourceIndex === destinationIndex) return;
+
+    const reorderedPersonalities = [...personalities];
+    const [removed] = reorderedPersonalities.splice(sourceIndex, 1);
+    reorderedPersonalities.splice(destinationIndex, 0, removed);
+
+    // Update display order for all affected personalities
+    const updatedPersonalities = reorderedPersonalities.map((personality, index) => ({
+      ...personality,
+      display_order: index + 1
+    }));
+
+    // Update the state immediately for a responsive UI
+    try {
+      // Call the API to update the order in the database
+      await updatePersonalityOrder(updatedPersonalities);
+      
+      // Refetch personalities to get the updated order
+      await fetchPersonalities();
+      
+      toast({
+        title: "Order updated",
+        description: "The personality order has been successfully updated",
+      });
+    } catch (error) {
+      console.error("Error updating personality order:", error);
+      toast({
+        title: "Error updating order",
+        description: "There was an error updating the personality order",
+        variant: "destructive"
+      });
+      
+      // Refetch personalities to restore original order
+      await fetchPersonalities();
     }
   };
 
@@ -160,6 +205,7 @@ export const usePersonalityEditor = (canEdit: boolean) => {
     handleSubmit,
     handleCreateNew,
     handleSaveNew,
-    handleDelete
+    handleDelete,
+    handleReorderPersonalities
   };
 };

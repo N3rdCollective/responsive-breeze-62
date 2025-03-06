@@ -1,26 +1,30 @@
 
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { PersonalityFormData, Personality, SocialLinks } from "../types";
 import { useToast } from "@/hooks/use-toast";
-import { Json } from "@/integrations/supabase/types";
+import { supabase } from "@/integrations/supabase/client";
+import { Personality, PersonalityFormData } from "../types";
 
 export const usePersonalityMutations = () => {
-  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const [isSaving, setIsSaving] = useState(false);
 
-  const createPersonality = async (formData: PersonalityFormData) => {
+  const createPersonality = async (formData: PersonalityFormData): Promise<Personality | null> => {
     try {
-      setLoading(true);
+      setIsSaving(true);
       
-      // Prepare the data for insertion
+      // Transform form data to match database structure
       const personalityData = {
         name: formData.name,
         role: formData.role,
         bio: formData.bio || null,
         image_url: formData.image_url || null,
-        social_links: formData.socialLinks ? formData.socialLinks as unknown as Json : null,
-        start_date: formData.startDate ? new Date(formData.startDate).toISOString() : null,
+        social_links: {
+          twitter: formData.socialLinks.twitter || "",
+          instagram: formData.socialLinks.instagram || "",
+          facebook: formData.socialLinks.facebook || ""
+        },
+        start_date: formData.startDate ? formData.startDate.toISOString() : null,
+        display_order: formData.display_order || 999 // Default to end of list
       };
       
       const { data, error } = await supabase
@@ -28,102 +32,150 @@ export const usePersonalityMutations = () => {
         .insert(personalityData)
         .select()
         .single();
-      
+        
       if (error) throw error;
       
       toast({
-        title: "Success",
-        description: "Personality created successfully",
+        title: "Personality created",
+        description: `${formData.name} has been added successfully.`
       });
       
-      return data as Personality;
+      if (data) {
+        // Convert to our Personality type
+        return {
+          id: data.id,
+          name: data.name,
+          role: data.role,
+          bio: data.bio,
+          image_url: data.image_url,
+          social_links: data.social_links as unknown as { twitter?: string, instagram?: string, facebook?: string } || null,
+          created_at: data.created_at,
+          updated_at: data.updated_at,
+          start_date: data.start_date,
+          display_order: data.display_order
+        };
+      }
+      
+      return null;
     } catch (error: any) {
+      console.error("Error creating personality:", error);
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
       return null;
     } finally {
-      setLoading(false);
+      setIsSaving(false);
     }
   };
-  
-  const updatePersonality = async (id: string, formData: PersonalityFormData) => {
+
+  const updatePersonality = async (id: string, formData: PersonalityFormData): Promise<boolean> => {
     try {
-      setLoading(true);
+      setIsSaving(true);
       
-      // Prepare the data for update
+      // Transform form data to match database structure
       const personalityData = {
         name: formData.name,
         role: formData.role,
         bio: formData.bio || null,
         image_url: formData.image_url || null,
-        social_links: formData.socialLinks ? formData.socialLinks as unknown as Json : null,
-        start_date: formData.startDate ? new Date(formData.startDate).toISOString() : null,
+        social_links: {
+          twitter: formData.socialLinks.twitter || "",
+          instagram: formData.socialLinks.instagram || "",
+          facebook: formData.socialLinks.facebook || ""
+        },
+        start_date: formData.startDate ? formData.startDate.toISOString() : null,
+        display_order: formData.display_order
       };
       
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("personalities")
         .update(personalityData)
-        .eq("id", id)
-        .select()
-        .single();
-      
+        .eq("id", id);
+        
       if (error) throw error;
       
       toast({
-        title: "Success",
-        description: "Personality updated successfully",
+        title: "Personality updated",
+        description: `${formData.name} has been updated successfully.`
       });
       
-      return data as Personality;
+      return true;
     } catch (error: any) {
+      console.error("Error updating personality:", error);
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
-      return null;
+      return false;
     } finally {
-      setLoading(false);
+      setIsSaving(false);
     }
   };
-  
-  const deletePersonality = async (id: string) => {
+
+  const deletePersonality = async (id: string): Promise<boolean> => {
     try {
-      setLoading(true);
+      setIsSaving(true);
       
       const { error } = await supabase
         .from("personalities")
         .delete()
         .eq("id", id);
-      
+        
       if (error) throw error;
       
       toast({
-        title: "Success",
-        description: "Personality deleted successfully",
+        title: "Personality deleted",
+        description: "The personality has been deleted successfully."
       });
       
       return true;
     } catch (error: any) {
+      console.error("Error deleting personality:", error);
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
       return false;
     } finally {
-      setLoading(false);
+      setIsSaving(false);
     }
   };
-  
+
+  const updatePersonalityOrder = async (personalities: Personality[]): Promise<boolean> => {
+    try {
+      setIsSaving(true);
+      
+      // Create a batch of updates
+      const updates = personalities.map(personality => ({
+        id: personality.id,
+        display_order: personality.display_order
+      }));
+      
+      // Use UPSERT with array of objects
+      const { error } = await supabase
+        .from("personalities")
+        .upsert(updates);
+        
+      if (error) throw error;
+      
+      return true;
+    } catch (error: any) {
+      console.error("Error updating personality order:", error);
+      throw error;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return {
-    loading,
-    isSaving: loading, // Add the isSaving property that usePersonalityEditor expects
+    isSaving,
     createPersonality,
     updatePersonality,
-    deletePersonality
+    deletePersonality,
+    updatePersonalityOrder
   };
 };
