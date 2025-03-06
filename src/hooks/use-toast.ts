@@ -1,7 +1,7 @@
 
-import { toast as sonnerToast, type ToasterProps } from "sonner";
+import { toast as sonnerToast, type ToasterProps, ExternalToast } from "sonner";
 
-// Define a proper interface for our toast function calls
+// Define our custom toast interface
 export interface ToastProps {
   title?: string;
   description?: string;
@@ -11,20 +11,39 @@ export interface ToastProps {
 
 // Create a wrapper function to adapt our interface to Sonner's interface
 const toast = (props: ToastProps) => {
-  return sonnerToast(props.description || "", {
-    // Sonner expects these properties differently
-    title: props.title,
-    // Map our variant to Sonner's expected properties if needed
-  });
+  // Create a compatible object for Sonner
+  const sonnerProps: ExternalToast = {};
+  
+  // Only add properties that Sonner supports
+  if (props.title) sonnerProps.title = props.title;
+  if (props.variant === "destructive") sonnerProps.style = { backgroundColor: "var(--destructive)", color: "var(--destructive-foreground)" };
+  if (props.variant === "success") sonnerProps.style = { backgroundColor: "var(--success)", color: "var(--success-foreground)" };
+  
+  return sonnerToast(props.description || "", sonnerProps);
 };
 
-// Add success, error, etc. methods to match Sonner's API
+// Add additional methods
 const enhancedToast = Object.assign(toast, {
-  // Add additional methods from sonnerToast if needed
-  success: (props: ToastProps) => sonnerToast.success(props.description || "", { title: props.title }),
-  error: (props: ToastProps) => sonnerToast.error(props.description || "", { title: props.title }),
-  warning: (props: ToastProps) => sonnerToast.warning(props.description || "", { title: props.title }),
-  info: (props: ToastProps) => sonnerToast.info(props.description || "", { title: props.title }),
+  success: (props: ToastProps) => {
+    const sonnerProps: ExternalToast = {};
+    if (props.title) sonnerProps.title = props.title;
+    return sonnerToast.success(props.description || "", sonnerProps);
+  },
+  error: (props: ToastProps) => {
+    const sonnerProps: ExternalToast = {};
+    if (props.title) sonnerProps.title = props.title;
+    return sonnerToast.error(props.description || "", sonnerProps);
+  },
+  warning: (props: ToastProps) => {
+    const sonnerProps: ExternalToast = {};
+    if (props.title) sonnerProps.title = props.title;
+    return sonnerToast.warning(props.description || "", sonnerProps);
+  },
+  info: (props: ToastProps) => {
+    const sonnerProps: ExternalToast = {};
+    if (props.title) sonnerProps.title = props.title;
+    return sonnerToast.info(props.description || "", sonnerProps);
+  },
 });
 
 // Export the enhanced toast function

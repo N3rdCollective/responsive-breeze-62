@@ -18,6 +18,7 @@ export function Toaster({ ...props }: React.ComponentProps<typeof SonnerToaster>
             "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
           cancelButton:
             "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
+          title: "font-semibold text-foreground", // Add title styling
         },
       }}
       {...props}
