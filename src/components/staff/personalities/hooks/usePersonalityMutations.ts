@@ -149,9 +149,11 @@ export const usePersonalityMutations = () => {
     try {
       setIsSaving(true);
       
-      // Create a batch of updates
+      // Create a batch of updates with only the required fields
       const updates = personalities.map(personality => ({
         id: personality.id,
+        name: personality.name,
+        role: personality.role,
         display_order: personality.display_order
       }));
       
