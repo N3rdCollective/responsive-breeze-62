@@ -30,6 +30,11 @@ const MobileNav = ({
 }: MobileNavProps) => {
   const [isOpen, setIsOpen] = useState(false);
   
+  const handleNavigation = (path: string) => {
+    window.scrollTo(0, 0);
+    setIsOpen(false);
+  };
+  
   return (
     <div className="md:hidden flex items-center space-x-4">
       <ListenButton isScrolled={isScrolled} isHomePage={isHomePage} />
@@ -60,7 +65,7 @@ const MobileNav = ({
               <Link
                 key={item.path}
                 to={item.path}
-                onClick={() => setIsOpen(false)}
+                onClick={() => handleNavigation(item.path)}
                 className={`
                   ${isActive(item.path)
                     ? 'text-[#FFD700] dark:text-[#FFD700]'

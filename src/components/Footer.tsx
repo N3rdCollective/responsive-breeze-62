@@ -39,6 +39,7 @@ const Footer = () => {
 
   const handleCareersClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    window.scrollTo(0, 0);
     navigate('/careers');
     toast({
       description: "Career opportunities will be available in the near future. Please check back later!",
@@ -51,7 +52,12 @@ const Footer = () => {
 
   const handleStaffLogin = (e: React.MouseEvent) => {
     e.preventDefault();
+    window.scrollTo(0, 0);
     navigate('/staff/login');
+  };
+
+  const handleNavigation = (path: string) => {
+    window.scrollTo(0, 0);
   };
 
   return (
@@ -75,10 +81,10 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-[#FFD700]">Quick Links</h3>
             <ul className="space-y-2">
-              <li><Link to="/" className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors">Home</Link></li>
-              <li><Link to="/personalities" className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors">Personalities</Link></li>
-              <li><Link to="/about" className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors">About</Link></li>
-              <li><Link to="/news" className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors">News</Link></li>
+              <li><Link to="/" onClick={() => handleNavigation('/')} className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors">Home</Link></li>
+              <li><Link to="/personalities" onClick={() => handleNavigation('/personalities')} className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors">Personalities</Link></li>
+              <li><Link to="/about" onClick={() => handleNavigation('/about')} className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors">About</Link></li>
+              <li><Link to="/news" onClick={() => handleNavigation('/news')} className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors">News</Link></li>
             </ul>
           </div>
           

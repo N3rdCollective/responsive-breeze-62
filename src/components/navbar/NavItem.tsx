@@ -10,9 +10,14 @@ interface NavItemProps {
 }
 
 const NavItem = ({ path, label, isActive, isHomePage, isScrolled }: NavItemProps) => {
+  const handleClick = () => {
+    window.scrollTo(0, 0);
+  };
+
   return (
     <Link 
       to={path} 
+      onClick={handleClick}
       className={`
         ${isActive 
           ? 'text-[#FFD700] dark:text-[#FFD700]' 
