@@ -4,7 +4,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { StreamMetadata } from "@/types/player";
 import { STREAM_URL, METADATA_URL } from "@/constants/stream";
 
-let audioInstance: HTMLAudioElement | null = null;
 const DEFAULT_ARTWORK = "/lovable-uploads/12fe363a-3bad-45f9-8212-66621f85b9ac.png";
 
 export const useAudioPlayer = () => {
@@ -17,6 +16,7 @@ export const useAudioPlayer = () => {
     artwork: DEFAULT_ARTWORK
   });
   const metadataIntervalRef = useRef<number>();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -26,18 +26,6 @@ export const useAudioPlayer = () => {
   }, []);
 
   useEffect(() => {
-    if (!audioInstance) {
-      audioInstance = new Audio(STREAM_URL);
-      audioInstance.volume = volume[0] / 100;
-    }
-
-    const audioRef = audioInstance;
-
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
-    audioRef.addEventListener('play', handlePlay);
-    audioRef.addEventListener('pause', handlePause);
-
     const fetchMetadata = async () => {
       try {
         const response = await fetch(METADATA_URL);
@@ -66,8 +54,12 @@ export const useAudioPlayer = () => {
       if (metadataIntervalRef.current) {
         clearInterval(metadataIntervalRef.current);
       }
-      audioRef.removeEventListener('play', handlePlay);
-      audioRef.removeEventListener('pause', handlePause);
+      // Clean up audio element when component unmounts
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
+        audioRef.current = null;
+      }
     };
   }, []);
 
@@ -87,38 +79,50 @@ export const useAudioPlayer = () => {
   };
 
   const togglePlayPause = () => {
-    if (audioInstance) {
-      if (isPlaying) {
-        audioInstance.pause();
-        toast({
-          title: "Paused",
-          description: "Stream paused",
-        });
-      } else {
-        audioInstance.play().catch((error) => {
-          console.error("Playback failed:", error);
-          toast({
-            title: "Error",
-            variant: "destructive",
-            description: "Failed to start playback. Please try again.",
-          });
-        });
-        
-        toast({
-          title: "Now Playing: Rappin' Lounge Radio",
-          description: `${metadata.title}${metadata.artist ? ` - ${metadata.artist}` : ''}`,
-        });
-        
-        showMobileNotification();
+    if (isPlaying) {
+      // Stop the stream completely
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
+        audioRef.current = null;
       }
+      setIsPlaying(false);
+      toast({
+        title: "Stopped",
+        description: "Stream stopped",
+      });
+    } else {
+      // Create a new audio element and load the stream
+      audioRef.current = new Audio(STREAM_URL);
+      
+      // Apply current volume settings
+      audioRef.current.volume = volume[0] / 100;
+      
+      // Start playing
+      audioRef.current.play().catch((error) => {
+        console.error("Playback failed:", error);
+        toast({
+          title: "Error",
+          variant: "destructive",
+          description: "Failed to start playback. Please try again.",
+        });
+      });
+      
+      setIsPlaying(true);
+      toast({
+        title: "Now Playing: Rappin' Lounge Radio",
+        description: `${metadata.title}${metadata.artist ? ` - ${metadata.artist}` : ''}`,
+      });
+      
+      showMobileNotification();
     }
   };
 
   const handleVolumeChange = (newVolume: number[]) => {
     setVolume(newVolume);
     setPreviousVolume(newVolume);
-    if (audioInstance) {
-      audioInstance.volume = newVolume[0] / 100;
+    if (audioRef.current) {
+      audioRef.current.volume = newVolume[0] / 100;
     }
     if (newVolume[0] > 0) {
       setIsMuted(false);
@@ -126,9 +130,9 @@ export const useAudioPlayer = () => {
   };
 
   const toggleMute = () => {
-    if (audioInstance) {
+    if (audioRef.current) {
       if (isMuted) {
-        audioInstance.volume = previousVolume[0] / 100;
+        audioRef.current.volume = previousVolume[0] / 100;
         setVolume(previousVolume);
         setIsMuted(false);
         toast({
@@ -137,7 +141,7 @@ export const useAudioPlayer = () => {
         });
       } else {
         setPreviousVolume(volume);
-        audioInstance.volume = 0;
+        audioRef.current.volume = 0;
         setVolume([0]);
         setIsMuted(true);
         toast({
