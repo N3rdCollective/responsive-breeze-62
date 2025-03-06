@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { StreamMetadata } from "@/types/player";
@@ -66,18 +67,21 @@ export const useAudioPlayer = () => {
       if (isPlaying) {
         audioInstance.pause();
         toast({
+          title: "Paused",
           description: "Stream paused",
         });
       } else {
         audioInstance.play().catch((error) => {
           console.error("Playback failed:", error);
           toast({
+            title: "Error",
             variant: "destructive",
             description: "Failed to start playback. Please try again.",
           });
         });
         toast({
-          description: `Now streaming: ${metadata.title}`,
+          title: "Now Playing",
+          description: `${metadata.title}${metadata.artist ? ` - ${metadata.artist}` : ''}`,
         });
       }
     }
@@ -100,11 +104,19 @@ export const useAudioPlayer = () => {
         audioInstance.volume = previousVolume[0] / 100;
         setVolume(previousVolume);
         setIsMuted(false);
+        toast({
+          title: "Sound On",
+          description: "Audio unmuted",
+        });
       } else {
         setPreviousVolume(volume);
         audioInstance.volume = 0;
         setVolume([0]);
         setIsMuted(true);
+        toast({
+          title: "Sound Off",
+          description: "Audio muted",
+        });
       }
     }
   };
