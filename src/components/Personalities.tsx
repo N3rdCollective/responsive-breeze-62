@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
@@ -63,13 +62,10 @@ export const Personalities = () => {
     );
   }
 
-  // Sort personalities with featured ones first, then alphabetically by name
   const sortedPersonalities = [...(personalities || [])].sort((a, b) => {
-    // First prioritize featured status
     if (a.featured && !b.featured) return -1;
     if (!a.featured && b.featured) return 1;
     
-    // Then sort by name
     return a.name.localeCompare(b.name);
   });
 
@@ -87,7 +83,6 @@ export const Personalities = () => {
           {sortedPersonalities?.map((personality, index) => {
             const socialLinks = personality.social_links ? (personality.social_links as unknown) as SocialLinks : null;
             
-            // Clean up the bio if it contains "• -"
             const cleanBio = personality.bio === "• -" ? null : personality.bio;
 
             return (
@@ -97,13 +92,6 @@ export const Personalities = () => {
                 style={{ animationDelay: `${index * 200}ms` }}
               >
                 <div className="relative w-full pt-[100%]">
-                  {personality.featured && (
-                    <div className="absolute top-2 right-2 z-10 bg-[#FFD700] text-black rounded-full p-1 shadow-md">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                      </svg>
-                    </div>
-                  )}
                   <img
                     src={personality.image_url || 'https://via.placeholder.com/400x400'}
                     alt={personality.name}
