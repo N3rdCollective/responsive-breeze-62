@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { 
   Dialog,
@@ -8,7 +7,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
-import { Play, X } from "lucide-react";
+import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VideoData } from "@/components/staff/home/context/HomeSettingsContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -114,14 +113,6 @@ const VideoGallery: React.FC<VideoGalleryProps> = ({ videos }) => {
                   <DialogTitle className="text-foreground dark:text-white">
                     {video.title}
                   </DialogTitle>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="absolute right-4 top-4 text-muted-foreground hover:text-foreground dark:text-gray-400 dark:hover:text-white"
-                    onClick={() => setOpenVideoId(null)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
                 </DialogHeader>
                 <div className="aspect-video w-full">
                   <iframe
