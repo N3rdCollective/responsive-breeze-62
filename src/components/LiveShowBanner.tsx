@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Disc3 } from "lucide-react";
 import { Link } from "react-router-dom";
 
+const DEFAULT_ARTWORK = "/lovable-uploads/12fe363a-3bad-45f9-8212-66621f85b9ac.png";
+
 const LiveShowBanner = () => {
   const { currentShow, isLoading } = useCurrentShow();
 
@@ -36,14 +38,14 @@ const LiveShowBanner = () => {
                 alt={currentShow.showName}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  // Use a high-quality fallback image if the artwork fails to load
-                  e.currentTarget.src = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&q=100";
+                  // Use our Rappin' Lounge logo as fallback
+                  e.currentTarget.src = DEFAULT_ARTWORK;
                 }}
               />
             </div>
           ) : (
             <div className="w-full md:w-1/5 h-32 md:h-auto bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-              <Disc3 size={48} className="text-gray-400 dark:text-gray-500" />
+              <img src={DEFAULT_ARTWORK} alt="Rappin' Lounge" className="p-4 max-h-full" />
             </div>
           )}
           

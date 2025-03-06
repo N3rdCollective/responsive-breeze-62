@@ -1,9 +1,11 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { StreamMetadata } from "@/types/player";
 import { STREAM_URL, METADATA_URL } from "@/constants/stream";
 
 let audioInstance: HTMLAudioElement | null = null;
+const DEFAULT_ARTWORK = "/lovable-uploads/12fe363a-3bad-45f9-8212-66621f85b9ac.png";
 
 export const useAudioPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -12,7 +14,7 @@ export const useAudioPlayer = () => {
   const [previousVolume, setPreviousVolume] = useState([50]);
   const [metadata, setMetadata] = useState<StreamMetadata>({ 
     title: "Rappin' Lounge Radio",
-    artwork: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05"
+    artwork: DEFAULT_ARTWORK
   });
   const metadataIntervalRef = useRef<number>();
   const { toast } = useToast();
@@ -45,7 +47,9 @@ export const useAudioPlayer = () => {
             setMetadata({
               title: data.data.title || "Rappin' Lounge Radio",
               artist: data.data.artist,
-              artwork: data.data.artwork_urls?.large || data.data.artwork_urls?.standard || "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05"
+              artwork: data.data.artwork_urls?.large || 
+                       data.data.artwork_urls?.standard || 
+                       DEFAULT_ARTWORK
             });
             console.log("New metadata:", data.data);
           }
@@ -72,7 +76,7 @@ export const useAudioPlayer = () => {
       try {
         const notification = new Notification('Now Playing: Rappin\' Lounge Radio', {
           body: `${metadata.title}${metadata.artist ? ` - ${metadata.artist}` : ''}`,
-          icon: metadata.artwork || '/favicon.ico'
+          icon: metadata.artwork || DEFAULT_ARTWORK
         });
         
         setTimeout(() => notification.close(), 5000);
