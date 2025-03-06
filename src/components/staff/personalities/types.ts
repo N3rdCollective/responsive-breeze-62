@@ -1,19 +1,22 @@
 
+import { Json } from "@/integrations/supabase/types";
+
+export interface SocialLinks {
+  twitter?: string;
+  instagram?: string;
+  facebook?: string;
+}
+
 export interface Personality {
   id: string;
   name: string;
   role: string;
   bio: string | null;
   image_url: string | null;
-  social_links: {
-    twitter?: string;
-    instagram?: string;
-    facebook?: string;
-  } | null;
-  created_at: string;
+  social_links: SocialLinks | null;
+  created_at: string | null;
   updated_at: string | null;
   start_date: string | null;
-  display_order?: number;
 }
 
 export interface FormValues {
@@ -27,16 +30,12 @@ export interface FormValues {
   facebook: string;
 }
 
+// PersonalityFormData represents the data structure used in the form
 export interface PersonalityFormData {
   name: string;
   role: string;
   bio: string;
   image_url: string;
-  socialLinks: {
-    twitter: string;
-    instagram: string;
-    facebook: string;
-  };
-  startDate: Date | null;
-  display_order?: number;
+  socialLinks?: SocialLinks;
+  startDate?: Date | null;
 }
