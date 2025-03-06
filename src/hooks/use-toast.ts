@@ -1,6 +1,5 @@
 
-import { toast as sonnerToast } from "sonner";
-import { type ToastProps as SonnerToastProps } from "sonner";
+import { toast as sonnerToast, type ToasterProps } from "sonner";
 
 // Define a proper interface for our toast function calls
 export interface ToastProps {
@@ -13,9 +12,9 @@ export interface ToastProps {
 // Create a wrapper function to adapt our interface to Sonner's interface
 const toast = (props: ToastProps) => {
   return sonnerToast(props.description || "", {
-    // Map our properties to Sonner's expected properties
+    // Sonner expects these properties differently
     title: props.title,
-    variant: props.variant,
+    // Map our variant to Sonner's expected properties if needed
   });
 };
 
