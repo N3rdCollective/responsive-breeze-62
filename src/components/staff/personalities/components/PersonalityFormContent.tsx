@@ -6,6 +6,7 @@ import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "../types";
 import ImageSection from "./ImageSection";
 import SocialLinksSection from "./SocialLinksSection";
+import { Switch } from "@/components/ui/switch";
 
 interface PersonalityFormContentProps {
   form: UseFormReturn<FormValues>;
@@ -45,6 +46,27 @@ const PersonalityFormContent = ({ form, onImageSelected, isUploading = false }: 
           )}
         />
       </div>
+      
+      <FormField
+        control={form.control}
+        name="featured"
+        render={({ field }) => (
+          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+            <div className="space-y-0.5">
+              <FormLabel>Featured Personality</FormLabel>
+              <p className="text-sm text-muted-foreground">
+                Featured personalities will appear at the top of the list
+              </p>
+            </div>
+            <FormControl>
+              <Switch
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
+            </FormControl>
+          </FormItem>
+        )}
+      />
       
       <FormField
         control={form.control}

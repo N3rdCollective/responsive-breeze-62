@@ -17,6 +17,8 @@ export interface Personality {
   created_at: string | null;
   updated_at: string | null;
   start_date: string | null;
+  display_order?: number;
+  featured?: boolean;
 }
 
 export interface FormValues {
@@ -28,6 +30,7 @@ export interface FormValues {
   twitter: string;
   instagram: string;
   facebook: string;
+  featured?: boolean;
 }
 
 // PersonalityFormData represents the data structure used in the form
@@ -38,4 +41,5 @@ export interface PersonalityFormData {
   image_url: string;
   socialLinks?: SocialLinks;
   startDate?: Date | null;
+  featured?: boolean;
 }

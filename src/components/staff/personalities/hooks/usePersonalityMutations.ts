@@ -21,6 +21,7 @@ export const usePersonalityMutations = () => {
         image_url: formData.image_url || null,
         social_links: formData.socialLinks ? formData.socialLinks as unknown as Json : null,
         start_date: formData.startDate ? new Date(formData.startDate).toISOString() : null,
+        featured: formData.featured || false
       };
       
       const { data, error } = await supabase
@@ -61,6 +62,7 @@ export const usePersonalityMutations = () => {
         image_url: formData.image_url || null,
         social_links: formData.socialLinks ? formData.socialLinks as unknown as Json : null,
         start_date: formData.startDate ? new Date(formData.startDate).toISOString() : null,
+        featured: formData.featured
       };
       
       const { data, error } = await supabase
@@ -118,12 +120,41 @@ export const usePersonalityMutations = () => {
       setLoading(false);
     }
   };
+
+  const updatePersonalityOrder = async (personalities: { id: string, display_order: number, name: string, role: string }[]) => {
+    try {
+      setLoading(true);
+      
+      const { error } = await supabase
+        .from("personalities")
+        .upsert(personalities, { onConflict: 'id' });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "Personality order updated successfully",
+      });
+      
+      return true;
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
   
   return {
     loading,
     isSaving: loading, // Add the isSaving property that usePersonalityEditor expects
     createPersonality,
     updatePersonality,
-    deletePersonality
+    deletePersonality,
+    updatePersonalityOrder
   };
 };

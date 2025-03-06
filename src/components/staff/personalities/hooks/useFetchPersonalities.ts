@@ -31,7 +31,9 @@ export const useFetchPersonalities = () => {
           social_links: p.social_links as unknown as { twitter?: string, instagram?: string, facebook?: string } || null,
           created_at: p.created_at,
           updated_at: p.updated_at,
-          start_date: p.start_date
+          start_date: p.start_date,
+          display_order: p.display_order,
+          featured: p.featured
         }));
         
         setPersonalities(typedPersonalities);
@@ -69,7 +71,9 @@ export const useFetchPersonalities = () => {
           social_links: data.social_links as unknown as { twitter?: string, instagram?: string, facebook?: string } || null,
           created_at: data.created_at,
           updated_at: data.updated_at,
-          start_date: data.start_date
+          start_date: data.start_date,
+          display_order: data.display_order,
+          featured: data.featured
         };
         
         return personalityData;

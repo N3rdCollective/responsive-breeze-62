@@ -15,7 +15,8 @@ const defaultFormValues: FormValues = {
   image_url: "",
   twitter: "",
   instagram: "",
-  facebook: ""
+  facebook: "",
+  featured: false
 };
 
 export const usePersonalityEditor = (canEdit: boolean) => {
@@ -25,6 +26,7 @@ export const usePersonalityEditor = (canEdit: boolean) => {
   const [role, setRole] = useState("");
   const [bio, setBio] = useState("");
   const [startDate, setStartDate] = useState<Date | null>(null);
+  const [featured, setFeatured] = useState(false);
 
   // Use the smaller hooks
   const { personalities, loading, fetchPersonalities, fetchPersonalityById } = useFetchPersonalities();
@@ -52,6 +54,7 @@ export const usePersonalityEditor = (canEdit: boolean) => {
       setBio(personalityData.bio || "");
       setImageUrl(personalityData.image_url || "");
       setStartDate(personalityData.start_date ? new Date(personalityData.start_date) : null);
+      setFeatured(personalityData.featured || false);
       
       // Update form values
       form.setValue("id", personalityData.id);
@@ -59,6 +62,7 @@ export const usePersonalityEditor = (canEdit: boolean) => {
       form.setValue("role", personalityData.role || "");
       form.setValue("bio", personalityData.bio || "");
       form.setValue("image_url", personalityData.image_url || "");
+      form.setValue("featured", personalityData.featured || false);
       
       // Type conversion for social_links
       if (personalityData.social_links) {
@@ -90,10 +94,14 @@ export const usePersonalityEditor = (canEdit: boolean) => {
         instagram: values.instagram,
         facebook: values.facebook
       },
-      startDate: startDate
+      startDate: startDate,
+      featured: values.featured
     };
     
-    await updatePersonality(selectedPersonality.id, formData);
+    const updated = await updatePersonality(selectedPersonality.id, formData);
+    if (updated) {
+      await fetchPersonalities(); // Refresh the list
+    }
   };
 
   const handleCreateNew = () => {
@@ -103,6 +111,7 @@ export const usePersonalityEditor = (canEdit: boolean) => {
     setBio("");
     setImageUrl("");
     setStartDate(null);
+    setFeatured(false);
     form.reset(defaultFormValues);
   };
 
@@ -118,11 +127,13 @@ export const usePersonalityEditor = (canEdit: boolean) => {
         instagram: values.instagram,
         facebook: values.facebook
       },
-      startDate: startDate
+      startDate: startDate,
+      featured: values.featured
     };
     
     const newPersonality = await createPersonality(formData);
     if (newPersonality) {
+      await fetchPersonalities(); // Refresh the list
       setSelectedPersonality(newPersonality);
     }
   };
@@ -134,7 +145,9 @@ export const usePersonalityEditor = (canEdit: boolean) => {
     
     const success = await deletePersonality(id);
     if (success) {
+      await fetchPersonalities(); // Refresh the list
       setSelectedPersonality(null);
+      form.reset(defaultFormValues);
     }
   };
 
@@ -149,6 +162,8 @@ export const usePersonalityEditor = (canEdit: boolean) => {
     setImageUrl,
     startDate, 
     setStartDate,
+    featured,
+    setFeatured,
     form,
     personalities,
     loading,
