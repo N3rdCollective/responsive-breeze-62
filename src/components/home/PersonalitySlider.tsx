@@ -20,6 +20,7 @@ interface Personality {
   role: string;
   bio: string | null;
   image_url: string | null;
+  featured?: boolean;
   social_links: {
     twitter?: string;
     instagram?: string;
@@ -33,11 +34,12 @@ const PersonalitySlider = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("personalities")
-        .select("id, name, role, bio, image_url, social_links")
+        .select("id, name, role, bio, image_url, social_links, featured")
+        .eq("featured", true)
         .order("name");
       
       if (error) {
-        console.error("Error fetching personalities:", error);
+        console.error("Error fetching featured personalities:", error);
         return [];
       }
       
@@ -49,7 +51,7 @@ const PersonalitySlider = () => {
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Meet Our Host/Personalities</h2>
+          <h2 className="text-2xl font-bold">Meet Our Featured Personalities</h2>
           <Skeleton className="h-10 w-24" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -68,7 +70,7 @@ const PersonalitySlider = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Meet Our Host/Personalities</h2>
+        <h2 className="text-2xl font-bold">Meet Our Featured Personalities</h2>
         <Button variant="outline" asChild>
           <a href="/personalities">View All</a>
         </Button>
