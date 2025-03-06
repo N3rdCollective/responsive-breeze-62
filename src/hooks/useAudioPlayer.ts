@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { StreamMetadata } from "@/types/player";
@@ -17,6 +16,12 @@ export const useAudioPlayer = () => {
   });
   const metadataIntervalRef = useRef<number>();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+      Notification.requestPermission();
+    }
+  }, []);
 
   useEffect(() => {
     if (!audioInstance) {
@@ -62,6 +67,21 @@ export const useAudioPlayer = () => {
     };
   }, []);
 
+  const showMobileNotification = () => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      try {
+        const notification = new Notification('Now Playing: Rappin\' Lounge Radio', {
+          body: `${metadata.title}${metadata.artist ? ` - ${metadata.artist}` : ''}`,
+          icon: metadata.artwork || '/favicon.ico'
+        });
+        
+        setTimeout(() => notification.close(), 5000);
+      } catch (error) {
+        console.error('Failed to show notification:', error);
+      }
+    }
+  };
+
   const togglePlayPause = () => {
     if (audioInstance) {
       if (isPlaying) {
@@ -79,10 +99,13 @@ export const useAudioPlayer = () => {
             description: "Failed to start playback. Please try again.",
           });
         });
+        
         toast({
-          title: "Now Playing",
+          title: "Now Playing: Rappin' Lounge Radio",
           description: `${metadata.title}${metadata.artist ? ` - ${metadata.artist}` : ''}`,
         });
+        
+        showMobileNotification();
       }
     }
   };
