@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 const Careers = () => {
   const [name, setName] = useState("");
@@ -14,25 +16,86 @@ const Careers = () => {
   const [resume, setResume] = useState<File | null>(null);
   const [position, setPosition] = useState("");
   const [coverLetter, setCoverLetter] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Here you would typically send the form data to your backend
-    console.log("Application submitted:", { name, email, position, coverLetter, resume });
+    if (!name || !email || !position || !coverLetter || !resume) {
+      toast({
+        title: "Missing information",
+        description: "Please fill out all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    toast({
-      title: "Application received!",
-      description: "Thanks for your interest. We'll review your application and get back to you soon.",
-    });
-
-    // Clear form
-    setName("");
-    setEmail("");
-    setPosition("");
-    setCoverLetter("");
-    setResume(null);
+    setIsSubmitting(true);
+    
+    try {
+      // Convert resume file to base64
+      let resumeData = null;
+      let resumeFileName = null;
+      
+      if (resume) {
+        const reader = new FileReader();
+        resumeData = await new Promise((resolve) => {
+          reader.onload = (e) => {
+            if (e.target?.result) {
+              // Get the base64 data without the prefix
+              const base64Data = e.target.result.toString().split(',')[1];
+              resolve(base64Data);
+            } else {
+              resolve(null);
+            }
+          };
+          reader.readAsDataURL(resume);
+        });
+        resumeFileName = resume.name;
+      }
+      
+      // Call the Supabase edge function
+      const { data, error } = await supabase.functions.invoke('send-career-application', {
+        body: {
+          name,
+          email,
+          position,
+          coverLetter,
+          resumeData,
+          resumeFileName
+        }
+      });
+      
+      if (error) throw error;
+      
+      // Show success message
+      toast({
+        title: "Application received!",
+        description: "Thanks for your interest. We'll review your application and get back to you soon.",
+      });
+      
+      // Clear form
+      setName("");
+      setEmail("");
+      setPosition("");
+      setCoverLetter("");
+      setResume(null);
+      
+      // Reset file input
+      const fileInput = document.getElementById('resume') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+      
+    } catch (error) {
+      console.error("Error submitting application:", error);
+      toast({
+        title: "Submission failed",
+        description: "There was an error submitting your application. Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -71,6 +134,7 @@ const Careers = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -83,6 +147,7 @@ const Careers = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -94,6 +159,7 @@ const Careers = () => {
                     value={position}
                     onChange={(e) => setPosition(e.target.value)}
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -106,6 +172,7 @@ const Careers = () => {
                     onChange={(e) => setCoverLetter(e.target.value)}
                     className="min-h-[150px]"
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -117,12 +184,20 @@ const Careers = () => {
                     onChange={(e) => setResume(e.target.files?.[0] || null)}
                     accept=".pdf,.doc,.docx"
                     required
+                    disabled={isSubmitting}
                   />
                   <p className="text-xs text-muted-foreground">Accepted formats: PDF, DOC, DOCX</p>
                 </div>
 
-                <Button type="submit" className="w-full">
-                  Submit Application
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    "Submit Application"
+                  )}
                 </Button>
               </form>
             </div>
