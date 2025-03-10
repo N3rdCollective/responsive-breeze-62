@@ -1,4 +1,3 @@
-
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -35,25 +34,32 @@ const Careers = () => {
     
     try {
       // Convert resume file to base64
-      let resumeData = null;
-      let resumeFileName = null;
+      const reader = new FileReader();
+      const resumeDataPromise = new Promise<string | null>((resolve) => {
+        reader.onload = (e) => {
+          if (e.target?.result) {
+            // Get the base64 data without the prefix
+            const base64Data = e.target.result.toString().split(',')[1];
+            resolve(base64Data);
+          } else {
+            resolve(null);
+          }
+        };
+        reader.onerror = () => {
+          console.error("Error reading file");
+          resolve(null);
+        };
+        reader.readAsDataURL(resume);
+      });
       
-      if (resume) {
-        const reader = new FileReader();
-        resumeData = await new Promise((resolve) => {
-          reader.onload = (e) => {
-            if (e.target?.result) {
-              // Get the base64 data without the prefix
-              const base64Data = e.target.result.toString().split(',')[1];
-              resolve(base64Data);
-            } else {
-              resolve(null);
-            }
-          };
-          reader.readAsDataURL(resume);
-        });
-        resumeFileName = resume.name;
+      const resumeData = await resumeDataPromise;
+      if (!resumeData) {
+        throw new Error("Failed to process the resume file");
       }
+      
+      const resumeFileName = resume.name;
+      
+      console.log("Submitting application with resume:", resumeFileName);
       
       // Call the Supabase edge function
       const { data, error } = await supabase.functions.invoke('send-career-application', {
@@ -67,7 +73,15 @@ const Careers = () => {
         }
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Function error:", error);
+        throw new Error(error.message || "Application submission failed");
+      }
+      
+      if (!data || data.error) {
+        console.error("Data error:", data?.error);
+        throw new Error(data?.error || "Unknown error occurred");
+      }
       
       // Show success message
       toast({
@@ -86,11 +100,11 @@ const Careers = () => {
       const fileInput = document.getElementById('resume') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
       
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting application:", error);
       toast({
         title: "Submission failed",
-        description: "There was an error submitting your application. Please try again later.",
+        description: error.message || "There was an error submitting your application. Please try again later.",
         variant: "destructive"
       });
     } finally {

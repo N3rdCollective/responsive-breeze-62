@@ -60,30 +60,41 @@ const handler = async (req: Request): Promise<Response> => {
       ];
     }
 
-    // Send email
-    const emailResponse = await resend.emails.send(emailData);
-    console.log("Email sent successfully:", emailResponse);
+    try {
+      // Send email
+      const emailResponse = await resend.emails.send(emailData);
+      console.log("Email sent successfully:", emailResponse);
 
-    // Also send confirmation to the applicant
-    await resend.emails.send({
-      from: "Rappin' Lounge Radio <careers@resend.dev>",
-      to: [email],
-      subject: "Your application was received!",
-      html: `
-        <h1>Thank you for your application, ${name}!</h1>
-        <p>We have received your application for the <strong>${position}</strong> position at Rappin' Lounge Radio.</p>
-        <p>Our team will review your information and get back to you soon.</p>
-        <p>Best regards,<br>The Rappin' Lounge Radio Team</p>
-      `,
-    });
+      // Also send confirmation to the applicant
+      await resend.emails.send({
+        from: "Rappin' Lounge Radio <careers@resend.dev>",
+        to: [email],
+        subject: "Your application was received!",
+        html: `
+          <h1>Thank you for your application, ${name}!</h1>
+          <p>We have received your application for the <strong>${position}</strong> position at Rappin' Lounge Radio.</p>
+          <p>Our team will review your information and get back to you soon.</p>
+          <p>Best regards,<br>The Rappin' Lounge Radio Team</p>
+        `,
+      });
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
-    });
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
+      });
+    } catch (emailError: any) {
+      console.error("Error sending email:", emailError);
+      return new Response(
+        JSON.stringify({ error: "Email sending failed", details: emailError.message }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
   } catch (error: any) {
     console.error("Error in send-career-application function:", error);
     return new Response(
