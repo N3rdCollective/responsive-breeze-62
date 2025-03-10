@@ -85,6 +85,13 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     try {
+      // Check if API key is available
+      const apiKey = Deno.env.get("RESEND_API_KEY");
+      if (!apiKey) {
+        console.error("RESEND_API_KEY is not configured");
+        throw new Error("Email service is not configured properly");
+      }
+
       // Send email
       const emailResponse = await resend.emails.send(emailData);
       console.log("Email sent successfully:", emailResponse);
