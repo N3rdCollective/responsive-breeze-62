@@ -26,7 +26,26 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { name, email, position, coverLetter, resumeData, resumeFileName } = await req.json() as CareerApplicationRequest;
+    const body = await req.json();
+    console.log("Received application data", { 
+      name: body.name, 
+      email: body.email, 
+      position: body.position,
+      hasResume: !!body.resumeData && !!body.resumeFileName
+    });
+    
+    const { name, email, position, coverLetter, resumeData, resumeFileName } = body as CareerApplicationRequest;
+
+    if (!name || !email || !position || !coverLetter) {
+      console.error("Missing required fields in application");
+      return new Response(
+        JSON.stringify({ error: "Missing required fields" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
 
     console.log(`Processing career application from ${name} for ${position}`);
 
@@ -52,6 +71,11 @@ const handler = async (req: Request): Promise<Response> => {
     // Add resume as attachment if provided
     if (resumeData && resumeFileName) {
       console.log(`Including resume: ${resumeFileName}`);
+      // Validate base64 data
+      if (typeof resumeData !== 'string') {
+        throw new Error("Invalid resume data format");
+      }
+      
       emailData.attachments = [
         {
           filename: resumeFileName,

@@ -1,3 +1,4 @@
+
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -18,15 +19,69 @@ const Careers = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
+  const validateForm = () => {
+    if (!name) {
+      toast({
+        title: "Missing information",
+        description: "Please enter your name",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (!email) {
+      toast({
+        title: "Missing information",
+        description: "Please enter your email address",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (!position) {
+      toast({
+        title: "Missing information",
+        description: "Please enter the position you're applying for",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (!coverLetter) {
+      toast({
+        title: "Missing information",
+        description: "Please provide a cover letter",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (!resume) {
+      toast({
+        title: "Missing information",
+        description: "Please upload your resume",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    // Check file size - limit to 5MB
+    if (resume && resume.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Resume must be less than 5MB in size",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name || !email || !position || !coverLetter || !resume) {
-      toast({
-        title: "Missing information",
-        description: "Please fill out all required fields",
-        variant: "destructive"
-      });
+    if (!validateForm()) {
       return;
     }
     
@@ -200,7 +255,7 @@ const Careers = () => {
                     required
                     disabled={isSubmitting}
                   />
-                  <p className="text-xs text-muted-foreground">Accepted formats: PDF, DOC, DOCX</p>
+                  <p className="text-xs text-muted-foreground">Accepted formats: PDF, DOC, DOCX (max 5MB)</p>
                 </div>
 
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
