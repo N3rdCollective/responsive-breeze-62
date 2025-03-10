@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { StreamMetadata } from "@/types/player";
-import { STREAM_URL, METADATA_URL } from "@/constants/stream";
+import { STREAM_URL, BACKUP_STREAM_URL, METADATA_URL } from "@/constants/stream";
 
 const DEFAULT_ARTWORK = "/lovable-uploads/12fe363a-3bad-45f9-8212-66621f85b9ac.png";
 
@@ -12,6 +12,7 @@ let listeners: Array<() => void> = [];
 
 // Create a singleton state
 let globalIsPlaying = false;
+let isUsingBackupStream = false;
 
 const notifyListeners = () => {
   listeners.forEach(listener => listener());
@@ -38,7 +39,7 @@ export const useAudioPlayer = () => {
 
     // Initialize audio instance if it doesn't exist
     if (!audioInstance && globalIsPlaying) {
-      audioInstance = new Audio(STREAM_URL);
+      audioInstance = new Audio(isUsingBackupStream ? BACKUP_STREAM_URL : STREAM_URL);
       audioInstance.volume = volume[0] / 100;
       audioInstance.play().catch(error => {
         console.error("Playback failed:", error);
@@ -126,7 +127,8 @@ export const useAudioPlayer = () => {
       });
     } else {
       // Create a new audio element and load the stream
-      audioInstance = new Audio(STREAM_URL);
+      const currentStreamUrl = isUsingBackupStream ? BACKUP_STREAM_URL : STREAM_URL;
+      audioInstance = new Audio(currentStreamUrl);
       
       // Apply current volume settings
       audioInstance.volume = volume[0] / 100;
@@ -134,25 +136,63 @@ export const useAudioPlayer = () => {
       // Start playing
       audioInstance.play().catch((error) => {
         console.error("Playback failed:", error);
-        globalIsPlaying = false;
+        
+        if (!isUsingBackupStream) {
+          // Try the backup stream if main stream failed
+          isUsingBackupStream = true;
+          console.log("Trying backup stream:", BACKUP_STREAM_URL);
+          
+          // Create a new audio element with the backup stream
+          audioInstance = new Audio(BACKUP_STREAM_URL);
+          audioInstance.volume = volume[0] / 100;
+          
+          // Play the backup stream
+          audioInstance.play().catch((backupError) => {
+            console.error("Backup stream playback failed:", backupError);
+            globalIsPlaying = false;
+            notifyListeners();
+            
+            toast({
+              title: "Error",
+              variant: "destructive",
+              description: "Failed to start playback on both streams. Please try again later.",
+            });
+          });
+          
+          if (audioInstance.paused === false) {
+            globalIsPlaying = true;
+            notifyListeners();
+            
+            toast({
+              title: "Now Playing: Rappin' Lounge Radio (Backup Stream)",
+              description: `${metadata.title}${metadata.artist ? ` - ${metadata.artist}` : ''}`,
+            });
+            
+            showMobileNotification();
+          }
+        } else {
+          globalIsPlaying = false;
+          notifyListeners();
+          
+          toast({
+            title: "Error",
+            variant: "destructive",
+            description: "Failed to start playback. Please try again.",
+          });
+        }
+      });
+      
+      if (audioInstance.paused === false) {
+        globalIsPlaying = true;
         notifyListeners();
         
         toast({
-          title: "Error",
-          variant: "destructive",
-          description: "Failed to start playback. Please try again.",
+          title: "Now Playing: Rappin' Lounge Radio",
+          description: `${metadata.title}${metadata.artist ? ` - ${metadata.artist}` : ''}`,
         });
-      });
-      
-      globalIsPlaying = true;
-      notifyListeners();
-      
-      toast({
-        title: "Now Playing: Rappin' Lounge Radio",
-        description: `${metadata.title}${metadata.artist ? ` - ${metadata.artist}` : ''}`,
-      });
-      
-      showMobileNotification();
+        
+        showMobileNotification();
+      }
     }
   };
 
