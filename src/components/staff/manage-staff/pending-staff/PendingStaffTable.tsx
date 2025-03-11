@@ -26,7 +26,6 @@ const PendingStaffDataTable: React.FC<PendingStaffDataTableProps> = ({
             <TableRow>
               <TableHead>Email</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Invited On</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -34,10 +33,11 @@ const PendingStaffDataTable: React.FC<PendingStaffDataTableProps> = ({
             {pendingStaff.map((staff) => (
               <PendingStaffRow
                 key={staff.id}
-                pending={staff}
+                staff={staff}
                 processingId={processingId}
                 canManageStaff={canManageStaff}
                 onApproveReject={onApproveReject}
+                currentUserRole=""
               />
             ))}
           </TableBody>
