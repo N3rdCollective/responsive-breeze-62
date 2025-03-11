@@ -6,7 +6,7 @@ import StaffActionButtons from "./StaffActionButtons";
 interface PendingStaffRowProps {
   staff: PendingStaffMember;
   processingId: string | null;
-  onApproveReject: (pendingId: string, approved: boolean, currentUserRole: string, assignRole?: string) => Promise<void>;
+  onApproveReject: (pendingId: string, approved: boolean, assignRole?: string) => Promise<void>;
   currentUserRole: string;
 }
 
@@ -21,7 +21,7 @@ const PendingStaffRow = ({
   const canManageStaff = currentUserRole === 'admin' || currentUserRole === 'super_admin';
   
   const handleApproveReject = async (pendingId: string, approved: boolean, role?: string) => {
-    await onApproveReject(pendingId, approved, currentUserRole, role);
+    await onApproveReject(pendingId, approved, role);
   };
   
   return (
