@@ -1,39 +1,48 @@
 
+import { useState, useEffect } from "react";
 import { Post } from "./types/newsTypes";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 import NewsTableContent from "./table/NewsTableContent";
 import NewsPagination from "./table/NewsPagination";
+import { useNewsManagement } from "./useNewsManagement";
 
 interface NewsListTableProps {
-  posts: Post[] | undefined;
-  filteredPosts: Post[] | undefined;
-  paginatedPosts: Post[] | undefined;
-  pagination: {
-    currentPage: number;
-    totalPages: number;
-    pageSize: number;
-    totalItems: number;
-  };
-  isLoading: boolean;
-  searchTerm: string;
-  setSearchTerm: (term: string) => void;
-  refetch: () => void;
-  handlePageChange: (page: number) => void;
+  refreshTrigger?: number;
+  onPostStatusChange?: () => void;
 }
 
 const NewsListTable = ({
-  filteredPosts,
-  paginatedPosts,
-  pagination,
-  isLoading,
-  searchTerm,
-  setSearchTerm,
-  refetch,
-  handlePageChange
+  refreshTrigger = 0,
+  onPostStatusChange
 }: NewsListTableProps) => {
-  const { currentPage, totalPages } = pagination;
+  const {
+    posts,
+    filteredPosts,
+    paginatedPosts,
+    pagination,
+    isLoading,
+    searchTerm,
+    setSearchTerm,
+    refetch,
+    handlePageChange
+  } = useNewsManagement();
 
-  console.log("NewsListTable render with refetch function:", !!refetch);
+  // Effect to refetch when refreshTrigger changes
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      refetch();
+    }
+  }, [refreshTrigger, refetch]);
+
+  // Callback for when post status changes
+  const handlePostStatusChange = () => {
+    refetch();
+    if (onPostStatusChange) {
+      onPostStatusChange();
+    }
+  };
+
+  const { currentPage, totalPages } = pagination;
 
   if (isLoading) {
     return (
@@ -50,7 +59,7 @@ const NewsListTable = ({
         paginatedPosts={paginatedPosts}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
-        refetch={refetch}
+        refetch={handlePostStatusChange}
       />
       
       {filteredPosts && filteredPosts.length > 0 && totalPages > 1 && (

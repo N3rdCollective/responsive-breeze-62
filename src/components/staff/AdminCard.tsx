@@ -7,13 +7,35 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
 interface AdminCardProps {
-  onManageStaff: () => void;
-  onLogout: () => void;
+  onManageStaff?: () => void;
+  onLogout?: () => void;
 }
 
 const AdminCard = ({ onManageStaff, onLogout }: AdminCardProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const handleManageStaff = () => {
+    if (onManageStaff) {
+      onManageStaff();
+    } else {
+      toast({
+        title: "Staff Management",
+        description: "This would open the staff management dialog.",
+      });
+    }
+  };
+
+  const handleLogout = () => {
+    if (onLogout) {
+      onLogout();
+    } else {
+      toast({
+        title: "Logout",
+        description: "This would log you out of the system.",
+      });
+    }
+  };
 
   return (
     <Card className="bg-card border-border p-6 space-y-4">
@@ -23,7 +45,7 @@ const AdminCard = ({ onManageStaff, onLogout }: AdminCardProps) => {
         <Button 
           variant="outline" 
           className="w-full bg-background hover:bg-muted"
-          onClick={onManageStaff}
+          onClick={handleManageStaff}
         >
           <Users className="h-4 w-4 mr-2" />
           Manage Staff
@@ -47,7 +69,7 @@ const AdminCard = ({ onManageStaff, onLogout }: AdminCardProps) => {
         <Button 
           variant="destructive" 
           className="w-full"
-          onClick={onLogout}
+          onClick={handleLogout}
         >
           <LogOut className="h-4 w-4 mr-2" />
           Logout

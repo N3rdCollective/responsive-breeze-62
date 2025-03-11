@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Plus } from "lucide-react";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
-import NewsListTable from "@/components/staff/news/NewsListTable";
 import NewsHeader from "@/components/staff/news/NewsHeader";
+import NewsListTable from "@/components/staff/news/NewsListTable";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 import AccessDenied from "@/components/staff/news/AccessDenied";
 
@@ -50,13 +50,6 @@ const StaffNewsPage = () => {
         staffName={staffName}
         isAdmin={isAdmin}
       />
-      
-      <div className="flex justify-end my-4">
-        <Button onClick={() => navigate('/staff/news/editor')} className="gap-1">
-          <Plus className="h-4 w-4" />
-          Create News Post
-        </Button>
-      </div>
       
       <NewsListTable 
         refreshTrigger={refreshTrigger} 

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
 import StaffHeader from "@/components/staff/StaffHeader";
@@ -8,10 +8,16 @@ import ContentManagementCard from "@/components/staff/ContentManagementCard";
 import ShowManagementCard from "@/components/staff/ShowManagementCard";
 import StatsPanel from "@/components/staff/StatsPanel";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
+import ManageStaffModal from "@/components/ManageStaffModal";
 
 const StaffDashboard = () => {
   const { userRole, isLoading, staffName, isAdmin, handleLogout } = useStaffAuth();
   const navigate = useNavigate();
+  const [isManageStaffOpen, setIsManageStaffOpen] = useState(false);
+  
+  const handleManageUsers = () => {
+    setIsManageStaffOpen(true);
+  };
   
   if (isLoading) {
     return (
@@ -27,7 +33,7 @@ const StaffDashboard = () => {
         title="Staff Dashboard" 
         staffName={staffName}
         isAdmin={isAdmin}
-        showLogoutButton
+        showLogoutButton={true}
         onLogout={handleLogout}
       />
       
@@ -35,15 +41,26 @@ const StaffDashboard = () => {
         <ContentManagementCard userRole={userRole} />
         
         <div className="space-y-6">
-          <ShowManagementCard userRole={userRole} />
+          <ShowManagementCard />
           
-          {isAdmin && <AdminCard />}
+          {isAdmin && (
+            <AdminCard 
+              onManageStaff={handleManageUsers} 
+              onLogout={handleLogout}
+            />
+          )}
         </div>
       </div>
       
       <div className="mt-8">
         <StatsPanel />
       </div>
+      
+      <ManageStaffModal 
+        open={isManageStaffOpen}
+        onOpenChange={setIsManageStaffOpen}
+        currentUserRole={userRole}
+      />
     </div>
   );
 };
