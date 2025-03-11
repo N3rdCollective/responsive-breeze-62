@@ -24,11 +24,11 @@ interface NewsPost {
 }
 
 const NewsEditor = () => {
-  const { postId } = useParams<{ postId: string }>();
+  const { id } = useParams<{ id: string }>();
   const { staffName, isLoading: authLoading } = useStaffAuth();
   const navigate = useNavigate();
   
-  console.log("NewsEditor loaded with postId:", postId);
+  console.log("NewsEditor loaded with id:", id);
   
   const {
     title,
@@ -52,19 +52,19 @@ const NewsEditor = () => {
     fetchNewsPost,
     handleImageSelected,
     handleSave
-  } = useNewsEditor({ id: postId, staffName });
+  } = useNewsEditor({ id, staffName });
   
   useEffect(() => {
     if (authLoading) return;
     if (!staffName) {
-      navigate("/staff-login");
+      navigate("/staff/login");
       return;
     }
     
-    console.log("Calling fetchNewsPost with postId:", postId);
+    console.log("Calling fetchNewsPost with id:", id);
     // Call fetchNewsPost which now handles both new and existing posts
     fetchNewsPost();
-  }, [postId, staffName, authLoading]);
+  }, [id, staffName, authLoading, fetchNewsPost]);
   
   if (authLoading) {
     return (
@@ -79,7 +79,7 @@ const NewsEditor = () => {
   }
   
   // Only show loading spinner when editing an existing post and data is being fetched
-  if (postId && isLoading) {
+  if (id && isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <LoadingSpinner />
@@ -103,7 +103,7 @@ const NewsEditor = () => {
       
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">
-          {postId ? "Edit News Post" : "Create News Post"}
+          {id ? "Edit News Post" : "Create News Post"}
         </h1>
       </div>
       

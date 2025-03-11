@@ -5,6 +5,7 @@ import { NewsStatus } from "./NewsForm";
 import { useNewsState } from "./hooks/useNewsState";
 import { useNewsData } from "./hooks/useNewsData";
 import { useImageHandler } from "./hooks/useImageHandler";
+import { useCallback } from "react";
 
 interface UseNewsEditorProps {
   id?: string;
@@ -34,7 +35,7 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
   } = useNewsState();
 
   // Fetch the news post data
-  const fetchNewsPostData = async () => {
+  const fetchNewsPostData = useCallback(async () => {
     if (!id) {
       // Set default state for new post
       setIsLoading(false);
@@ -52,7 +53,7 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
       setCurrentFeaturedImageUrl,
       setIsLoading
     });
-  };
+  }, [id, fetchNewsPost, setTitle, setContent, setExcerpt, setStatus, setCategory, setTags, setCurrentFeaturedImageUrl, setIsLoading]);
 
   // Handle image selection
   const handleImageSelected = (file: File) => {

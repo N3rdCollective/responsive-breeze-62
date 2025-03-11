@@ -26,6 +26,7 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
   
   const handleEdit = () => {
     console.log("Navigating to edit post with ID:", post.id);
+    // Make sure we're using the correct path that matches the route in App.tsx
     navigate(`/staff/news/editor/${post.id}`);
   };
   

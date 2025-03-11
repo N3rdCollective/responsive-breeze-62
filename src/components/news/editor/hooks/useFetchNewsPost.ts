@@ -32,6 +32,7 @@ export const useFetchNewsPost = () => {
     try {
       console.log("Fetching news post with ID:", postId);
       
+      // Make sure we're using a proper query with explicit error handling
       const { data, error } = await supabase
         .from("posts")
         .select("*")
@@ -62,6 +63,7 @@ export const useFetchNewsPost = () => {
       
       console.log("Post data fetched successfully:", data);
       
+      // Properly set all the form data from the fetched post
       setTitle(data.title || "");
       setContent(data.content || "");
       setExcerpt(data.excerpt || "");
