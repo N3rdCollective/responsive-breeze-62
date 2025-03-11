@@ -6,7 +6,7 @@ import { useFeaturedArtists, FeaturedArtistFormData } from "./hooks/useFeaturedA
 import { FeaturedArtist } from "@/components/news/types/newsTypes";
 import ArtistForm from "./components/ArtistForm";
 import { useImageUpload } from "@/components/staff/personalities/hooks/useImageUpload";
-import { Loader2, PlusCircle } from "lucide-react";
+import { Loader2, PlusCircle, Music } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 interface ArtistFormValues {

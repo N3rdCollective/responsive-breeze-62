@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   createBrowserRouter,
@@ -12,6 +13,7 @@ import StaffLoginPage from "@/pages/StaffLoginPage";
 import StaffPersonalitiesPage from "@/pages/StaffPersonalitiesPage";
 import AboutEditor from "@/pages/AboutEditor";
 import StaffFeaturedArtistsPage from "@/pages/StaffFeaturedArtists";
+import ArtistDetail from "@/pages/ArtistDetail";
 
 const router = createBrowserRouter([
   {
@@ -49,6 +51,10 @@ const router = createBrowserRouter([
   {
     path: "/staff/featured-artists",
     element: <StaffFeaturedArtistsPage />,
+  },
+  {
+    path: "/artists/:id",
+    element: <ArtistDetail />,
   },
 ]);
 
