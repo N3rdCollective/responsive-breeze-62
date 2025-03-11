@@ -66,11 +66,16 @@ export const usePendingStaff = (onStaffUpdate: () => void) => {
       setProcessingId(pendingId);
       
       // Call the approve-staff edge function
-      const { data, error } = await supabase.functions.invoke('approve-staff', {
+      const response = await supabase.functions.invoke('approve-staff', {
         body: { pendingId, approved, currentUserRole }
       });
       
-      if (error) throw new Error(error.message);
+      if (response.error) {
+        console.error("Edge function error:", response.error);
+        throw new Error(response.error.message || "Failed to process request");
+      }
+      
+      const data = response.data;
       
       // Show success message
       toast({
@@ -82,7 +87,7 @@ export const usePendingStaff = (onStaffUpdate: () => void) => {
       fetchPendingStaff();
       onStaffUpdate();
       
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error processing staff action:", error);
       toast({
         title: "Error",
@@ -98,6 +103,7 @@ export const usePendingStaff = (onStaffUpdate: () => void) => {
     pendingStaff,
     loading,
     processingId,
-    handleApproveReject
+    handleApproveReject,
+    fetchPendingStaff
   };
 };
