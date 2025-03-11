@@ -56,6 +56,20 @@ const NotFound = () => {
       navigate("/staff/system-settings");
       return;
     }
+    
+    // Handle old personalities route
+    if (location.pathname === "/staff/personality") {
+      console.log("Redirecting from /staff/personality to /staff/personalities");
+      navigate("/staff/personalities");
+      return;
+    }
+    
+    // Handle old homepage content route
+    if (location.pathname === "/staff/homepage") {
+      console.log("Redirecting from /staff/homepage to /staff/home");
+      navigate("/staff/home");
+      return;
+    }
   }, [location.pathname, navigate]);
 
   return (
