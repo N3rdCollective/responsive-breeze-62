@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { Post } from "../types/newsTypes";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
-import { ROLE_PERMISSIONS } from "../../manage-staff/types/pendingStaffTypes";
+import { ROLE_PERMISSIONS, StaffRole } from "../../manage-staff/types/pendingStaffTypes";
 
 interface NewsTableActionsProps {
   post: Post;
@@ -19,8 +18,16 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
   const { toast } = useToast();
   const { userRole } = useStaffAuth();
   
-  // Determine permissions based on role
-  const permissions = userRole ? ROLE_PERMISSIONS[userRole as keyof typeof ROLE_PERMISSIONS] || {} : {};
+  // Get permissions with proper type casting and default values
+  const permissions = userRole && Object.keys(ROLE_PERMISSIONS).includes(userRole) 
+    ? ROLE_PERMISSIONS[userRole as StaffRole]
+    : {
+        canManageStaff: false,
+        canManageAllContent: false,
+        canApproveContent: false,
+        canPublishContent: false,
+        canAssignRoles: false
+      };
   
   // Check if user has permission to delete posts
   const canDeletePost = 
@@ -33,7 +40,7 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
   const canEditPost = 
     canDeletePost || 
     userRole === 'blogger' || 
-    (permissions.canManageAllContent === true);
+    permissions.canManageAllContent === true;
   
   console.log("NewsTableActions - Current user role:", userRole);
   console.log("NewsTableActions - Can delete post:", canDeletePost);
@@ -41,7 +48,6 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
   
   const handleEdit = () => {
     console.log("Navigating to edit post with ID:", post.id);
-    // Make sure we're using the correct path that matches the route in App.tsx
     navigate(`/staff/news/editor/${post.id}`);
   };
   
@@ -50,7 +56,6 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
   };
   
   const handleDelete = async () => {
-    // Double check that user has delete permissions
     if (!canDeletePost) {
       console.error("Permission denied: User role", userRole, "cannot delete posts");
       toast({
@@ -69,7 +74,6 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
     console.log("User role performing delete:", userRole);
     
     try {
-      // Try to get the session to confirm we're authenticated
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError || !sessionData.session) {
@@ -85,14 +89,11 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
       console.log("Authenticated as:", sessionData.session.user.email);
       console.log("Auth ID:", sessionData.session.user.id);
       
-      // Execute the delete operation with detailed logging
       console.log("Sending delete request to Supabase for post ID:", post.id);
       
-      // Debug the post ID format and type
       console.log("Post ID type:", typeof post.id);
       console.log("Post ID value:", post.id);
       
-      // Improved delete operation with explicit error handling
       const { error, data } = await supabase
         .from("posts")
         .delete()
@@ -104,7 +105,6 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
       if (error) {
         console.error("Supabase error deleting post:", error);
         
-        // Check for permissions errors specifically
         if (error.message.includes("permission") || error.code === "42501") {
           toast({
             title: "Permission error",
@@ -123,14 +123,11 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
       
       console.log("Post deleted successfully from database");
       
-      // Show success toast
       toast({
         title: "Post deleted",
         description: "The post has been successfully deleted",
       });
       
-      // Call the refetch function to update the UI
-      console.log("Calling onRefetch function with type:", typeof onRefetch);
       if (typeof onRefetch === 'function') {
         try {
           await onRefetch();
