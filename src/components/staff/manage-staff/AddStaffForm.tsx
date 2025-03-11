@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -49,10 +50,7 @@ const AddStaffForm = ({ onStaffAdded, currentUserRole }: AddStaffFormProps) => {
       
       // Call our Edge Function with proper JSON data
       const { data, error: functionError } = await supabase.functions.invoke('invite-staff', {
-        body: { email: values.email }, // The Supabase SDK will handle JSON stringification properly
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        body: { email: values.email }
       });
       
       console.log("Response from edge function:", data);
