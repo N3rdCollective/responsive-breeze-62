@@ -13,4 +13,21 @@ export interface Post {
   author: string | null;
   status: string;
   tags?: string[];
+  featured_artist_id?: string | null;
+}
+
+export interface FeaturedArtist {
+  id: string;
+  name: string;
+  bio: string;
+  image_url: string | null;
+  website?: string | null;
+  social_links?: {
+    spotify?: string;
+    instagram?: string;
+    twitter?: string;
+    youtube?: string;
+  } | null;
+  created_at?: string;
+  updated_at?: string;
 }

@@ -15,7 +15,7 @@ const ContentManagementCard = () => {
   const isModerator = userRole === "moderator";
   const isSuperAdmin = userRole === "super_admin";
   const canManageNews = isAdmin || isModerator || isSuperAdmin;
-  const canManageContent = isAdmin || isModerator || isSuperAdmin;
+  const canManageContent = isAdmin || iModerator || isSuperAdmin;
 
   const handleEditPage = (page: string) => {
     if (page === "About") {
@@ -66,6 +66,14 @@ const ContentManagementCard = () => {
           disabled={!canManageContent}
         >
           Edit Personalities
+        </Button>
+        <Button 
+          variant="outline" 
+          className="w-full bg-background hover:bg-muted"
+          onClick={() => navigate("/staff/featured-artists")}
+          disabled={!canManageContent}
+        >
+          Manage Featured Artists
         </Button>
       </div>
     </Card>
