@@ -1,18 +1,18 @@
 
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
 import StaffHeader from "@/components/staff/StaffHeader";
-import AdminCard from "@/components/staff/AdminCard";
-import ContentManagementCard from "@/components/staff/ContentManagementCard";
+import { ContentManagementCard } from "@/components/staff/ContentManagementCard";
 import ShowManagementCard from "@/components/staff/ShowManagementCard";
+import AdminCard from "@/components/staff/AdminCard";
 import StatsPanel from "@/components/staff/StatsPanel";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 import ManageStaffModal from "@/components/ManageStaffModal";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const StaffDashboard = () => {
   const { userRole, isLoading, staffName, isAdmin, handleLogout } = useStaffAuth();
-  const navigate = useNavigate();
   const [isManageStaffOpen, setIsManageStaffOpen] = useState(false);
   
   const handleManageUsers = () => {
@@ -21,46 +21,51 @@ const StaffDashboard = () => {
   
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <LoadingSpinner />
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="flex items-center justify-center h-screen">
+          <LoadingSpinner />
+        </div>
+        <Footer />
       </div>
     );
   }
   
   return (
-    <div className="container mx-auto p-4 max-w-5xl">
-      <StaffHeader 
-        title="Staff Dashboard" 
-        staffName={staffName}
-        isAdmin={isAdmin}
-        showLogoutButton={true}
-        onLogout={handleLogout}
-      />
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-        <ContentManagementCard userRole={userRole} />
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <div className="container mx-auto px-4 pt-24 pb-16 max-w-5xl">
+        <StaffHeader 
+          staffName={staffName}
+          isAdmin={isAdmin}
+        />
         
-        <div className="space-y-6">
-          <ShowManagementCard />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+          <ContentManagementCard />
           
-          {isAdmin && (
-            <AdminCard 
-              onManageStaff={handleManageUsers} 
-              onLogout={handleLogout}
-            />
-          )}
+          <div className="space-y-6">
+            <ShowManagementCard />
+            
+            {isAdmin && (
+              <AdminCard 
+                onManageStaff={handleManageUsers} 
+                onLogout={handleLogout}
+              />
+            )}
+          </div>
         </div>
+        
+        <div className="mt-8">
+          <StatsPanel />
+        </div>
+        
+        <ManageStaffModal 
+          open={isManageStaffOpen}
+          onOpenChange={setIsManageStaffOpen}
+          currentUserRole={userRole}
+        />
       </div>
-      
-      <div className="mt-8">
-        <StatsPanel />
-      </div>
-      
-      <ManageStaffModal 
-        open={isManageStaffOpen}
-        onOpenChange={setIsManageStaffOpen}
-        currentUserRole={userRole}
-      />
+      <Footer />
     </div>
   );
 };

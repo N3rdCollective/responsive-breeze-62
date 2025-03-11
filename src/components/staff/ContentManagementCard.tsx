@@ -1,82 +1,72 @@
 
-import React from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Newspaper, FileText, MusicIcon, UserSquare2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Newspaper, Home, Users, Radio } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 
 interface ContentManagementCardProps {
   userRole?: string;
 }
 
-const ContentManagementCard: React.FC<ContentManagementCardProps> = ({ userRole }) => {
-  const navigate = useNavigate();
-  
-  // Check permissions for different content sections
-  const canManageNews = userRole === "admin" || userRole === "moderator" || userRole === "staff" || userRole === "super_admin";
-  const isModerator = userRole === "admin" || userRole === "moderator" || userRole === "super_admin";
-  const isAdmin = userRole === "admin" || userRole === "super_admin";
+export const ContentManagementCard = ({ userRole }: ContentManagementCardProps = {}) => {
+  const isAllowed = userRole === undefined || 
+                    userRole === "admin" || 
+                    userRole === "moderator" || 
+                    userRole === "super_admin";
   
   return (
-    <Card className="bg-card border-border p-6 space-y-4">
-      <h3 className="text-xl font-semibold text-foreground">Content Management</h3>
-      <p className="text-muted-foreground">Manage website content and assets.</p>
-      <div className="space-y-2">
-        <Button 
-          variant="outline" 
-          className="w-full bg-background hover:bg-muted flex justify-start"
-          onClick={() => navigate("/staff/home-editor")}
+    <Card>
+      <CardHeader>
+        <CardTitle>Content Management</CardTitle>
+        <CardDescription>Manage website content and features</CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-4">
+        <Link 
+          to="/staff/news" 
+          className="flex items-center p-3 hover:bg-accent rounded-md transition-colors"
         >
-          <FileText className="h-4 w-4 mr-2" />
-          Home Page Content
-        </Button>
+          <Newspaper className="h-5 w-5 mr-3 text-primary" />
+          <div>
+            <div className="font-medium">News & Articles</div>
+            <div className="text-sm text-muted-foreground">Manage news posts and articles</div>
+          </div>
+        </Link>
         
-        {canManageNews && (
-          <Button 
-            variant="outline" 
-            className="w-full bg-background hover:bg-muted flex justify-start"
-            onClick={() => navigate("/staff/news")}
-          >
-            <Newspaper className="h-4 w-4 mr-2" />
-            News Management
-          </Button>
-        )}
+        <Link 
+          to="/staff/home" 
+          className="flex items-center p-3 hover:bg-accent rounded-md transition-colors"
+        >
+          <Home className="h-5 w-5 mr-3 text-primary" />
+          <div>
+            <div className="font-medium">Homepage Content</div>
+            <div className="text-sm text-muted-foreground">Edit featured items and homepage sections</div>
+          </div>
+        </Link>
         
-        {isModerator && (
-          <Button 
-            variant="outline" 
-            className="w-full bg-background hover:bg-muted flex justify-start"
-            onClick={() => navigate("/staff/about-editor")}
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            About Page Content
-          </Button>
-        )}
+        <Link 
+          to="/staff/personalities" 
+          className="flex items-center p-3 hover:bg-accent rounded-md transition-colors"
+        >
+          <Users className="h-5 w-5 mr-3 text-primary" />
+          <div>
+            <div className="font-medium">Personalities</div>
+            <div className="text-sm text-muted-foreground">Manage radio personalities and DJs</div>
+          </div>
+        </Link>
         
-        {isModerator && (
-          <Button 
-            variant="outline" 
-            className="w-full bg-background hover:bg-muted flex justify-start"
-            onClick={() => navigate("/staff/personalities")}
-          >
-            <UserSquare2 className="h-4 w-4 mr-2" />
-            Personalities
-          </Button>
-        )}
-        
-        {isModerator && (
-          <Button 
-            variant="outline" 
-            className="w-full bg-background hover:bg-muted flex justify-start"
-            onClick={() => navigate("/staff/featured-artists")}
-          >
-            <MusicIcon className="h-4 w-4 mr-2" />
-            Featured Artists
-          </Button>
-        )}
-      </div>
+        <Link 
+          to="/staff/shows" 
+          className="flex items-center p-3 hover:bg-accent rounded-md transition-colors"
+        >
+          <Radio className="h-5 w-5 mr-3 text-primary" />
+          <div>
+            <div className="font-medium">Radio Shows</div>
+            <div className="text-sm text-muted-foreground">Manage show schedule and details</div>
+          </div>
+        </Link>
+      </CardContent>
     </Card>
   );
 };
 
+// Add default export for backward compatibility
 export default ContentManagementCard;

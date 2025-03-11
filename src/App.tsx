@@ -13,6 +13,8 @@ import StaffSignup from "@/pages/StaffSignup";
 import StaffRegistration from "@/pages/StaffRegistration";
 import NewsEditor from "@/pages/NewsEditor";
 import RouteErrorElement from "@/components/RouteErrorElement";
+import StaffNews from "@/pages/StaffNews";
+import StaffDashboard from "@/pages/StaffDashboard";
 
 function App() {
   return (
@@ -24,7 +26,8 @@ function App() {
       <Route path="/news" element={<News />} errorElement={<RouteErrorElement />} />
       <Route path="/news/:id" element={<NewsPost />} errorElement={<RouteErrorElement />} />
       <Route path="/personalities" element={<Personalities />} errorElement={<RouteErrorElement />} />
-      <Route path="/staff" element={<StaffLogin />} errorElement={<RouteErrorElement />} />
+      <Route path="/staff" element={<StaffDashboard />} errorElement={<RouteErrorElement />} />
+      <Route path="/staff/news" element={<StaffNews />} errorElement={<RouteErrorElement />} />
       <Route path="/staff/login" element={<StaffLogin />} errorElement={<RouteErrorElement />} />
       <Route path="/staff/signup" element={<StaffSignup />} errorElement={<RouteErrorElement />} />
       <Route path="/staff/registration" element={<StaffRegistration />} errorElement={<RouteErrorElement />} />
