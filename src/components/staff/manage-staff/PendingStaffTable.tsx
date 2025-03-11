@@ -29,6 +29,7 @@ const PendingStaffTable = ({ onStaffUpdate, currentUserRole }: PendingStaffTable
       pendingStaff={pendingStaff}
       processingId={processingId}
       canManageStaff={canManageStaff}
+      currentUserRole={currentUserRole}
       onApproveReject={(pendingId, approved) => 
         handleApproveReject(pendingId, approved, currentUserRole)
       }
