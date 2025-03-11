@@ -17,21 +17,14 @@ const StaffNews = () => {
   const isSuperAdmin = userRole === "super_admin";
   
   const {
-    posts,
     filteredPosts,
-    paginatedPosts,
-    pagination,
     isLoading,
     error,
-    refetch,
     searchTerm,
     setSearchTerm,
     statusFilter,
     setStatusFilter,
-    handlePageChange
   } = useNewsManagement();
-
-  console.log("StaffNews component rendering with refetch function:", !!refetch);
 
   if (authLoading) {
     return <LoadingSpinner />;
@@ -67,17 +60,7 @@ const StaffNews = () => {
           </CardHeader>
           
           <CardContent className="p-0">
-            <NewsListTable 
-              posts={posts}
-              filteredPosts={filteredPosts}
-              paginatedPosts={paginatedPosts}
-              pagination={pagination}
-              isLoading={isLoading}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              refetch={refetch}
-              handlePageChange={handlePageChange}
-            />
+            <NewsListTable />
           </CardContent>
         </Card>
       </main>
