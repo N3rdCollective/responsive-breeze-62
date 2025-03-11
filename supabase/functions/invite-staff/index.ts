@@ -23,6 +23,7 @@ const corsHeaders = {
 };
 
 const defaultOrigin = "https://responsive-breeze-62.lovable.app";
+const adminEmailAddress = "rlradiobiz@gmail.com";
 
 // Helper functions
 function createErrorResponse(message: string, status: number): Response {
@@ -197,6 +198,27 @@ async function sendInvitationEmail(email: string, signupUrl: string): Promise<vo
   try {
     console.log('Sending email invitation...');
     
+    // First send notification to admin
+    await resend.emails.send({
+      from: 'Radio FM <onboarding@resend.dev>',
+      to: [adminEmailAddress],
+      subject: `New Staff Invitation Sent to ${email}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+          <h1 style="color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;">Staff Invitation Notification</h1>
+          <p>A staff invitation has been sent to: ${email}</p>
+          <p>The invitation includes a signup link that will expire in 24 hours.</p>
+          <p>The invited user will need to complete registration and await approval.</p>
+          <p style="color: #666; font-size: 14px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px;">
+            This is an automated notification from the Radio FM staff management system.
+          </p>
+        </div>
+      `,
+    });
+    
+    console.log(`Admin notification sent to ${adminEmailAddress}`);
+    
+    // Then send invitation to the user
     const { data: emailData, error: emailError } = await resend.emails.send({
       from: 'Radio FM <onboarding@resend.dev>',
       to: [email],
@@ -222,13 +244,13 @@ async function sendInvitationEmail(email: string, signupUrl: string): Promise<vo
 
     if (emailError) {
       console.error('Error sending email:', emailError);
-      // We don't throw here so the process can continue
+      throw emailError;
     } else {
       console.log('Email sent successfully:', emailData);
     }
   } catch (emailError) {
     console.error('Error with email service:', emailError);
-    // We don't throw here so the process can continue
+    throw emailError; // Re-throw to be handled by caller
   }
 }
 
@@ -282,11 +304,18 @@ async function handleInviteStaffRequest(req: Request): Promise<Response> {
     // Generate signup link
     const signupUrl = await generateSignupLink(supabaseAdmin, email, origin);
     
-    // Send invitation email (but continue even if it fails)
+    // Send invitation email
     try {
       await sendInvitationEmail(email, signupUrl);
-    } catch (emailError) {
-      console.log('Continuing despite email error, will return signup URL to client');
+      console.log(`Invitation email sent to ${email} and notification to admin`);
+    } catch (emailError: any) {
+      console.error("Failed to send email but continuing:", emailError.message);
+      // We still return success but include a warning message
+      return createSuccessResponse({ 
+        message: 'Invitation created but email delivery failed. Please try again or contact support.',
+        signupUrl,
+        success: true
+      });
     }
 
     console.log(`Invitation process completed for ${email}`);
