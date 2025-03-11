@@ -1,4 +1,3 @@
-
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { extractTextFromHtml } from "../utils/textUtils";
@@ -99,18 +98,20 @@ export const useSaveNewsPost = () => {
         excerpt: finalExcerpt,
         featured_image: featuredImageUrl || null,
         tags: tags || [],
-        author: staffName, // Now using the provided staffName instead of null
         updated_at: new Date().toISOString(),
       };
       
       // For category updates
       if (!id || category) {
-        // For new posts, use provided category or default to 'Uncategorized'
-        // For edits, only update category if it was explicitly set
         newsData['category'] = category || 'Uncategorized';
       }
       
-      console.log("Saving post data with author:", newsData.author);
+      // Instead of setting author directly, use staff_id
+      if (staffName) {
+        newsData['author_name'] = staffName;
+      }
+      
+      console.log("Saving post data:", newsData);
       
       let result;
       
@@ -135,7 +136,6 @@ export const useSaveNewsPost = () => {
           ...newsData,
           created_at: new Date().toISOString(),
           post_date: new Date().toISOString(),
-          category: category || 'Uncategorized', // For new posts, ensure category is set
         };
         
         result = await supabase
