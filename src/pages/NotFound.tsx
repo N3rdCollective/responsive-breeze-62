@@ -43,6 +43,19 @@ const NotFound = () => {
       navigate("/staff");
       return;
     }
+
+    // Handle legacy routes for sponsors or system settings if needed
+    if (location.pathname === "/staff/sponsor") {
+      console.log("Redirecting from /staff/sponsor to /staff/sponsors");
+      navigate("/staff/sponsors");
+      return;
+    }
+
+    if (location.pathname === "/staff/settings") {
+      console.log("Redirecting from /staff/settings to /staff/system-settings");
+      navigate("/staff/system-settings");
+      return;
+    }
   }, [location.pathname, navigate]);
 
   return (

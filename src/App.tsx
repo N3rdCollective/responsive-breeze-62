@@ -15,6 +15,8 @@ import NewsEditor from "@/pages/NewsEditor";
 import RouteErrorElement from "@/components/RouteErrorElement";
 import StaffNews from "@/pages/StaffNews";
 import StaffDashboard from "@/pages/StaffDashboard";
+import StaffSponsors from "@/pages/StaffSponsors";
+import StaffSystemSettings from "@/pages/StaffSystemSettings";
 
 function App() {
   return (
@@ -33,8 +35,9 @@ function App() {
       <Route path="/staff/registration" element={<StaffRegistration />} errorElement={<RouteErrorElement />} />
       <Route path="/staff/news/editor" element={<NewsEditor />} errorElement={<RouteErrorElement />} />
       <Route path="/staff/news/editor/:id" element={<NewsEditor />} errorElement={<RouteErrorElement />} />
-      {/* Add the new route for the edit feature */}
       <Route path="/staff/news/edit/:id" element={<NewsEditor />} errorElement={<RouteErrorElement />} />
+      <Route path="/staff/sponsors" element={<StaffSponsors />} errorElement={<RouteErrorElement />} />
+      <Route path="/staff/system-settings" element={<StaffSystemSettings />} errorElement={<RouteErrorElement />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
