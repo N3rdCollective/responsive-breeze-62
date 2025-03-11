@@ -52,7 +52,7 @@ export const usePendingStaff = (onStaffUpdate: () => void) => {
     fetchPendingStaff();
   }, []);
 
-  const handleApproveReject = async (pendingId: string, approved: boolean, currentUserRole: string, assignRole?: string) => {
+  const handleApproveReject = async (pendingId: string, approved: boolean, currentUserRole: string) => {
     if (!canManageStaff(currentUserRole)) {
       toast({
         title: "Permission denied",
@@ -67,7 +67,7 @@ export const usePendingStaff = (onStaffUpdate: () => void) => {
       
       // Call the approve-staff edge function
       const response = await supabase.functions.invoke('approve-staff', {
-        body: { pendingId, approved, currentUserRole, assignRole }
+        body: { pendingId, approved, currentUserRole }
       });
       
       if (response.error) {

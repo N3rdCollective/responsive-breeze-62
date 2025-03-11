@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
@@ -13,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const { pendingId, approved, currentUserRole, assignRole } = await req.json();
+    const { pendingId, approved, currentUserRole } = await req.json();
     
     if (!pendingId) {
       throw new Error('Missing pending staff ID');
@@ -99,12 +100,6 @@ serve(async (req) => {
           const lastName = user.user_metadata?.last_name || '';
           const displayName = user.user_metadata?.display_name || '';
           
-          // Determine which role to assign
-          // If assignRole is provided and the approver is an admin, use that role
-          // Otherwise, default to 'staff'
-          const roleToAssign = assignRole || 'staff';
-          console.log(`Assigning role: ${roleToAssign} to user:`, user.id);
-          
           // Create staff record
           const { error: staffError } = await supabaseAdmin
             .from('staff')
@@ -114,7 +109,7 @@ serve(async (req) => {
               first_name: firstName,
               last_name: lastName,
               display_name: displayName,
-              role: roleToAssign
+              role: 'staff'  // Default role
             });
 
           if (staffError) {

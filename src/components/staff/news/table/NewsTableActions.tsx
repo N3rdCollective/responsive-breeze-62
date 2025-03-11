@@ -19,12 +19,10 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
   const { userRole } = useStaffAuth();
   
   // Check if user has permission to delete posts - ensure super_admin is included
-  // Now content_manager can also manage news posts
-  const canManageNews = userRole === 'admin' || userRole === 'super_admin' || 
-                     userRole === 'moderator' || userRole === 'content_manager';
+  const canDeletePost = userRole === 'admin' || userRole === 'super_admin' || userRole === 'moderator';
   
   console.log("NewsTableActions - Current user role:", userRole);
-  console.log("NewsTableActions - Can manage news:", canManageNews);
+  console.log("NewsTableActions - Can delete post:", canDeletePost);
   
   const handleEdit = () => {
     console.log("Navigating to edit post with ID:", post.id);
@@ -38,7 +36,7 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
   
   const handleDelete = async () => {
     // Double check that user has delete permissions
-    if (!canManageNews) {
+    if (!canDeletePost) {
       console.error("Permission denied: User role", userRole, "cannot delete posts");
       toast({
         title: "Permission denied",
@@ -166,7 +164,7 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
         onClick={handleDelete}
         title="Delete"
         className="text-red-500 hover:text-red-100 hover:bg-red-700 dark:hover:text-red-100 dark:hover:bg-red-700"
-        disabled={!canManageNews}
+        disabled={!canDeletePost}
       >
         <Trash2 className="h-4 w-4" />
       </Button>

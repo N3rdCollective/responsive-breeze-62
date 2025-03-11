@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,20 +25,13 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
   const handleToggleRole = async (id: string, email: string, currentRole: string) => {
     let newRole = "moderator";
     
-    // Cycle through roles: staff -> moderator -> content_manager -> admin -> staff
-    if (currentRole === "staff") {
-      newRole = "moderator";
-    } else if (currentRole === "moderator") {
-      newRole = "content_manager";
-    } else if (currentRole === "content_manager") {
+    if (currentRole === "moderator") {
       newRole = "admin";
     } else if (currentRole === "admin") {
-      newRole = "staff";
+      newRole = "moderator";
     }
     
-    const actionText = currentRole === "staff" ? "a moderator" : 
-                       currentRole === "moderator" ? "a content manager" :
-                       currentRole === "content_manager" ? "an admin" : "a staff member";
+    const actionText = `a${newRole === "admin" ? "n" : ""} ${newRole}`;
     
     try {
       setIsUpdatingRole(true);
@@ -101,19 +93,9 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
   const getRoleButtonText = (role: string) => {
     if (isUpdatingRole) return "Updating...";
     
-    if (role === "staff") return "Make Moderator";
-    if (role === "moderator") return "Make Content Manager";
-    if (role === "content_manager") return "Make Admin";
-    if (role === "admin") return "Make Staff";
-    return "Change Role"; // Default fallback
-  };
-
-  const getRoleColor = (role: string) => {
-    if (role === "staff") return "text-green-600 dark:text-green-400";
-    if (role === "moderator") return "text-blue-600 dark:text-blue-400";
-    if (role === "content_manager") return "text-orange-600 dark:text-orange-400";
-    if (role === "admin") return "text-yellow-600 dark:text-yellow-400";
-    return "";
+    if (role === "admin") return "Make Moderator";
+    if (role === "moderator") return "Make Admin";
+    return "Make Moderator"; // Default for "staff" role
   };
 
   const getDisplayName = () => {
@@ -132,8 +114,6 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
       <td className="p-2 capitalize">
         {isSuperAdmin ? (
           <span className="font-semibold text-purple-600 dark:text-purple-400">Super Admin</span>
-        ) : staff.role === "content_manager" ? (
-          <span className="font-medium text-orange-600 dark:text-orange-400">Content Manager</span>
         ) : (
           staff.role
         )}
@@ -147,7 +127,9 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
               <Button 
                 variant="outline" 
                 size="sm"
-                className={getRoleColor(staff.role)}
+                className={`${staff.role === "admin" ? "text-yellow-600 dark:text-yellow-400" : 
+                  staff.role === "moderator" ? "text-blue-600 dark:text-blue-400" :
+                  "text-green-600 dark:text-green-400"}`}
                 onClick={() => handleToggleRole(staff.id, staff.email, staff.role)}
                 disabled={isUpdatingRole}
               >

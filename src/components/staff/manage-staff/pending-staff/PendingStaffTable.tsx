@@ -8,7 +8,6 @@ interface PendingStaffDataTableProps {
   pendingStaff: PendingStaffMember[];
   processingId: string | null;
   canManageStaff: boolean;
-  currentUserRole: string;
   onApproveReject: (pendingId: string, approved: boolean) => Promise<void>;
 }
 
@@ -16,7 +15,6 @@ const PendingStaffDataTable: React.FC<PendingStaffDataTableProps> = ({
   pendingStaff, 
   processingId, 
   canManageStaff, 
-  currentUserRole,
   onApproveReject 
 }) => {
   return (
@@ -28,6 +26,7 @@ const PendingStaffDataTable: React.FC<PendingStaffDataTableProps> = ({
             <TableRow>
               <TableHead>Email</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Invited On</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -35,10 +34,10 @@ const PendingStaffDataTable: React.FC<PendingStaffDataTableProps> = ({
             {pendingStaff.map((staff) => (
               <PendingStaffRow
                 key={staff.id}
-                staff={staff}
+                pending={staff}
                 processingId={processingId}
+                canManageStaff={canManageStaff}
                 onApproveReject={onApproveReject}
-                currentUserRole={currentUserRole}
               />
             ))}
           </TableBody>
