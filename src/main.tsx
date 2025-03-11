@@ -1,16 +1,25 @@
 
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
-import TitleUpdater from './components/TitleUpdater.tsx';
-import './index.css';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.tsx";
+import "./index.css";
+import { BrowserRouter } from "react-router-dom";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { Toaster } from "@/components/ui/toaster";
+import { QueryProvider } from "@/components/providers/QueryProvider";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
-const rootElement = document.getElementById('root');
-if (!rootElement) throw new Error('Failed to find the root element');
-
-createRoot(rootElement).render(
-  <StrictMode>
-    <TitleUpdater />
-    <App />
-  </StrictMode>
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <ThemeProvider defaultTheme="dark" storageKey="radio-theme">
+        <QueryProvider>
+          <ErrorBoundary>
+            <App />
+            <Toaster />
+          </ErrorBoundary>
+        </QueryProvider>
+      </ThemeProvider>
+    </BrowserRouter>
+  </React.StrictMode>
 );
