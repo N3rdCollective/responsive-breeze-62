@@ -7,6 +7,7 @@ import { Post } from "../types/newsTypes";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
+import { ROLE_PERMISSIONS } from "../../manage-staff/types/pendingStaffTypes";
 
 interface NewsTableActionsProps {
   post: Post;
@@ -18,11 +19,25 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
   const { toast } = useToast();
   const { userRole } = useStaffAuth();
   
-  // Check if user has permission to delete posts - ensure super_admin is included
-  const canDeletePost = userRole === 'admin' || userRole === 'super_admin' || userRole === 'moderator';
+  // Determine permissions based on role
+  const permissions = userRole ? ROLE_PERMISSIONS[userRole as keyof typeof ROLE_PERMISSIONS] || {} : {};
+  
+  // Check if user has permission to delete posts
+  const canDeletePost = 
+    userRole === 'admin' || 
+    userRole === 'super_admin' || 
+    userRole === 'moderator' ||
+    userRole === 'content_manager';
+  
+  // Check if user has permission to edit posts
+  const canEditPost = 
+    canDeletePost || 
+    userRole === 'blogger' || 
+    (permissions.canManageAllContent === true);
   
   console.log("NewsTableActions - Current user role:", userRole);
   console.log("NewsTableActions - Can delete post:", canDeletePost);
+  console.log("NewsTableActions - Can edit post:", canEditPost);
   
   const handleEdit = () => {
     console.log("Navigating to edit post with ID:", post.id);
@@ -138,15 +153,17 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
   
   return (
     <div className="flex space-x-2">
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={handleEdit}
-        title="Edit"
-        className="hover:bg-secondary hover:text-secondary-foreground"
-      >
-        <Edit className="h-4 w-4" />
-      </Button>
+      {canEditPost && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleEdit}
+          title="Edit"
+          className="hover:bg-secondary hover:text-secondary-foreground"
+        >
+          <Edit className="h-4 w-4" />
+        </Button>
+      )}
       
       <Button
         variant="ghost"
@@ -158,16 +175,17 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
         <Eye className="h-4 w-4" />
       </Button>
       
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={handleDelete}
-        title="Delete"
-        className="text-red-500 hover:text-red-100 hover:bg-red-700 dark:hover:text-red-100 dark:hover:bg-red-700"
-        disabled={!canDeletePost}
-      >
-        <Trash2 className="h-4 w-4" />
-      </Button>
+      {canDeletePost && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleDelete}
+          title="Delete"
+          className="text-red-500 hover:text-red-100 hover:bg-red-700 dark:hover:text-red-100 dark:hover:bg-red-700"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      )}
     </div>
   );
 };

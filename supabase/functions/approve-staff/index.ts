@@ -100,6 +100,15 @@ serve(async (req) => {
           const lastName = user.user_metadata?.last_name || '';
           const displayName = user.user_metadata?.display_name || '';
           
+          // Determine the initial role based on user context
+          // Check for blogger or content_manager role from metadata if available
+          const requestedRole = user.user_metadata?.requested_role || '';
+          let initialRole = 'staff';
+          
+          if (requestedRole === 'blogger' || requestedRole === 'content_manager') {
+            initialRole = requestedRole;
+          }
+          
           // Create staff record
           const { error: staffError } = await supabaseAdmin
             .from('staff')
@@ -109,7 +118,7 @@ serve(async (req) => {
               first_name: firstName,
               last_name: lastName,
               display_name: displayName,
-              role: 'staff'  // Default role
+              role: initialRole  // Use the determined initial role
             });
 
           if (staffError) {

@@ -8,6 +8,7 @@ interface PendingStaffDataTableProps {
   pendingStaff: PendingStaffMember[];
   processingId: string | null;
   canManageStaff: boolean;
+  currentUserRole: string;
   onApproveReject: (pendingId: string, approved: boolean) => Promise<void>;
 }
 
@@ -15,6 +16,7 @@ const PendingStaffDataTable: React.FC<PendingStaffDataTableProps> = ({
   pendingStaff, 
   processingId, 
   canManageStaff, 
+  currentUserRole,
   onApproveReject 
 }) => {
   return (

@@ -1,8 +1,21 @@
+
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { StaffMember } from "./types/pendingStaffTypes";
+import { 
+  StaffMember, 
+  StaffRole, 
+  ROLE_DISPLAY_NAMES, 
+  ROLE_PERMISSIONS 
+} from "./types/pendingStaffTypes";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 
 interface StaffMemberRowProps {
   staff: StaffMember;
@@ -22,16 +35,8 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
                   !isSuperAdmin &&
                   (staff.role !== "admin" || currentUserRole === "super_admin");
 
-  const handleToggleRole = async (id: string, email: string, currentRole: string) => {
-    let newRole = "moderator";
-    
-    if (currentRole === "moderator") {
-      newRole = "admin";
-    } else if (currentRole === "admin") {
-      newRole = "moderator";
-    }
-    
-    const actionText = `a${newRole === "admin" ? "n" : ""} ${newRole}`;
+  const handleRoleChange = async (newRole: string) => {
+    if (!canModify) return;
     
     try {
       setIsUpdatingRole(true);
@@ -39,13 +44,13 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
       const { error } = await supabase
         .from("staff")
         .update({ role: newRole })
-        .eq("id", id);
+        .eq("id", staff.id);
       
       if (error) throw error;
       
       toast({
         title: "Role Updated",
-        description: `${email} is now ${actionText}.`,
+        description: `${staff.email} is now a ${ROLE_DISPLAY_NAMES[newRole as StaffRole] || newRole}.`,
       });
       
       onUpdate();
@@ -90,14 +95,6 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
     }
   };
 
-  const getRoleButtonText = (role: string) => {
-    if (isUpdatingRole) return "Updating...";
-    
-    if (role === "admin") return "Make Moderator";
-    if (role === "moderator") return "Make Admin";
-    return "Make Moderator"; // Default for "staff" role
-  };
-
   const getDisplayName = () => {
     if (staff.display_name) {
       return staff.display_name;
@@ -107,16 +104,33 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
       : '-');
   };
 
+  const getRoleColor = (role: string) => {
+    switch(role) {
+      case 'super_admin':
+        return 'text-purple-600 dark:text-purple-400';
+      case 'admin':
+        return 'text-blue-600 dark:text-blue-400';
+      case 'moderator':
+        return 'text-green-600 dark:text-green-400';
+      case 'content_manager':
+        return 'text-orange-600 dark:text-orange-400';
+      case 'blogger':
+        return 'text-pink-600 dark:text-pink-400';
+      default:
+        return 'text-gray-600 dark:text-gray-400';
+    }
+  };
+
   return (
     <tr className="border-b hover:bg-muted/50">
       <td className="p-2 pl-4">{staff.email}</td>
       <td className="p-2">{getDisplayName()}</td>
-      <td className="p-2 capitalize">
-        {isSuperAdmin ? (
-          <span className="font-semibold text-purple-600 dark:text-purple-400">Super Admin</span>
-        ) : (
-          staff.role
-        )}
+      <td className="p-2">
+        <span className={`font-medium ${getRoleColor(staff.role)}`}>
+          {isSuperAdmin 
+            ? "Super Admin" 
+            : ROLE_DISPLAY_NAMES[staff.role as StaffRole] || staff.role}
+        </span>
       </td>
       <td className="p-2 pr-4 whitespace-nowrap">
         <div className="flex flex-row gap-2 justify-end">
@@ -124,17 +138,24 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
             <span className="text-sm text-gray-500 italic px-2">Super Admin cannot be modified</span>
           ) : canModify ? (
             <>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className={`${staff.role === "admin" ? "text-yellow-600 dark:text-yellow-400" : 
-                  staff.role === "moderator" ? "text-blue-600 dark:text-blue-400" :
-                  "text-green-600 dark:text-green-400"}`}
-                onClick={() => handleToggleRole(staff.id, staff.email, staff.role)}
+              <Select
                 disabled={isUpdatingRole}
+                defaultValue={staff.role}
+                onValueChange={handleRoleChange}
               >
-                {getRoleButtonText(staff.role)}
-              </Button>
+                <SelectTrigger className="w-36">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="staff">Staff</SelectItem>
+                  <SelectItem value="blogger">Blogger</SelectItem>
+                  <SelectItem value="content_manager">Content Manager</SelectItem>
+                  <SelectItem value="moderator">Moderator</SelectItem>
+                  {currentUserRole === "super_admin" && (
+                    <SelectItem value="admin">Admin</SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
               <Button 
                 variant="outline" 
                 size="sm"

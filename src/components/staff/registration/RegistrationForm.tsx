@@ -12,6 +12,14 @@ import { Form } from "@/components/ui/form";
 import { PersonalInfoFields } from "./PersonalInfoFields";
 import { CredentialsFields } from "./CredentialsFields";
 import { ReasonToJoinField } from "./ReasonToJoinField";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 
 // Form validation schema
 export const registrationSchema = z.object({
@@ -22,6 +30,7 @@ export const registrationSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string().min(8, "Confirm password must be at least 8 characters"),
   reasonToJoin: z.string().optional(),
+  requestedRole: z.enum(["staff", "blogger", "content_manager"]).default("staff"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
@@ -48,6 +57,7 @@ export const RegistrationForm = ({ onSubmitSuccess }: RegistrationFormProps) => 
       password: "",
       confirmPassword: "",
       reasonToJoin: "",
+      requestedRole: "staff",
     },
   });
 
@@ -94,6 +104,7 @@ export const RegistrationForm = ({ onSubmitSuccess }: RegistrationFormProps) => 
             last_name: values.lastName,
             display_name: values.displayName,
             reason_to_join: values.reasonToJoin || "",
+            requested_role: values.requestedRole,
           }
         }
       });
@@ -140,6 +151,34 @@ export const RegistrationForm = ({ onSubmitSuccess }: RegistrationFormProps) => 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <PersonalInfoFields form={form} disabled={isLoading} />
           <CredentialsFields form={form} disabled={isLoading} />
+          
+          <FormField
+            control={form.control}
+            name="requestedRole"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Requested Role</FormLabel>
+                <FormControl>
+                  <Select
+                    disabled={isLoading}
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="staff">General Staff</SelectItem>
+                      <SelectItem value="blogger">Blogger</SelectItem>
+                      <SelectItem value="content_manager">Content Manager</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
           <ReasonToJoinField form={form} disabled={isLoading} />
           
           <Button 
