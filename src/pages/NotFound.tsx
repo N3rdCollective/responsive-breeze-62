@@ -14,6 +14,14 @@ const NotFound = () => {
       location.pathname
     );
     
+    // Handle edit route pattern to redirect to editor
+    if (location.pathname.startsWith("/staff/news/edit/")) {
+      const postId = location.pathname.split("/").pop();
+      console.log(`Redirecting from /staff/news/edit/${postId} to /staff/news/editor/${postId}`);
+      navigate(`/staff/news/editor/${postId}`);
+      return;
+    }
+    
     // Handle specific route cases
     if (location.pathname === "/staff/news/edit") {
       // Redirect to the news editor

@@ -33,6 +33,8 @@ function App() {
       <Route path="/staff/registration" element={<StaffRegistration />} errorElement={<RouteErrorElement />} />
       <Route path="/staff/news/editor" element={<NewsEditor />} errorElement={<RouteErrorElement />} />
       <Route path="/staff/news/editor/:id" element={<NewsEditor />} errorElement={<RouteErrorElement />} />
+      {/* Add the new route for the edit feature */}
+      <Route path="/staff/news/edit/:id" element={<NewsEditor />} errorElement={<RouteErrorElement />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

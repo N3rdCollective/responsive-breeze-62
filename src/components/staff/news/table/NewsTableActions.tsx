@@ -26,7 +26,7 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) 
   
   const handleEdit = () => {
     console.log("Navigating to edit post with ID:", post.id);
-    navigate(`/staff/news/edit/${post.id}`);
+    navigate(`/staff/news/editor/${post.id}`);
   };
   
   const handleView = () => {
