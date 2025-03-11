@@ -35,7 +35,6 @@ const PendingStaffDataTable: React.FC<PendingStaffDataTableProps> = ({
                 key={staff.id}
                 staff={staff}
                 processingId={processingId}
-                canManageStaff={canManageStaff}
                 onApproveReject={onApproveReject}
                 currentUserRole=""
               />
