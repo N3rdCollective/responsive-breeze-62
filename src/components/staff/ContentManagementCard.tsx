@@ -8,10 +8,15 @@ interface ContentManagementCardProps {
 }
 
 export const ContentManagementCard = ({ userRole }: ContentManagementCardProps = {}) => {
-  const isAllowed = userRole === undefined || 
-                    userRole === "admin" || 
-                    userRole === "moderator" || 
-                    userRole === "super_admin";
+  // Content managers can only manage news and featured videos
+  const isAdmin = userRole === "admin" || userRole === "super_admin";
+  const isContentManager = userRole === "content_manager" || isAdmin;
+  const isModerator = userRole === "moderator" || isAdmin;
+  
+  // If not content manager or admin, don't show card
+  if (!isContentManager && !isModerator) {
+    return null;
+  }
   
   return (
     <Card>
@@ -42,27 +47,32 @@ export const ContentManagementCard = ({ userRole }: ContentManagementCardProps =
           </div>
         </Link>
         
-        <Link 
-          to="/staff/personalities" 
-          className="flex items-center p-3 hover:bg-accent rounded-md transition-colors"
-        >
-          <Users className="h-5 w-5 mr-3 text-primary" />
-          <div>
-            <div className="font-medium">Personalities</div>
-            <div className="text-sm text-muted-foreground">Manage radio personalities and DJs</div>
-          </div>
-        </Link>
-        
-        <Link 
-          to="/staff/shows" 
-          className="flex items-center p-3 hover:bg-accent rounded-md transition-colors"
-        >
-          <Radio className="h-5 w-5 mr-3 text-primary" />
-          <div>
-            <div className="font-medium">Radio Shows</div>
-            <div className="text-sm text-muted-foreground">Manage show schedule and details</div>
-          </div>
-        </Link>
+        {/* Only show personalities and shows management to admins and moderators */}
+        {(isAdmin || isModerator) && (
+          <>
+            <Link 
+              to="/staff/personalities" 
+              className="flex items-center p-3 hover:bg-accent rounded-md transition-colors"
+            >
+              <Users className="h-5 w-5 mr-3 text-primary" />
+              <div>
+                <div className="font-medium">Personalities</div>
+                <div className="text-sm text-muted-foreground">Manage radio personalities and DJs</div>
+              </div>
+            </Link>
+            
+            <Link 
+              to="/staff/shows" 
+              className="flex items-center p-3 hover:bg-accent rounded-md transition-colors"
+            >
+              <Radio className="h-5 w-5 mr-3 text-primary" />
+              <div>
+                <div className="font-medium">Radio Shows</div>
+                <div className="text-sm text-muted-foreground">Manage show schedule and details</div>
+              </div>
+            </Link>
+          </>
+        )}
       </CardContent>
     </Card>
   );

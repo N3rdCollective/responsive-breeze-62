@@ -15,6 +15,7 @@ const StaffNews = () => {
   const isAdmin = userRole === "admin";
   const isModerator = userRole === "moderator";
   const isSuperAdmin = userRole === "super_admin";
+  const isContentManager = userRole === "content_manager";
   
   const {
     filteredPosts,
@@ -30,7 +31,7 @@ const StaffNews = () => {
     return <LoadingSpinner />;
   }
 
-  if (!isAdmin && !isModerator && !isSuperAdmin) {
+  if (!isAdmin && !isModerator && !isSuperAdmin && !isContentManager) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />

@@ -10,6 +10,7 @@ interface StaffAuthState {
   isLoading: boolean;
   userRole: string;
   isAuthenticated: boolean;
+  isContentManager: boolean;
 }
 
 export const useStaffAuth = () => {
@@ -20,7 +21,8 @@ export const useStaffAuth = () => {
     isAdmin: false,
     isLoading: true,
     userRole: "",
-    isAuthenticated: false
+    isAuthenticated: false,
+    isContentManager: false
   });
 
   useEffect(() => {
@@ -76,6 +78,7 @@ export const useStaffAuth = () => {
         setState({
           staffName: staffData.first_name || staffData.email,
           isAdmin: userRole === "admin" || userRole === "super_admin",
+          isContentManager: userRole === "content_manager" || userRole === "admin" || userRole === "super_admin",
           isLoading: false,
           userRole: userRole,
           isAuthenticated: true
@@ -108,7 +111,8 @@ export const useStaffAuth = () => {
             isAdmin: false,
             isLoading: false,
             userRole: "",
-            isAuthenticated: false
+            isAuthenticated: false,
+            isContentManager: false
           });
         } else if (event === "SIGNED_IN" && session) {
           checkAuth();
@@ -137,7 +141,12 @@ export const useStaffAuth = () => {
       }
       
       console.log("User successfully made super admin");
-      setState(prev => ({ ...prev, isAdmin: true, userRole: "super_admin" }));
+      setState(prev => ({ 
+        ...prev, 
+        isAdmin: true, 
+        userRole: "super_admin",
+        isContentManager: true
+      }));
       toast({
         title: "Super Admin Access Granted",
         description: "You have been granted Super Admin access.",
