@@ -8,12 +8,12 @@ interface ContentManagementCardProps {
 }
 
 export const ContentManagementCard = ({ userRole }: ContentManagementCardProps = {}) => {
-  // Content managers can only manage news and featured videos
+  // Content managers, admins, and super_admins can manage news and featured videos
   const isAdmin = userRole === "admin" || userRole === "super_admin";
   const isContentManager = userRole === "content_manager" || isAdmin;
   const isModerator = userRole === "moderator" || isAdmin;
   
-  // If not content manager or admin, don't show card
+  // If not content manager, admin, or super_admin, don't show card
   if (!isContentManager && !isModerator) {
     return null;
   }
@@ -47,7 +47,7 @@ export const ContentManagementCard = ({ userRole }: ContentManagementCardProps =
           </div>
         </Link>
         
-        {/* Only show personalities and shows management to admins and moderators */}
+        {/* Only show personalities and shows management to admins, super_admins and moderators */}
         {(isAdmin || isModerator) && (
           <>
             <Link 
