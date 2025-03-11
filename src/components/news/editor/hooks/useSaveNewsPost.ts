@@ -97,9 +97,9 @@ export const useSaveNewsPost = () => {
         content,
         status,
         excerpt: finalExcerpt,
-        featured_image: featuredImageUrl || null, // Ensure this is always included
+        featured_image: featuredImageUrl || null,
         tags: tags || [],
-        author: null, // Set to null since we don't have a valid UUID
+        author: staffName, // Now using the provided staffName instead of null
         updated_at: new Date().toISOString(),
       };
       
@@ -110,7 +110,7 @@ export const useSaveNewsPost = () => {
         newsData['category'] = category || 'Uncategorized';
       }
       
-      console.log("Saving post data with featured_image:", newsData.featured_image);
+      console.log("Saving post data with author:", newsData.author);
       
       let result;
       
