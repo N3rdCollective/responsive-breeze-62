@@ -32,9 +32,9 @@ const MusicPlayer = () => {
     
     if (body) {
       if (isMobile && !isFullscreen) {
-        body.style.paddingBottom = "64px"; // 16px player height
+        body.style.paddingBottom = "64px"; // Add padding for mobile minimized player
       } else if (!isMobile) {
-        body.style.paddingBottom = "80px"; // 20px player height
+        body.style.paddingBottom = "80px"; // Add padding for desktop player
       } else {
         body.style.paddingBottom = "0";
       }
@@ -66,6 +66,7 @@ const MusicPlayer = () => {
   };
 
   const handlePlayPause = () => {
+    console.log("Player play/pause triggered, current state:", isPlaying);
     togglePlayPause();
     if (!isPlaying && isMobile) {
       setIsFullscreen(true);
@@ -109,8 +110,9 @@ const MusicPlayer = () => {
   }
 
   // Desktop player - always visible at the bottom of the screen
+  console.log("Rendering desktop player, isPlaying:", isPlaying);
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-20 bg-background border-t border-border shadow-lg z-40">
+    <div className="fixed bottom-0 left-0 right-0 h-20 bg-background border-t border-border shadow-lg z-50">
       <DesktopPlayer
         isPlaying={isPlaying}
         volume={volume}
