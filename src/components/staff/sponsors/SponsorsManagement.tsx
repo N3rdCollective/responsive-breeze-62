@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -96,35 +95,43 @@ const SponsorsManagement = () => {
     }
   };
 
-  // Fixed handleReorder function to match the expected signature
   const handleReorder = async (id: string, direction: "up" | "down") => {
     if (!sponsors) return;
     
-    // Find the current sponsor's index
     const currentIndex = sponsors.findIndex(s => s.id === id);
     if (currentIndex === -1) return;
     
-    // Calculate the target index based on direction
     const targetIndex = direction === "up" 
       ? Math.max(0, currentIndex - 1)
       : Math.min(sponsors.length - 1, currentIndex + 1);
     
-    // If we're already at the edge, do nothing
     if (currentIndex === targetIndex) return;
     
     try {
-      // Get the target sponsor
       const targetSponsor = sponsors[targetIndex];
       
-      // Swap display orders
       await updateSponsorMutation.mutateAsync({
         id,
-        data: { display_order: targetSponsor.display_order }
+        data: { 
+          name: sponsors[currentIndex].name,
+          logo_url: sponsors[currentIndex].logo_url || "",
+          website_url: sponsors[currentIndex].website_url || "",
+          description: sponsors[currentIndex].description || "",
+          is_active: sponsors[currentIndex].is_active
+        },
+        displayOrder: targetSponsor.display_order
       });
       
       await updateSponsorMutation.mutateAsync({
         id: targetSponsor.id,
-        data: { display_order: sponsors[currentIndex].display_order }
+        data: {
+          name: targetSponsor.name,
+          logo_url: targetSponsor.logo_url || "",
+          website_url: targetSponsor.website_url || "",
+          description: targetSponsor.description || "",
+          is_active: targetSponsor.is_active
+        },
+        displayOrder: sponsors[currentIndex].display_order
       });
     } catch (error) {
       console.error("Error reordering sponsors:", error);

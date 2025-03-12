@@ -37,9 +37,9 @@ const SponsorsSection = () => {
   }
 
   return (
-    <div className="mt-10 pt-6 border-t border-[#666666]/20 dark:border-white/10">
+    <div className="mt-10 pt-6 border-t border-[#666666]/20 dark:border-white/10 text-center">
       <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-[#FFD700]">Our Sponsors/Affiliates</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 justify-center max-w-4xl mx-auto">
         {sponsors.map((sponsor) => (
           <div key={sponsor.id} className="text-center">
             {sponsor.website_url ? (
