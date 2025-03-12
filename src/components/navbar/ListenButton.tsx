@@ -10,11 +10,16 @@ interface ListenButtonProps {
 const ListenButton = ({ isScrolled, isHomePage }: ListenButtonProps) => {
   const { togglePlayPause, isPlaying } = useAudioPlayer();
   
+  const handleClick = () => {
+    console.log("Listen button clicked, current playing state:", isPlaying);
+    togglePlayPause();
+  };
+  
   return (
     <Button 
       variant="default" 
       size="sm"
-      onClick={togglePlayPause}
+      onClick={handleClick}
       className={`
         ${isScrolled || !isHomePage
           ? "bg-[#FFD700] text-black hover:bg-[#FFD700]/90" 

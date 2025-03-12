@@ -32,9 +32,9 @@ const MusicPlayer = () => {
     
     if (body) {
       if (isMobile && !isFullscreen) {
-        body.style.paddingBottom = "0"; // Removed padding completely
+        body.style.paddingBottom = "64px"; // 16px player height
       } else if (!isMobile) {
-        body.style.paddingBottom = "0"; // Removed padding completely
+        body.style.paddingBottom = "80px"; // 20px player height
       } else {
         body.style.paddingBottom = "0";
       }
@@ -108,6 +108,7 @@ const MusicPlayer = () => {
     );
   }
 
+  // Desktop player - always visible at the bottom of the screen
   return (
     <div className="fixed bottom-0 left-0 right-0 h-20 bg-background border-t border-border shadow-lg z-40">
       <DesktopPlayer
