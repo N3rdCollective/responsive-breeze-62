@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -117,9 +118,9 @@ const SponsorsManagement = () => {
           logo_url: sponsors[currentIndex].logo_url || "",
           website_url: sponsors[currentIndex].website_url || "",
           description: sponsors[currentIndex].description || "",
-          is_active: sponsors[currentIndex].is_active
-        },
-        displayOrder: targetSponsor.display_order
+          is_active: sponsors[currentIndex].is_active,
+          display_order: targetSponsor.display_order
+        }
       });
       
       await updateSponsorMutation.mutateAsync({
@@ -129,9 +130,9 @@ const SponsorsManagement = () => {
           logo_url: targetSponsor.logo_url || "",
           website_url: targetSponsor.website_url || "",
           description: targetSponsor.description || "",
-          is_active: targetSponsor.is_active
-        },
-        displayOrder: sponsors[currentIndex].display_order
+          is_active: targetSponsor.is_active,
+          display_order: sponsors[currentIndex].display_order
+        }
       });
     } catch (error) {
       console.error("Error reordering sponsors:", error);
