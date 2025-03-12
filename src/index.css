@@ -93,6 +93,7 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    padding-bottom: 80px; /* Always add padding for the player */
   }
 
   #root {
@@ -107,6 +108,12 @@
 
   main {
     flex: 1;
+  }
+  
+  /* Ensure the music player is always visible */
+  #desktop-music-player {
+    display: block !important;
+    visibility: visible !important;
   }
 }
 

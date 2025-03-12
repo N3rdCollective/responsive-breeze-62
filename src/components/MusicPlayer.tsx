@@ -78,14 +78,16 @@ const MusicPlayer = () => {
     }
   };
 
-  // Force display block style for player container regardless of isPlaying
+  // Desktop player styling - always visible
   const desktopPlayerStyle = {
-    display: "block", // Always display
+    display: "block",
     position: "fixed",
     bottom: 0,
     left: 0,
     right: 0,
-    zIndex: 9999
+    zIndex: 9999,
+    height: "80px", // Ensure height is specified
+    width: "100%"
   } as React.CSSProperties;
 
   if (isMobile) {
@@ -126,8 +128,14 @@ const MusicPlayer = () => {
 
   // Desktop player - always visible at the bottom of the screen
   console.log("Rendering desktop player, isPlaying:", isPlaying);
+  
+  // Always render the desktop player regardless of playing state
   return (
-    <div style={desktopPlayerStyle} className="h-20 bg-background border-t border-border shadow-lg">
+    <div 
+      style={desktopPlayerStyle} 
+      className="bg-background border-t border-border shadow-lg"
+      id="desktop-music-player"
+    >
       <DesktopPlayer
         isPlaying={isPlaying}
         volume={volume}
