@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import { MinimizedPlayer } from "./player/MinimizedPlayer";
@@ -78,19 +77,20 @@ const MusicPlayer = () => {
     }
   };
 
-  // Desktop player styling - always visible
+  // Fixed desktop player style - guaranteed visibility
   const desktopPlayerStyle = {
-    display: "block",
     position: "fixed",
     bottom: 0,
     left: 0,
     right: 0,
-    zIndex: 9999,
-    height: "80px", // Ensure height is specified
-    width: "100%"
+    height: "80px",
+    width: "100%",
+    zIndex: 10000, // Ensure highest z-index
+    display: "block !important"
   } as React.CSSProperties;
 
   if (isMobile) {
+    // Mobile player rendering logic - unchanged
     return (
       <div className={`
         fixed transition-all duration-300 z-40
@@ -126,15 +126,13 @@ const MusicPlayer = () => {
     );
   }
 
-  // Desktop player - always visible at the bottom of the screen
-  console.log("Rendering desktop player, isPlaying:", isPlaying);
+  // Always render the desktop player regardless of state
+  console.log("Rendering desktop player");
   
-  // Always render the desktop player regardless of playing state
   return (
     <div 
       style={desktopPlayerStyle} 
       className="bg-background border-t border-border shadow-lg"
-      id="desktop-music-player"
     >
       <DesktopPlayer
         isPlaying={isPlaying}
