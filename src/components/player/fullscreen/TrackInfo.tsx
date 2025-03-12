@@ -16,7 +16,15 @@ export const TrackInfo = ({ title, artist, theme }: TrackInfoProps) => {
 
   useEffect(() => {
     if (titleRef.current) {
-      setShouldScroll(titleRef.current.scrollWidth > titleRef.current.clientWidth);
+      const containerWidth = titleRef.current.parentElement?.clientWidth || 0;
+      const textWidth = titleRef.current.scrollWidth;
+      setShouldScroll(textWidth > containerWidth);
+      
+      // Update the CSS animation duration based on text length
+      if (textWidth > containerWidth) {
+        const duration = Math.max(8, textWidth / 40); // Slower animation for fullscreen
+        titleRef.current.style.animationDuration = `${duration}s`;
+      }
     }
   }, [title]);
 
@@ -27,7 +35,7 @@ export const TrackInfo = ({ title, artist, theme }: TrackInfoProps) => {
           <h2 
             ref={titleRef}
             className={`text-2xl font-semibold whitespace-nowrap ${
-              shouldScroll ? 'animate-marquee' : 'truncate'
+              shouldScroll ? 'animate-marquee hover:pause-animation' : 'truncate'
             }`}
           >
             {title}

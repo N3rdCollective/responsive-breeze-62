@@ -31,7 +31,15 @@ export const MinimizedPlayer = ({
 
   useEffect(() => {
     if (titleRef.current) {
-      setShouldScroll(titleRef.current.scrollWidth > titleRef.current.clientWidth);
+      const containerWidth = titleRef.current.parentElement?.clientWidth || 0;
+      const textWidth = titleRef.current.scrollWidth;
+      setShouldScroll(textWidth > containerWidth);
+      
+      // Update the CSS animation duration based on text length
+      if (textWidth > containerWidth) {
+        const duration = Math.max(5, textWidth / 50); // Adjust speed based on length
+        titleRef.current.style.animationDuration = `${duration}s`;
+      }
     }
   }, [metadata.title]);
 
@@ -51,7 +59,7 @@ export const MinimizedPlayer = ({
             <p 
               ref={titleRef}
               className={`text-sm font-medium whitespace-nowrap ${
-                shouldScroll ? 'animate-marquee' : 'truncate'
+                shouldScroll ? 'animate-marquee hover:pause-animation' : 'truncate'
               }`}
             >
               {metadata.title}
