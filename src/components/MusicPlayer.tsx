@@ -20,6 +20,11 @@ const MusicPlayer = () => {
     toggleMute
   } = useAudioPlayer();
 
+  // Debug player state
+  useEffect(() => {
+    console.log("MusicPlayer component state:", { isPlaying, isMobile, isFullscreen });
+  }, [isPlaying, isMobile, isFullscreen]);
+
   useEffect(() => {
     if (isPlaying && isMobile) {
       setIsFullscreen(true);
@@ -73,6 +78,16 @@ const MusicPlayer = () => {
     }
   };
 
+  // Force display block style for player container regardless of isPlaying
+  const desktopPlayerStyle = {
+    display: "block", // Always display
+    position: "fixed",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 9999
+  } as React.CSSProperties;
+
   if (isMobile) {
     return (
       <div className={`
@@ -112,7 +127,7 @@ const MusicPlayer = () => {
   // Desktop player - always visible at the bottom of the screen
   console.log("Rendering desktop player, isPlaying:", isPlaying);
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-20 bg-background border-t border-border shadow-lg z-50">
+    <div style={desktopPlayerStyle} className="h-20 bg-background border-t border-border shadow-lg">
       <DesktopPlayer
         isPlaying={isPlaying}
         volume={volume}

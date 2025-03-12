@@ -11,6 +11,7 @@ let isUsingBackupStream = false;
  * Notify all listeners about state changes
  */
 const notifyListeners = () => {
+  console.log("AudioService: Notifying listeners, isPlaying =", globalIsPlaying);
   listeners.forEach(listener => listener());
 };
 
@@ -19,8 +20,10 @@ const notifyListeners = () => {
  */
 export const registerListener = (callback: () => void) => {
   listeners.push(callback);
+  console.log("AudioService: Registered listener, total listeners:", listeners.length);
   return () => {
     listeners = listeners.filter(l => l !== callback);
+    console.log("AudioService: Unregistered listener, remaining listeners:", listeners.length);
   };
 };
 
@@ -39,6 +42,7 @@ export const getIsUsingBackupStream = () => isUsingBackupStream;
  */
 export const setVolume = (volumeLevel: number) => {
   if (audioInstance) {
+    console.log("AudioService: Setting volume to", volumeLevel);
     audioInstance.volume = volumeLevel / 100;
   }
 };
@@ -47,6 +51,7 @@ export const setVolume = (volumeLevel: number) => {
  * Stop audio playback and cleanup
  */
 export const stopPlayback = () => {
+  console.log("AudioService: Stopping playback");
   if (audioInstance) {
     audioInstance.pause();
     audioInstance.src = "";
@@ -61,8 +66,12 @@ export const stopPlayback = () => {
  * @returns Promise that resolves with success status
  */
 export const startPlayback = async (volume: number): Promise<boolean> => {
+  console.log("AudioService: Starting playback, volume:", volume, "using backup:", isUsingBackupStream);
+  
   // Create a new audio element and load the stream
   const currentStreamUrl = isUsingBackupStream ? BACKUP_STREAM_URL : STREAM_URL;
+  console.log("AudioService: Using stream URL:", currentStreamUrl);
+  
   audioInstance = new Audio(currentStreamUrl);
   
   // Apply volume settings
@@ -70,8 +79,10 @@ export const startPlayback = async (volume: number): Promise<boolean> => {
   
   try {
     // Start playing
+    console.log("AudioService: Attempting to play stream");
     await audioInstance.play();
     globalIsPlaying = true;
+    console.log("AudioService: Playback started successfully");
     notifyListeners();
     return true;
   } catch (error) {
@@ -88,8 +99,10 @@ export const startPlayback = async (volume: number): Promise<boolean> => {
       
       try {
         // Play the backup stream
+        console.log("AudioService: Attempting to play backup stream");
         await audioInstance.play();
         globalIsPlaying = true;
+        console.log("AudioService: Backup stream playback started successfully");
         notifyListeners();
         return true;
       } catch (backupError) {
