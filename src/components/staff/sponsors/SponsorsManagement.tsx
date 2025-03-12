@@ -86,6 +86,23 @@ const SponsorsManagement = () => {
     }
   };
 
+  const handleToggleActive = async (id: string, isActive: boolean) => {
+    try {
+      await updateSponsorMutation.mutateAsync({
+        id,
+        data: { is_active: isActive }
+      });
+    } catch (error) {
+      console.error("Error toggling sponsor active status:", error);
+    }
+  };
+
+  const handleReorder = async (orderedIds: string[]) => {
+    // In a real implementation, this would update the display_order for all sponsors
+    console.log("Reordering sponsors:", orderedIds);
+    // This would typically be implemented with a batch update
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -105,8 +122,11 @@ const SponsorsManagement = () => {
         ) : (
           <SponsorsList 
             sponsors={sponsors}
+            isLoading={isLoading}
             onEdit={openEditDialog}
             onDelete={handleDeleteSponsor}
+            onReorder={handleReorder}
+            onToggleActive={handleToggleActive}
           />
         )}
 
