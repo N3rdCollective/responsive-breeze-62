@@ -8,12 +8,10 @@ import SponsorFormDialog from "./components/SponsorFormDialog";
 import { useSponsorsData } from "./hooks/useSponsorsData";
 import { useSponsorForm } from "./hooks/useSponsorForm";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { Sponsor } from "./types";
 
 const SponsorsManagement = () => {
-  const { toast } = useToast();
-  const { sponsors, loading, fetchSponsors } = useSponsorsData();
+  const { sponsors, isLoading, addSponsorMutation, updateSponsorMutation, deleteSponsorMutation } = useSponsorsData();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -44,26 +42,10 @@ const SponsorsManagement = () => {
         return;
       }
       
-      const { error } = await supabase
-        .from("sponsors_affiliates")
-        .insert([preparedData]);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Sponsor added successfully!",
-      });
-      
+      await addSponsorMutation.mutateAsync(preparedData);
       closeAddDialog();
-      fetchSponsors();
     } catch (error) {
       console.error("Error adding sponsor:", error);
-      toast({
-        title: "Error",
-        description: "Failed to add sponsor. Please try again.",
-        variant: "destructive",
-      });
     } finally {
       setIsSubmitting(false);
     }
@@ -80,58 +62,27 @@ const SponsorsManagement = () => {
         return;
       }
       
-      const { error } = await supabase
-        .from("sponsors_affiliates")
-        .update(preparedData)
-        .eq("id", currentSponsor.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Sponsor updated successfully!",
+      await updateSponsorMutation.mutateAsync({
+        id: currentSponsor.id,
+        data: preparedData
       });
-      
       closeEditDialog();
-      fetchSponsors();
     } catch (error) {
       console.error("Error updating sponsor:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update sponsor. Please try again.",
-        variant: "destructive",
-      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDeleteSponsor = async (sponsor: Sponsor) => {
-    if (!window.confirm(`Are you sure you want to delete ${sponsor.name}?`)) {
+  const handleDeleteSponsor = async (id: string) => {
+    if (!window.confirm(`Are you sure you want to delete this sponsor?`)) {
       return;
     }
 
     try {
-      const { error } = await supabase
-        .from("sponsors_affiliates")
-        .delete()
-        .eq("id", sponsor.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Sponsor deleted successfully!",
-      });
-      
-      fetchSponsors();
+      await deleteSponsorMutation.mutateAsync(id);
     } catch (error) {
       console.error("Error deleting sponsor:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete sponsor. Please try again.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -147,7 +98,7 @@ const SponsorsManagement = () => {
         </Button>
       </CardHeader>
       <CardContent>
-        {loading ? (
+        {isLoading ? (
           <div className="flex justify-center items-center h-40">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
@@ -161,7 +112,7 @@ const SponsorsManagement = () => {
 
         <SponsorFormDialog
           open={isAddDialogOpen}
-          onOpenChange={setIsAddDialogOpen}
+          onOpenChange={closeAddDialog}
           title="Add Sponsor"
           description="Add a new sponsor or affiliate to your site."
           formData={formData}
@@ -175,7 +126,7 @@ const SponsorsManagement = () => {
 
         <SponsorFormDialog
           open={isEditDialogOpen}
-          onOpenChange={setIsEditDialogOpen}
+          onOpenChange={closeEditDialog}
           title="Edit Sponsor"
           description="Update sponsor information."
           formData={formData}

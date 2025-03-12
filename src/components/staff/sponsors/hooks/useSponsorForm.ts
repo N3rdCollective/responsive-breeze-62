@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Sponsor, SponsorFormData } from "../types";
@@ -32,7 +31,6 @@ export const useSponsorForm = (sponsors?: Sponsor[]) => {
 
   const handleFileChange = (file: File | null) => {
     setFormData(prev => ({ ...prev, logo_file: file }));
-    // If a file is selected, clear the logo_url field
     if (file) {
       setFormData(prev => ({ ...prev, logo_url: "" }));
     }
@@ -41,12 +39,10 @@ export const useSponsorForm = (sponsors?: Sponsor[]) => {
   const uploadLogo = async (file: File): Promise<string | null> => {
     setIsUploading(true);
     try {
-      // Generate a unique file name to prevent collisions
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
       const filePath = `sponsors/${fileName}`;
 
-      // Upload to public folder
       const { error: uploadError, data } = await supabase
         .storage
         .from('public')
@@ -59,7 +55,6 @@ export const useSponsorForm = (sponsors?: Sponsor[]) => {
         throw new Error(uploadError.message);
       }
 
-      // Get public URL
       const { data: { publicUrl } } = supabase
         .storage
         .from('public')
@@ -95,24 +90,6 @@ export const useSponsorForm = (sponsors?: Sponsor[]) => {
     setFormData(defaultFormValues);
   };
 
-  const openAddDialog = () => {
-    resetForm();
-    setIsAddDialogOpen(true);
-  };
-
-  const openEditDialog = (sponsor: Sponsor) => {
-    setCurrentSponsor(sponsor);
-    setFormData({
-      name: sponsor.name,
-      logo_url: sponsor.logo_url || "",
-      website_url: sponsor.website_url || "",
-      description: sponsor.description || "",
-      is_active: sponsor.is_active,
-      logo_file: null
-    });
-    setIsEditDialogOpen(true);
-  };
-
   const closeAddDialog = () => {
     setIsAddDialogOpen(false);
     resetForm();
@@ -127,13 +104,11 @@ export const useSponsorForm = (sponsors?: Sponsor[]) => {
   const prepareFormDataForSubmit = async (): Promise<Omit<SponsorFormData & { display_order?: number }, "id" | "logo_file"> | null> => {
     let logoUrl = formData.logo_url.trim();
     
-    // If a file was selected, upload it
     if (formData.logo_file) {
       const uploadedUrl = await uploadLogo(formData.logo_file);
       if (uploadedUrl) {
         logoUrl = uploadedUrl;
       } else {
-        // If upload failed, return null to abort submission
         return null;
       }
     }
@@ -159,8 +134,22 @@ export const useSponsorForm = (sponsors?: Sponsor[]) => {
     handleFileChange,
     validateForm,
     resetForm,
-    openAddDialog,
-    openEditDialog,
+    openAddDialog: () => {
+      resetForm();
+      setIsAddDialogOpen(true);
+    },
+    openEditDialog: (sponsor: Sponsor) => {
+      setCurrentSponsor(sponsor);
+      setFormData({
+        name: sponsor.name,
+        logo_url: sponsor.logo_url || "",
+        website_url: sponsor.website_url || "",
+        description: sponsor.description || "",
+        is_active: sponsor.is_active,
+        logo_file: null
+      });
+      setIsEditDialogOpen(true);
+    },
     closeAddDialog,
     closeEditDialog,
     prepareFormDataForSubmit

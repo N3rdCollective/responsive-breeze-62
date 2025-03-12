@@ -10,7 +10,7 @@ export const useSponsorsData = () => {
   const queryClient = useQueryClient();
   
   // Fetch sponsors
-  const { data: sponsors, isLoading } = useQuery({
+  const { data: sponsors = [], isLoading } = useQuery({
     queryKey: ["sponsors"],
     queryFn: async () => {
       const { data, error } = await supabase
