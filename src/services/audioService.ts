@@ -55,6 +55,10 @@ export const stopPlayback = () => {
   if (audioInstance) {
     audioInstance.pause();
     audioInstance.src = "";
+    // Remove all event listeners
+    audioInstance.onplay = null;
+    audioInstance.onpause = null;
+    audioInstance.onerror = null;
     audioInstance = null;
   }
   globalIsPlaying = false;
@@ -67,6 +71,11 @@ export const stopPlayback = () => {
  */
 export const startPlayback = async (volume: number): Promise<boolean> => {
   console.log("AudioService: Starting playback, volume:", volume, "using backup:", isUsingBackupStream);
+  
+  // Stop any existing playback first to prevent multiple instances
+  if (audioInstance) {
+    stopPlayback();
+  }
   
   // Create a new audio element and load the stream
   const currentStreamUrl = isUsingBackupStream ? BACKUP_STREAM_URL : STREAM_URL;
@@ -94,6 +103,11 @@ export const startPlayback = async (volume: number): Promise<boolean> => {
       console.log("Trying backup stream:", BACKUP_STREAM_URL);
       
       // Create a new audio element with the backup stream
+      if (audioInstance) {
+        audioInstance.pause();
+        audioInstance.src = "";
+      }
+      
       audioInstance = new Audio(BACKUP_STREAM_URL);
       audioInstance.volume = volume / 100;
       
