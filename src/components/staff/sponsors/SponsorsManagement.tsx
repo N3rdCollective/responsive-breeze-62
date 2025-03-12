@@ -7,7 +7,6 @@ import SponsorsList from "./components/SponsorsList";
 import SponsorFormDialog from "./components/SponsorFormDialog";
 import { useSponsorsData } from "./hooks/useSponsorsData";
 import { useSponsorForm } from "./hooks/useSponsorForm";
-import { useToast } from "@/hooks/use-toast";
 import { Sponsor } from "./types";
 
 const SponsorsManagement = () => {
@@ -97,10 +96,39 @@ const SponsorsManagement = () => {
     }
   };
 
-  const handleReorder = async (orderedIds: string[]) => {
-    // In a real implementation, this would update the display_order for all sponsors
-    console.log("Reordering sponsors:", orderedIds);
-    // This would typically be implemented with a batch update
+  // Fixed handleReorder function to match the expected signature
+  const handleReorder = async (id: string, direction: "up" | "down") => {
+    if (!sponsors) return;
+    
+    // Find the current sponsor's index
+    const currentIndex = sponsors.findIndex(s => s.id === id);
+    if (currentIndex === -1) return;
+    
+    // Calculate the target index based on direction
+    const targetIndex = direction === "up" 
+      ? Math.max(0, currentIndex - 1)
+      : Math.min(sponsors.length - 1, currentIndex + 1);
+    
+    // If we're already at the edge, do nothing
+    if (currentIndex === targetIndex) return;
+    
+    try {
+      // Get the target sponsor
+      const targetSponsor = sponsors[targetIndex];
+      
+      // Swap display orders
+      await updateSponsorMutation.mutateAsync({
+        id,
+        data: { display_order: targetSponsor.display_order }
+      });
+      
+      await updateSponsorMutation.mutateAsync({
+        id: targetSponsor.id,
+        data: { display_order: sponsors[currentIndex].display_order }
+      });
+    } catch (error) {
+      console.error("Error reordering sponsors:", error);
+    }
   };
 
   return (
