@@ -15,4 +15,10 @@ export interface SponsorFormData {
   website_url: string;
   description: string;
   is_active: boolean;
+  logo_file?: File | null;
+}
+
+export interface LogoUploadResponse {
+  url: string;
+  error?: string;
 }
