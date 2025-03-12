@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Sponsor, SponsorFormData } from "../types";
@@ -101,7 +102,7 @@ export const useSponsorForm = (sponsors?: Sponsor[]) => {
     resetForm();
   };
 
-  const prepareFormDataForSubmit = async (): Promise<Omit<SponsorFormData & { display_order?: number }, "id" | "logo_file"> | null> => {
+  const prepareFormDataForSubmit = async (): Promise<Omit<SponsorFormData, "logo_file"> | null> => {
     let logoUrl = formData.logo_url.trim();
     
     if (formData.logo_file) {
@@ -119,7 +120,7 @@ export const useSponsorForm = (sponsors?: Sponsor[]) => {
       website_url: formData.website_url.trim() || null,
       description: formData.description.trim() || null,
       is_active: formData.is_active,
-      display_order: sponsors ? sponsors.length : 0,
+      display_order: currentSponsor?.display_order ?? (sponsors?.length || 0),
     };
   };
 
@@ -146,7 +147,8 @@ export const useSponsorForm = (sponsors?: Sponsor[]) => {
         website_url: sponsor.website_url || "",
         description: sponsor.description || "",
         is_active: sponsor.is_active,
-        logo_file: null
+        logo_file: null,
+        display_order: sponsor.display_order
       });
       setIsEditDialogOpen(true);
     },

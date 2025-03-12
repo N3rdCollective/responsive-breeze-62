@@ -16,6 +16,7 @@ export interface SponsorFormData {
   description: string;
   is_active: boolean;
   logo_file?: File | null;
+  display_order?: number;
 }
 
 export interface LogoUploadResponse {
