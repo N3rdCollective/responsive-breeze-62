@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -109,19 +110,13 @@
     flex: 1;
   }
   
-  /* Overrides to absolutely force visibility of the music player */
-  .MusicPlayer, 
-  [class*="MusicPlayer"],
-  [id*="music-player"],
-  [id*="musicPlayer"] {
+  /* Important player visibility rules */
+  #desktop-music-player,
+  #music-player-container {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    z-index: 10000 !important;
+    z-index: 9999 !important;
   }
 }
 

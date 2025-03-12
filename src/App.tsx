@@ -19,31 +19,37 @@ import StaffSponsors from "@/pages/StaffSponsors";
 import StaffSystemSettings from "@/pages/StaffSystemSettings";
 import StaffHomePage from "@/pages/StaffHomePage";
 import StaffPersonalitiesPage from "@/pages/StaffPersonalitiesPage";
+import MusicPlayer from "@/components/MusicPlayer";
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Index />} errorElement={<RouteErrorElement />} />
-      <Route path="/about" element={<About />} errorElement={<RouteErrorElement />} />
-      <Route path="/contact" element={<Contact />} errorElement={<RouteErrorElement />} />
-      <Route path="/schedule" element={<Schedule />} errorElement={<RouteErrorElement />} />
-      <Route path="/news" element={<News />} errorElement={<RouteErrorElement />} />
-      <Route path="/news/:id" element={<NewsPost />} errorElement={<RouteErrorElement />} />
-      <Route path="/personalities" element={<Personalities />} errorElement={<RouteErrorElement />} />
-      <Route path="/staff" element={<StaffDashboard />} errorElement={<RouteErrorElement />} />
-      <Route path="/staff/news" element={<StaffNews />} errorElement={<RouteErrorElement />} />
-      <Route path="/staff/login" element={<StaffLogin />} errorElement={<RouteErrorElement />} />
-      <Route path="/staff/signup" element={<StaffSignup />} errorElement={<RouteErrorElement />} />
-      <Route path="/staff/registration" element={<StaffRegistration />} errorElement={<RouteErrorElement />} />
-      <Route path="/staff/news/editor" element={<NewsEditor />} errorElement={<RouteErrorElement />} />
-      <Route path="/staff/news/editor/:id" element={<NewsEditor />} errorElement={<RouteErrorElement />} />
-      <Route path="/staff/news/edit/:id" element={<NewsEditor />} errorElement={<RouteErrorElement />} />
-      <Route path="/staff/sponsors" element={<StaffSponsors />} errorElement={<RouteErrorElement />} />
-      <Route path="/staff/system-settings" element={<StaffSystemSettings />} errorElement={<RouteErrorElement />} />
-      <Route path="/staff/home" element={<StaffHomePage />} errorElement={<RouteErrorElement />} />
-      <Route path="/staff/personalities" element={<StaffPersonalitiesPage />} errorElement={<RouteErrorElement />} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/" element={<Index />} errorElement={<RouteErrorElement />} />
+        <Route path="/about" element={<About />} errorElement={<RouteErrorElement />} />
+        <Route path="/contact" element={<Contact />} errorElement={<RouteErrorElement />} />
+        <Route path="/schedule" element={<Schedule />} errorElement={<RouteErrorElement />} />
+        <Route path="/news" element={<News />} errorElement={<RouteErrorElement />} />
+        <Route path="/news/:id" element={<NewsPost />} errorElement={<RouteErrorElement />} />
+        <Route path="/personalities" element={<Personalities />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff" element={<StaffDashboard />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/news" element={<StaffNews />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/login" element={<StaffLogin />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/signup" element={<StaffSignup />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/registration" element={<StaffRegistration />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/news/editor" element={<NewsEditor />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/news/editor/:id" element={<NewsEditor />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/news/edit/:id" element={<NewsEditor />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/sponsors" element={<StaffSponsors />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/system-settings" element={<StaffSystemSettings />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/home" element={<StaffHomePage />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/personalities" element={<StaffPersonalitiesPage />} errorElement={<RouteErrorElement />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      
+      {/* Always render the MusicPlayer outside of routes to ensure it's always visible */}
+      <MusicPlayer />
+    </>
   );
 }
 

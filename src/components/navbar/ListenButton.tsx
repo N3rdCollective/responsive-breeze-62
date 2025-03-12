@@ -11,7 +11,6 @@ interface ListenButtonProps {
 const ListenButton = ({ isScrolled, isHomePage }: ListenButtonProps) => {
   const { togglePlayPause, isPlaying } = useAudioPlayer();
   
-  // Log the current playing status when it changes
   useEffect(() => {
     console.log("ListenButton - Current playing state:", isPlaying);
   }, [isPlaying]);
@@ -19,6 +18,17 @@ const ListenButton = ({ isScrolled, isHomePage }: ListenButtonProps) => {
   const handleClick = () => {
     console.log("Listen button clicked, current playing state:", isPlaying);
     togglePlayPause();
+    
+    // Make sure player is visible by scrolling to it if needed
+    const player = document.getElementById('desktop-music-player') || 
+                  document.getElementById('music-player-container');
+    
+    if (player) {
+      console.log("Found player element, ensuring visibility");
+      player.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    } else {
+      console.error("No player element found in the DOM");
+    }
   };
   
   return (

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import { MinimizedPlayer } from "./player/MinimizedPlayer";
@@ -21,7 +22,7 @@ const MusicPlayer = () => {
 
   // Debug player state
   useEffect(() => {
-    console.log("MusicPlayer component state:", { isPlaying, isMobile, isFullscreen });
+    console.log("MusicPlayer component rendered", { isPlaying, isMobile, isFullscreen });
   }, [isPlaying, isMobile, isFullscreen]);
 
   useEffect(() => {
@@ -77,28 +78,18 @@ const MusicPlayer = () => {
     }
   };
 
-  // Fixed desktop player style - guaranteed visibility
-  const desktopPlayerStyle = {
-    position: "fixed",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: "80px",
-    width: "100%",
-    zIndex: 10000, // Ensure highest z-index
-    display: "block !important"
-  } as React.CSSProperties;
-
   if (isMobile) {
-    // Mobile player rendering logic - unchanged
     return (
-      <div className={`
-        fixed transition-all duration-300 z-40
-        ${isFullscreen 
-          ? 'top-0 left-0 right-0 bottom-0 h-screen' 
-          : 'bottom-0 left-0 right-0 h-16 bg-background border-t border-border'
-        }
-      `}>
+      <div 
+        id="music-player-container"
+        className={`
+          fixed transition-all duration-300 z-50
+          ${isFullscreen 
+            ? 'top-0 left-0 right-0 bottom-0 h-screen' 
+            : 'bottom-0 left-0 right-0 h-16 bg-background border-t border-border'
+          }
+        `}
+      >
         {!isFullscreen 
           ? <MinimizedPlayer 
               isPlaying={isPlaying}
@@ -126,13 +117,13 @@ const MusicPlayer = () => {
     );
   }
 
-  // Always render the desktop player regardless of state
   console.log("Rendering desktop player");
   
+  // For desktop view
   return (
     <div 
-      style={desktopPlayerStyle} 
-      className="bg-background border-t border-border shadow-lg"
+      id="desktop-music-player"
+      className="fixed bottom-0 left-0 right-0 w-full h-20 bg-background border-t border-border shadow-lg z-50"
     >
       <DesktopPlayer
         isPlaying={isPlaying}
