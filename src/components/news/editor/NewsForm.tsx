@@ -29,6 +29,7 @@ interface NewsFormProps {
   isPreviewModalOpen?: boolean;
   setIsPreviewModalOpen?: (isOpen: boolean) => void;
   authorName?: string;
+  canPublish?: boolean;
 }
 
 const NewsForm: React.FC<NewsFormProps> = ({
@@ -51,7 +52,8 @@ const NewsForm: React.FC<NewsFormProps> = ({
   isUploading,
   isPreviewModalOpen = false,
   setIsPreviewModalOpen = () => {},
-  authorName = "Staff Author"
+  authorName = "Staff Author",
+  canPublish = false
 }) => {
   const [activeTab, setActiveTab] = useState<string>("edit");
   
@@ -85,6 +87,7 @@ const NewsForm: React.FC<NewsFormProps> = ({
               currentFeaturedImageUrl={currentFeaturedImageUrl}
               onImageSelected={onImageSelected}
               onOpenPreview={handleOpenPreview}
+              canPublish={canPublish}
             />
           </TabsContent>
           

@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/select";
 import { NewsStatus } from "../NewsForm";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { X, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Predefined categories for the dropdown
 const PREDEFINED_CATEGORIES = [
@@ -37,6 +38,7 @@ interface NewsFormBasicFieldsProps {
   setCategory: (category: string) => void;
   tags: string[];
   setTags: (tags: string[]) => void;
+  canPublish?: boolean;
 }
 
 const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
@@ -50,6 +52,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
   setCategory,
   tags,
   setTags,
+  canPublish = false,
 }) => {
   const [tagInput, setTagInput] = React.useState("");
   
@@ -136,6 +139,14 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
       
       <div>
         <Label htmlFor="status">Status</Label>
+        {!canPublish && status === "draft" && (
+          <Alert className="mb-2 text-amber-800 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-300">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              You need admin permissions to publish posts
+            </AlertDescription>
+          </Alert>
+        )}
         <Select
           value={status}
           onValueChange={(value: NewsStatus) => setStatus(value)}
@@ -145,7 +156,13 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
           </SelectTrigger>
           <SelectContent className="bg-popover text-popover-foreground">
             <SelectItem value="draft">Draft</SelectItem>
-            <SelectItem value="published">Published</SelectItem>
+            {canPublish ? (
+              <SelectItem value="published">Published</SelectItem>
+            ) : (
+              <SelectItem value="published" disabled>
+                Published (Requires Admin Permission)
+              </SelectItem>
+            )}
           </SelectContent>
         </Select>
       </div>

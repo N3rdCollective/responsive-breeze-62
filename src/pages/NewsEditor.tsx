@@ -25,10 +25,10 @@ interface NewsPost {
 
 const NewsEditor = () => {
   const { id } = useParams<{ id: string }>();
-  const { staffName, isLoading: authLoading } = useStaffAuth();
+  const { staffName, isLoading: authLoading, userRole } = useStaffAuth();
   const navigate = useNavigate();
   
-  console.log("NewsEditor loaded with id:", id);
+  console.log("NewsEditor loaded with id:", id, "User role:", userRole);
   
   const {
     title,
@@ -49,10 +49,11 @@ const NewsEditor = () => {
     isUploading,
     isPreviewModalOpen,
     setIsPreviewModalOpen,
+    canPublish,
     fetchNewsPost,
     handleImageSelected,
     handleSave
-  } = useNewsEditor({ id, staffName });
+  } = useNewsEditor({ id, staffName, userRole });
   
   useEffect(() => {
     if (authLoading) return;
@@ -128,6 +129,7 @@ const NewsEditor = () => {
         isPreviewModalOpen={isPreviewModalOpen}
         setIsPreviewModalOpen={setIsPreviewModalOpen}
         authorName={staffName}
+        canPublish={canPublish}
       />
     </div>
   );
