@@ -50,8 +50,9 @@ const EditorTabContent: React.FC<EditorTabContentProps> = ({
           <CardContent className="p-6">
             <div className="space-y-6">
               <RichTextEditor
-                content={content}
-                onUpdate={(newContent) => setContent(newContent)}
+                id="content-editor"
+                value={content}
+                onChange={(newContent) => setContent(newContent)}
               />
             </div>
           </CardContent>
@@ -82,7 +83,6 @@ const EditorTabContent: React.FC<EditorTabContentProps> = ({
             <ImageUploader
               currentImageUrl={currentFeaturedImageUrl}
               onImageSelected={onImageSelected}
-              label="Featured Image"
             />
           </CardContent>
         </Card>
