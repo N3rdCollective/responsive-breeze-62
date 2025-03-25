@@ -85,9 +85,9 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
   
   // Save the news post
   const handleSave = async () => {
-    console.log("Save requested with featured image:", featuredImage?.name);
-    console.log("Current featured image URL:", currentFeaturedImageUrl);
+    console.log("Save requested with status:", status);
     console.log("User role:", userRole, "Can publish:", canPublish);
+    console.log("Current ID:", id);
     
     // If trying to publish but doesn't have permission, save as draft
     const finalStatus = (status === 'published' && !canPublish) ? 'draft' : status;

@@ -48,6 +48,9 @@ export const useSaveNewsPost = () => {
     const { id, title, content, excerpt, status, category, tags, featuredImage, currentFeaturedImageUrl, staffName } = postData;
     const { uploadImage, setIsSaving, setIsUploading, onSuccess } = callbacks;
     
+    console.log("SaveNewsPost - Starting save with ID:", id);
+    console.log("SaveNewsPost - Post status:", status);
+    
     if (!title || !content) {
       toast({
         title: "Missing Information",
@@ -124,7 +127,12 @@ export const useSaveNewsPost = () => {
         console.log("Update result:", result);
         
         if (result.error) {
+          console.error("Database error details:", result.error);
           throw new Error(`Database error: ${result.error.message} (${result.error.code})`);
+        }
+        
+        if (result.data && result.data.length === 0) {
+          console.warn("Update query succeeded but no rows were affected");
         }
       } else {
         // Create new post
