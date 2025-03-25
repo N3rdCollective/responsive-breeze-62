@@ -25,12 +25,18 @@ export const useNewsData = () => {
       id: postData.id,
       title: postData.title,
       status: postData.status,
+      category: postData.category,
       userRole: "admin", // For debugging
       currentFeaturedImageUrl: postData.currentFeaturedImageUrl,
-      category: postData.category
     });
     
-    return await saveNewsPost(postData, callbacks);
+    // Ensure category is always passed, even if empty
+    const dataToSave: NewsPostData = {
+      ...postData,
+      category: postData.category || 'Uncategorized'
+    };
+    
+    return await saveNewsPost(dataToSave, callbacks);
   };
 
   return {

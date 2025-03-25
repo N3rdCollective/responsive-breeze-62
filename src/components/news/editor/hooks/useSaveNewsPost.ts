@@ -30,7 +30,7 @@ export interface SaveNewsPostCallbacks {
 }
 
 /**
- * Hook for saving news post data
+ * Hook for saving news post
  * @returns Function to save news post
  */
 export const useSaveNewsPost = () => {
@@ -51,6 +51,16 @@ export const useSaveNewsPost = () => {
     console.log("SaveNewsPost - Starting save with ID:", id);
     console.log("SaveNewsPost - Post status:", status);
     console.log("SaveNewsPost - Post category:", category);
+    console.log("SaveNewsPost - Post data:", JSON.stringify({
+      title,
+      excerpt: excerpt ? `${excerpt.substring(0, 30)}...` : 'none',
+      status,
+      category,
+      tags,
+      staffName,
+      currentFeaturedImageUrl: currentFeaturedImageUrl ? 'Has image' : 'No image',
+      featuredImage: featuredImage ? `${featuredImage.name} (${featuredImage.size} bytes)` : 'None'
+    }));
     
     if (!title || !content) {
       toast({
@@ -96,7 +106,7 @@ export const useSaveNewsPost = () => {
       console.log("Generated excerpt:", finalExcerpt);
       
       // Prepare the data for the database
-      const newsData: any = {
+      const newsData = {
         title,
         content,
         status,
@@ -116,7 +126,6 @@ export const useSaveNewsPost = () => {
         // Update existing post
         console.log("Updating existing post with ID:", id);
         
-        // Fix: Use single() instead of select() for update operation
         result = await supabase
           .from("posts")
           .update(newsData)
@@ -127,6 +136,19 @@ export const useSaveNewsPost = () => {
         if (result.error) {
           console.error("Database error details:", result.error);
           throw new Error(`Database error: ${result.error.message} (${result.error.code})`);
+        }
+        
+        // Fetch the updated post to confirm changes
+        const { data: updatedPost, error: fetchError } = await supabase
+          .from("posts")
+          .select("*")
+          .eq("id", id)
+          .maybeSingle();
+          
+        if (fetchError) {
+          console.error("Error fetching updated post:", fetchError);
+        } else {
+          console.log("Post updated successfully, fetched data:", updatedPost);
         }
       } else {
         // Create new post

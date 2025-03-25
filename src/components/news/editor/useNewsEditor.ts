@@ -103,6 +103,19 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
       });
     }
     
+    console.log("Saving post with final data:", {
+      id,
+      title,
+      content: content ? `${content.substring(0, 30)}...` : 'empty',
+      excerpt: excerpt ? `${excerpt.substring(0, 30)}...` : 'empty',
+      status: finalStatus,
+      category,
+      tags,
+      featuredImage: featuredImage ? 'Selected' : 'None',
+      currentFeaturedImageUrl: currentFeaturedImageUrl ? 'Has URL' : 'None',
+      staffName
+    });
+    
     await saveNewsPost(
       {
         id,
