@@ -32,7 +32,12 @@ const StaffPanel = () => {
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 pt-24 pb-16">
         <div className="space-y-8">
-          <StaffHeader staffName={staffName} isAdmin={isAdmin} />
+          <StaffHeader 
+            staffName={staffName} 
+            isAdmin={isAdmin} 
+            showLogoutButton={true}
+            onLogout={handleLogout}
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <ContentManagementCard />
