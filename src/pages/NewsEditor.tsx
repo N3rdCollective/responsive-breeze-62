@@ -63,9 +63,10 @@ const NewsEditor = () => {
     }
     
     console.log("Calling fetchNewsPost with id:", id);
+    console.log("Current user role:", userRole);
     // Call fetchNewsPost which now handles both new and existing posts
     fetchNewsPost();
-  }, [id, staffName, authLoading, fetchNewsPost]);
+  }, [id, staffName, authLoading, fetchNewsPost, userRole]);
   
   if (authLoading) {
     return (

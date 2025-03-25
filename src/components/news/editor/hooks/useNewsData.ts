@@ -24,7 +24,8 @@ export const useNewsData = () => {
     console.log("useNewsData - savePost called with data:", {
       id: postData.id,
       title: postData.title,
-      status: postData.status
+      status: postData.status,
+      userRole: "admin" // For debugging
     });
     
     return await saveNewsPost(postData, callbacks);

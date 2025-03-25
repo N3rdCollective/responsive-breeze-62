@@ -107,7 +107,7 @@ export const useSaveNewsPost = () => {
       };
       
       // For category updates
-      if (!id || category) {
+      if (category) {
         newsData['category'] = category || 'Uncategorized';
       }
       
