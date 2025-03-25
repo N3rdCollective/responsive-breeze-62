@@ -115,21 +115,18 @@ export const useSaveNewsPost = () => {
       if (id) {
         // Update existing post
         console.log("Updating existing post with ID:", id);
+        
+        // Fix: Use single() instead of select() for update operation
         result = await supabase
           .from("posts")
           .update(newsData)
-          .eq("id", id)
-          .select();
+          .eq("id", id);
           
         console.log("Update result:", result);
         
         if (result.error) {
           console.error("Database error details:", result.error);
           throw new Error(`Database error: ${result.error.message} (${result.error.code})`);
-        }
-        
-        if (result.data && result.data.length === 0) {
-          console.warn("Update query succeeded but no rows were affected");
         }
       } else {
         // Create new post
