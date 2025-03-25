@@ -60,6 +60,8 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
     }
     
     console.log("Fetching post data for ID:", id);
+    console.log("Current user role:", userRole);
+    
     await fetchNewsPost(id, {
       setTitle,
       setContent,
@@ -70,7 +72,7 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
       setCurrentFeaturedImageUrl,
       setIsLoading
     });
-  }, [id, fetchNewsPost, setTitle, setContent, setExcerpt, setStatus, setCategory, setTags, setCurrentFeaturedImageUrl, setIsLoading]);
+  }, [id, fetchNewsPost, setTitle, setContent, setExcerpt, setStatus, setCategory, setTags, setCurrentFeaturedImageUrl, setIsLoading, userRole]);
 
   // Handle image selection
   const handleImageSelected = (file: File) => {
@@ -88,6 +90,7 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
     console.log("Save requested with status:", status);
     console.log("User role:", userRole, "Can publish:", canPublish);
     console.log("Current ID:", id);
+    console.log("Current category:", category);
     
     // If trying to publish but doesn't have permission, save as draft
     const finalStatus = (status === 'published' && !canPublish) ? 'draft' : status;

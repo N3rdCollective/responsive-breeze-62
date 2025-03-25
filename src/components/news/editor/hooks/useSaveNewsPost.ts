@@ -50,6 +50,7 @@ export const useSaveNewsPost = () => {
     
     console.log("SaveNewsPost - Starting save with ID:", id);
     console.log("SaveNewsPost - Post status:", status);
+    console.log("SaveNewsPost - Post category:", category);
     
     if (!title || !content) {
       toast({
@@ -103,13 +104,9 @@ export const useSaveNewsPost = () => {
         featured_image: featuredImageUrl || null,
         tags: tags || [],
         updated_at: new Date().toISOString(),
-        author_name: staffName || 'Staff Author'
+        author_name: staffName || 'Staff Author',
+        category: category || 'Uncategorized' // Always include category in the update
       };
-      
-      // For category updates
-      if (category) {
-        newsData['category'] = category || 'Uncategorized';
-      }
       
       console.log("Saving post data:", newsData);
       

@@ -25,7 +25,9 @@ export const useNewsData = () => {
       id: postData.id,
       title: postData.title,
       status: postData.status,
-      userRole: "admin" // For debugging
+      userRole: "admin", // For debugging
+      currentFeaturedImageUrl: postData.currentFeaturedImageUrl,
+      category: postData.category
     });
     
     return await saveNewsPost(postData, callbacks);
