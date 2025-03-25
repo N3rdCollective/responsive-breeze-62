@@ -91,6 +91,8 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
     console.log("User role:", userRole, "Can publish:", canPublish);
     console.log("Current ID:", id);
     console.log("Current category:", category);
+    console.log("Current title:", title);
+    console.log("Current content length:", content?.length || 0);
     
     // If trying to publish but doesn't have permission, save as draft
     const finalStatus = (status === 'published' && !canPublish) ? 'draft' : status;
@@ -123,8 +125,8 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
         content,
         excerpt,
         status: finalStatus,
-        category,
-        tags,
+        category: category || 'Uncategorized', // Ensure category is never empty
+        tags: tags || [],
         featuredImage,
         currentFeaturedImageUrl,
         staffName

@@ -56,6 +56,16 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
 }) => {
   const [tagInput, setTagInput] = React.useState("");
   
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("Title input changed:", e.target.value);
+    setTitle(e.target.value);
+  };
+  
+  const handleExcerptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    console.log("Excerpt input changed:", e.target.value);
+    setExcerpt(e.target.value);
+  };
+  
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && tagInput.trim()) {
       e.preventDefault(); // Prevent form submission
@@ -70,6 +80,10 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
   
+  const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTagInput(e.target.value);
+  };
+  
   return (
     <div className="space-y-6 text-foreground">
       <div>
@@ -77,7 +91,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
         <Input
           id="title"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={handleTitleChange}
           placeholder="Enter post title"
           className="text-foreground bg-background"
         />
@@ -88,7 +102,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
         <Textarea
           id="excerpt"
           value={excerpt}
-          onChange={(e) => setExcerpt(e.target.value)}
+          onChange={handleExcerptChange}
           placeholder="Brief summary of the post"
           className="h-20 text-foreground bg-background"
         />
@@ -103,7 +117,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
           <SelectTrigger id="category" className="text-foreground bg-background">
             <SelectValue placeholder="Select a category" />
           </SelectTrigger>
-          <SelectContent className="bg-popover text-popover-foreground">
+          <SelectContent className="z-50 bg-background border border-input">
             {PREDEFINED_CATEGORIES.map((cat) => (
               <SelectItem key={cat} value={cat}>{cat}</SelectItem>
             ))}
@@ -130,7 +144,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
         <Input
           id="tags"
           value={tagInput}
-          onChange={(e) => setTagInput(e.target.value)}
+          onChange={handleTagInputChange}
           placeholder="Add tags (press Enter to add)"
           onKeyDown={handleAddTag}
           className="text-foreground bg-background"
@@ -154,7 +168,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
           <SelectTrigger id="status" className="text-foreground bg-background">
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
-          <SelectContent className="bg-popover text-popover-foreground">
+          <SelectContent className="z-50 bg-background border border-input">
             <SelectItem value="draft">Draft</SelectItem>
             {canPublish ? (
               <SelectItem value="published">Published</SelectItem>
