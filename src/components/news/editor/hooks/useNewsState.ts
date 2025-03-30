@@ -17,18 +17,30 @@ export const useNewsState = () => {
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState<boolean>(false);
   const [statusChanged, setStatusChanged] = useState<boolean>(false);
 
+  // Direct status setter for internal use
+  const setStatusInternal = (newStatus: NewsStatus) => {
+    setStatus(newStatus);
+  };
+
+  // Public status updater with logging and flag setting
   const updateStatus = (newStatus: NewsStatus) => {
     console.log("Status change requested from", status, "to", newStatus);
-    setStatus(newStatus);
-    setStatusChanged(true);
+    // Only set the flag if status is actually changing
+    if (status !== newStatus) {
+      setStatusChanged(true);
+    }
+    setStatusInternal(newStatus);
   };
 
   return {
     title, setTitle,
     content, setContent,
     excerpt, setExcerpt,
-    status, setStatus: updateStatus,
-    statusChanged, setStatusChanged,
+    status, 
+    setStatus: updateStatus,
+    setStatusInternal, // Expose internal setter for direct use when loading
+    statusChanged, 
+    setStatusChanged,
     category, setCategory,
     tags, setTags,
     featuredImage, setFeaturedImage,

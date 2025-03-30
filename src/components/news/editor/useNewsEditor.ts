@@ -24,7 +24,7 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
     title, setTitle,
     content, setContent,
     excerpt, setExcerpt,
-    status, setStatus,
+    status, setStatus, setStatusInternal,
     statusChanged, setStatusChanged,
     category, setCategory,
     tags, setTags,
@@ -67,7 +67,8 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
       setTitle,
       setContent,
       setExcerpt,
-      setStatus,
+      // Use the internal setter to avoid triggering status changed flag on load
+      setStatus: setStatusInternal,
       setCategory,
       setTags,
       setCurrentFeaturedImageUrl,
@@ -76,7 +77,7 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
     
     // Reset status changed flag after fetching
     setStatusChanged(false);
-  }, [id, fetchNewsPost, setTitle, setContent, setExcerpt, setStatus, setCategory, setTags, setCurrentFeaturedImageUrl, setIsLoading, userRole, setStatusChanged]);
+  }, [id, fetchNewsPost, setTitle, setContent, setExcerpt, setStatusInternal, setCategory, setTags, setCurrentFeaturedImageUrl, setIsLoading, userRole, setStatusChanged]);
 
   // Handle image selection
   const handleImageSelected = (file: File) => {

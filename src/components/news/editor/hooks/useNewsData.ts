@@ -30,11 +30,17 @@ export const useNewsData = () => {
       currentFeaturedImageUrl: postData.currentFeaturedImageUrl,
     });
     
-    // Ensure category is always passed, even if empty
+    // Ensure category and status are always passed, even if empty
     const dataToSave: NewsPostData = {
       ...postData,
+      status: postData.status, // Explicitly include status
       category: postData.category || 'Uncategorized'
     };
+    
+    console.log("useNewsData - final data being sent to saveNewsPost:", {
+      status: dataToSave.status,
+      category: dataToSave.category
+    });
     
     return await saveNewsPost(dataToSave, callbacks);
   };
