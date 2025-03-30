@@ -21,7 +21,6 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import LogDetailDialog from "./LogDetailDialog";
-import LogFilterDropdown from "./LogFilterDropdown";
 import LoadingIndicator from "./LoadingIndicator";
 import { Badge } from "@/components/ui/badge";
 
@@ -167,7 +166,9 @@ const ActivityLogs: React.FC = () => {
                     className="cursor-pointer hover:bg-accent/30"
                     onClick={() => handleLogClick(log)}
                   >
-                    <TableCell className="whitespace-nowrap">{log.formattedDate}</TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {new Date(log.created_at).toLocaleString()}
+                    </TableCell>
                     <TableCell className="whitespace-nowrap">{log.staff_name}</TableCell>
                     <TableCell>
                       <Badge className={getActionColor(log.action_type)}>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -72,8 +71,7 @@ export const useActivityLogs = (limit = 100) => {
         staff_name: log.staff?.display_name || 
                    (log.staff?.first_name && log.staff?.last_name) ? 
                    `${log.staff?.first_name || ''} ${log.staff?.last_name || ''}`.trim() : 
-                   log.staff?.email || "Unknown",
-        formattedDate: formatLogDate(log.created_at)
+                   log.staff?.email || "Unknown"
       }));
       
       setLogs(processedLogs);
