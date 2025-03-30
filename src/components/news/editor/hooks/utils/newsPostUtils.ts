@@ -25,6 +25,7 @@ export const createNewsPost = async (newsData: any) => {
     
   if (error) {
     console.error("Error creating post:", error);
+    throw error; // Throw the error to be caught by the caller
   } else {
     console.log("Post created successfully:", data);
   }
@@ -42,7 +43,7 @@ export const updateNewsPost = async (id: string, newsData: any) => {
   // Explicitly print out the status being set
   console.log("Updating status to:", newsData.status);
   
-  // Make a direct, explicit update with status
+  // Make a direct, explicit update with status and force timestamp update
   const { data, error } = await supabase
     .from("posts")
     .update({
@@ -50,15 +51,18 @@ export const updateNewsPost = async (id: string, newsData: any) => {
       status: newsData.status, // Ensure status is explicitly set
       updated_at: new Date().toISOString() // Force timestamp update
     })
-    .eq("id", id);
+    .eq("id", id)
+    .select();
     
   if (error) {
     console.error("Error updating post:", error);
+    throw error; // Throw the error to be caught by the caller
   } else {
     console.log("Post update query executed, checking result...");
   }
-    
-  return { data, error };
+
+  // Fetch the post after update to confirm changes
+  return await fetchUpdatedPost(id);
 };
 
 /**

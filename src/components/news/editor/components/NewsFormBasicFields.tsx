@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -82,10 +81,10 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
     setTagInput(e.target.value);
   };
   
-  // Toggle status between published and draft with explicit logging
+  // Direct status toggle that immediately calls setStatus
   const toggleStatus = () => {
     const newStatus: NewsStatus = status === "published" ? "draft" : "published";
-    console.log(`[NewsFormBasicFields] Explicitly toggling status from ${status} to ${newStatus}`);
+    console.log(`[NewsFormBasicFields] Explicitly setting status from ${status} to ${newStatus}`);
     setStatus(newStatus);
   };
   
