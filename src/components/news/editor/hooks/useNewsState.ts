@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { NewsStatus } from "../NewsForm";
 
 export const useNewsState = () => {
@@ -18,29 +18,31 @@ export const useNewsState = () => {
   const [statusChanged, setStatusChanged] = useState<boolean>(false);
 
   // Direct status setter for internal use without logging or triggering change detection
-  const setStatusInternal = (newStatus: NewsStatus) => {
+  const setStatusInternal = useCallback((newStatus: NewsStatus) => {
     console.log("[useNewsState] Using internal status setter:", newStatus);
     setStatus(newStatus);
-  };
+  }, []);
 
   // Public status updater with detailed logging and change detection
-  const updateStatus = (newStatus: NewsStatus) => {
+  const updateStatus = useCallback((newStatus: NewsStatus) => {
     console.log("[useNewsState] Status change requested from", status, "to", newStatus);
     
-    // Only set the flag if status is actually changing
+    // Always set the status to the new value
+    setStatus(newStatus);
+    
+    // If status is changing, set the change flag
     if (status !== newStatus) {
       console.log("[useNewsState] Status is changing, setting statusChanged flag to true");
       setStatusChanged(true);
-      setStatus(newStatus);
       
-      // Add timeout to verify the state was updated correctly
+      // Verify the state update
       setTimeout(() => {
         console.log("[useNewsState] After state update - status:", newStatus);
       }, 0);
     } else {
       console.log("[useNewsState] Status unchanged, keeping current value:", status);
     }
-  };
+  }, [status]);
 
   return {
     title, setTitle,

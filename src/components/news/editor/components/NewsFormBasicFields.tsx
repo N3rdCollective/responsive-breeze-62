@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -87,10 +88,11 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
   };
   
   const handleStatusChange = (value: NewsStatus) => {
-    console.log("[NewsFormBasicFields] Status dropdown changed:", status, "->", value);
+    console.log("[NewsFormBasicFields] Status change requested:", value);
+    // Call the parent component's setStatus function with the new value
     setStatus(value);
-    // Add explicit logging to track state updates
-    setTimeout(() => console.log("[NewsFormBasicFields] Status after update:", value), 0);
+    // Log after the update to verify it happened
+    setTimeout(() => console.log("[NewsFormBasicFields] Status after update call:", value), 0);
   };
   
   return (
@@ -126,7 +128,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
           <SelectTrigger id="category" className="text-foreground bg-background">
             <SelectValue placeholder="Select a category" />
           </SelectTrigger>
-          <SelectContent className="z-50 bg-background border border-input">
+          <SelectContent className="z-50">
             {PREDEFINED_CATEGORIES.map((cat) => (
               <SelectItem key={cat} value={cat}>{cat}</SelectItem>
             ))}
@@ -173,7 +175,6 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
         <Select
           value={status}
           onValueChange={handleStatusChange}
-          defaultValue={status}
         >
           <SelectTrigger id="status" className="text-foreground bg-background">
             <SelectValue placeholder="Select status">
@@ -181,7 +182,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
             </SelectValue>
           </SelectTrigger>
           <SelectContent 
-            className="z-[9999] bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800"
+            className="z-[9999]"
             position="popper"
             sideOffset={4}
           >

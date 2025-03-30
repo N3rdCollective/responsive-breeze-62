@@ -42,7 +42,14 @@ export const useNewsData = () => {
       category: dataToSave.category
     });
     
-    return await saveNewsPost(dataToSave, callbacks);
+    try {
+      const result = await saveNewsPost(dataToSave, callbacks);
+      console.log("[useNewsData] saveNewsPost result:", result);
+      return result;
+    } catch (error) {
+      console.error("[useNewsData] Error in savePost:", error);
+      throw error;
+    }
   };
 
   return {
