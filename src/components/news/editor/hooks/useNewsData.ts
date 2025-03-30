@@ -26,7 +26,6 @@ export const useNewsData = () => {
       title: postData.title,
       status: postData.status,
       category: postData.category,
-      userRole: "admin", // For debugging
       currentFeaturedImageUrl: postData.currentFeaturedImageUrl,
     });
     

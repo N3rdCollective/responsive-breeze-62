@@ -58,7 +58,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
   
   // Log status changes
   useEffect(() => {
-    console.log("[NewsFormBasicFields] Status prop updated:", status);
+    console.log("[NewsFormBasicFields] Current status:", status);
   }, [status]);
   
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,12 +87,12 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
     setTagInput(e.target.value);
   };
   
-  const handleStatusChange = (value: NewsStatus) => {
-    console.log("[NewsFormBasicFields] Status change requested:", value);
-    // Call the parent component's setStatus function with the new value
-    setStatus(value);
+  const handleStatusChange = (newStatus: NewsStatus) => {
+    console.log("[NewsFormBasicFields] Status change requested from", status, "to", newStatus);
+    setStatus(newStatus);
+    
     // Log after the update to verify it happened
-    setTimeout(() => console.log("[NewsFormBasicFields] Status after update call:", value), 0);
+    setTimeout(() => console.log("[NewsFormBasicFields] Status after update called:", newStatus), 0);
   };
   
   return (
@@ -172,12 +172,13 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
             </AlertDescription>
           </Alert>
         )}
-        <Select
-          value={status}
-          onValueChange={handleStatusChange}
+        <Select 
+          value={status} 
+          onValueChange={handleStatusChange} 
+          defaultValue={status}
         >
           <SelectTrigger id="status" className="text-foreground bg-background">
-            <SelectValue placeholder="Select status">
+            <SelectValue>
               {status === "published" ? "Published" : "Draft"}
             </SelectValue>
           </SelectTrigger>

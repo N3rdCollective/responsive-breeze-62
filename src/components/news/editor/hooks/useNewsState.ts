@@ -6,7 +6,7 @@ export const useNewsState = () => {
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
   const [excerpt, setExcerpt] = useState<string>("");
-  const [status, setStatus] = useState<NewsStatus>("draft");
+  const [status, setStatusState] = useState<NewsStatus>("draft");
   const [category, setCategory] = useState<string>("");
   const [tags, setTags] = useState<string[]>([]);
   const [featuredImage, setFeaturedImage] = useState<File | null>(null);
@@ -20,15 +20,15 @@ export const useNewsState = () => {
   // Direct status setter for internal use without logging or triggering change detection
   const setStatusInternal = useCallback((newStatus: NewsStatus) => {
     console.log("[useNewsState] Using internal status setter:", newStatus);
-    setStatus(newStatus);
+    setStatusState(newStatus);
   }, []);
 
   // Public status updater with detailed logging and change detection
-  const updateStatus = useCallback((newStatus: NewsStatus) => {
+  const setStatus = useCallback((newStatus: NewsStatus) => {
     console.log("[useNewsState] Status change requested from", status, "to", newStatus);
     
     // Always set the status to the new value
-    setStatus(newStatus);
+    setStatusState(newStatus);
     
     // If status is changing, set the change flag
     if (status !== newStatus) {
@@ -49,8 +49,8 @@ export const useNewsState = () => {
     content, setContent,
     excerpt, setExcerpt,
     status, 
-    setStatus: updateStatus, // Use enhanced setter with logging
-    setStatusInternal, // Expose internal setter for direct use when loading
+    setStatus,
+    setStatusInternal,
     statusChanged, 
     setStatusChanged,
     category, setCategory,

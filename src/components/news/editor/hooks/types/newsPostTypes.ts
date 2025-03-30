@@ -7,7 +7,7 @@ export interface NewsPostData {
   title: string;
   content: string;
   excerpt: string;
-  status: string;
+  status: "published" | "draft";
   category: string;
   tags: string[];
   featuredImage: File | null;
