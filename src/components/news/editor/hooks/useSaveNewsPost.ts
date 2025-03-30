@@ -92,7 +92,8 @@ export const useSaveNewsPost = () => {
         }
         
         // Verify the update
-        await fetchUpdatedPost(id);
+        const verifiedResult = await fetchUpdatedPost(id);
+        console.log("Verified post update:", verifiedResult.data);
       } else {
         // Create new post
         result = await createNewsPost(newsData);
@@ -110,7 +111,7 @@ export const useSaveNewsPost = () => {
       // Short delay before navigation to ensure state updates are complete
       setTimeout(() => {
         onSuccess();
-      }, 1000);
+      }, 500);
     } catch (error) {
       console.error("Error saving news post:", error);
       toast({

@@ -24,8 +24,7 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
     title, setTitle,
     content, setContent,
     excerpt, setExcerpt,
-    status, setStatus, setStatusInternal,
-    statusChanged, setStatusChanged,
+    status, setStatus,
     category, setCategory,
     tags, setTags,
     featuredImage, setFeaturedImage,
@@ -40,20 +39,11 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
   const canPublish = userRole === 'admin' || userRole === 'super_admin' || 
                      userRole === 'moderator' || userRole === 'content_manager';
   
-  // Set appropriate status based on permissions if attempting to publish
+  // Log changes for debugging
   useEffect(() => {
-    if (status === 'published' && !canPublish) {
-      console.log("[useNewsEditor] User doesn't have publish permission, reverting to draft");
-      setStatusInternal('draft'); // Use internal setter to avoid triggering status changed flag
-      toast({
-        title: "Permission Required",
-        description: "You don't have permission to publish posts. Saved as draft instead.",
-        variant: "destructive",
-      });
-    } else {
-      console.log("[useNewsEditor] Current status:", status, "- User can publish:", canPublish);
-    }
-  }, [status, canPublish, toast, setStatusInternal]);
+    console.log("[useNewsEditor] Current status:", status);
+    console.log("[useNewsEditor] Can publish:", canPublish);
+  }, [status, canPublish]);
 
   // Fetch the news post data
   const fetchNewsPostData = useCallback(async () => {
@@ -66,22 +56,24 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
     console.log("[useNewsEditor] Fetching post data for ID:", id);
     console.log("[useNewsEditor] Current user role:", userRole);
     
+    setIsLoading(true);
+    
     await fetchNewsPost(id, {
       setTitle,
       setContent,
       setExcerpt,
-      // Use the internal setter to avoid triggering status changed flag on initial load
-      setStatus: setStatusInternal,
+      setStatus,
       setCategory,
       setTags,
       setCurrentFeaturedImageUrl,
       setIsLoading
     });
-    
-    // Reset status changed flag after fetching to ensure it starts clean
-    console.log("[useNewsEditor] Resetting statusChanged flag after fetch");
-    setStatusChanged(false);
-  }, [id, fetchNewsPost, setTitle, setContent, setExcerpt, setStatusInternal, setCategory, setTags, setCurrentFeaturedImageUrl, setIsLoading, userRole, setStatusChanged]);
+  }, [id, fetchNewsPost, setTitle, setContent, setExcerpt, setStatus, setCategory, setTags, setCurrentFeaturedImageUrl, setIsLoading, userRole]);
+
+  // Initialize data on component mount
+  useEffect(() => {
+    fetchNewsPostData();
+  }, [fetchNewsPostData]);
 
   // Handle image selection
   const handleImageSelected = (file: File) => {
@@ -97,7 +89,6 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
   // Save the news post
   const handleSave = async () => {
     console.log("[useNewsEditor] Save requested with status:", status);
-    console.log("[useNewsEditor] Status changed flag:", statusChanged);
     console.log("[useNewsEditor] User role:", userRole, "Can publish:", canPublish);
     console.log("[useNewsEditor] Current ID:", id);
     console.log("[useNewsEditor] Current category:", category);

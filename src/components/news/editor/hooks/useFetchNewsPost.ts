@@ -32,7 +32,6 @@ export const useFetchNewsPost = () => {
     try {
       console.log("Fetching news post with ID:", postId);
       
-      // Make sure we're using a proper query with explicit error handling
       const { data, error } = await supabase
         .from("posts")
         .select("*")
@@ -68,9 +67,12 @@ export const useFetchNewsPost = () => {
       setContent(data.content || "");
       setExcerpt(data.excerpt || "");
       
+      // Make sure we explicitly check for valid status values
       if (data.status === "published" || data.status === "draft") {
+        console.log("Setting status to:", data.status);
         setStatus(data.status);
       } else {
+        console.log("Invalid status value, defaulting to draft:", data.status);
         setStatus("draft");
       }
       
@@ -84,6 +86,7 @@ export const useFetchNewsPost = () => {
       }
       
       setCurrentFeaturedImageUrl(data.featured_image || "");
+      setIsLoading(false);
     } catch (error) {
       console.error("Error in fetchNewsPost:", error);
       toast({
@@ -91,7 +94,6 @@ export const useFetchNewsPost = () => {
         description: "Failed to load news post",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };

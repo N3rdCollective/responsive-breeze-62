@@ -43,14 +43,22 @@ export const updateNewsPost = async (id: string, newsData: any) => {
   // Explicitly print out the status being set
   console.log("Updating status to:", newsData.status);
   
-  // Make a direct, explicit update with status and force timestamp update
+  // Create a separate object for the update to ensure we're not sending any undefined values
+  const updateData = {
+    title: newsData.title,
+    content: newsData.content,
+    excerpt: newsData.excerpt,
+    status: newsData.status,
+    featured_image: newsData.featured_image,
+    tags: newsData.tags || [],
+    author_name: newsData.author_name,
+    category: newsData.category || 'Uncategorized',
+    updated_at: new Date().toISOString()
+  };
+  
   const { data, error } = await supabase
     .from("posts")
-    .update({
-      ...newsData,
-      status: newsData.status, // Ensure status is explicitly set
-      updated_at: new Date().toISOString() // Force timestamp update
-    })
+    .update(updateData)
     .eq("id", id)
     .select();
     
@@ -59,10 +67,10 @@ export const updateNewsPost = async (id: string, newsData: any) => {
     throw error; // Throw the error to be caught by the caller
   } else {
     console.log("Post update query executed, checking result...");
+    console.log("Updated data:", data);
   }
 
-  // Fetch the post after update to confirm changes
-  return await fetchUpdatedPost(id);
+  return { data, error };
 };
 
 /**
@@ -77,9 +85,11 @@ export const fetchUpdatedPost = async (id: string) => {
     
   if (error) {
     console.error("Error fetching updated post:", error);
-  } else {
+  } else if (data) {
     console.log("Post updated successfully, fetched data:", data);
-    console.log("Confirmed status after update:", data?.status);
+    console.log("Confirmed status after update:", data.status);
+  } else {
+    console.error("No data returned when fetching updated post");
   }
   
   return { data, error };
