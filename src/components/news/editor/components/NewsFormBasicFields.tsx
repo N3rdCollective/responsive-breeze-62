@@ -87,12 +87,11 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
     setTagInput(e.target.value);
   };
   
-  const handleStatusChange = (newStatus: NewsStatus) => {
-    console.log("[NewsFormBasicFields] Status change requested from", status, "to", newStatus);
-    setStatus(newStatus);
-    
-    // Log after the update to verify it happened
-    setTimeout(() => console.log("[NewsFormBasicFields] Status after update called:", newStatus), 0);
+  // Simplified direct status handler - directly calls setStatus with no conditions
+  const handleStatusChange = (newStatus: string) => {
+    console.log("[NewsFormBasicFields] Status change requested:", newStatus);
+    // Directly cast as NewsStatus since we know it's either 'draft' or 'published'
+    setStatus(newStatus as NewsStatus);
   };
   
   // Added for debugging - display both status props and internal state
@@ -182,10 +181,11 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
           </Alert>
         )}
         
+        {/* Fixed Select component with key to force re-render */}
         <Select 
-          value={status} 
-          onValueChange={handleStatusChange} 
-          defaultValue={status}
+          value={status}
+          onValueChange={handleStatusChange}
+          key={`status-select-${status}`}
         >
           <SelectTrigger id="status" className="text-foreground bg-background">
             <SelectValue>

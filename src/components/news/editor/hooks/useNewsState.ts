@@ -28,9 +28,9 @@ export const useNewsState = () => {
     console.log("[useNewsState] Status state changed to:", status);
   }, [status]);
 
-  // Public status updater with detailed logging and change detection
+  // Public status updater with simplified logic - always update the state
   const setStatus = useCallback((newStatus: NewsStatus) => {
-    console.log("[useNewsState] Status change requested from", status, "to", newStatus);
+    console.log("[useNewsState] Status change requested to:", newStatus);
     
     // Always set the status to the new value
     setStatusState(newStatus);
@@ -39,14 +39,12 @@ export const useNewsState = () => {
     if (status !== newStatus) {
       console.log("[useNewsState] Status is changing, setting statusChanged flag to true");
       setStatusChanged(true);
-      
-      // Verify the state update
-      setTimeout(() => {
-        console.log("[useNewsState] After state update - status should be:", newStatus);
-      }, 0);
-    } else {
-      console.log("[useNewsState] Status unchanged, keeping current value:", status);
     }
+    
+    // Log after update for debugging
+    setTimeout(() => {
+      console.log("[useNewsState] Status after update:", newStatus);
+    }, 0);
   }, [status]);
 
   return {

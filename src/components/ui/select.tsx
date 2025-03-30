@@ -116,20 +116,8 @@ const SelectItem = React.forwardRef<
 >(({ className, children, onSelect, ...props }, ref) => {
   const value = props.value as string;
   
-  // Enhanced click handler with detailed logging
-  const handleSelect = React.useCallback((event: React.MouseEvent) => {
-    console.log("[SelectItem] Item selected with value:", value);
-    
-    if (onSelect && value) {
-      onSelect(value);
-    }
-    
-    // The original onClick is still important for the component's behavior
-    if (props.onClick) {
-      props.onClick(event);
-    }
-  }, [props, onSelect, value]);
-
+  // Fix the TypeScript error by removing the custom click handler entirely
+  // Let the Radix UI component handle the selection properly
   return (
     <SelectPrimitive.Item
       ref={ref}
@@ -139,7 +127,6 @@ const SelectItem = React.forwardRef<
         className
       )}
       {...props}
-      onClick={handleSelect}
     >
       <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
         <SelectPrimitive.ItemIndicator>
