@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ShieldCheck, Users, LogOut, Box, Settings } from "lucide-react";
+import { ShieldCheck, Users, LogOut, Box, Settings, ClipboardList } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -57,6 +57,14 @@ const AdminCard = ({ onManageStaff, onLogout }: AdminCardProps) => {
         >
           <Box className="h-4 w-4 mr-2" />
           Manage Sponsors
+        </Button>
+        <Button 
+          variant="outline" 
+          className="w-full bg-background hover:bg-muted"
+          onClick={() => navigate("/staff/activity-logs")}
+        >
+          <ClipboardList className="h-4 w-4 mr-2" />
+          Activity Logs
         </Button>
         <Button 
           variant="outline" 

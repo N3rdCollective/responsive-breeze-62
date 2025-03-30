@@ -186,6 +186,54 @@ export type Database = {
         }
         Relationships: []
       }
+      log_edits: {
+        Row: {
+          created_at: string
+          edit_reason: string | null
+          edited_by: string
+          id: string
+          log_id: string
+          new_values: Json
+          previous_values: Json
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          edit_reason?: string | null
+          edited_by: string
+          id?: string
+          log_id: string
+          new_values: Json
+          previous_values: Json
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          edit_reason?: string | null
+          edited_by?: string
+          id?: string
+          log_id?: string
+          new_values?: Json
+          previous_values?: Json
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "log_edits_edited_by_fkey"
+            columns: ["edited_by"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "log_edits_log_id_fkey"
+            columns: ["log_id"]
+            isOneToOne: false
+            referencedRelation: "staff_activity_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pending_staff: {
         Row: {
           approved_at: string | null
@@ -422,6 +470,53 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_activity_logs: {
+        Row: {
+          action_type: string
+          created_at: string
+          description: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          ip_address: string | null
+          staff_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          description: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          staff_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          description?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          staff_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_activity_logs_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       system_settings: {
         Row: {
           contact_email: string | null
@@ -481,6 +576,18 @@ export type Database = {
         }
         Returns: boolean
       }
+      create_activity_log: {
+        Args: {
+          p_staff_id: string
+          p_action_type: string
+          p_description: string
+          p_entity_type?: string
+          p_entity_id?: string
+          p_details?: Json
+          p_ip_address?: string
+        }
+        Returns: string
+      }
       get_analytics_summary: {
         Args: {
           start_date?: string
@@ -493,6 +600,13 @@ export type Database = {
           visit_count: number
           device_breakdown: Json
         }[]
+      }
+      staff_has_role: {
+        Args: {
+          user_id: string
+          required_roles: string[]
+        }
+        Returns: boolean
       }
     }
     Enums: {

@@ -100,6 +100,19 @@ export const useStaffAuth = () => {
       async (event, session) => {
         console.log("Auth state changed:", event);
         if (event === "SIGNED_OUT") {
+          // Log the logout action
+          if (state.isAuthenticated) {
+            try {
+              await supabase.rpc("create_activity_log", {
+                p_staff_id: session?.user.id,
+                p_action_type: "logout",
+                p_description: `${state.staffName} logged out`
+              });
+            } catch (error) {
+              console.error("Failed to log logout activity:", error);
+            }
+          }
+          
           if (!window.location.pathname.includes('/staff/login')) {
             navigate("/staff/login");
           }
@@ -112,6 +125,17 @@ export const useStaffAuth = () => {
           });
         } else if (event === "SIGNED_IN" && session) {
           checkAuth();
+          
+          // Log the login action
+          try {
+            await supabase.rpc("create_activity_log", {
+              p_staff_id: session.user.id,
+              p_action_type: "login",
+              p_description: `User logged in`
+            });
+          } catch (error) {
+            console.error("Failed to log login activity:", error);
+          }
         }
       }
     );
@@ -150,6 +174,21 @@ export const useStaffAuth = () => {
   const handleLogout = async () => {
     try {
       console.log("Logging out user");
+      
+      // Log the logout action before signing out
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          await supabase.rpc("create_activity_log", {
+            p_staff_id: session.user.id,
+            p_action_type: "logout",
+            p_description: `${state.staffName} logged out`
+          });
+        }
+      } catch (error) {
+        console.error("Failed to log logout activity:", error);
+      }
+      
       await supabase.auth.signOut();
       toast({
         title: "Logged Out",

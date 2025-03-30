@@ -77,6 +77,26 @@ export const usePendingStaff = (onStaffUpdate: () => void) => {
       
       const data = response.data;
       
+      // Log the staff approval/rejection action
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        // Find the pending staff email
+        const pendingStaffMember = pendingStaff.find(staff => staff.id === pendingId);
+        
+        await supabase.rpc("create_activity_log", {
+          p_staff_id: session.user.id,
+          p_action_type: approved ? "approve_staff" : "reject_staff",
+          p_description: `${approved ? "Approved" : "Rejected"} staff invitation for ${pendingStaffMember?.email || "unknown email"}`,
+          p_entity_type: "staff",
+          p_entity_id: pendingId,
+          p_details: JSON.stringify({
+            email: pendingStaffMember?.email,
+            status: pendingStaffMember?.status,
+            newStatus: approved ? "approved" : "rejected"
+          })
+        });
+      }
+      
       // Show success message
       toast({
         title: approved ? "Staff Approved" : "Staff Rejected",
