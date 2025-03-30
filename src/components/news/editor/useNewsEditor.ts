@@ -43,14 +43,15 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
   // Set appropriate status based on permissions if attempting to publish
   useEffect(() => {
     if (status === 'published' && !canPublish) {
-      setStatus('draft');
+      console.log("User doesn't have publish permission, reverting to draft");
+      setStatusInternal('draft'); // Use internal setter to avoid triggering status changed flag
       toast({
         title: "Permission Required",
         description: "You don't have permission to publish posts. Saved as draft instead.",
         variant: "destructive",
       });
     }
-  }, [status, canPublish, toast, setStatus]);
+  }, [status, canPublish, toast, setStatusInternal]);
 
   // Fetch the news post data
   const fetchNewsPostData = useCallback(async () => {
@@ -67,7 +68,7 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
       setTitle,
       setContent,
       setExcerpt,
-      // Use the internal setter to avoid triggering status changed flag on load
+      // Use the internal setter to avoid triggering status changed flag on initial load
       setStatus: setStatusInternal,
       setCategory,
       setTags,
@@ -75,7 +76,8 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
       setIsLoading
     });
     
-    // Reset status changed flag after fetching
+    // Reset status changed flag after fetching to ensure it starts clean
+    console.log("Resetting statusChanged flag after fetch");
     setStatusChanged(false);
   }, [id, fetchNewsPost, setTitle, setContent, setExcerpt, setStatusInternal, setCategory, setTags, setCurrentFeaturedImageUrl, setIsLoading, userRole, setStatusChanged]);
 

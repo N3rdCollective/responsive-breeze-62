@@ -30,7 +30,7 @@ export const useNewsData = () => {
       currentFeaturedImageUrl: postData.currentFeaturedImageUrl,
     });
     
-    // Ensure category and status are always passed, even if empty
+    // Explicitly ensure status is passed through correctly
     const dataToSave: NewsPostData = {
       ...postData,
       status: postData.status, // Explicitly include status

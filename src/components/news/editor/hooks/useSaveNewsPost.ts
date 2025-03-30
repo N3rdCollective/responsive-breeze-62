@@ -109,7 +109,7 @@ export const useSaveNewsPost = () => {
       const newsData = {
         title,
         content,
-        status, // Ensure status is included
+        status, // Ensure status is explicitly included and not overridden
         excerpt: finalExcerpt,
         featured_image: featuredImageUrl || null,
         tags: tags || [],
@@ -118,7 +118,7 @@ export const useSaveNewsPost = () => {
         category: category || 'Uncategorized' // Always include category in the update
       };
       
-      console.log("Saving post data with status:", newsData.status);
+      console.log("Saving post data with explicitly set status:", newsData.status);
       
       let result;
       
@@ -127,19 +127,16 @@ export const useSaveNewsPost = () => {
         console.log("Updating existing post with ID:", id);
         console.log("Updating status to:", newsData.status);
         
-        // Force a status update by explicitly including it in the update
-        const updateData = {
-          ...newsData,
-          status: status // Make sure status is explicitly included
-        };
-        
-        console.log("Final update data:", updateData);
-        
-        result = await supabase
+        // Make a direct, explicit update with status
+        const { data, error } = await supabase
           .from("posts")
-          .update(updateData)
+          .update({
+            ...newsData,
+            status: status // Ensure status is explicitly set
+          })
           .eq("id", id);
           
+        result = { data, error };
         console.log("Update result:", result);
         
         if (result.error) {
@@ -158,30 +155,30 @@ export const useSaveNewsPost = () => {
           console.error("Error fetching updated post:", fetchError);
         } else {
           console.log("Post updated successfully, fetched data:", updatedPost);
-          console.log("Confirmed status after update:", updatedPost.status);
+          console.log("Confirmed status after update:", updatedPost?.status);
         }
       } else {
         // Create new post
-        console.log("Creating new post");
+        console.log("Creating new post with status:", status);
         const newPost = {
           ...newsData,
+          status: status, // Explicitly set status again for clarity
           created_at: new Date().toISOString(),
           post_date: new Date().toISOString(),
         };
         
-        result = await supabase
+        const { data, error } = await supabase
           .from("posts")
           .insert([newPost])
           .select();
           
+        result = { data, error };
         console.log("Insert result:", result);
         
         if (result.error) {
           throw new Error(`Database error: ${result.error.message} (${result.error.code})`);
         }
       }
-      
-      console.log("Supabase operation result:", result);
       
       toast({
         title: "Success",

@@ -91,6 +91,11 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
     setTimeout(() => console.log("Status after update:", value), 0);
   };
   
+  React.useEffect(() => {
+    // Log the current status on mount and when status changes
+    console.log("NewsFormBasicFields - Current status:", status);
+  }, [status]);
+  
   return (
     <div className="space-y-6 text-foreground">
       <div>
@@ -177,7 +182,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
           <SelectContent 
-            className="z-50 bg-background border border-input"
+            className="z-[9999] bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800"
             position="popper"
             sideOffset={4}
           >
