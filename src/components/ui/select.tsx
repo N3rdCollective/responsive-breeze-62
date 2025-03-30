@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { Check, ChevronDown, ChevronUp } from "lucide-react"
@@ -124,6 +123,14 @@ const SelectItem = React.forwardRef<
       className
     )}
     {...props}
+    onClick={(e) => {
+      // Additional debug for status selection
+      const value = (props as any).value;
+      console.log("[SelectItem] Item clicked:", value);
+      if (props.onClick) {
+        props.onClick(e);
+      }
+    }}
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <SelectPrimitive.ItemIndicator>

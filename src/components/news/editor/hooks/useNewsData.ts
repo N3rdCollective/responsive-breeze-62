@@ -21,7 +21,7 @@ export const useNewsData = () => {
     postData: NewsPostData,
     callbacks: SaveCallbacks
   ) => {
-    console.log("useNewsData - savePost called with data:", {
+    console.log("[useNewsData] savePost called with data:", {
       id: postData.id,
       title: postData.title,
       status: postData.status,
@@ -37,7 +37,7 @@ export const useNewsData = () => {
       category: postData.category || 'Uncategorized'
     };
     
-    console.log("useNewsData - final data being sent to saveNewsPost:", {
+    console.log("[useNewsData] final data being sent to saveNewsPost:", {
       status: dataToSave.status,
       category: dataToSave.category
     });

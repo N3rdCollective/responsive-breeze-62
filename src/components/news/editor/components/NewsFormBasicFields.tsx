@@ -1,5 +1,4 @@
-
-import React from "react";
+import React, { useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -56,13 +55,16 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
 }) => {
   const [tagInput, setTagInput] = React.useState("");
   
+  // Log status changes
+  useEffect(() => {
+    console.log("[NewsFormBasicFields] Status prop updated:", status);
+  }, [status]);
+  
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("Title input changed:", e.target.value);
     setTitle(e.target.value);
   };
   
   const handleExcerptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    console.log("Excerpt input changed:", e.target.value);
     setExcerpt(e.target.value);
   };
   
@@ -85,16 +87,11 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
   };
   
   const handleStatusChange = (value: NewsStatus) => {
-    console.log("Status dropdown changed:", status, "->", value);
+    console.log("[NewsFormBasicFields] Status dropdown changed:", status, "->", value);
     setStatus(value);
     // Add explicit logging to track state updates
-    setTimeout(() => console.log("Status after update:", value), 0);
+    setTimeout(() => console.log("[NewsFormBasicFields] Status after update:", value), 0);
   };
-  
-  React.useEffect(() => {
-    // Log the current status on mount and when status changes
-    console.log("NewsFormBasicFields - Current status:", status);
-  }, [status]);
   
   return (
     <div className="space-y-6 text-foreground">
@@ -179,7 +176,9 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
           defaultValue={status}
         >
           <SelectTrigger id="status" className="text-foreground bg-background">
-            <SelectValue placeholder="Select status" />
+            <SelectValue placeholder="Select status">
+              {status === "published" ? "Published" : "Draft"}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent 
             className="z-[9999] bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800"

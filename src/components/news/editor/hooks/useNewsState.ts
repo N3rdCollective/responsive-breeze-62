@@ -19,26 +19,26 @@ export const useNewsState = () => {
 
   // Direct status setter for internal use without logging or triggering change detection
   const setStatusInternal = (newStatus: NewsStatus) => {
-    console.log("Using internal status setter:", newStatus);
+    console.log("[useNewsState] Using internal status setter:", newStatus);
     setStatus(newStatus);
   };
 
   // Public status updater with detailed logging and change detection
   const updateStatus = (newStatus: NewsStatus) => {
-    console.log("Status change requested from", status, "to", newStatus);
+    console.log("[useNewsState] Status change requested from", status, "to", newStatus);
     
     // Only set the flag if status is actually changing
     if (status !== newStatus) {
-      console.log("Status is changing, setting statusChanged flag to true");
+      console.log("[useNewsState] Status is changing, setting statusChanged flag to true");
       setStatusChanged(true);
       setStatus(newStatus);
       
       // Add timeout to verify the state was updated correctly
       setTimeout(() => {
-        console.log("After state update - status:", newStatus);
+        console.log("[useNewsState] After state update - status:", newStatus);
       }, 0);
     } else {
-      console.log("Status unchanged, keeping current value:", status);
+      console.log("[useNewsState] Status unchanged, keeping current value:", status);
     }
   };
 

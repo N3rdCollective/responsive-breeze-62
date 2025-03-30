@@ -43,13 +43,15 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
   // Set appropriate status based on permissions if attempting to publish
   useEffect(() => {
     if (status === 'published' && !canPublish) {
-      console.log("User doesn't have publish permission, reverting to draft");
+      console.log("[useNewsEditor] User doesn't have publish permission, reverting to draft");
       setStatusInternal('draft'); // Use internal setter to avoid triggering status changed flag
       toast({
         title: "Permission Required",
         description: "You don't have permission to publish posts. Saved as draft instead.",
         variant: "destructive",
       });
+    } else {
+      console.log("[useNewsEditor] Current status:", status, "- User can publish:", canPublish);
     }
   }, [status, canPublish, toast, setStatusInternal]);
 
@@ -61,8 +63,8 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
       return;
     }
     
-    console.log("Fetching post data for ID:", id);
-    console.log("Current user role:", userRole);
+    console.log("[useNewsEditor] Fetching post data for ID:", id);
+    console.log("[useNewsEditor] Current user role:", userRole);
     
     await fetchNewsPost(id, {
       setTitle,
@@ -77,13 +79,13 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
     });
     
     // Reset status changed flag after fetching to ensure it starts clean
-    console.log("Resetting statusChanged flag after fetch");
+    console.log("[useNewsEditor] Resetting statusChanged flag after fetch");
     setStatusChanged(false);
   }, [id, fetchNewsPost, setTitle, setContent, setExcerpt, setStatusInternal, setCategory, setTags, setCurrentFeaturedImageUrl, setIsLoading, userRole, setStatusChanged]);
 
   // Handle image selection
   const handleImageSelected = (file: File) => {
-    console.log("Image selected:", file.name, file.size);
+    console.log("[useNewsEditor] Image selected:", file.name, file.size);
     setFeaturedImage(file);
     
     toast({
@@ -94,13 +96,13 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
   
   // Save the news post
   const handleSave = async () => {
-    console.log("Save requested with status:", status);
-    console.log("Status changed flag:", statusChanged);
-    console.log("User role:", userRole, "Can publish:", canPublish);
-    console.log("Current ID:", id);
-    console.log("Current category:", category);
-    console.log("Current title:", title);
-    console.log("Current content length:", content?.length || 0);
+    console.log("[useNewsEditor] Save requested with status:", status);
+    console.log("[useNewsEditor] Status changed flag:", statusChanged);
+    console.log("[useNewsEditor] User role:", userRole, "Can publish:", canPublish);
+    console.log("[useNewsEditor] Current ID:", id);
+    console.log("[useNewsEditor] Current category:", category);
+    console.log("[useNewsEditor] Current title:", title);
+    console.log("[useNewsEditor] Current content length:", content?.length || 0);
     
     // If trying to publish but doesn't have permission, save as draft
     const finalStatus = (status === 'published' && !canPublish) ? 'draft' : status;
@@ -113,7 +115,7 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
       });
     }
     
-    console.log("Saving post with final data:", {
+    console.log("[useNewsEditor] Saving post with final data:", {
       id,
       title,
       content: content ? `${content.substring(0, 30)}...` : 'empty',
