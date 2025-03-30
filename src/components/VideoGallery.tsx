@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { 
   Dialog,
@@ -52,7 +53,7 @@ const VideoGallery: React.FC<VideoGalleryProps> = ({ videos }) => {
     return (
       <section className="py-12 bg-gradient-to-b from-background to-muted dark:from-black/90 dark:to-black/95">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-8 text-center text-foreground dark:text-white">Featured Videos</h2>
+          <h2 className="text-3xl font-bold mb-8 text-center text-foreground dark:text-white">Featured Music Videos</h2>
           <div className="flex justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
           </div>
@@ -68,7 +69,7 @@ const VideoGallery: React.FC<VideoGalleryProps> = ({ videos }) => {
   return (
     <section className="py-12 bg-gradient-to-b from-background to-muted dark:from-black/90 dark:to-black/95">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold mb-8 text-center text-foreground dark:text-white">Featured Videos</h2>
+        <h2 className="text-3xl font-bold mb-8 text-center text-foreground dark:text-white">Featured Music Videos</h2>
         
         {/* Responsive layout: grid for mobile, flex row for desktop */}
         <div className="grid grid-cols-2 sm:grid-cols-2 md:flex md:flex-wrap md:justify-center gap-4">
@@ -133,3 +134,4 @@ const VideoGallery: React.FC<VideoGalleryProps> = ({ videos }) => {
 };
 
 export default VideoGallery;
+

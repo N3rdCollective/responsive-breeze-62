@@ -36,7 +36,7 @@ const HomeContentManagerContent: React.FC = () => {
           <Tabs defaultValue="sections" className="w-full">
             <TabsList className="grid w-full grid-cols-1 md:grid-cols-3">
               <TabsTrigger value="sections">Section Visibility</TabsTrigger>
-              <TabsTrigger value="videos">Featured Videos</TabsTrigger>
+              <TabsTrigger value="videos">Featured Music Videos</TabsTrigger>
               <TabsTrigger value="preview">Preview</TabsTrigger>
             </TabsList>
             
@@ -86,3 +86,4 @@ const HomeContentManager: React.FC = () => {
 };
 
 export default HomeContentManager;
+

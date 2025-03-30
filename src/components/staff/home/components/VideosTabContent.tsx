@@ -35,7 +35,7 @@ const VideosTabContent: React.FC = () => {
       <div className="space-y-2">
         <div className="flex flex-col space-y-1.5">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Manage Featured Videos</h3>
+            <h3 className="text-lg font-semibold">Manage Featured Music Videos</h3>
             <Button 
               variant="outline" 
               size="sm" 
@@ -52,7 +52,7 @@ const VideosTabContent: React.FC = () => {
             </Button>
           </div>
           <p className="text-sm text-muted-foreground">
-            Add, remove, or edit YouTube videos shown in the Hero section and Featured Videos gallery
+            Add, remove, or edit YouTube videos shown in the Hero section and Featured Music Videos gallery
           </p>
         </div>
 
@@ -90,3 +90,4 @@ const VideosTabContent: React.FC = () => {
 };
 
 export default VideosTabContent;
+
