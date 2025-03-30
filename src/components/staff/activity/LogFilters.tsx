@@ -52,7 +52,7 @@ const LogFilters: React.FC<LogFiltersProps> = ({
             </div>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Actions</SelectItem>
+            <SelectItem value="all">All Actions</SelectItem>
             {uniqueActionTypes.map(type => (
               <SelectItem key={type} value={type}>{type}</SelectItem>
             ))}
@@ -67,7 +67,7 @@ const LogFilters: React.FC<LogFiltersProps> = ({
             </div>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Entities</SelectItem>
+            <SelectItem value="all">All Entities</SelectItem>
             {uniqueEntityTypes.map(type => (
               <SelectItem key={type} value={type}>{type}</SelectItem>
             ))}
