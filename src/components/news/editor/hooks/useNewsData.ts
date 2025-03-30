@@ -1,7 +1,7 @@
 
 import { useSaveNewsPost } from "./useSaveNewsPost";
 import { useFetchNewsPost } from "./useFetchNewsPost";
-import { NewsPostData } from "./useSaveNewsPost";
+import { NewsPostData } from "./types/newsPostTypes";
 
 interface SaveCallbacks {
   uploadImage: (file: File) => Promise<string | null>;
