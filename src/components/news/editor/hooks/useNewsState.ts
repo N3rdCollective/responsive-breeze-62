@@ -1,12 +1,12 @@
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { NewsStatus } from "../NewsForm";
 
 export const useNewsState = () => {
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
   const [excerpt, setExcerpt] = useState<string>("");
-  const [status, setStatusState] = useState<NewsStatus>("draft");
+  const [status, setStatus] = useState<NewsStatus>("draft");
   const [category, setCategory] = useState<string>("");
   const [tags, setTags] = useState<string[]>([]);
   const [featuredImage, setFeaturedImage] = useState<File | null>(null);
@@ -15,41 +15,17 @@ export const useNewsState = () => {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState<boolean>(false);
-  const [statusChanged, setStatusChanged] = useState<boolean>(false);
 
-  // Direct status setter for internal use without logging or triggering change detection
-  const setStatusInternal = useCallback((newStatus: NewsStatus) => {
-    console.log("[useNewsState] Using internal status setter:", newStatus);
-    setStatusState(newStatus);
-  }, []);
-
-  // Add debugging effect to log status changes
-  useEffect(() => {
-    console.log("[useNewsState] Status state changed to:", status);
+  // For debugging purposes only
+  useCallback(() => {
+    console.log("[useNewsState] Current status:", status);
   }, [status]);
-
-  // Public status updater that always marks status as changed
-  const setStatus = useCallback((newStatus: NewsStatus) => {
-    console.log("[useNewsState] Status change requested to:", newStatus);
-    
-    // Always mark status as changed when this method is called
-    // This ensures the change is always tracked when using the public method
-    console.log("[useNewsState] Marking status as changed");
-    setStatusChanged(true);
-    
-    // Set the status to the new value
-    setStatusState(newStatus);
-  }, []);
 
   return {
     title, setTitle,
     content, setContent,
     excerpt, setExcerpt,
-    status, 
-    setStatus,
-    setStatusInternal,
-    statusChanged, 
-    setStatusChanged,
+    status, setStatus,
     category, setCategory,
     tags, setTags,
     featuredImage, setFeaturedImage,

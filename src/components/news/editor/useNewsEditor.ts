@@ -5,7 +5,7 @@ import { NewsStatus } from "./NewsForm";
 import { useNewsState } from "./hooks/useNewsState";
 import { useNewsData } from "./hooks/useNewsData";
 import { useImageHandler } from "./hooks/useImageHandler";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 interface UseNewsEditorProps {
   id?: string;
@@ -18,6 +18,7 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
   const { toast } = useToast();
   const { handleImageUpload } = useImageHandler();
   const { fetchNewsPost, saveNewsPost } = useNewsData();
+  const fetchedRef = useRef(false);
   
   // Use the state hook to manage all form state
   const {
@@ -38,27 +39,26 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
   // Check if user has permission to publish
   const canPublish = userRole === 'admin' || userRole === 'super_admin' || 
                      userRole === 'moderator' || userRole === 'content_manager';
-  
-  // Log changes for debugging
-  useEffect(() => {
-    console.log("[useNewsEditor] Current status:", status);
-    console.log("[useNewsEditor] Can publish:", canPublish);
-  }, [status, canPublish]);
 
   // Fetch the news post data
-  const fetchNewsPostData = useCallback(async () => {
+  const fetchNewsPostData = useCallback(() => {
     if (!id) {
       // Set default state for new post
       setIsLoading(false);
       return;
     }
     
+    if (fetchedRef.current) {
+      return;
+    }
+
     console.log("[useNewsEditor] Fetching post data for ID:", id);
     console.log("[useNewsEditor] Current user role:", userRole);
     
     setIsLoading(true);
+    fetchedRef.current = true;
     
-    await fetchNewsPost(id, {
+    fetchNewsPost(id, {
       setTitle,
       setContent,
       setExcerpt,
@@ -68,7 +68,11 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
       setCurrentFeaturedImageUrl,
       setIsLoading
     });
-  }, [id, fetchNewsPost, setTitle, setContent, setExcerpt, setStatus, setCategory, setTags, setCurrentFeaturedImageUrl, setIsLoading, userRole]);
+  }, [
+    id, fetchNewsPost, setTitle, setContent, setExcerpt, 
+    setStatus, setCategory, setTags, setCurrentFeaturedImageUrl, 
+    setIsLoading, userRole
+  ]);
 
   // Initialize data on component mount
   useEffect(() => {

@@ -39,8 +39,6 @@ export const createNewsPost = async (newsData: any) => {
 export const updateNewsPost = async (id: string, newsData: any) => {
   console.log("Updating existing post with ID:", id);
   console.log("Updating with data:", JSON.stringify(newsData));
-  
-  // Explicitly print out the status being set
   console.log("Updating status to:", newsData.status);
   
   // Create a separate object for the update to ensure we're not sending any undefined values
@@ -48,7 +46,7 @@ export const updateNewsPost = async (id: string, newsData: any) => {
     title: newsData.title,
     content: newsData.content,
     excerpt: newsData.excerpt,
-    status: newsData.status,
+    status: newsData.status, // Explicitly include status
     featured_image: newsData.featured_image,
     tags: newsData.tags || [],
     author_name: newsData.author_name,
@@ -56,21 +54,28 @@ export const updateNewsPost = async (id: string, newsData: any) => {
     updated_at: new Date().toISOString()
   };
   
-  const { data, error } = await supabase
-    .from("posts")
-    .update(updateData)
-    .eq("id", id)
-    .select();
-    
-  if (error) {
-    console.error("Error updating post:", error);
-    throw error; // Throw the error to be caught by the caller
-  } else {
-    console.log("Post update query executed, checking result...");
-    console.log("Updated data:", data);
+  try {
+    const { data, error } = await supabase
+      .from("posts")
+      .update(updateData)
+      .eq("id", id)
+      .select();
+      
+    if (error) {
+      console.error("Error updating post:", error);
+      throw error; // Throw the error to be caught by the caller
+    } else {
+      console.log("Post update query executed, checking result...");
+      console.log("Updated data:", data);
+      
+      // Verify the update by fetching the post again
+      const verifiedResult = await fetchUpdatedPost(id);
+      return { data: verifiedResult.data, error: null };
+    }
+  } catch (err) {
+    console.error("Exception in updateNewsPost:", err);
+    throw err;
   }
-
-  return { data, error };
 };
 
 /**

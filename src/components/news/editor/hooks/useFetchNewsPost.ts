@@ -29,6 +29,11 @@ export const useFetchNewsPost = () => {
       setIsLoading
     } = callbacks;
     
+    if (!postId) {
+      setIsLoading(false);
+      return;
+    }
+    
     try {
       console.log("Fetching news post with ID:", postId);
       
