@@ -15,12 +15,20 @@ export const useNewsState = () => {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState<boolean>(false);
+  const [statusChanged, setStatusChanged] = useState<boolean>(false);
+
+  const updateStatus = (newStatus: NewsStatus) => {
+    console.log("Status change requested from", status, "to", newStatus);
+    setStatus(newStatus);
+    setStatusChanged(true);
+  };
 
   return {
     title, setTitle,
     content, setContent,
     excerpt, setExcerpt,
-    status, setStatus,
+    status, setStatus: updateStatus,
+    statusChanged, setStatusChanged,
     category, setCategory,
     tags, setTags,
     featuredImage, setFeaturedImage,

@@ -109,7 +109,7 @@ export const useSaveNewsPost = () => {
       const newsData = {
         title,
         content,
-        status,
+        status, // Ensure status is included
         excerpt: finalExcerpt,
         featured_image: featuredImageUrl || null,
         tags: tags || [],
@@ -118,17 +118,26 @@ export const useSaveNewsPost = () => {
         category: category || 'Uncategorized' // Always include category in the update
       };
       
-      console.log("Saving post data:", newsData);
+      console.log("Saving post data with status:", newsData.status);
       
       let result;
       
       if (id) {
         // Update existing post
         console.log("Updating existing post with ID:", id);
+        console.log("Updating status to:", newsData.status);
+        
+        // Force a status update by explicitly including it in the update
+        const updateData = {
+          ...newsData,
+          status: status // Make sure status is explicitly included
+        };
+        
+        console.log("Final update data:", updateData);
         
         result = await supabase
           .from("posts")
-          .update(newsData)
+          .update(updateData)
           .eq("id", id);
           
         console.log("Update result:", result);
@@ -149,6 +158,7 @@ export const useSaveNewsPost = () => {
           console.error("Error fetching updated post:", fetchError);
         } else {
           console.log("Post updated successfully, fetched data:", updatedPost);
+          console.log("Confirmed status after update:", updatedPost.status);
         }
       } else {
         // Create new post

@@ -25,6 +25,7 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
     content, setContent,
     excerpt, setExcerpt,
     status, setStatus,
+    statusChanged, setStatusChanged,
     category, setCategory,
     tags, setTags,
     featuredImage, setFeaturedImage,
@@ -72,7 +73,10 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
       setCurrentFeaturedImageUrl,
       setIsLoading
     });
-  }, [id, fetchNewsPost, setTitle, setContent, setExcerpt, setStatus, setCategory, setTags, setCurrentFeaturedImageUrl, setIsLoading, userRole]);
+    
+    // Reset status changed flag after fetching
+    setStatusChanged(false);
+  }, [id, fetchNewsPost, setTitle, setContent, setExcerpt, setStatus, setCategory, setTags, setCurrentFeaturedImageUrl, setIsLoading, userRole, setStatusChanged]);
 
   // Handle image selection
   const handleImageSelected = (file: File) => {
@@ -88,6 +92,7 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
   // Save the news post
   const handleSave = async () => {
     console.log("Save requested with status:", status);
+    console.log("Status changed flag:", statusChanged);
     console.log("User role:", userRole, "Can publish:", canPublish);
     console.log("Current ID:", id);
     console.log("Current category:", category);
