@@ -15,10 +15,19 @@ export const createNewsPost = async (newsData: any) => {
     post_date: new Date().toISOString(),
   };
   
+  // Add explicit debug logging
+  console.log("Creating new post with data:", JSON.stringify(newPost));
+  
   const { data, error } = await supabase
     .from("posts")
     .insert([newPost])
     .select();
+    
+  if (error) {
+    console.error("Error creating post:", error);
+  } else {
+    console.log("Post created successfully:", data);
+  }
     
   return { data, error };
 };
@@ -28,6 +37,9 @@ export const createNewsPost = async (newsData: any) => {
  */
 export const updateNewsPost = async (id: string, newsData: any) => {
   console.log("Updating existing post with ID:", id);
+  console.log("Updating with data:", JSON.stringify(newsData));
+  
+  // Explicitly print out the status being set
   console.log("Updating status to:", newsData.status);
   
   // Make a direct, explicit update with status
@@ -35,9 +47,16 @@ export const updateNewsPost = async (id: string, newsData: any) => {
     .from("posts")
     .update({
       ...newsData,
-      status: newsData.status // Ensure status is explicitly set
+      status: newsData.status, // Ensure status is explicitly set
+      updated_at: new Date().toISOString() // Force timestamp update
     })
     .eq("id", id);
+    
+  if (error) {
+    console.error("Error updating post:", error);
+  } else {
+    console.log("Post update query executed, checking result...");
+  }
     
   return { data, error };
 };
@@ -68,7 +87,7 @@ export const fetchUpdatedPost = async (id: string) => {
 export const preparePostData = (postData: NewsPostData, featuredImageUrl: string) => {
   const { title, content, status, excerpt, category, tags, staffName } = postData;
   
-  return {
+  const prepared = {
     title,
     content,
     status, // Ensure status is explicitly included and not overridden
@@ -79,4 +98,8 @@ export const preparePostData = (postData: NewsPostData, featuredImageUrl: string
     author_name: staffName || 'Staff Author',
     category: category || 'Uncategorized'
   };
+  
+  console.log("Prepared post data with status:", prepared.status);
+  
+  return prepared;
 };

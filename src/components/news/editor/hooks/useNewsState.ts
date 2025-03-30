@@ -28,18 +28,18 @@ export const useNewsState = () => {
     console.log("[useNewsState] Status state changed to:", status);
   }, [status]);
 
-  // Public status updater with simplified logic
+  // Public status updater with improved change detection
   const setStatus = useCallback((newStatus: NewsStatus) => {
     console.log("[useNewsState] Status change requested to:", newStatus);
     
-    // Always set the status to the new value
-    setStatusState(newStatus);
-    
-    // If status is changing, set the change flag
+    // Track if status is changing
     if (status !== newStatus) {
-      console.log("[useNewsState] Status is changing, setting statusChanged flag to true");
+      console.log("[useNewsState] Status is changing from", status, "to", newStatus);
       setStatusChanged(true);
     }
+    
+    // Always set the status to the new value
+    setStatusState(newStatus);
   }, [status]);
 
   return {

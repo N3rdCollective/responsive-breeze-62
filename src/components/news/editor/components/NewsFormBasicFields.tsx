@@ -82,10 +82,10 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
     setTagInput(e.target.value);
   };
   
-  // Toggle status between published and draft
+  // Toggle status between published and draft with explicit logging
   const toggleStatus = () => {
     const newStatus: NewsStatus = status === "published" ? "draft" : "published";
-    console.log(`[NewsFormBasicFields] Toggling status from ${status} to ${newStatus}`);
+    console.log(`[NewsFormBasicFields] Explicitly toggling status from ${status} to ${newStatus}`);
     setStatus(newStatus);
   };
   
@@ -172,6 +172,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
               <Toggle 
                 pressed={status === "published"}
                 onPressedChange={() => {
+                  console.log("[NewsFormBasicFields] Toggle pressed, current status:", status);
                   if (canPublish || status === "published") {
                     toggleStatus();
                   }
