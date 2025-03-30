@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { NewsStatus } from "../NewsForm";
 
 export const useNewsState = () => {
@@ -23,6 +23,11 @@ export const useNewsState = () => {
     setStatusState(newStatus);
   }, []);
 
+  // Add debugging effect to log status changes
+  useEffect(() => {
+    console.log("[useNewsState] Status state changed to:", status);
+  }, [status]);
+
   // Public status updater with detailed logging and change detection
   const setStatus = useCallback((newStatus: NewsStatus) => {
     console.log("[useNewsState] Status change requested from", status, "to", newStatus);
@@ -37,7 +42,7 @@ export const useNewsState = () => {
       
       // Verify the state update
       setTimeout(() => {
-        console.log("[useNewsState] After state update - status:", newStatus);
+        console.log("[useNewsState] After state update - status should be:", newStatus);
       }, 0);
     } else {
       console.log("[useNewsState] Status unchanged, keeping current value:", status);

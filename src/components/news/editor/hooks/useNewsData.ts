@@ -1,14 +1,7 @@
 
 import { useSaveNewsPost } from "./useSaveNewsPost";
 import { useFetchNewsPost } from "./useFetchNewsPost";
-import { NewsPostData } from "./types/newsPostTypes";
-
-interface SaveCallbacks {
-  uploadImage: (file: File) => Promise<string | null>;
-  setIsSaving: (isSaving: boolean) => void;
-  setIsUploading: (isUploading: boolean) => void;
-  onSuccess: () => void;
-}
+import { NewsPostData, SaveNewsPostCallbacks } from "./types/newsPostTypes";
 
 export const useNewsData = () => {
   const { saveNewsPost } = useSaveNewsPost();
@@ -19,7 +12,7 @@ export const useNewsData = () => {
    */
   const savePost = async (
     postData: NewsPostData,
-    callbacks: SaveCallbacks
+    callbacks: SaveNewsPostCallbacks
   ) => {
     console.log("[useNewsData] savePost called with data:", {
       id: postData.id,

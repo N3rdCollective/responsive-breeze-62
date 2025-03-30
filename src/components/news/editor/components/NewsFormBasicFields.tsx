@@ -95,6 +95,9 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
     setTimeout(() => console.log("[NewsFormBasicFields] Status after update called:", newStatus), 0);
   };
   
+  // Added for debugging - display both status props and internal state
+  console.log("[NewsFormBasicFields RENDER] Props status:", status, "Can publish:", canPublish);
+  
   return (
     <div className="space-y-6 text-foreground">
       <div>
@@ -164,6 +167,12 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
       
       <div>
         <Label htmlFor="status">Status</Label>
+        
+        {/* Current status display for debugging */}
+        <div className="mb-2 px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 rounded">
+          Current status: <strong>{status}</strong> | Can publish: <strong>{canPublish ? "Yes" : "No"}</strong>
+        </div>
+        
         {!canPublish && status === "draft" && (
           <Alert className="mb-2 text-amber-800 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-300">
             <AlertCircle className="h-4 w-4" />
@@ -172,6 +181,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
             </AlertDescription>
           </Alert>
         )}
+        
         <Select 
           value={status} 
           onValueChange={handleStatusChange} 

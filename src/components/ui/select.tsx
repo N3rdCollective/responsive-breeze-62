@@ -114,19 +114,21 @@ const SelectItem = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item> & { onSelect?: (value: string) => void }
 >(({ className, children, onSelect, ...props }, ref) => {
-  // Custom handler for selection to ensure value is captured
-  const handleSelect = React.useCallback((event: any) => {
-    const value = (props as any).value;
-    console.log("[SelectItem] Item selected:", value);
+  const value = props.value as string;
+  
+  // Enhanced click handler with detailed logging
+  const handleSelect = React.useCallback((event: React.MouseEvent) => {
+    console.log("[SelectItem] Item selected with value:", value);
     
     if (onSelect && value) {
       onSelect(value);
     }
     
+    // The original onClick is still important for the component's behavior
     if (props.onClick) {
       props.onClick(event);
     }
-  }, [props, onSelect]);
+  }, [props, onSelect, value]);
 
   return (
     <SelectPrimitive.Item
