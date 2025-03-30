@@ -11,10 +11,11 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { formatDistance } from "date-fns";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
+import ActivityInfoSection from "./details/ActivityInfoSection";
+import JsonDetailsView from "./details/JsonDetailsView";
+import LogEditHistory from "./details/LogEditHistory";
 
 interface LogDetailDialogProps {
   log: ActivityLog;
@@ -26,7 +27,6 @@ const LogDetailDialog: React.FC<LogDetailDialogProps> = ({ log, open, onOpenChan
   const [logEdits, setLogEdits] = useState<any[]>([]);
   const [isLoadingEdits, setIsLoadingEdits] = useState(false);
   const { userRole } = useStaffAuth();
-  const isSuperAdmin = userRole === "super_admin";
   
   useEffect(() => {
     if (open && log) {
@@ -62,37 +62,6 @@ const LogDetailDialog: React.FC<LogDetailDialogProps> = ({ log, open, onOpenChan
       setIsLoadingEdits(false);
     }
   };
-  
-  const formatDateTime = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleString();
-    } catch (e) {
-      return dateString;
-    }
-  };
-  
-  const getEntityDescription = () => {
-    if (!log.entity_type) return "N/A";
-    return `${log.entity_type}${log.entity_id ? ` (ID: ${log.entity_id})` : ''}`;
-  };
-  
-  const renderJsonDetails = (data: any) => {
-    if (!data) return "No details available";
-    
-    try {
-      // Try to parse if it's a string
-      const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-      
-      return (
-        <pre className="text-xs bg-muted p-2 rounded overflow-auto">
-          {JSON.stringify(parsed, null, 2)}
-        </pre>
-      );
-    } catch (e) {
-      return String(data);
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -100,36 +69,13 @@ const LogDetailDialog: React.FC<LogDetailDialogProps> = ({ log, open, onOpenChan
         <DialogHeader>
           <DialogTitle>Activity Log Details</DialogTitle>
           <DialogDescription>
-            Recorded on {formatDateTime(log.created_at)}
+            Recorded on {new Date(log.created_at).toLocaleString()}
           </DialogDescription>
         </DialogHeader>
         
         <ScrollArea className="flex-grow">
           <div className="space-y-6 p-1">
-            <div className="space-y-2">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
-                <h3 className="text-lg font-semibold">Activity Information</h3>
-                <Badge className="w-fit mt-1 sm:mt-0">{log.action_type}</Badge>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div>
-                  <p className="text-sm text-muted-foreground">Staff Member</p>
-                  <p>{log.staff_name} ({log.staff_email})</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Timestamp</p>
-                  <p>{formatDateTime(log.created_at)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Entity</p>
-                  <p>{getEntityDescription()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">IP Address</p>
-                  <p>{log.ip_address || "Not recorded"}</p>
-                </div>
-              </div>
-            </div>
+            <ActivityInfoSection log={log} />
             
             <div className="space-y-2">
               <h3 className="text-lg font-semibold">Description</h3>
@@ -139,50 +85,14 @@ const LogDetailDialog: React.FC<LogDetailDialogProps> = ({ log, open, onOpenChan
             {log.details && (
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold">Details</h3>
-                {renderJsonDetails(log.details)}
+                <JsonDetailsView data={log.details} />
               </div>
             )}
             
-            {isLoadingEdits ? (
-              <div className="flex justify-center py-4">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-                <span className="ml-2">Loading edit history...</span>
-              </div>
-            ) : logEdits.length > 0 ? (
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold">Edit History</h3>
-                <div className="space-y-4">
-                  {logEdits.map((edit) => (
-                    <div key={edit.id} className="border p-3 rounded-md">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-medium">
-                            Edited by {edit.editor?.display_name || edit.editor?.email || "Unknown"}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {formatDateTime(edit.created_at)}
-                          </p>
-                        </div>
-                        {edit.edit_reason && (
-                          <Badge variant="outline">Reason: {edit.edit_reason}</Badge>
-                        )}
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-                        <div>
-                          <p className="text-sm font-medium mb-1">Previous Values</p>
-                          {renderJsonDetails(edit.previous_values)}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium mb-1">New Values</p>
-                          {renderJsonDetails(edit.new_values)}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
+            <LogEditHistory 
+              logEdits={logEdits} 
+              isLoading={isLoadingEdits} 
+            />
           </div>
         </ScrollArea>
         
