@@ -28,7 +28,7 @@ export const useNewsState = () => {
     console.log("[useNewsState] Status state changed to:", status);
   }, [status]);
 
-  // Public status updater with simplified logic - always update the state
+  // Public status updater with simplified logic
   const setStatus = useCallback((newStatus: NewsStatus) => {
     console.log("[useNewsState] Status change requested to:", newStatus);
     
@@ -40,11 +40,6 @@ export const useNewsState = () => {
       console.log("[useNewsState] Status is changing, setting statusChanged flag to true");
       setStatusChanged(true);
     }
-    
-    // Log after update for debugging
-    setTimeout(() => {
-      console.log("[useNewsState] Status after update:", newStatus);
-    }, 0);
   }, [status]);
 
   return {

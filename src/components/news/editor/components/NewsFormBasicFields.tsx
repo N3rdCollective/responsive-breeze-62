@@ -3,17 +3,12 @@ import React, { useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { NewsStatus } from "../NewsForm";
 import { Badge } from "@/components/ui/badge";
 import { X, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Toggle } from "@/components/ui/toggle";
 
 // Predefined categories for the dropdown
 const PREDEFINED_CATEGORIES = [
@@ -87,15 +82,12 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
     setTagInput(e.target.value);
   };
   
-  // Simplified direct status handler - directly calls setStatus with no conditions
-  const handleStatusChange = (newStatus: string) => {
-    console.log("[NewsFormBasicFields] Status change requested:", newStatus);
-    // Directly cast as NewsStatus since we know it's either 'draft' or 'published'
-    setStatus(newStatus as NewsStatus);
+  // Toggle status between published and draft
+  const toggleStatus = () => {
+    const newStatus: NewsStatus = status === "published" ? "draft" : "published";
+    console.log(`[NewsFormBasicFields] Toggling status from ${status} to ${newStatus}`);
+    setStatus(newStatus);
   };
-  
-  // Added for debugging - display both status props and internal state
-  console.log("[NewsFormBasicFields RENDER] Props status:", status, "Can publish:", canPublish);
   
   return (
     <div className="space-y-6 text-foreground">
@@ -123,19 +115,17 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
       
       <div>
         <Label htmlFor="category">Category</Label>
-        <Select
+        <select
+          id="category"
           value={category}
-          onValueChange={(value: string) => setCategory(value)}
+          onChange={(e) => setCategory(e.target.value)}
+          className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <SelectTrigger id="category" className="text-foreground bg-background">
-            <SelectValue placeholder="Select a category" />
-          </SelectTrigger>
-          <SelectContent className="z-50">
-            {PREDEFINED_CATEGORIES.map((cat) => (
-              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <option value="" disabled>Select a category</option>
+          {PREDEFINED_CATEGORIES.map((cat) => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
       </div>
       
       <div>
@@ -167,46 +157,63 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
       <div>
         <Label htmlFor="status">Status</Label>
         
-        {/* Current status display for debugging */}
-        <div className="mb-2 px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 rounded">
-          Current status: <strong>{status}</strong> | Can publish: <strong>{canPublish ? "Yes" : "No"}</strong>
+        <div className="mt-2">
+          {!canPublish && status === "draft" && (
+            <Alert className="mb-2 text-amber-800 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-300">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                You need admin permissions to publish posts
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Toggle 
+                pressed={status === "published"}
+                onPressedChange={() => {
+                  if (canPublish || status === "published") {
+                    toggleStatus();
+                  }
+                }}
+                disabled={!canPublish && status === "draft"}
+                className={`${
+                  status === "published" 
+                    ? "bg-green-500 hover:bg-green-600" 
+                    : "bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600"
+                } text-white`}
+                aria-label="Toggle publish status"
+              >
+                {status === "published" ? "Published" : "Draft"}
+              </Toggle>
+              
+              <span className="text-sm text-muted-foreground">
+                {status === "published" 
+                  ? "Visible to everyone" 
+                  : "Only visible to staff"}
+              </span>
+            </div>
+            
+            <div className="flex-1">
+              <Button 
+                type="button" 
+                variant="ghost" 
+                size="sm"
+                onClick={toggleStatus}
+                disabled={!canPublish && status === "draft"}
+                className="text-sm"
+              >
+                {status === "published" ? "Switch to Draft" : "Publish Now"}
+              </Button>
+            </div>
+          </div>
+          
+          <p className="mt-2 text-xs text-muted-foreground">
+            {status === "published" 
+              ? "Click to unpublish and save as draft" 
+              : "Click to publish and make visible to everyone"}
+          </p>
         </div>
-        
-        {!canPublish && status === "draft" && (
-          <Alert className="mb-2 text-amber-800 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-300">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              You need admin permissions to publish posts
-            </AlertDescription>
-          </Alert>
-        )}
-        
-        {/* Fixed Select component with key to force re-render */}
-        <Select 
-          value={status}
-          onValueChange={handleStatusChange}
-          key={`status-select-${status}`}
-        >
-          <SelectTrigger id="status" className="text-foreground bg-background">
-            <SelectValue>
-              {status === "published" ? "Published" : "Draft"}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent 
-            className="z-[9999]"
-            position="popper"
-            sideOffset={4}
-          >
-            <SelectItem value="draft">Draft</SelectItem>
-            {canPublish ? (
-              <SelectItem value="published">Published</SelectItem>
-            ) : (
-              <SelectItem value="published" disabled>
-                Published (Requires Admin Permission)
-              </SelectItem>
-            )}
-          </SelectContent>
-        </Select>
       </div>
     </div>
   );
