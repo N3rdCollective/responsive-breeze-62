@@ -25,15 +25,13 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 }) => {
   const extensions = useEditorExtensions();
   const [isHtmlMode, setIsHtmlMode] = useState(false);
-  const [htmlContent, setHtmlContent] = useState(value || '');
+  const [htmlContent, setHtmlContent] = useState(value);
   
   const editor = useEditor({
     extensions,
-    content: value || '',
-    editable: true,
+    content: value,
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
-      console.log("Editor content updated:", html.substring(0, 30) + "...");
       setHtmlContent(html);
       onChange(html);
     },
@@ -41,9 +39,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   // Update editor content when value prop changes
   useEffect(() => {
-    if (editor && value !== undefined && value !== editor.getHTML()) {
-      editor.commands.setContent(value || '');
-      setHtmlContent(value || '');
+    if (editor && value !== editor.getHTML()) {
+      editor.commands.setContent(value);
+      setHtmlContent(value);
     }
   }, [editor, value]);
 
@@ -63,7 +61,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   // Handle HTML textarea changes
   const handleHtmlChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newHtml = e.target.value;
-    console.log("HTML content changed:", newHtml.substring(0, 30) + "...");
     setHtmlContent(newHtml);
     onChange(newHtml);
   };

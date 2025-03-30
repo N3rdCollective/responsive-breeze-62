@@ -1,9 +1,9 @@
 
 import React from "react";
-import NewsFormBasicFields from "./NewsFormBasicFields";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RichTextEditor from "../RichTextEditor";
+import NewsFormBasicFields from "./NewsFormBasicFields";
 import ImageUploader from "../ImageUploader";
-import { Card, CardContent } from "@/components/ui/card";
 import { NewsStatus } from "../NewsForm";
 
 interface EditorTabContentProps {
@@ -22,7 +22,6 @@ interface EditorTabContentProps {
   currentFeaturedImageUrl: string;
   onImageSelected: (file: File) => void;
   onOpenPreview: () => void;
-  canPublish?: boolean;
 }
 
 const EditorTabContent: React.FC<EditorTabContentProps> = ({
@@ -41,52 +40,49 @@ const EditorTabContent: React.FC<EditorTabContentProps> = ({
   currentFeaturedImageUrl,
   onImageSelected,
   onOpenPreview,
-  canPublish = false
 }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="md:col-span-2">
-        <Card>
-          <CardContent className="p-6">
-            <div className="space-y-6">
-              <RichTextEditor
-                id="content-editor"
-                value={content}
-                onChange={(newContent) => setContent(newContent)}
-              />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      <div className="space-y-6">
-        <Card>
-          <CardContent className="p-6">
-            <NewsFormBasicFields
-              title={title}
-              setTitle={setTitle}
-              excerpt={excerpt}
-              setExcerpt={setExcerpt}
-              status={status}
-              setStatus={setStatus}
-              category={category}
-              setCategory={setCategory}
-              tags={tags}
-              setTags={setTags}
-              canPublish={canPublish}
-            />
-          </CardContent>
-        </Card>
+    <div className="space-y-6">
+      <Tabs defaultValue="content" className="w-full">
+        <TabsList className="w-full">
+          <TabsTrigger value="content" className="flex-1">Content</TabsTrigger>
+          <TabsTrigger value="settings" className="flex-1">Settings</TabsTrigger>
+          <TabsTrigger value="featured-image" className="flex-1">Featured Image</TabsTrigger>
+        </TabsList>
         
-        <Card>
-          <CardContent className="p-6">
-            <ImageUploader
-              currentImageUrl={currentFeaturedImageUrl}
-              onImageSelected={onImageSelected}
-            />
-          </CardContent>
-        </Card>
-      </div>
+        <TabsContent value="content" className="mt-6">
+          <RichTextEditor
+            id="news-content"
+            value={content}
+            onChange={setContent}
+            label="Content"
+          />
+          
+          {/* Removed the preview button from here */}
+        </TabsContent>
+        
+        <TabsContent value="settings" className="mt-6">
+          <NewsFormBasicFields
+            title={title}
+            setTitle={setTitle}
+            excerpt={excerpt}
+            setExcerpt={setExcerpt}
+            status={status}
+            setStatus={setStatus}
+            category={category}
+            setCategory={setCategory}
+            tags={tags}
+            setTags={setTags}
+          />
+        </TabsContent>
+        
+        <TabsContent value="featured-image" className="mt-6">
+          <ImageUploader
+            onImageSelected={onImageSelected}
+            currentImageUrl={currentFeaturedImageUrl}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

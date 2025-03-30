@@ -10,7 +10,7 @@ import LoadingSpinner from "@/components/staff/LoadingSpinner";
 import AccessDenied from "@/components/staff/news/AccessDenied";
 
 const StaffNewsPage = () => {
-  const { userRole, isLoading, staffName, isAdmin, handleLogout } = useStaffAuth();
+  const { userRole, isLoading, staffName, isAdmin } = useStaffAuth();
   const navigate = useNavigate();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   
@@ -49,7 +49,6 @@ const StaffNewsPage = () => {
         title="News Management" 
         staffName={staffName}
         isAdmin={isAdmin}
-        onLogout={handleLogout}
       />
       
       <NewsListTable 

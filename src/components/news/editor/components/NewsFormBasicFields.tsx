@@ -1,13 +1,18 @@
-import React, { useEffect } from "react";
+
+import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { NewsStatus } from "../NewsForm";
 import { Badge } from "@/components/ui/badge";
-import { X, AlertCircle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Toggle } from "@/components/ui/toggle";
+import { X } from "lucide-react";
 
 // Predefined categories for the dropdown
 const PREDEFINED_CATEGORIES = [
@@ -32,7 +37,6 @@ interface NewsFormBasicFieldsProps {
   setCategory: (category: string) => void;
   tags: string[];
   setTags: (tags: string[]) => void;
-  canPublish?: boolean;
 }
 
 const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
@@ -46,22 +50,8 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
   setCategory,
   tags,
   setTags,
-  canPublish = false,
 }) => {
   const [tagInput, setTagInput] = React.useState("");
-  
-  // Log status changes
-  useEffect(() => {
-    console.log("[NewsFormBasicFields] Current status:", status);
-  }, [status]);
-  
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTitle(e.target.value);
-  };
-  
-  const handleExcerptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setExcerpt(e.target.value);
-  };
   
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && tagInput.trim()) {
@@ -77,17 +67,6 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
   
-  const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTagInput(e.target.value);
-  };
-  
-  // Direct status toggle that immediately calls setStatus
-  const toggleStatus = () => {
-    const newStatus: NewsStatus = status === "published" ? "draft" : "published";
-    console.log(`[NewsFormBasicFields] Explicitly setting status from ${status} to ${newStatus}`);
-    setStatus(newStatus);
-  };
-  
   return (
     <div className="space-y-6 text-foreground">
       <div>
@@ -95,7 +74,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
         <Input
           id="title"
           value={title}
-          onChange={handleTitleChange}
+          onChange={(e) => setTitle(e.target.value)}
           placeholder="Enter post title"
           className="text-foreground bg-background"
         />
@@ -106,7 +85,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
         <Textarea
           id="excerpt"
           value={excerpt}
-          onChange={handleExcerptChange}
+          onChange={(e) => setExcerpt(e.target.value)}
           placeholder="Brief summary of the post"
           className="h-20 text-foreground bg-background"
         />
@@ -114,17 +93,19 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
       
       <div>
         <Label htmlFor="category">Category</Label>
-        <select
-          id="category"
+        <Select
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          onValueChange={(value: string) => setCategory(value)}
         >
-          <option value="" disabled>Select a category</option>
-          {PREDEFINED_CATEGORIES.map((cat) => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </select>
+          <SelectTrigger id="category" className="text-foreground bg-background">
+            <SelectValue placeholder="Select a category" />
+          </SelectTrigger>
+          <SelectContent className="bg-popover text-popover-foreground">
+            {PREDEFINED_CATEGORIES.map((cat) => (
+              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       
       <div>
@@ -146,7 +127,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
         <Input
           id="tags"
           value={tagInput}
-          onChange={handleTagInputChange}
+          onChange={(e) => setTagInput(e.target.value)}
           placeholder="Add tags (press Enter to add)"
           onKeyDown={handleAddTag}
           className="text-foreground bg-background"
@@ -155,65 +136,18 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
       
       <div>
         <Label htmlFor="status">Status</Label>
-        
-        <div className="mt-2">
-          {!canPublish && status === "draft" && (
-            <Alert className="mb-2 text-amber-800 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-300">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                You need admin permissions to publish posts
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Toggle 
-                pressed={status === "published"}
-                onPressedChange={() => {
-                  console.log("[NewsFormBasicFields] Toggle pressed, current status:", status);
-                  if (canPublish || status === "published") {
-                    toggleStatus();
-                  }
-                }}
-                disabled={!canPublish && status === "draft"}
-                className={`${
-                  status === "published" 
-                    ? "bg-green-500 hover:bg-green-600" 
-                    : "bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600"
-                } text-white`}
-                aria-label="Toggle publish status"
-              >
-                {status === "published" ? "Published" : "Draft"}
-              </Toggle>
-              
-              <span className="text-sm text-muted-foreground">
-                {status === "published" 
-                  ? "Visible to everyone" 
-                  : "Only visible to staff"}
-              </span>
-            </div>
-            
-            <div className="flex-1">
-              <Button 
-                type="button" 
-                variant="ghost" 
-                size="sm"
-                onClick={toggleStatus}
-                disabled={!canPublish && status === "draft"}
-                className="text-sm"
-              >
-                {status === "published" ? "Switch to Draft" : "Publish Now"}
-              </Button>
-            </div>
-          </div>
-          
-          <p className="mt-2 text-xs text-muted-foreground">
-            {status === "published" 
-              ? "Click to unpublish and save as draft" 
-              : "Click to publish and make visible to everyone"}
-          </p>
-        </div>
+        <Select
+          value={status}
+          onValueChange={(value: NewsStatus) => setStatus(value)}
+        >
+          <SelectTrigger id="status" className="text-foreground bg-background">
+            <SelectValue placeholder="Select status" />
+          </SelectTrigger>
+          <SelectContent className="bg-popover text-popover-foreground">
+            <SelectItem value="draft">Draft</SelectItem>
+            <SelectItem value="published">Published</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );

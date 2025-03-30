@@ -25,10 +25,10 @@ interface NewsPost {
 
 const NewsEditor = () => {
   const { id } = useParams<{ id: string }>();
-  const { staffName, isLoading: authLoading, userRole } = useStaffAuth();
+  const { staffName, isLoading: authLoading } = useStaffAuth();
   const navigate = useNavigate();
   
-  console.log("NewsEditor loaded with id:", id, "User role:", userRole);
+  console.log("NewsEditor loaded with id:", id);
   
   const {
     title,
@@ -49,11 +49,10 @@ const NewsEditor = () => {
     isUploading,
     isPreviewModalOpen,
     setIsPreviewModalOpen,
-    canPublish,
     fetchNewsPost,
     handleImageSelected,
     handleSave
-  } = useNewsEditor({ id, staffName, userRole });
+  } = useNewsEditor({ id, staffName });
   
   useEffect(() => {
     if (authLoading) return;
@@ -63,10 +62,9 @@ const NewsEditor = () => {
     }
     
     console.log("Calling fetchNewsPost with id:", id);
-    console.log("Current user role:", userRole);
     // Call fetchNewsPost which now handles both new and existing posts
     fetchNewsPost();
-  }, [id, staffName, authLoading, fetchNewsPost, userRole]);
+  }, [id, staffName, authLoading, fetchNewsPost]);
   
   if (authLoading) {
     return (
@@ -130,7 +128,6 @@ const NewsEditor = () => {
         isPreviewModalOpen={isPreviewModalOpen}
         setIsPreviewModalOpen={setIsPreviewModalOpen}
         authorName={staffName}
-        canPublish={canPublish}
       />
     </div>
   );
