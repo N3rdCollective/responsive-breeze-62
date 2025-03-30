@@ -5,14 +5,15 @@ import { NewsStatus } from "./NewsForm";
 import { useNewsState } from "./hooks/useNewsState";
 import { useNewsData } from "./hooks/useNewsData";
 import { useImageHandler } from "./hooks/useImageHandler";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 interface UseNewsEditorProps {
   id?: string;
   staffName: string;
+  userRole?: string;
 }
 
-export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
+export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { handleImageUpload } = useImageHandler();
@@ -23,7 +24,8 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
     title, setTitle,
     content, setContent,
     excerpt, setExcerpt,
-    status, setStatus,
+    status, setStatus, setStatusInternal,
+    statusChanged, setStatusChanged,
     category, setCategory,
     tags, setTags,
     featuredImage, setFeaturedImage,
@@ -34,6 +36,25 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
     isPreviewModalOpen, setIsPreviewModalOpen
   } = useNewsState();
 
+  // Check if user has permission to publish
+  const canPublish = userRole === 'admin' || userRole === 'super_admin' || 
+                     userRole === 'moderator' || userRole === 'content_manager';
+  
+  // Set appropriate status based on permissions if attempting to publish
+  useEffect(() => {
+    if (status === 'published' && !canPublish) {
+      console.log("[useNewsEditor] User doesn't have publish permission, reverting to draft");
+      setStatusInternal('draft'); // Use internal setter to avoid triggering status changed flag
+      toast({
+        title: "Permission Required",
+        description: "You don't have permission to publish posts. Saved as draft instead.",
+        variant: "destructive",
+      });
+    } else {
+      console.log("[useNewsEditor] Current status:", status, "- User can publish:", canPublish);
+    }
+  }, [status, canPublish, toast, setStatusInternal]);
+
   // Fetch the news post data
   const fetchNewsPostData = useCallback(async () => {
     if (!id) {
@@ -42,22 +63,29 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
       return;
     }
     
-    console.log("Fetching post data for ID:", id);
+    console.log("[useNewsEditor] Fetching post data for ID:", id);
+    console.log("[useNewsEditor] Current user role:", userRole);
+    
     await fetchNewsPost(id, {
       setTitle,
       setContent,
       setExcerpt,
-      setStatus,
+      // Use the internal setter to avoid triggering status changed flag on initial load
+      setStatus: setStatusInternal,
       setCategory,
       setTags,
       setCurrentFeaturedImageUrl,
       setIsLoading
     });
-  }, [id, fetchNewsPost, setTitle, setContent, setExcerpt, setStatus, setCategory, setTags, setCurrentFeaturedImageUrl, setIsLoading]);
+    
+    // Reset status changed flag after fetching to ensure it starts clean
+    console.log("[useNewsEditor] Resetting statusChanged flag after fetch");
+    setStatusChanged(false);
+  }, [id, fetchNewsPost, setTitle, setContent, setExcerpt, setStatusInternal, setCategory, setTags, setCurrentFeaturedImageUrl, setIsLoading, userRole, setStatusChanged]);
 
   // Handle image selection
   const handleImageSelected = (file: File) => {
-    console.log("Image selected:", file.name, file.size);
+    console.log("[useNewsEditor] Image selected:", file.name, file.size);
     setFeaturedImage(file);
     
     toast({
@@ -68,8 +96,37 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
   
   // Save the news post
   const handleSave = async () => {
-    console.log("Save requested with featured image:", featuredImage?.name);
-    console.log("Current featured image URL:", currentFeaturedImageUrl);
+    console.log("[useNewsEditor] Save requested with status:", status);
+    console.log("[useNewsEditor] Status changed flag:", statusChanged);
+    console.log("[useNewsEditor] User role:", userRole, "Can publish:", canPublish);
+    console.log("[useNewsEditor] Current ID:", id);
+    console.log("[useNewsEditor] Current category:", category);
+    console.log("[useNewsEditor] Current title:", title);
+    console.log("[useNewsEditor] Current content length:", content?.length || 0);
+    
+    // If trying to publish but doesn't have permission, save as draft
+    const finalStatus = (status === 'published' && !canPublish) ? 'draft' : status;
+    
+    if (finalStatus !== status) {
+      toast({
+        title: "Permission Required",
+        description: "You don't have permission to publish posts. Saving as draft instead.",
+        variant: "destructive",
+      });
+    }
+    
+    console.log("[useNewsEditor] Saving post with final data:", {
+      id,
+      title,
+      content: content ? `${content.substring(0, 30)}...` : 'empty',
+      excerpt: excerpt ? `${excerpt.substring(0, 30)}...` : 'empty',
+      status: finalStatus,
+      category,
+      tags,
+      featuredImage: featuredImage ? 'Selected' : 'None',
+      currentFeaturedImageUrl: currentFeaturedImageUrl ? 'Has URL' : 'None',
+      staffName
+    });
     
     await saveNewsPost(
       {
@@ -77,9 +134,9 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
         title,
         content,
         excerpt,
-        status,
-        category,
-        tags,
+        status: finalStatus,
+        category: category || 'Uncategorized', // Ensure category is never empty
+        tags: tags || [],
         featuredImage,
         currentFeaturedImageUrl,
         staffName
@@ -119,6 +176,7 @@ export const useNewsEditor = ({ id, staffName }: UseNewsEditorProps) => {
     isUploading,
     isPreviewModalOpen,
     setIsPreviewModalOpen,
+    canPublish,
     
     // Methods
     fetchNewsPost: fetchNewsPostData,

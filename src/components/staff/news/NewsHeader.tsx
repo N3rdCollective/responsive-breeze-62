@@ -1,19 +1,21 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, ShieldCheck } from "lucide-react";
+import { PlusCircle, ShieldCheck, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface NewsHeaderProps {
   title?: string;
   staffName?: string;
   isAdmin?: boolean;
+  onLogout?: () => void;
 }
 
 const NewsHeader: React.FC<NewsHeaderProps> = ({ 
   title = "News Management", 
   staffName,
-  isAdmin = false 
+  isAdmin = false,
+  onLogout
 }) => {
   const navigate = useNavigate();
   
@@ -38,13 +40,27 @@ const NewsHeader: React.FC<NewsHeaderProps> = ({
         )}
       </div>
       
-      <Button 
-        onClick={() => navigate("/staff/news/editor")} 
-        className="flex items-center gap-2 mt-4 sm:mt-0"
-      >
-        <PlusCircle className="h-4 w-4" />
-        New Post
-      </Button>
+      <div className="flex items-center gap-3 mt-4 sm:mt-0">
+        {onLogout && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={onLogout}
+            className="flex items-center gap-1"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            Logout
+          </Button>
+        )}
+        
+        <Button 
+          onClick={() => navigate("/staff/news/editor")} 
+          className="flex items-center gap-2"
+        >
+          <PlusCircle className="h-4 w-4" />
+          New Post
+        </Button>
+      </div>
     </div>
   );
 };
