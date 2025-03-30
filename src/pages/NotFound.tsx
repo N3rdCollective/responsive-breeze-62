@@ -70,6 +70,13 @@ const NotFound = () => {
       navigate("/staff/home");
       return;
     }
+    
+    // Handle old activity logs route
+    if (location.pathname === "/staff/activity") {
+      console.log("Redirecting from /staff/activity to /staff/activity-logs");
+      navigate("/staff/activity-logs");
+      return;
+    }
   }, [location.pathname, navigate]);
 
   return (

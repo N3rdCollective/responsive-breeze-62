@@ -19,6 +19,7 @@ import StaffSponsors from "@/pages/StaffSponsors";
 import StaffSystemSettings from "@/pages/StaffSystemSettings";
 import StaffHomePage from "@/pages/StaffHomePage";
 import StaffPersonalitiesPage from "@/pages/StaffPersonalitiesPage";
+import StaffActivityLogs from "@/pages/StaffActivityLogs";
 import MusicPlayer from "@/components/MusicPlayer";
 
 function App() {
@@ -44,6 +45,7 @@ function App() {
         <Route path="/staff/system-settings" element={<StaffSystemSettings />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/home" element={<StaffHomePage />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/personalities" element={<StaffPersonalitiesPage />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/activity-logs" element={<StaffActivityLogs />} errorElement={<RouteErrorElement />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       
