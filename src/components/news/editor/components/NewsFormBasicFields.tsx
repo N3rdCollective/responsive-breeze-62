@@ -84,6 +84,13 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
     setTagInput(e.target.value);
   };
   
+  const handleStatusChange = (value: NewsStatus) => {
+    console.log("Status dropdown changed:", status, "->", value);
+    setStatus(value);
+    // Add explicit logging to track state updates
+    setTimeout(() => console.log("Status after update:", value), 0);
+  };
+  
   return (
     <div className="space-y-6 text-foreground">
       <div>
@@ -163,12 +170,17 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
         )}
         <Select
           value={status}
-          onValueChange={(value: NewsStatus) => setStatus(value)}
+          onValueChange={handleStatusChange}
+          defaultValue={status}
         >
           <SelectTrigger id="status" className="text-foreground bg-background">
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
-          <SelectContent className="z-50 bg-background border border-input">
+          <SelectContent 
+            className="z-50 bg-background border border-input"
+            position="popper"
+            sideOffset={4}
+          >
             <SelectItem value="draft">Draft</SelectItem>
             {canPublish ? (
               <SelectItem value="published">Published</SelectItem>
