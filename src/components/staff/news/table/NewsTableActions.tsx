@@ -2,189 +2,223 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Eye } from "lucide-react";
-import { Post } from "../types/newsTypes";
+import { Pencil, Eye, Trash2, Check, X } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useStaffAuth } from "@/hooks/useStaffAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
-import { ROLE_PERMISSIONS, StaffRole } from "../../manage-staff/types/pendingStaffTypes";
+import { useStaffActivityLogger } from "@/hooks/useStaffActivityLogger";
 
 interface NewsTableActionsProps {
-  post: Post;
-  onRefetch: () => void;
+  postId: string;
+  postTitle: string;
+  postStatus: string;
+  refetch: () => void;
 }
 
-const NewsTableActions: React.FC<NewsTableActionsProps> = ({ post, onRefetch }) => {
+const NewsTableActions: React.FC<NewsTableActionsProps> = ({
+  postId,
+  postTitle,
+  postStatus,
+  refetch,
+}) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { userRole } = useStaffAuth();
+  const { logActivity } = useStaffActivityLogger();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
   
-  // Get permissions with proper type casting and default values
-  const permissions = userRole && Object.keys(ROLE_PERMISSIONS).includes(userRole) 
-    ? ROLE_PERMISSIONS[userRole as StaffRole]
-    : {
-        canManageStaff: false,
-        canManageAllContent: false,
-        canApproveContent: false,
-        canPublishContent: false,
-        canAssignRoles: false
-      };
-  
-  // Check if user has permission to delete posts
-  const canDeletePost = 
-    userRole === 'admin' || 
-    userRole === 'super_admin' || 
-    userRole === 'moderator' ||
-    userRole === 'content_manager';
-  
-  // Check if user has permission to edit posts
-  const canEditPost = 
-    canDeletePost || 
-    userRole === 'blogger' || 
-    permissions.canManageAllContent === true;
-  
-  console.log("NewsTableActions - Current user role:", userRole);
-  console.log("NewsTableActions - Can delete post:", canDeletePost);
-  console.log("NewsTableActions - Can edit post:", canEditPost);
-  
+  const canModify = userRole === 'admin' || userRole === 'super_admin' || userRole === 'moderator';
+  const canPublish = canModify || userRole === 'content_manager';
+
   const handleEdit = () => {
-    console.log("Navigating to edit post with ID:", post.id);
-    navigate(`/staff/news/editor/${post.id}`);
+    navigate(`/staff/news/edit/${postId}`);
   };
-  
+
   const handleView = () => {
-    navigate(`/news/${post.id}`);
-  };
-  
-  const handleDelete = async () => {
-    if (!canDeletePost) {
-      console.error("Permission denied: User role", userRole, "cannot delete posts");
+    if (postStatus === 'published') {
+      navigate(`/news/${postId}`);
+    } else {
       toast({
-        title: "Permission denied",
+        title: "Preview not available",
+        description: "This post is not published yet",
+      });
+    }
+  };
+
+  const handleTogglePublish = async () => {
+    if (!canPublish) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to publish/unpublish posts",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      const newStatus = postStatus === 'published' ? 'draft' : 'published';
+      const { error } = await supabase
+        .from('posts')
+        .update({ status: newStatus })
+        .eq('id', postId);
+        
+      if (error) throw error;
+      
+      const actionType = newStatus === 'published' ? 'publish_post' : 'unpublish_post';
+      const description = newStatus === 'published' 
+        ? `Published post: ${postTitle}` 
+        : `Unpublished post: ${postTitle}`;
+      
+      await logActivity(
+        actionType,
+        description,
+        'post',
+        postId,
+        { newStatus, title: postTitle }
+      );
+      
+      toast({
+        title: "Success",
+        description: `Post ${newStatus === 'published' ? 'published' : 'unpublished'} successfully`,
+      });
+      
+      refetch();
+    } catch (error) {
+      console.error("Error toggling publish status:", error);
+      toast({
+        title: "Error",
+        description: `Failed to update post status: ${(error as any)?.message || "Unknown error"}`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!canModify) {
+      toast({
+        title: "Permission Denied",
         description: "You don't have permission to delete posts",
         variant: "destructive",
       });
       return;
     }
     
-    if (!window.confirm("Are you sure you want to delete this post?")) {
-      return;
-    }
-    
-    console.log("Attempting to delete post with ID:", post.id);
-    console.log("User role performing delete:", userRole);
+    setIsLoading(true);
     
     try {
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !sessionData.session) {
-        console.error("Authentication error:", sessionError);
-        toast({
-          title: "Authentication error",
-          description: "Please log in again to perform this action",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      console.log("Authenticated as:", sessionData.session.user.email);
-      console.log("Auth ID:", sessionData.session.user.id);
-      
-      console.log("Sending delete request to Supabase for post ID:", post.id);
-      
-      console.log("Post ID type:", typeof post.id);
-      console.log("Post ID value:", post.id);
-      
-      const { error, data } = await supabase
-        .from("posts")
+      const { error } = await supabase
+        .from('posts')
         .delete()
-        .eq("id", post.id)
-        .select();
-      
-      console.log("Delete response from Supabase:", { error, data });
-      
-      if (error) {
-        console.error("Supabase error deleting post:", error);
+        .eq('id', postId);
         
-        if (error.message.includes("permission") || error.code === "42501") {
-          toast({
-            title: "Permission error",
-            description: `You don't have permission to delete this post. Error: ${error.message}`,
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Error",
-            description: `Failed to delete post: ${error.message}`,
-            variant: "destructive",
-          });
-        }
-        return;
-      }
+      if (error) throw error;
       
-      console.log("Post deleted successfully from database");
+      await logActivity(
+        'delete_post',
+        `Deleted post: ${postTitle}`,
+        'post',
+        postId,
+        { title: postTitle, status: postStatus }
+      );
       
       toast({
-        title: "Post deleted",
-        description: "The post has been successfully deleted",
+        title: "Success",
+        description: "Post deleted successfully",
       });
       
-      if (typeof onRefetch === 'function') {
-        try {
-          await onRefetch();
-          console.log("Refetch completed after delete");
-        } catch (refetchError) {
-          console.error("Error during refetch after delete:", refetchError);
-        }
-      } else {
-        console.error("onRefetch is not a function:", onRefetch);
-      }
-    } catch (error: any) {
+      setIsDeleteDialogOpen(false);
+      refetch();
+    } catch (error) {
       console.error("Error deleting post:", error);
       toast({
         title: "Error",
-        description: `Failed to delete post: ${error.message}`,
+        description: `Failed to delete post: ${(error as any)?.message || "Unknown error"}`,
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
-  
+
   return (
-    <div className="flex space-x-2">
-      {canEditPost && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleEdit}
-          title="Edit"
-          className="hover:bg-secondary hover:text-secondary-foreground"
-        >
-          <Edit className="h-4 w-4" />
+    <>
+      <div className="flex space-x-1 justify-end">
+        <Button variant="ghost" size="icon" onClick={handleEdit} title="Edit">
+          <Pencil className="h-4 w-4" />
         </Button>
-      )}
-      
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={handleView}
-        title="View"
-        className="hover:bg-secondary hover:text-secondary-foreground"
-      >
-        <Eye className="h-4 w-4" />
-      </Button>
-      
-      {canDeletePost && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleDelete}
-          title="Delete"
-          className="text-red-500 hover:text-red-100 hover:bg-red-700 dark:hover:text-red-100 dark:hover:bg-red-700"
-        >
-          <Trash2 className="h-4 w-4" />
+        
+        <Button variant="ghost" size="icon" onClick={handleView} title="View">
+          <Eye className="h-4 w-4" />
         </Button>
-      )}
-    </div>
+        
+        {canPublish && (
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleTogglePublish} 
+            disabled={isLoading}
+            title={postStatus === 'published' ? "Unpublish" : "Publish"}
+          >
+            {postStatus === 'published' ? (
+              <X className="h-4 w-4" />
+            ) : (
+              <Check className="h-4 w-4" />
+            )}
+          </Button>
+        )}
+        
+        {canModify && (
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setIsDeleteDialogOpen(true)}
+            title="Delete"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the post
+              "{postTitle}".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              disabled={isLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isLoading ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 

@@ -6,6 +6,7 @@ import { useNewsState } from "./hooks/useNewsState";
 import { useNewsData } from "./hooks/useNewsData";
 import { useImageHandler } from "./hooks/useImageHandler";
 import { useCallback, useEffect, useRef } from "react";
+import { useStaffActivityLogger } from "@/hooks/useStaffActivityLogger";
 
 interface UseNewsEditorProps {
   id?: string;
@@ -19,6 +20,7 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
   const { handleImageUpload } = useImageHandler();
   const { fetchNewsPost, saveNewsPost } = useNewsData();
   const fetchedRef = useRef(false);
+  const { logActivity } = useStaffActivityLogger();
   
   // Use the state hook to manage all form state
   const {
@@ -123,32 +125,67 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
       staffName
     });
     
-    await saveNewsPost(
-      {
-        id,
-        title,
-        content,
-        excerpt,
-        status: finalStatus,
-        category: category || 'Uncategorized', // Ensure category is never empty
-        tags: tags || [],
-        featuredImage,
-        currentFeaturedImageUrl,
-        staffName
-      },
-      {
-        uploadImage: handleImageUpload,
-        setIsSaving,
-        setIsUploading,
-        onSuccess: () => {
-          toast({
-            title: "Success",
-            description: id ? "News post updated successfully" : "News post created successfully",
-          });
-          navigate("/staff/news");
+    try {
+      const result = await saveNewsPost(
+        {
+          id,
+          title,
+          content,
+          excerpt,
+          status: finalStatus,
+          category: category || 'Uncategorized', // Ensure category is never empty
+          tags: tags || [],
+          featuredImage,
+          currentFeaturedImageUrl,
+          staffName
+        },
+        {
+          uploadImage: handleImageUpload,
+          setIsSaving,
+          setIsUploading,
+          onSuccess: () => {
+            toast({
+              title: "Success",
+              description: id ? "News post updated successfully" : "News post created successfully",
+            });
+            navigate("/staff/news");
+          }
         }
-      }
-    );
+      );
+      
+      // Log the activity after successful save
+      const actionType = id ? 'update_post' : 'create_post';
+      const isPublishing = finalStatus === 'published';
+      
+      // If we're updating and publishing, log a publish action instead
+      const finalActionType = id && isPublishing ? 'publish_post' : actionType;
+      const description = id 
+        ? `${isPublishing ? 'Published' : 'Updated'} post: ${title}`
+        : `Created new post: ${title}`;
+      
+      await logActivity(
+        finalActionType,
+        description,
+        'post',
+        result?.id || id,
+        {
+          title,
+          category,
+          status: finalStatus,
+          hasImage: !!featuredImage || !!currentFeaturedImageUrl
+        }
+      );
+      
+      console.log("[useNewsEditor] Activity logged:", {
+        action: finalActionType,
+        description,
+        entityType: 'post',
+        entityId: result?.id || id
+      });
+      
+    } catch (error) {
+      console.error("[useNewsEditor] Error saving post:", error);
+    }
   };
 
   return {
