@@ -1,8 +1,9 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { FeaturedArtist } from "@/components/news/types/newsTypes";
+import { useStaffActivityLogger } from "@/hooks/useStaffActivityLogger";
 
 export interface FeaturedArtistFormData {
   name: string;
@@ -22,6 +23,7 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+  const { logActivity } = useStaffActivityLogger();
 
   const fetchArtists = async () => {
     try {
@@ -66,6 +68,15 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
       
       if (error) throw error;
       
+      // Log activity
+      await logActivity(
+        "create_artist",
+        `Created new featured artist: ${formData.name}`,
+        "artist",
+        data.id,
+        { name: formData.name, hasImage: !!formData.image_url }
+      );
+      
       toast({
         title: "Success",
         description: "Featured artist created successfully",
@@ -97,6 +108,15 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
       
       if (error) throw error;
       
+      // Log activity
+      await logActivity(
+        "update_artist",
+        `Updated featured artist: ${formData.name}`,
+        "artist",
+        id,
+        { name: formData.name, hasImage: !!formData.image_url }
+      );
+      
       toast({
         title: "Success",
         description: "Featured artist updated successfully",
@@ -119,12 +139,30 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
     try {
       setIsSaving(true);
       
+      // Get artist info before deletion for logging
+      const { data: artistData } = await supabase
+        .from("featured_artists")
+        .select("name")
+        .eq("id", id)
+        .single();
+      
       const { error } = await supabase
         .from("featured_artists")
         .delete()
         .eq("id", id);
       
       if (error) throw error;
+      
+      // Log activity
+      if (artistData) {
+        await logActivity(
+          "delete_artist",
+          `Deleted featured artist: ${artistData.name}`,
+          "artist",
+          id,
+          { name: artistData.name }
+        );
+      }
       
       toast({
         title: "Success",
@@ -148,6 +186,13 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
     try {
       setIsSaving(true);
       
+      // Get artist info before archiving for logging
+      const { data: artistData } = await supabase
+        .from("featured_artists")
+        .select("name")
+        .eq("id", id)
+        .single();
+      
       const now = new Date().toISOString();
       const { data, error } = await supabase
         .from("featured_artists")
@@ -160,6 +205,17 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
         .single();
       
       if (error) throw error;
+      
+      // Log activity
+      if (artistData) {
+        await logActivity(
+          "archive_artist",
+          `Archived featured artist: ${artistData.name}`,
+          "artist",
+          id,
+          { name: artistData.name }
+        );
+      }
       
       toast({
         title: "Success",
@@ -183,6 +239,13 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
     try {
       setIsSaving(true);
       
+      // Get artist info before restoring for logging
+      const { data: artistData } = await supabase
+        .from("featured_artists")
+        .select("name")
+        .eq("id", id)
+        .single();
+      
       const { data, error } = await supabase
         .from("featured_artists")
         .update({ 
@@ -194,6 +257,17 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
         .single();
       
       if (error) throw error;
+      
+      // Log activity
+      if (artistData) {
+        await logActivity(
+          "restore_artist",
+          `Restored featured artist: ${artistData.name}`,
+          "artist",
+          id,
+          { name: artistData.name }
+        );
+      }
       
       toast({
         title: "Success",
