@@ -35,13 +35,19 @@ const RelatedArtists: React.FC<RelatedArtistsProps> = ({ currentArtistId }) => {
           return;
         }
 
+        // Transform the data to match FeaturedArtist type
+        const transformedData = data?.map((item: any) => ({
+          ...item,
+          social_links: item.social_links as FeaturedArtist['social_links']
+        })) as FeaturedArtist[];
+        
         // Filter out the current artist if it's in the results
         const filteredArtists = currentArtistId 
-          ? data.filter((artist: FeaturedArtist) => artist.id !== currentArtistId) 
-          : data;
+          ? transformedData.filter((artist) => artist.id !== currentArtistId) 
+          : transformedData;
         
         // Only take the top 4
-        setFeaturedArtists(filteredArtists.slice(0, 4) as FeaturedArtist[]);
+        setFeaturedArtists(filteredArtists.slice(0, 4));
       } catch (error) {
         console.error("Error in fetchFeaturedArtists:", error);
       } finally {
