@@ -41,17 +41,17 @@ const SponsorsSection = () => {
       <h3 className="text-lg font-semibold mb-6 text-gray-900 dark:text-[#FFD700] text-center">Affiliates</h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 max-w-4xl mx-auto">
         {sponsors.map((sponsor) => (
-          <div key={sponsor.id} className="flex justify-center">
+          <div key={sponsor.id} className="flex items-center justify-center">
             {sponsor.website_url ? (
               <a 
                 href={sponsor.website_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block hover:opacity-80 transition-opacity w-full h-full"
+                className="block hover:opacity-80 transition-opacity w-full flex items-center justify-center"
                 title={sponsor.description || sponsor.name}
               >
                 {sponsor.logo_url ? (
-                  <div className="bg-white rounded-md p-3 h-16 flex items-center justify-center shadow-sm">
+                  <div className="bg-white rounded-md p-3 h-16 w-full flex items-center justify-center shadow-sm">
                     <img 
                       src={sponsor.logo_url} 
                       alt={`${sponsor.name} logo`}
@@ -59,7 +59,7 @@ const SponsorsSection = () => {
                     />
                   </div>
                 ) : (
-                  <div className="bg-white/10 rounded-md p-2 h-16 flex items-center justify-center text-sm shadow-sm">
+                  <div className="bg-white/10 rounded-md p-2 h-16 w-full flex items-center justify-center text-sm shadow-sm">
                     <span className="mr-1">{sponsor.name}</span>
                     <ExternalLink className="h-3 w-3" />
                   </div>
@@ -67,7 +67,7 @@ const SponsorsSection = () => {
               </a>
             ) : (
               <div 
-                className="bg-white/10 rounded-md p-3 h-16 flex items-center justify-center w-full shadow-sm"
+                className="bg-white/10 rounded-md p-3 h-16 w-full flex items-center justify-center shadow-sm"
                 title={sponsor.description || ""}
               >
                 {sponsor.logo_url ? (
