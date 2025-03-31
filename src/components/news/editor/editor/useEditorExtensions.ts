@@ -89,14 +89,14 @@ const Video = Node.create({
   },
   
   addCommands() {
+    // Return commands as direct values, not nested functions,
+    // to match TipTap's expected command structure
     return {
-      setVideo: (options) => {
-        return ({ commands }) => {
-          return commands.insertContent({
-            type: this.name,
-            attrs: options,
-          });
-        };
+      setVideo: (attributes) => ({ commands }) => {
+        return commands.insertContent({
+          type: this.name,
+          attrs: attributes,
+        });
       },
     };
   },
