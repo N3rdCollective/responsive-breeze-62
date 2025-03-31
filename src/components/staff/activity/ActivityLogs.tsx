@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useActivityLogs, ActivityLog } from "./useActivityLogs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,11 +18,21 @@ const ActivityLogs: React.FC = () => {
   const [entityTypeFilter, setEntityTypeFilter] = useState<string | null>(null);
   const [selectedLog, setSelectedLog] = useState<ActivityLog | null>(null);
 
+  // Add an effect to log when logs are fetched
+  useEffect(() => {
+    console.log("Activity logs loaded:", logs.length, "records");
+    if (logs.length > 0) {
+      console.log("Sample log:", logs[0]);
+    }
+  }, [logs]);
+
   const handleRefresh = () => {
+    console.log("Refreshing activity logs...");
     fetchLogs();
   };
 
   const handleLogClick = (log: ActivityLog) => {
+    console.log("Selected log:", log);
     setSelectedLog(log);
   };
 
@@ -42,6 +52,7 @@ const ActivityLogs: React.FC = () => {
   const uniqueEntityTypes = Array.from(new Set(logs.filter(log => log.entity_type).map(log => log.entity_type as string)));
 
   if (error) {
+    console.error("Error loading activity logs:", error);
     return <LogError error={error} onRefresh={handleRefresh} />;
   }
 

@@ -1,6 +1,7 @@
 
 import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 type EntityType = 'post' | 'staff' | 'settings' | 'video' | 'sponsor' | 'personality' | 'show' | 'artist';
 type ActionType = 
@@ -35,6 +36,8 @@ type ActionType =
   | string;
 
 export const useStaffActivityLogger = () => {
+  const { toast } = useToast();
+  
   const logActivity = useCallback(async (
     actionType: ActionType, 
     description: string, 
@@ -43,8 +46,13 @@ export const useStaffActivityLogger = () => {
     details?: any
   ) => {
     try {
+      console.log("Logging activity:", { actionType, description, entityType, entityId });
+      
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return null;
+      if (!session?.user) {
+        console.error("Cannot log activity: No authenticated user");
+        return null;
+      }
       
       const { data, error } = await supabase.rpc("create_activity_log", {
         p_staff_id: session.user.id,
@@ -57,15 +65,26 @@ export const useStaffActivityLogger = () => {
 
       if (error) {
         console.error("Error logging activity:", error);
+        toast({
+          title: "Error",
+          description: `Failed to log activity: ${error.message}`,
+          variant: "destructive",
+        });
         return null;
       }
       
+      console.log("Activity logged successfully:", data);
       return data;
     } catch (error) {
       console.error("Failed to log staff activity:", error);
+      toast({
+        title: "Error",
+        description: "Failed to log activity",
+        variant: "destructive",
+      });
       return null;
     }
-  }, []);
+  }, [toast]);
   
   return { logActivity };
 };

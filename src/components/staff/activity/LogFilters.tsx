@@ -44,7 +44,7 @@ const LogFilters: React.FC<LogFiltersProps> = ({
       </div>
       
       <div className="flex gap-2">
-        <Select value={actionTypeFilter || ""} onValueChange={(value) => setActionTypeFilter(value || null)}>
+        <Select value={actionTypeFilter || "all"} onValueChange={(value) => setActionTypeFilter(value === "all" ? null : value)}>
           <SelectTrigger className="w-[180px]">
             <div className="flex items-center">
               <Filter className="w-4 h-4 mr-2" />
@@ -59,7 +59,7 @@ const LogFilters: React.FC<LogFiltersProps> = ({
           </SelectContent>
         </Select>
         
-        <Select value={entityTypeFilter || ""} onValueChange={(value) => setEntityTypeFilter(value || null)}>
+        <Select value={entityTypeFilter || "all"} onValueChange={(value) => setEntityTypeFilter(value === "all" ? null : value)}>
           <SelectTrigger className="w-[180px]">
             <div className="flex items-center">
               <Filter className="w-4 h-4 mr-2" />

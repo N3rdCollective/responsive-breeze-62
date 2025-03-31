@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -43,12 +44,27 @@ export const useActivityLogs = (limit = 100) => {
   };
 
   const fetchLogs = async () => {
+    console.log("Fetching activity logs...");
     setIsLoading(true);
     setError(null);
     
     try {
+      // Verify authentication
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
+      
+      if (authError) {
+        console.error("Auth error:", authError);
+        throw new Error("Authentication error: " + authError.message);
+      }
+      
+      if (!session) {
+        console.error("No active session");
+        throw new Error("No active session. Please log in.");
+      }
+      
       // Fetch logs with staff information
-      const { data, error } = await supabase
+      console.log("Fetching logs with staff information...");
+      const { data, error: fetchError } = await supabase
         .from("staff_activity_logs")
         .select(`
           *,
@@ -62,17 +78,22 @@ export const useActivityLogs = (limit = 100) => {
         .order("created_at", { ascending: false })
         .limit(limit);
 
-      if (error) throw error;
+      if (fetchError) {
+        console.error("Fetch error:", fetchError);
+        throw fetchError;
+      }
 
+      console.log("Fetched logs:", data?.length || 0);
+      
       // Process logs for display
-      const processedLogs = data.map(log => ({
+      const processedLogs = data?.map(log => ({
         ...log,
         staff_email: log.staff?.email || "Unknown",
         staff_name: log.staff?.display_name || 
                    (log.staff?.first_name && log.staff?.last_name) ? 
                    `${log.staff?.first_name || ''} ${log.staff?.last_name || ''}`.trim() : 
                    log.staff?.email || "Unknown"
-      }));
+      })) || [];
       
       setLogs(processedLogs);
     } catch (error: any) {
@@ -80,7 +101,7 @@ export const useActivityLogs = (limit = 100) => {
       setError(error.message || "Failed to fetch activity logs");
       toast({
         title: "Error loading logs",
-        description: "There was an issue loading the activity logs.",
+        description: "There was an issue loading the activity logs: " + (error.message || "Unknown error"),
         variant: "destructive",
       });
     } finally {
@@ -95,9 +116,14 @@ export const useActivityLogs = (limit = 100) => {
     entity_id?: string, 
     details?: any
   ) => {
+    console.log("Creating activity log:", { action_type, description, entity_type, entity_id });
+    
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) throw new Error("User not authenticated");
+      if (!session?.user) {
+        console.error("No authenticated user for logging");
+        throw new Error("User not authenticated");
+      }
       
       const { data, error } = await supabase.rpc("create_activity_log", {
         p_staff_id: session.user.id,
@@ -108,10 +134,21 @@ export const useActivityLogs = (limit = 100) => {
         p_details: details ? JSON.stringify(details) : null
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error creating log:", error);
+        throw error;
+      }
+      
+      console.log("Log created:", data);
       
       // Refresh logs after creating a new one
       fetchLogs();
+      
+      toast({
+        title: "Activity logged",
+        description: "Your action has been recorded successfully.",
+      });
+      
       return data;
     } catch (error: any) {
       console.error("Error creating activity log:", error);
