@@ -112,6 +112,17 @@ export const useProfileEditorState = (
           throw new Error("New passwords don't match");
         }
         
+        // First verify the current password
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: email,
+          password: currentPassword
+        });
+        
+        if (signInError) {
+          throw new Error("Current password is incorrect");
+        }
+        
+        // Then update to the new password
         const { error: passwordError } = await supabase.auth.updateUser({
           password: newPassword
         });
@@ -124,6 +135,9 @@ export const useProfileEditorState = (
           title: "Password Updated",
           description: "Your password has been updated successfully.",
         });
+        
+        // Reset password fields after successful update
+        resetPasswordFields();
       }
       
       toast({
