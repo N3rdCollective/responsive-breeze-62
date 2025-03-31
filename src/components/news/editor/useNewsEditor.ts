@@ -154,6 +154,7 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
       );
       
       // Extract the returned ID from the saveResult
+      // Use optional chaining and nullish coalescing to safely handle undefined values
       const resultId = saveResult?.id || id;
       
       if (!resultId) {

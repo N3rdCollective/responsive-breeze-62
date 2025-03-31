@@ -16,11 +16,12 @@ export const useSaveNewsPost = () => {
    * Saves a news post (create or update)
    * @param postData Post data to save
    * @param callbacks Object containing callback functions
+   * @returns Object containing the saved post id
    */
   const saveNewsPost = async (
     postData: NewsPostData,
     callbacks: SaveNewsPostCallbacks
-  ) => {
+  ): Promise<{ id: string } | undefined> => {
     const { id, title, content, status, category, tags, featuredImage, currentFeaturedImageUrl, staffName } = postData;
     const { uploadImage, setIsSaving, setIsUploading, onSuccess } = callbacks;
     
@@ -80,7 +81,8 @@ export const useSaveNewsPost = () => {
       
       console.log("Saving post data with explicitly set status:", newsData.status);
       
-      let result;
+      let result: { data?: any, error?: any } = { data: null, error: null };
+      let postId = id;
       
       if (id) {
         // Update existing post
@@ -101,6 +103,11 @@ export const useSaveNewsPost = () => {
         if (result.error) {
           throw new Error(`Database error: ${result.error.message} (${result.error.code})`);
         }
+        
+        // Get the new post ID
+        if (result.data && result.data.length > 0) {
+          postId = result.data[0].id;
+        }
       }
       
       toast({
@@ -112,6 +119,8 @@ export const useSaveNewsPost = () => {
       setTimeout(() => {
         onSuccess();
       }, 500);
+      
+      return { id: postId as string };
     } catch (error) {
       console.error("Error saving news post:", error);
       toast({
