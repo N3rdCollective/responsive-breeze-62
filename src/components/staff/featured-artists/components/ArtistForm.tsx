@@ -5,7 +5,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
-import { Loader2, Trash, Archive } from "lucide-react";
+import { Loader2, Trash, Archive, ArchiveRestore } from "lucide-react";
 import { FeaturedArtist } from "@/components/news/types/newsTypes";
 import ImageUploader from "./ImageUploader";
 import SocialLinksSection from "./SocialLinksSection";
@@ -27,6 +27,7 @@ interface ArtistFormProps {
   onSave: (values: FormValues) => void;
   onDelete?: (id: string) => void;
   onArchive?: (id: string) => void;
+  onRestore?: (id: string) => void;
   isSaving: boolean;
   isUploading?: boolean;
   onImageSelected: (file: File) => void;
@@ -37,6 +38,7 @@ const ArtistForm: React.FC<ArtistFormProps> = ({
   onSave,
   onDelete,
   onArchive,
+  onRestore,
   isSaving,
   isUploading = false,
   onImageSelected
@@ -173,6 +175,18 @@ const ArtistForm: React.FC<ArtistFormProps> = ({
                   >
                     <Archive className="h-4 w-4 mr-2" />
                     Archive
+                  </Button>
+                )}
+
+                {onRestore && isArchived && (
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => selectedArtist && onRestore(selectedArtist.id)}
+                    disabled={isSaving || isUploading}
+                  >
+                    <ArchiveRestore className="h-4 w-4 mr-2" />
+                    Restore
                   </Button>
                 )}
               </div>
