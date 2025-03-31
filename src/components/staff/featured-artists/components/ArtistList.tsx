@@ -21,6 +21,13 @@ const ArtistList: React.FC<ArtistListProps> = ({
   selectedArtistId,
   isArchived = false
 }) => {
+  console.log("ArtistList rendering with:", { 
+    artistCount: artists?.length, 
+    loading, 
+    selectedArtistId, 
+    isArchived 
+  });
+
   if (loading) {
     return (
       <div className="space-y-2">
@@ -36,7 +43,7 @@ const ArtistList: React.FC<ArtistListProps> = ({
     );
   }
 
-  if (artists.length === 0) {
+  if (!artists || artists.length === 0) {
     return (
       <Card>
         <CardContent className="p-6 text-center">

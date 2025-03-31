@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { FeaturedArtist } from "@/components/news/types/newsTypes";
@@ -25,8 +25,9 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
   const { toast } = useToast();
   const logger = useStaffActivityLogger();
 
-  const fetchArtists = async () => {
+  const fetchArtists = useCallback(async () => {
     try {
+      console.log("Fetching artists, showArchived:", showArchived);
       setLoading(true);
       const query = supabase
         .from("featured_artists")
@@ -42,10 +43,15 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
 
       const { data, error } = await query;
 
-      if (error) throw error;
-
+      if (error) {
+        console.error("Error fetching artists:", error);
+        throw error;
+      }
+      
+      console.log("Fetched artists:", data?.length || 0, "records");
       setArtists(data as FeaturedArtist[]);
     } catch (error: any) {
+      console.error("Error in fetchArtists:", error);
       toast({
         title: "Error",
         description: error.message,
@@ -54,11 +60,12 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showArchived, toast]);
 
   const createArtist = async (formData: FeaturedArtistFormData) => {
     try {
       setIsSaving(true);
+      console.log("Creating artist with data:", formData);
       
       const { data, error } = await supabase
         .from("featured_artists")
@@ -66,7 +73,12 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error creating artist:", error);
+        throw error;
+      }
+      
+      console.log("Created artist:", data);
       
       // Log the action
       await logger.logActivity(
@@ -84,6 +96,7 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
       
       return data as FeaturedArtist;
     } catch (error: any) {
+      console.error("Error in createArtist:", error);
       toast({
         title: "Error",
         description: error.message,
@@ -98,6 +111,7 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
   const updateArtist = async (id: string, formData: FeaturedArtistFormData) => {
     try {
       setIsSaving(true);
+      console.log("Updating artist:", id, "with data:", formData);
       
       const { data, error } = await supabase
         .from("featured_artists")
@@ -106,7 +120,12 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating artist:", error);
+        throw error;
+      }
+      
+      console.log("Updated artist:", data);
       
       // Log the action
       await logger.logActivity(
@@ -124,6 +143,7 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
       
       return data as FeaturedArtist;
     } catch (error: any) {
+      console.error("Error in updateArtist:", error);
       toast({
         title: "Error",
         description: error.message,
@@ -138,6 +158,7 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
   const deleteArtist = async (id: string) => {
     try {
       setIsSaving(true);
+      console.log("Deleting artist:", id);
       
       // Get the artist name before deletion for logging
       const { data: artistData } = await supabase
@@ -151,7 +172,12 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
         .delete()
         .eq("id", id);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error deleting artist:", error);
+        throw error;
+      }
+      
+      console.log("Deleted artist:", id);
       
       // Log the action
       await logger.logActivity(
@@ -169,6 +195,7 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
       
       return true;
     } catch (error: any) {
+      console.error("Error in deleteArtist:", error);
       toast({
         title: "Error",
         description: error.message,
@@ -183,6 +210,7 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
   const archiveArtist = async (id: string) => {
     try {
       setIsSaving(true);
+      console.log("Archiving artist:", id);
       
       const now = new Date().toISOString();
       const { data, error } = await supabase
@@ -195,7 +223,12 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error archiving artist:", error);
+        throw error;
+      }
+      
+      console.log("Archived artist:", data);
       
       // Log the action
       await logger.logActivity(
@@ -213,6 +246,7 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
       
       return data as FeaturedArtist;
     } catch (error: any) {
+      console.error("Error in archiveArtist:", error);
       toast({
         title: "Error",
         description: error.message,
@@ -227,6 +261,7 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
   const restoreArtist = async (id: string) => {
     try {
       setIsSaving(true);
+      console.log("Restoring artist:", id);
       
       const { data, error } = await supabase
         .from("featured_artists")
@@ -238,7 +273,12 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error restoring artist:", error);
+        throw error;
+      }
+      
+      console.log("Restored artist:", data);
       
       // Log the action
       await logger.logActivity(
@@ -256,6 +296,7 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
       
       return data as FeaturedArtist;
     } catch (error: any) {
+      console.error("Error in restoreArtist:", error);
       toast({
         title: "Error",
         description: error.message,

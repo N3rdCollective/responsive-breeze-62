@@ -33,7 +33,9 @@ const FeaturedArtistManager: React.FC = () => {
     restoreArtist 
   } = currentHook;
 
+  // Fetch artists when the component mounts or the tab changes
   useEffect(() => {
+    console.log("Fetching artists, tab:", tab, "isArchived:", tab === "archived");
     fetchArtists();
   }, [tab, fetchArtists]);
 
@@ -84,16 +86,31 @@ const FeaturedArtistManager: React.FC = () => {
       }
     };
     
-    if (selectedArtist) {
-      await updateArtist(selectedArtist.id, formData);
-    } else {
-      const newArtist = await createArtist(formData);
-      if (newArtist) {
-        setSelectedArtist(newArtist);
-      }
-    }
+    console.log("Saving artist data:", formData);
     
-    await fetchArtists();
+    try {
+      if (selectedArtist) {
+        await updateArtist(selectedArtist.id, formData);
+      } else {
+        const newArtist = await createArtist(formData);
+        if (newArtist) {
+          setSelectedArtist(newArtist);
+        }
+      }
+      
+      await fetchArtists();
+      toast({
+        title: selectedArtist ? "Artist Updated" : "Artist Created",
+        description: `Successfully ${selectedArtist ? "updated" : "created"} ${formData.name}`,
+      });
+    } catch (error) {
+      console.error("Error saving artist:", error);
+      toast({
+        title: "Error",
+        description: "There was a problem saving the artist information",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleDeleteArtist = async (id: string) => {
