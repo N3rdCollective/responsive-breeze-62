@@ -31,7 +31,7 @@ interface ArtistFormProps {
   onRestore?: (id: string) => void;
   isSaving: boolean;
   isUploading?: boolean;
-  onImageSelected: (file: File) => void;
+  onImageSelected: (file: File) => Promise<string | null>;
 }
 
 const ArtistForm: React.FC<ArtistFormProps> = ({
@@ -90,9 +90,13 @@ const ArtistForm: React.FC<ArtistFormProps> = ({
 
   // Handler for image selection that updates the form
   const handleImageSelected = async (file: File) => {
-    const imageUrl = await onImageSelected(file);
-    if (imageUrl) {
-      form.setValue("image_url", imageUrl);
+    try {
+      const imageUrl = await onImageSelected(file);
+      if (imageUrl) {
+        form.setValue("image_url", imageUrl);
+      }
+    } catch (error) {
+      console.error("Error handling image selection:", error);
     }
   };
 

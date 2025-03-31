@@ -47,7 +47,7 @@ const FeaturedArtistManager: React.FC = () => {
     setTab("active"); // Switch to active tab when creating new artist
   };
 
-  const handleImageSelected = async (file: File) => {
+  const handleImageSelected = async (file: File): Promise<string | null> => {
     try {
       const imageUrl = await uploadImage(file);
       if (!imageUrl) {
