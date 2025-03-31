@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -7,25 +7,10 @@ import { useStaffAuth } from "@/hooks/useStaffAuth";
 import StaffHeader from "@/components/staff/StaffHeader";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 import FeaturedArtistManager from "@/components/staff/featured-artists/FeaturedArtistManager";
-import { useToast } from "@/hooks/use-toast";
-import { useStaffActivityLogger } from "@/hooks/useStaffActivityLogger";
 
 const StaffFeaturedArtistsPage = () => {
   const { userRole, isLoading, staffName, isAdmin } = useStaffAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { logActivity } = useStaffActivityLogger();
-  
-  // Log page visit
-  useEffect(() => {
-    if (userRole) {
-      logActivity(
-        "view_page",
-        "Viewed featured artists management page",
-        "artist"
-      ).catch(console.error);
-    }
-  }, [userRole, logActivity]);
   
   // Check if user has appropriate permissions
   const isModeratorOrHigher = userRole === "admin" || userRole === "moderator" || userRole === "super_admin";

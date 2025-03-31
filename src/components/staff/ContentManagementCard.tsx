@@ -1,57 +1,101 @@
 
-import React from "react";
+import { Newspaper, Home, Users, Radio, FileText } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { FileText, Film, Users, Music } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ROLE_PERMISSIONS } from "./manage-staff/types/pendingStaffTypes";
 
 interface ContentManagementCardProps {
-  userRole: string | null;
+  userRole?: string;
 }
 
-const ContentManagementCard = ({ userRole }: ContentManagementCardProps) => {
-  const navigate = useNavigate();
+export const ContentManagementCard = ({ userRole }: ContentManagementCardProps = {}) => {
+  // Check if the user role has permission to manage content
+  const hasContentAccess = !userRole || userRole === "super_admin" || 
+                          userRole === "admin" || userRole === "moderator" || 
+                          userRole === "content_manager" || userRole === "blogger";
   
-  // Staff can manage news, moderators and admins can manage everything
-  const canManageNews = userRole === "staff" || userRole === "moderator" || userRole === "admin" || userRole === "super_admin";
-  const canManagePersonalities = userRole === "moderator" || userRole === "admin" || userRole === "super_admin";
-  const canManageArtists = userRole === "moderator" || userRole === "admin" || userRole === "super_admin";
+  // Check if the user can manage all types of content
+  const canManageAllContent = !userRole || 
+                             (userRole && ROLE_PERMISSIONS[userRole as keyof typeof ROLE_PERMISSIONS]?.canManageAllContent);
+  
+  // Check if the user is a blogger (limited content access)
+  const isBlogger = userRole === "blogger";
   
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Content Management</CardTitle>
-        <CardDescription>Manage website content</CardDescription>
+        <CardTitle>Content Management</CardTitle>
+        <CardDescription>Manage website content and features</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
-        {canManageNews && (
-          <Button onClick={() => navigate('/staff/news')} variant="outline" className="w-full justify-start gap-2">
-            <FileText className="h-4 w-4" />
-            Manage News Posts
-          </Button>
+        {(canManageAllContent || isBlogger) && (
+          <Link 
+            to="/staff/news" 
+            className="flex items-center p-3 hover:bg-accent rounded-md transition-colors"
+          >
+            <Newspaper className="h-5 w-5 mr-3 text-primary" />
+            <div>
+              <div className="font-medium">News & Articles</div>
+              <div className="text-sm text-muted-foreground">
+                {isBlogger ? "Write and manage your blog posts" : "Manage news posts and articles"}
+              </div>
+            </div>
+          </Link>
         )}
         
-        {canManagePersonalities && (
-          <Button onClick={() => navigate('/staff/personalities')} variant="outline" className="w-full justify-start gap-2">
-            <Users className="h-4 w-4" />
-            Manage Personalities
-          </Button>
+        {canManageAllContent && (
+          <>
+            <Link 
+              to="/staff/home" 
+              className="flex items-center p-3 hover:bg-accent rounded-md transition-colors"
+            >
+              <Home className="h-5 w-5 mr-3 text-primary" />
+              <div>
+                <div className="font-medium">Homepage Content</div>
+                <div className="text-sm text-muted-foreground">Edit featured items and homepage sections</div>
+              </div>
+            </Link>
+            
+            <Link 
+              to="/staff/personalities" 
+              className="flex items-center p-3 hover:bg-accent rounded-md transition-colors"
+            >
+              <Users className="h-5 w-5 mr-3 text-primary" />
+              <div>
+                <div className="font-medium">Personalities</div>
+                <div className="text-sm text-muted-foreground">Manage radio personalities and DJs</div>
+              </div>
+            </Link>
+            
+            <Link 
+              to="/staff/shows" 
+              className="flex items-center p-3 hover:bg-accent rounded-md transition-colors"
+            >
+              <Radio className="h-5 w-5 mr-3 text-primary" />
+              <div>
+                <div className="font-medium">Radio Shows</div>
+                <div className="text-sm text-muted-foreground">Manage show schedule and details</div>
+              </div>
+            </Link>
+          </>
         )}
         
-        {canManageArtists && (
-          <Button onClick={() => navigate('/staff/featured-artists')} variant="outline" className="w-full justify-start gap-2">
-            <Music className="h-4 w-4" />
-            Manage Featured Artists
-          </Button>
+        {isBlogger && (
+          <Link 
+            to="/staff/bloggers-guide" 
+            className="flex items-center p-3 hover:bg-accent rounded-md transition-colors"
+          >
+            <FileText className="h-5 w-5 mr-3 text-primary" />
+            <div>
+              <div className="font-medium">Blogger's Guide</div>
+              <div className="text-sm text-muted-foreground">Guidelines and instructions for bloggers</div>
+            </div>
+          </Link>
         )}
-        
-        <Button onClick={() => navigate('/staff/home')} variant="outline" className="w-full justify-start gap-2">
-          <Film className="h-4 w-4" />
-          Manage Homepage
-        </Button>
       </CardContent>
     </Card>
   );
 };
 
+// Add default export for backward compatibility
 export default ContentManagementCard;
