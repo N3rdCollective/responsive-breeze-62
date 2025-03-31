@@ -1,6 +1,5 @@
 
 import { Editor } from '@tiptap/react';
-import { Dialog } from '@/components/ui/dialog';
 
 export const useEditorUtils = (editor: Editor) => {
   const addImage = () => {
@@ -35,7 +34,8 @@ export const useEditorUtils = (editor: Editor) => {
     const url = window.prompt('Enter YouTube, Vimeo, or other video URL');
     
     if (url) {
-      editor.chain().focus().setVideo({ src: url }).run();
+      // Using an any type assertion to avoid TypeScript errors
+      (editor.chain().focus() as any).setVideo({ src: url }).run();
     }
   };
 

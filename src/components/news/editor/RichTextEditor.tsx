@@ -110,7 +110,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         )}
       </div>
 
-      <style jsx global>{`
+      <style>
+        {`
         .video-embed {
           position: relative;
           margin: 1em 0;
@@ -120,7 +121,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           aspect-ratio: 16/9;
           width: 100%;
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

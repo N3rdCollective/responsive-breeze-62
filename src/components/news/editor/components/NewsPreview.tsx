@@ -88,7 +88,8 @@ const NewsPreview: React.FC<NewsPreviewProps> = ({
         <p className="text-muted-foreground">No content yet. Start writing to see a preview.</p>
       )}
 
-      <style jsx global>{`
+      <style>
+        {`
         .video-embed {
           position: relative;
           margin: 1em 0;
@@ -98,7 +99,8 @@ const NewsPreview: React.FC<NewsPreviewProps> = ({
           aspect-ratio: 16/9;
           width: 100%;
         }
-      `}</style>
+        `}
+      </style>
     </article>
   );
 };
