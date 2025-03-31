@@ -25,12 +25,15 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
+      console.log("File selected:", files[0].name);
       onImageSelected(files[0]);
     }
   };
 
   const triggerFileInput = () => {
-    fileInputRef.current?.click();
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   return (

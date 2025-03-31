@@ -9,6 +9,7 @@ import { Loader2, Trash, Archive, ArchiveRestore } from "lucide-react";
 import { FeaturedArtist } from "@/components/news/types/newsTypes";
 import ImageUploader from "./ImageUploader";
 import SocialLinksSection from "./SocialLinksSection";
+import { useEffect } from "react";
 
 interface FormValues {
   id?: string;
@@ -55,18 +56,29 @@ const ArtistForm: React.FC<ArtistFormProps> = ({
   };
 
   const form = useForm<FormValues>({
-    defaultValues: selectedArtist ? {
-      id: selectedArtist.id,
-      name: selectedArtist.name,
-      bio: selectedArtist.bio,
-      image_url: selectedArtist.image_url || "",
-      website: selectedArtist.website || "",
-      spotify: selectedArtist.social_links?.spotify || "",
-      instagram: selectedArtist.social_links?.instagram || "",
-      twitter: selectedArtist.social_links?.twitter || "",
-      youtube: selectedArtist.social_links?.youtube || ""
-    } : defaultValues
+    defaultValues
   });
+
+  // Update form when selectedArtist changes
+  useEffect(() => {
+    if (selectedArtist) {
+      console.log("Populating form with artist data:", selectedArtist);
+      
+      form.reset({
+        id: selectedArtist.id,
+        name: selectedArtist.name || "",
+        bio: selectedArtist.bio || "",
+        image_url: selectedArtist.image_url || "",
+        website: selectedArtist.website || "",
+        spotify: selectedArtist.social_links?.spotify || "",
+        instagram: selectedArtist.social_links?.instagram || "",
+        twitter: selectedArtist.social_links?.twitter || "",
+        youtube: selectedArtist.social_links?.youtube || ""
+      });
+    } else {
+      form.reset(defaultValues);
+    }
+  }, [selectedArtist, form]);
 
   const isEditing = !!selectedArtist;
   const isArchived = selectedArtist?.is_archived;
@@ -75,6 +87,14 @@ const ArtistForm: React.FC<ArtistFormProps> = ({
       ? "Archived Artist" 
       : "Edit Featured Artist" 
     : "Create New Featured Artist";
+
+  // Handler for image selection that updates the form
+  const handleImageSelected = async (file: File) => {
+    const imageUrl = await onImageSelected(file);
+    if (imageUrl) {
+      form.setValue("image_url", imageUrl);
+    }
+  };
 
   return (
     <Card>
@@ -131,12 +151,24 @@ const ArtistForm: React.FC<ArtistFormProps> = ({
               )}
             />
 
-            <ImageUploader 
-              currentImageUrl={form.watch("image_url")}
-              onImageSelected={onImageSelected}
-              onImageUrlChange={(url) => form.setValue("image_url", url)}
-              isUploading={isUploading}
-              disabled={isArchived}
+            <FormField
+              control={form.control}
+              name="image_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Artist Image</FormLabel>
+                  <FormControl>
+                    <ImageUploader 
+                      currentImageUrl={field.value}
+                      onImageSelected={handleImageSelected}
+                      onImageUrlChange={(url) => form.setValue("image_url", url)}
+                      isUploading={isUploading}
+                      disabled={isArchived}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
 
             <SocialLinksSection 

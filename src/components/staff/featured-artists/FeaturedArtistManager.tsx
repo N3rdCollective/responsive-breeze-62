@@ -9,6 +9,7 @@ import ArtistList from "./components/ArtistList";
 import { FeaturedArtist } from "@/components/news/types/newsTypes";
 import { useFeaturedArtists } from "./hooks/useFeaturedArtists";
 import { useImageUpload } from "./hooks/useImageUpload";
+import { useToast } from "@/hooks/use-toast";
 
 const FeaturedArtistManager: React.FC = () => {
   const [selectedArtist, setSelectedArtist] = useState<FeaturedArtist | null>(null);
@@ -16,6 +17,7 @@ const FeaturedArtistManager: React.FC = () => {
   const activeArtistsHook = useFeaturedArtists(false); // Active artists
   const archivedArtistsHook = useFeaturedArtists(true); // Archived artists
   const { uploadImage, isUploading } = useImageUpload();
+  const { toast } = useToast();
   
   // Get the correct hook based on the current tab
   const currentHook = tab === "active" ? activeArtistsHook : archivedArtistsHook;
@@ -33,9 +35,10 @@ const FeaturedArtistManager: React.FC = () => {
 
   useEffect(() => {
     fetchArtists();
-  }, [tab]);
+  }, [tab, fetchArtists]);
 
   const handleSelectArtist = (artist: FeaturedArtist) => {
+    console.log("Selected artist:", artist);
     setSelectedArtist(artist);
   };
 
@@ -45,8 +48,26 @@ const FeaturedArtistManager: React.FC = () => {
   };
 
   const handleImageSelected = async (file: File) => {
-    const imageUrl = await uploadImage(file);
-    return imageUrl;
+    try {
+      const imageUrl = await uploadImage(file);
+      if (!imageUrl) {
+        toast({
+          title: "Upload failed",
+          description: "Failed to upload image. Please try again.",
+          variant: "destructive"
+        });
+        return null;
+      }
+      return imageUrl;
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast({
+        title: "Upload error",
+        description: "An error occurred while uploading the image",
+        variant: "destructive"
+      });
+      return null;
+    }
   };
 
   const handleSaveArtist = async (values: any) => {
