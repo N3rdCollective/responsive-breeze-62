@@ -69,12 +69,13 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
       if (error) throw error;
       
       // Log the action
-      await logger.log({
-        action: "create",
-        resource: "featured_artist",
-        resourceId: data.id,
-        details: { artistName: data.name }
-      });
+      await logger.logActivity(
+        "create_artist",
+        `Created featured artist: ${data.name}`,
+        "artist",
+        data.id,
+        { artistName: data.name }
+      );
       
       toast({
         title: "Success",
@@ -108,12 +109,13 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
       if (error) throw error;
       
       // Log the action
-      await logger.log({
-        action: "update",
-        resource: "featured_artist",
-        resourceId: id,
-        details: { artistName: data.name }
-      });
+      await logger.logActivity(
+        "update_artist",
+        `Updated featured artist: ${data.name}`,
+        "artist",
+        id,
+        { artistName: data.name }
+      );
       
       toast({
         title: "Success",
@@ -152,12 +154,13 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
       if (error) throw error;
       
       // Log the action
-      await logger.log({
-        action: "delete",
-        resource: "featured_artist",
-        resourceId: id,
-        details: { artistName: artistData?.name || "Unknown artist" }
-      });
+      await logger.logActivity(
+        "delete_artist",
+        `Deleted featured artist: ${artistData?.name || "Unknown artist"}`,
+        "artist",
+        id,
+        { artistName: artistData?.name || "Unknown artist" }
+      );
       
       toast({
         title: "Success",
@@ -195,12 +198,13 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
       if (error) throw error;
       
       // Log the action
-      await logger.log({
-        action: "archive",
-        resource: "featured_artist",
-        resourceId: id,
-        details: { artistName: data.name }
-      });
+      await logger.logActivity(
+        "archive",
+        `Archived featured artist: ${data.name}`,
+        "artist",
+        id,
+        { artistName: data.name }
+      );
       
       toast({
         title: "Success",
@@ -237,12 +241,13 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
       if (error) throw error;
       
       // Log the action
-      await logger.log({
-        action: "restore",
-        resource: "featured_artist",
-        resourceId: id,
-        details: { artistName: data.name }
-      });
+      await logger.logActivity(
+        "restore",
+        `Restored featured artist: ${data.name}`,
+        "artist",
+        id,
+        { artistName: data.name }
+      );
       
       toast({
         title: "Success",

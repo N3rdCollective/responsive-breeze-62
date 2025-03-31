@@ -20,13 +20,15 @@ const StaffFeaturedArtistsPage = () => {
   useEffect(() => {
     // Log page visit
     if (!isLoading && isModeratorOrHigher) {
-      logger.log({
-        action: "visit",
-        resource: "page",
-        details: { page: "featured_artists_management" }
-      });
+      logger.logActivity(
+        "visit",
+        "Visited featured artists management page",
+        "page",
+        undefined,
+        { page: "featured_artists_management" }
+      );
     }
-  }, [isLoading, isModeratorOrHigher]);
+  }, [isLoading, isModeratorOrHigher, logger]);
   
   if (isLoading) {
     return (
