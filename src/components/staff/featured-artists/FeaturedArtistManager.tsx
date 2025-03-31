@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ArtistForm from "./components/ArtistForm";
+import { FormValues } from "./components/ArtistForm";
 import ArtistList from "./components/ArtistList";
 import { FeaturedArtist } from "@/components/news/types/newsTypes";
 import { useFeaturedArtists } from "./hooks/useFeaturedArtists";
