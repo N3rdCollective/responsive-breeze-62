@@ -1,4 +1,5 @@
 
 // This file re-exports the refactored implementation for backwards compatibility
-export { default } from "./ArtistForm";
-export * from "./ArtistForm/types";
+import ArtistForm from "./ArtistForm/index";
+export { FormValues } from "./ArtistForm/types";
+export default ArtistForm;

@@ -12,6 +12,13 @@ import SocialLinksSection from "../SocialLinksSection";
 import FormActions from "./FormActions";
 import { FormValues } from "./types";
 
+interface UploadProgress {
+  percentage: number;
+  fileName: string;
+  bytesUploaded?: number;
+  totalBytes?: number;
+}
+
 interface ArtistFormProps {
   selectedArtist: FeaturedArtist | null;
   onSave: (values: FormValues) => void;
@@ -20,6 +27,8 @@ interface ArtistFormProps {
   onRestore?: (id: string) => void;
   isSaving: boolean;
   isUploading?: boolean;
+  uploadProgress?: UploadProgress | null;
+  uploadError?: string | null;
   onImageSelected: (file: File) => Promise<string | null>;
 }
 
@@ -31,6 +40,8 @@ const ArtistForm: React.FC<ArtistFormProps> = ({
   onRestore,
   isSaving,
   isUploading = false,
+  uploadProgress = null,
+  uploadError = null,
   onImageSelected
 }) => {
   const defaultValues: FormValues = {
@@ -88,7 +99,9 @@ const ArtistForm: React.FC<ArtistFormProps> = ({
             <ImageSection 
               form={form} 
               isArchived={!!isArchived} 
-              isUploading={isUploading} 
+              isUploading={isUploading}
+              uploadProgress={uploadProgress}
+              uploadError={uploadError}
               onImageSelected={onImageSelected} 
             />
 

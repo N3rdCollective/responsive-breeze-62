@@ -16,7 +16,7 @@ const FeaturedArtistManager: React.FC = () => {
   const [tab, setTab] = useState<string>("active");
   const activeArtistsHook = useFeaturedArtists(false); // Active artists
   const archivedArtistsHook = useFeaturedArtists(true); // Archived artists
-  const { uploadImage, isUploading } = useImageUpload();
+  const { uploadImage, isUploading, uploadProgress, uploadError } = useImageUpload();
   const { toast } = useToast();
   
   // Get the correct hook based on the current tab
@@ -184,6 +184,8 @@ const FeaturedArtistManager: React.FC = () => {
           onRestore={tab === "archived" ? handleRestoreArtist : undefined}
           isSaving={isSaving}
           isUploading={isUploading}
+          uploadProgress={uploadProgress}
+          uploadError={uploadError}
           onImageSelected={handleImageSelected}
         />
       </div>
