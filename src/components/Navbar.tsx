@@ -57,9 +57,10 @@ const Navbar = () => {
     { path: "/contact", label: "Contact" },
   ];
 
-  // Add staff portal link if user is logged in - Fix the path here too
+  // Add staff portal links if user is logged in
   if (isLoggedIn) {
-    navigationItems.push({ path: "/staff", label: "Staff Portal" });
+    navigationItems.push({ path: "/staff", label: "Staff Dashboard" });
+    navigationItems.push({ path: "/staff/panel", label: "Staff Panel" });
   }
 
   return (

@@ -14,6 +14,7 @@ import StaffRegistration from "@/pages/StaffRegistration";
 import NewsEditor from "@/pages/NewsEditor";
 import RouteErrorElement from "@/components/RouteErrorElement";
 import StaffNews from "@/pages/StaffNews";
+import StaffPanel from "@/pages/StaffPanel";
 import StaffDashboard from "@/pages/StaffDashboard";
 import StaffSponsors from "@/pages/StaffSponsors";
 import StaffSystemSettings from "@/pages/StaffSystemSettings";
@@ -41,6 +42,7 @@ function App() {
         <Route path="/artists/archive" element={<ArtistsArchivePage />} errorElement={<RouteErrorElement />} />
         <Route path="/artists/:id" element={<ArtistDetail />} errorElement={<RouteErrorElement />} />
         <Route path="/staff" element={<StaffDashboard />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/panel" element={<StaffPanel />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/news" element={<StaffNews />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/login" element={<StaffLogin />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/signup" element={<StaffSignup />} errorElement={<RouteErrorElement />} />
