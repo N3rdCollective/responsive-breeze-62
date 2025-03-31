@@ -16,6 +16,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { useStaffActivityLogger } from "@/hooks/useStaffActivityLogger";
 
 interface StaffMemberRowProps {
   staff: StaffMember;
@@ -26,6 +27,7 @@ interface StaffMemberRowProps {
 const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProps) => {
   const [isUpdatingRole, setIsUpdatingRole] = useState<boolean>(false);
   const { toast } = useToast();
+  const { logActivity } = useStaffActivityLogger();
 
   const isSuperAdmin = staff.role === "super_admin" || 
                       staff.email.toLowerCase().includes("djepide") ||
@@ -47,6 +49,20 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
         .eq("id", staff.id);
       
       if (error) throw error;
+      
+      // Log the staff role change
+      await logActivity(
+        "update_staff",
+        `Changed role for ${staff.email} from ${ROLE_DISPLAY_NAMES[staff.role as StaffRole] || staff.role} to ${ROLE_DISPLAY_NAMES[newRole as StaffRole] || newRole}`,
+        "staff",
+        staff.id,
+        {
+          email: staff.email,
+          previous_role: staff.role,
+          new_role: newRole,
+          modified_by: currentUserRole
+        }
+      );
       
       toast({
         title: "Role Updated",
@@ -78,6 +94,19 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
         .eq("id", id);
       
       if (error) throw error;
+      
+      // Log the staff removal
+      await logActivity(
+        "delete_staff",
+        `Removed staff member: ${email}`,
+        "staff",
+        id,
+        {
+          email: email,
+          previous_role: staff.role,
+          removed_by: currentUserRole
+        }
+      );
       
       toast({
         title: "Staff Removed",

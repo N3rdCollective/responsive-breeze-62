@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { useFetchPersonalities } from "./useFetchPersonalities";
 import { useImageUpload } from "./useImageUpload";
 import { usePersonalityMutations } from "./usePersonalityMutations";
+import { useStaffActivityLogger } from "@/hooks/useStaffActivityLogger";
 
 const defaultFormValues: FormValues = {
   id: "",
@@ -27,6 +28,7 @@ export const usePersonalityEditor = (canEdit: boolean) => {
   const [bio, setBio] = useState("");
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [featured, setFeatured] = useState(false);
+  const { logActivity } = useStaffActivityLogger();
 
   // Use the smaller hooks
   const { personalities, loading, fetchPersonalities, fetchPersonalityById } = useFetchPersonalities();
@@ -100,6 +102,19 @@ export const usePersonalityEditor = (canEdit: boolean) => {
     
     const updated = await updatePersonality(selectedPersonality.id, formData);
     if (updated) {
+      // Log personality update
+      await logActivity(
+        "update_personality",
+        `Updated personality: ${values.name}`,
+        "personality",
+        selectedPersonality.id,
+        {
+          name: values.name,
+          role: values.role,
+          hasImage: !!imageUrl
+        }
+      );
+      
       await fetchPersonalities(); // Refresh the list
     }
   };
@@ -133,6 +148,19 @@ export const usePersonalityEditor = (canEdit: boolean) => {
     
     const newPersonality = await createPersonality(formData);
     if (newPersonality) {
+      // Log personality creation
+      await logActivity(
+        "create_personality",
+        `Created new personality: ${values.name}`,
+        "personality",
+        newPersonality.id,
+        {
+          name: values.name,
+          role: values.role,
+          hasImage: !!imageUrl
+        }
+      );
+      
       await fetchPersonalities(); // Refresh the list
       setSelectedPersonality(newPersonality);
     }
@@ -145,6 +173,18 @@ export const usePersonalityEditor = (canEdit: boolean) => {
     
     const success = await deletePersonality(id);
     if (success) {
+      // Log personality deletion
+      await logActivity(
+        "delete_personality",
+        `Deleted personality: ${selectedPersonality.name}`,
+        "personality",
+        id,
+        {
+          name: selectedPersonality.name,
+          role: selectedPersonality.role
+        }
+      );
+      
       await fetchPersonalities(); // Refresh the list
       setSelectedPersonality(null);
       form.reset(defaultFormValues);
