@@ -5,7 +5,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
-import { Loader2, Trash } from "lucide-react";
+import { Loader2, Trash, Archive } from "lucide-react";
 import { FeaturedArtist } from "@/components/news/types/newsTypes";
 import ImageUploader from "./ImageUploader";
 import SocialLinksSection from "./SocialLinksSection";
@@ -26,6 +26,7 @@ interface ArtistFormProps {
   selectedArtist: FeaturedArtist | null;
   onSave: (values: FormValues) => void;
   onDelete?: (id: string) => void;
+  onArchive?: (id: string) => void;
   isSaving: boolean;
   isUploading?: boolean;
   onImageSelected: (file: File) => void;
@@ -35,6 +36,7 @@ const ArtistForm: React.FC<ArtistFormProps> = ({
   selectedArtist,
   onSave,
   onDelete,
+  onArchive,
   isSaving,
   isUploading = false,
   onImageSelected
@@ -65,7 +67,12 @@ const ArtistForm: React.FC<ArtistFormProps> = ({
   });
 
   const isEditing = !!selectedArtist;
-  const title = isEditing ? "Edit Featured Artist" : "Create New Featured Artist";
+  const isArchived = selectedArtist?.is_archived;
+  const title = isEditing 
+    ? isArchived 
+      ? "Archived Artist" 
+      : "Edit Featured Artist" 
+    : "Create New Featured Artist";
 
   return (
     <Card>
@@ -82,7 +89,7 @@ const ArtistForm: React.FC<ArtistFormProps> = ({
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Artist name" />
+                    <Input {...field} placeholder="Artist name" disabled={isArchived} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -100,6 +107,7 @@ const ArtistForm: React.FC<ArtistFormProps> = ({
                       {...field} 
                       placeholder="Artist biography" 
                       className="min-h-[120px]"
+                      disabled={isArchived}
                     />
                   </FormControl>
                   <FormMessage />
@@ -114,7 +122,7 @@ const ArtistForm: React.FC<ArtistFormProps> = ({
                 <FormItem>
                   <FormLabel>Website URL</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="https://example.com" />
+                    <Input {...field} placeholder="https://example.com" disabled={isArchived} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -126,6 +134,7 @@ const ArtistForm: React.FC<ArtistFormProps> = ({
               onImageSelected={onImageSelected}
               onImageUrlChange={(url) => form.setValue("image_url", url)}
               isUploading={isUploading}
+              disabled={isArchived}
             />
 
             <SocialLinksSection 
@@ -137,31 +146,50 @@ const ArtistForm: React.FC<ArtistFormProps> = ({
               onTwitterChange={(value) => form.setValue("twitter", value)}
               youtubeValue={form.watch("youtube")}
               onYoutubeChange={(value) => form.setValue("youtube", value)}
+              disabled={isArchived}
             />
           </CardContent>
-          <CardFooter className="flex justify-between">
-            {isEditing && onDelete && (
-              <Button 
-                type="button" 
-                variant="destructive" 
-                onClick={() => selectedArtist && onDelete(selectedArtist.id)}
-                disabled={isSaving || isUploading}
-              >
-                <Trash className="h-4 w-4 mr-2" />
-                Delete
-              </Button>
+          <CardFooter className="flex justify-between flex-wrap gap-2">
+            {isEditing && (
+              <div className="flex gap-2">
+                {onDelete && !isArchived && (
+                  <Button 
+                    type="button" 
+                    variant="destructive" 
+                    onClick={() => selectedArtist && onDelete(selectedArtist.id)}
+                    disabled={isSaving || isUploading}
+                  >
+                    <Trash className="h-4 w-4 mr-2" />
+                    Delete
+                  </Button>
+                )}
+                
+                {onArchive && !isArchived && (
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => selectedArtist && onArchive(selectedArtist.id)}
+                    disabled={isSaving || isUploading}
+                  >
+                    <Archive className="h-4 w-4 mr-2" />
+                    Archive
+                  </Button>
+                )}
+              </div>
             )}
             <div className={isEditing ? "ml-auto" : "w-full"}>
-              <Button 
-                type="submit" 
-                disabled={isSaving || isUploading}
-                className={!isEditing ? "w-full" : ""}
-              >
-                {(isSaving || isUploading) && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                {isEditing ? 'Save Changes' : 'Create Artist'}
-              </Button>
+              {!isArchived && (
+                <Button 
+                  type="submit" 
+                  disabled={isSaving || isUploading}
+                  className={!isEditing ? "w-full" : ""}
+                >
+                  {(isSaving || isUploading) && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {isEditing ? 'Save Changes' : 'Create Artist'}
+                </Button>
+              )}
             </div>
           </CardFooter>
         </form>

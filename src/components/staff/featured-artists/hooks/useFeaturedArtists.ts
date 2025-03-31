@@ -17,7 +17,7 @@ export interface FeaturedArtistFormData {
   } | null;
 }
 
-export const useFeaturedArtists = () => {
+export const useFeaturedArtists = (showArchived: boolean = false) => {
   const [artists, setArtists] = useState<FeaturedArtist[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -26,10 +26,19 @@ export const useFeaturedArtists = () => {
   const fetchArtists = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const query = supabase
         .from("featured_artists")
         .select("*")
         .order("created_at", { ascending: false });
+      
+      // Filter based on archived status
+      if (!showArchived) {
+        query.is("is_archived", false);
+      } else {
+        query.eq("is_archived", true);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -135,6 +144,75 @@ export const useFeaturedArtists = () => {
     }
   };
 
+  const archiveArtist = async (id: string) => {
+    try {
+      setIsSaving(true);
+      
+      const now = new Date().toISOString();
+      const { data, error } = await supabase
+        .from("featured_artists")
+        .update({ 
+          is_archived: true,
+          archived_at: now
+        })
+        .eq("id", id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "Artist archived successfully",
+      });
+      
+      return data as FeaturedArtist;
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const restoreArtist = async (id: string) => {
+    try {
+      setIsSaving(true);
+      
+      const { data, error } = await supabase
+        .from("featured_artists")
+        .update({ 
+          is_archived: false,
+          archived_at: null
+        })
+        .eq("id", id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "Artist restored successfully",
+      });
+      
+      return data as FeaturedArtist;
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return {
     artists,
     loading,
@@ -142,6 +220,8 @@ export const useFeaturedArtists = () => {
     fetchArtists,
     createArtist,
     updateArtist,
-    deleteArtist
+    deleteArtist,
+    archiveArtist,
+    restoreArtist
   };
 };

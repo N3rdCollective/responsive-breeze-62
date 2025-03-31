@@ -20,6 +20,9 @@ import StaffSystemSettings from "@/pages/StaffSystemSettings";
 import StaffHomePage from "@/pages/StaffHomePage";
 import StaffPersonalitiesPage from "@/pages/StaffPersonalitiesPage";
 import StaffActivityLogs from "@/pages/StaffActivityLogs";
+import StaffFeaturedArtists from "@/pages/StaffFeaturedArtists";
+import ArtistsPage from "@/pages/ArtistsPage";
+import ArtistsArchivePage from "@/pages/ArtistsArchivePage";
 import MusicPlayer from "@/components/MusicPlayer";
 
 function App() {
@@ -33,6 +36,8 @@ function App() {
         <Route path="/news" element={<News />} errorElement={<RouteErrorElement />} />
         <Route path="/news/:id" element={<NewsPost />} errorElement={<RouteErrorElement />} />
         <Route path="/personalities" element={<Personalities />} errorElement={<RouteErrorElement />} />
+        <Route path="/artists" element={<ArtistsPage />} errorElement={<RouteErrorElement />} />
+        <Route path="/artists/archive" element={<ArtistsArchivePage />} errorElement={<RouteErrorElement />} />
         <Route path="/staff" element={<StaffDashboard />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/news" element={<StaffNews />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/login" element={<StaffLogin />} errorElement={<RouteErrorElement />} />
@@ -46,6 +51,7 @@ function App() {
         <Route path="/staff/home" element={<StaffHomePage />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/personalities" element={<StaffPersonalitiesPage />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/activity-logs" element={<StaffActivityLogs />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/featured-artists" element={<StaffFeaturedArtists />} errorElement={<RouteErrorElement />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       

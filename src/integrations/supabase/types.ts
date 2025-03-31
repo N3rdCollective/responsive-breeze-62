@@ -89,30 +89,36 @@ export type Database = {
       }
       featured_artists: {
         Row: {
+          archived_at: string | null
           bio: string
           created_at: string | null
           id: string
           image_url: string | null
+          is_archived: boolean | null
           name: string
           social_links: Json | null
           updated_at: string | null
           website: string | null
         }
         Insert: {
+          archived_at?: string | null
           bio: string
           created_at?: string | null
           id?: string
           image_url?: string | null
+          is_archived?: boolean | null
           name: string
           social_links?: Json | null
           updated_at?: string | null
           website?: string | null
         }
         Update: {
+          archived_at?: string | null
           bio?: string
           created_at?: string | null
           id?: string
           image_url?: string | null
+          is_archived?: boolean | null
           name?: string
           social_links?: Json | null
           updated_at?: string | null

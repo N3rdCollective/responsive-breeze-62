@@ -19,6 +19,7 @@ const FeaturedArtistSection: React.FC = () => {
         const { data, error } = await supabase
           .from("featured_artists")
           .select("*")
+          .eq("is_archived", false)
           .order("created_at", { ascending: false })
           .limit(1)
           .single();
@@ -58,12 +59,20 @@ const FeaturedArtistSection: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Featured Artist</h2>
-        <Link to="/artists">
-          <Button variant="ghost" className="gap-1">
-            View All Artists
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link to="/artists">
+            <Button variant="ghost" className="gap-1">
+              View All Artists
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </Link>
+          <Link to="/artists/archive">
+            <Button variant="ghost" className="gap-1">
+              View Archive
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
       </div>
       <FeaturedArtist artist={featuredArtist} />
     </div>

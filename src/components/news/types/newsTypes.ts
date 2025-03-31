@@ -1,4 +1,3 @@
-
 /**
  * Common News component types
  */
@@ -21,13 +20,15 @@ export interface FeaturedArtist {
   name: string;
   bio: string;
   image_url: string | null;
-  website?: string | null;
+  website: string | null;
   social_links?: {
-    spotify?: string;
-    instagram?: string;
-    twitter?: string;
-    youtube?: string;
+    spotify?: string | null;
+    instagram?: string | null;
+    twitter?: string | null;
+    youtube?: string | null;
   } | null;
-  created_at?: string;
-  updated_at?: string;
+  created_at: string | null;
+  updated_at: string | null;
+  is_archived: boolean | null;
+  archived_at: string | null;
 }
