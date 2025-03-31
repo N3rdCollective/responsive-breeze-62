@@ -39,19 +39,19 @@ const SponsorsSection = () => {
   return (
     <div className="mt-10 pt-6 border-t border-[#666666]/20 dark:border-white/10 text-center">
       <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-[#FFD700]">Affiliates</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 justify-items-center max-w-4xl mx-auto">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 justify-center max-w-4xl mx-auto">
         {sponsors.map((sponsor) => (
-          <div key={sponsor.id} className="text-center flex items-center justify-center">
+          <div key={sponsor.id} className="text-center">
             {sponsor.website_url ? (
               <a 
                 href={sponsor.website_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block hover:opacity-80 transition-opacity w-full flex items-center justify-center"
+                className="block hover:opacity-80 transition-opacity"
                 title={sponsor.description || sponsor.name}
               >
                 {sponsor.logo_url ? (
-                  <div className="bg-white rounded-md p-2 h-16 flex items-center justify-center w-full">
+                  <div className="bg-white rounded-md p-2 h-16 flex items-center justify-center">
                     <img 
                       src={sponsor.logo_url} 
                       alt={`${sponsor.name} logo`}
@@ -59,7 +59,7 @@ const SponsorsSection = () => {
                     />
                   </div>
                 ) : (
-                  <div className="bg-white/10 rounded-md p-2 h-16 flex items-center justify-center text-sm w-full">
+                  <div className="bg-white/10 rounded-md p-2 h-16 flex items-center justify-center text-sm">
                     <span className="mr-1">{sponsor.name}</span>
                     <ExternalLink className="h-3 w-3" />
                   </div>
@@ -67,7 +67,7 @@ const SponsorsSection = () => {
               </a>
             ) : (
               <div 
-                className="bg-white/10 rounded-md p-2 h-16 flex items-center justify-center w-full"
+                className="bg-white/10 rounded-md p-2 h-16 flex items-center justify-center"
                 title={sponsor.description || ""}
               >
                 {sponsor.logo_url ? (
