@@ -17,19 +17,16 @@ import { useStaffAuth } from "@/hooks/useStaffAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useStaffActivityLogger } from "@/hooks/useStaffActivityLogger";
+import { Post } from "../types/newsTypes";
 
 interface NewsTableActionsProps {
-  postId: string;
-  postTitle: string;
-  postStatus: string;
-  refetch: () => void;
+  post: Post;
+  onRefetch: () => void;
 }
 
 const NewsTableActions: React.FC<NewsTableActionsProps> = ({
-  postId,
-  postTitle,
-  postStatus,
-  refetch,
+  post,
+  onRefetch
 }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -37,6 +34,10 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({
   const { logActivity } = useStaffActivityLogger();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
+  
+  const postId = post.id;
+  const postTitle = post.title;
+  const postStatus = post.status;
   
   const canModify = userRole === 'admin' || userRole === 'super_admin' || userRole === 'moderator';
   const canPublish = canModify || userRole === 'content_manager';
@@ -95,7 +96,7 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({
         description: `Post ${newStatus === 'published' ? 'published' : 'unpublished'} successfully`,
       });
       
-      refetch();
+      onRefetch();
     } catch (error) {
       console.error("Error toggling publish status:", error);
       toast({
@@ -142,7 +143,7 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({
       });
       
       setIsDeleteDialogOpen(false);
-      refetch();
+      onRefetch();
     } catch (error) {
       console.error("Error deleting post:", error);
       toast({

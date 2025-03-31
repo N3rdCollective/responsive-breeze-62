@@ -126,7 +126,7 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
     });
     
     try {
-      const result = await saveNewsPost(
+      const saveResult = await saveNewsPost(
         {
           id,
           title,
@@ -153,6 +153,14 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
         }
       );
       
+      // Extract the returned ID from the saveResult
+      const resultId = saveResult?.id || id;
+      
+      if (!resultId) {
+        console.error("[useNewsEditor] No post ID found after save operation");
+        return;
+      }
+      
       // Log the activity after successful save
       const actionType = id ? 'update_post' : 'create_post';
       const isPublishing = finalStatus === 'published';
@@ -167,7 +175,7 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
         finalActionType,
         description,
         'post',
-        result?.id || id,
+        resultId,
         {
           title,
           category,
@@ -180,7 +188,7 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
         action: finalActionType,
         description,
         entityType: 'post',
-        entityId: result?.id || id
+        entityId: resultId
       });
       
     } catch (error) {
