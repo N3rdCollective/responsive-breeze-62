@@ -23,6 +23,7 @@ import StaffActivityLogs from "@/pages/StaffActivityLogs";
 import StaffFeaturedArtists from "@/pages/StaffFeaturedArtists";
 import ArtistsPage from "@/pages/ArtistsPage";
 import ArtistsArchivePage from "@/pages/ArtistsArchivePage";
+import ArtistDetail from "@/pages/ArtistDetail";
 import MusicPlayer from "@/components/MusicPlayer";
 
 function App() {
@@ -38,6 +39,7 @@ function App() {
         <Route path="/personalities" element={<Personalities />} errorElement={<RouteErrorElement />} />
         <Route path="/artists" element={<ArtistsPage />} errorElement={<RouteErrorElement />} />
         <Route path="/artists/archive" element={<ArtistsArchivePage />} errorElement={<RouteErrorElement />} />
+        <Route path="/artists/:id" element={<ArtistDetail />} errorElement={<RouteErrorElement />} />
         <Route path="/staff" element={<StaffDashboard />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/news" element={<StaffNews />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/login" element={<StaffLogin />} errorElement={<RouteErrorElement />} />

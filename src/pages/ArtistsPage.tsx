@@ -9,6 +9,7 @@ import FeaturedArtistComponent from "@/components/home/FeaturedArtist";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
+import RelatedArtists from "@/components/artists/RelatedArtists";
 
 const ArtistsPage = () => {
   const [artists, setArtists] = useState<FeaturedArtistType[]>([]);
@@ -29,7 +30,8 @@ const ArtistsPage = () => {
           return;
         }
 
-        setArtists(data as FeaturedArtistType[]);
+        // Skip the first 4 artists as they will be displayed in the RelatedArtists component
+        setArtists(data.slice(4) as FeaturedArtistType[]);
       } catch (error) {
         console.error("Error fetching artists:", error);
       } finally {
@@ -44,9 +46,12 @@ const ArtistsPage = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
+      {/* Featured Artists of the Month section */}
+      <RelatedArtists />
+      
       <div className="container mx-auto px-4 py-12">
         <div className="flex justify-between items-center mb-10">
-          <h1 className="text-3xl font-bold">Featured Artists</h1>
+          <h1 className="text-3xl font-bold">All Featured Artists</h1>
           <Link to="/artists/archive">
             <Button variant="outline" className="gap-1">
               View Archive
@@ -63,7 +68,7 @@ const ArtistsPage = () => {
           </div>
         ) : artists.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-xl text-muted-foreground">No featured artists at the moment.</p>
+            <p className="text-xl text-muted-foreground">No additional featured artists at the moment.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-12">

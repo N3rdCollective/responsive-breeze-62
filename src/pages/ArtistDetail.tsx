@@ -7,6 +7,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ExternalLink, Instagram, Twitter, Youtube, Music } from 'lucide-react';
+import RelatedArtists from '@/components/artists/RelatedArtists';
 
 const ArtistDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -78,6 +79,10 @@ const ArtistDetail = () => {
   return (
     <>
       <Navbar />
+      
+      {/* Featured Artists Section at the top */}
+      <RelatedArtists currentArtistId={id} />
+      
       <div className="container mx-auto px-4 py-12">
         <div className="flex flex-col md:flex-row gap-8">
           <div className="md:w-1/3">
