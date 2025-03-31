@@ -1,6 +1,8 @@
 
 import React from "react";
+import { Calendar, User, Tag } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface NewsPreviewProps {
   title: string;
@@ -17,69 +19,87 @@ const NewsPreview: React.FC<NewsPreviewProps> = ({
   content,
   excerpt,
   currentFeaturedImageUrl,
-  authorName = "Staff Author",
-  category = "News",
-  tags = [],
+  authorName,
+  category,
+  tags,
 }) => {
   return (
-    <div className="max-w-3xl mx-auto rounded-lg overflow-hidden shadow-md bg-card text-card-foreground">
+    <article className="max-w-4xl mx-auto">
+      <h1 className="text-3xl md:text-4xl font-bold mb-4">{title || "Untitled Post"}</h1>
+      
+      <div className="flex flex-wrap gap-x-4 gap-y-2 mb-6 text-sm text-muted-foreground">
+        <div className="flex items-center gap-1">
+          <Calendar className="h-4 w-4" />
+          <time dateTime={new Date().toISOString()}>
+            {formatDate(new Date().toISOString())}
+          </time>
+        </div>
+        
+        {authorName && (
+          <div className="flex items-center gap-1">
+            <User className="h-4 w-4" />
+            <span>{authorName}</span>
+          </div>
+        )}
+        
+        {category && (
+          <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full">
+            {category}
+          </span>
+        )}
+      </div>
+      
+      {/* Display tags if available */}
+      {tags && tags.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Tag className="h-4 w-4 text-muted-foreground" />
+            {tags.map(tag => (
+              <Badge key={tag} variant="outline" className="mr-1">
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+      
       {currentFeaturedImageUrl && (
-        <div className="w-full aspect-video bg-muted overflow-hidden">
+        <div className="mb-8">
           <img
             src={currentFeaturedImageUrl}
             alt={title}
-            className="w-full h-full object-cover"
+            className="w-full h-auto rounded-lg object-cover max-h-[500px]"
           />
         </div>
       )}
       
-      <div className="p-6 space-y-6">
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <span className="inline-block bg-primary/20 text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
-              {category}
-            </span>
-            <time className="text-sm text-muted-foreground">
-              {formatDate(new Date().toISOString())}
-            </time>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-card-foreground">{title}</h1>
-          {excerpt && (
-            <p className="text-lg text-muted-foreground">{excerpt}</p>
-          )}
-        </div>
-        
-        <div className="flex items-center space-x-4">
-          <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
-            {authorName.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <p className="font-medium text-card-foreground">{authorName}</p>
-            <p className="text-sm text-muted-foreground">Author</p>
-          </div>
-        </div>
-        
-        <div className="border-t border-border pt-6">
-          <div
-            className="prose dark:prose-invert prose-headings:text-card-foreground prose-p:text-card-foreground prose-strong:text-card-foreground prose-em:text-card-foreground prose-li:text-card-foreground max-w-none"
-            dangerouslySetInnerHTML={{ __html: content }}
-          />
-        </div>
-        
-        {tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 pt-4 border-t border-border">
-            {tags.map((tag) => (
-              <span
-                key={tag}
-                className="px-2 py-1 bg-muted text-muted-foreground rounded-md text-sm"
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
+      {excerpt && (
+        <p className="text-lg text-muted-foreground mb-6">
+          {excerpt}
+        </p>
+      )}
+      
+      {content ? (
+        <div 
+          className="prose prose-lg max-w-none dark:prose-invert"
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+      ) : (
+        <p className="text-muted-foreground">No content yet. Start writing to see a preview.</p>
+      )}
+
+      <style jsx global>{`
+        .video-embed {
+          position: relative;
+          margin: 1em 0;
+        }
+        .video-embed iframe {
+          border-radius: 0.375rem;
+          aspect-ratio: 16/9;
+          width: 100%;
+        }
+      `}</style>
+    </article>
   );
 };
 

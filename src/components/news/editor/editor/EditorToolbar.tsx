@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Editor } from '@tiptap/react';
 import { useEditorUtils } from './useEditorUtils';
@@ -17,6 +18,7 @@ import {
   Palette,
   Undo,
   Redo,
+  Video,
 } from 'lucide-react';
 import { Toggle } from '@/components/ui/toggle';
 import { Separator } from '@/components/ui/separator';
@@ -30,7 +32,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
   editor,
   disabled = false
 }) => {
-  const { addImage, addLink, setColor, setTextAlign } = useEditorUtils(editor);
+  const { addImage, addLink, setColor, setTextAlign, addVideo } = useEditorUtils(editor);
 
   if (!editor) {
     return null;
@@ -164,6 +166,15 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
           title="Image"
         >
           <Image className="h-4 w-4" />
+        </Toggle>
+
+        <Toggle
+          size="sm"
+          onPressedChange={addVideo}
+          aria-label="Video"
+          title="Add Video"
+        >
+          <Video className="h-4 w-4" />
         </Toggle>
         
         <Toggle

@@ -127,6 +127,18 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
             </div>
           </article>
         </div>
+
+        <style jsx global>{`
+          .video-embed {
+            position: relative;
+            margin: 1em 0;
+          }
+          .video-embed iframe {
+            border-radius: 0.375rem;
+            aspect-ratio: 16/9;
+            width: 100%;
+          }
+        `}</style>
       </DialogContent>
     </Dialog>
   );

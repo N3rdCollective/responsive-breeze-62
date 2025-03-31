@@ -1,4 +1,6 @@
+
 import { Editor } from '@tiptap/react';
+import { Dialog } from '@/components/ui/dialog';
 
 export const useEditorUtils = (editor: Editor) => {
   const addImage = () => {
@@ -27,6 +29,16 @@ export const useEditorUtils = (editor: Editor) => {
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
   };
 
+  const addVideo = () => {
+    if (!editor) return;
+    
+    const url = window.prompt('Enter YouTube, Vimeo, or other video URL');
+    
+    if (url) {
+      editor.chain().focus().setVideo({ src: url }).run();
+    }
+  };
+
   const setColor = () => {
     if (!editor) return;
     const color = window.prompt('Enter color (hex, rgb, or name)', '#000000');
@@ -43,6 +55,7 @@ export const useEditorUtils = (editor: Editor) => {
   return {
     addImage,
     addLink,
+    addVideo,
     setColor,
     setTextAlign
   };

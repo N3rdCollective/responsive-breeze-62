@@ -109,6 +109,18 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           </div>
         )}
       </div>
+
+      <style jsx global>{`
+        .video-embed {
+          position: relative;
+          margin: 1em 0;
+        }
+        .video-embed iframe {
+          border-radius: 0.375rem;
+          aspect-ratio: 16/9;
+          width: 100%;
+        }
+      `}</style>
     </div>
   );
 };
