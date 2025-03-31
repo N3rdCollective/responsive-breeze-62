@@ -23,7 +23,7 @@ const StaffFeaturedArtistsPage = () => {
       logger.logActivity(
         "visit",
         "Visited featured artists management page",
-        "page",
+        undefined, // Using undefined instead of "page" which is not a valid EntityType
         undefined,
         { page: "featured_artists_management" }
       );
