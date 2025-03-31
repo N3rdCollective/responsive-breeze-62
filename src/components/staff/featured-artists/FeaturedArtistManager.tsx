@@ -1,80 +1,59 @@
 
 import React, { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { useFeaturedArtists, FeaturedArtistFormData } from "./hooks/useFeaturedArtists";
-import { FeaturedArtist } from "@/components/news/types/newsTypes";
-import ArtistForm from "./components/ArtistForm";
-import { useImageUpload } from "@/components/staff/personalities/hooks/useImageUpload";
-import { Loader2, PlusCircle, Music, Archive, Clock } from "lucide-react";
-import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-interface ArtistFormValues {
-  id?: string;
-  name: string;
-  bio: string;
-  image_url: string;
-  website: string;
-  spotify: string;
-  instagram: string;
-  twitter: string;
-  youtube: string;
-}
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import ArtistForm from "./components/ArtistForm";
+import ArtistList from "./components/ArtistList";
+import { FeaturedArtist } from "@/components/news/types/newsTypes";
+import { useFeaturedArtists } from "./hooks/useFeaturedArtists";
+import { useImageUpload } from "./hooks/useImageUpload";
 
 const FeaturedArtistManager: React.FC = () => {
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<string>("active");
-  const { 
-    artists: activeArtists, 
-    loading: loadingActive, 
-    isSaving: isSavingActive, 
-    fetchArtists: fetchActiveArtists,
-    createArtist,
-    updateArtist,
-    deleteArtist,
-    archiveArtist
-  } = useFeaturedArtists(false);
-  
-  const { 
-    artists: archivedArtists, 
-    loading: loadingArchived, 
-    isSaving: isSavingArchived, 
-    fetchArtists: fetchArchivedArtists,
-    restoreArtist
-  } = useFeaturedArtists(true);
-
-  const { imageUrl, setImageUrl, handleImageSelected, isUploading } = useImageUpload();
   const [selectedArtist, setSelectedArtist] = useState<FeaturedArtist | null>(null);
+  const [tab, setTab] = useState<string>("active");
+  const activeArtistsHook = useFeaturedArtists(false); // Active artists
+  const archivedArtistsHook = useFeaturedArtists(true); // Archived artists
+  const { uploadImage, isUploading } = useImageUpload();
+  
+  // Get the correct hook based on the current tab
+  const currentHook = tab === "active" ? activeArtistsHook : archivedArtistsHook;
+  const { 
+    artists, 
+    loading, 
+    isSaving, 
+    fetchArtists, 
+    createArtist, 
+    updateArtist, 
+    deleteArtist, 
+    archiveArtist,
+    restoreArtist 
+  } = currentHook;
 
   useEffect(() => {
-    fetchActiveArtists();
-    fetchArchivedArtists();
-  }, []);
-
-  useEffect(() => {
-    if (selectedArtist) {
-      setImageUrl(selectedArtist.image_url || "");
-    } else {
-      setImageUrl("");
-    }
-  }, [selectedArtist]);
-
-  const handleCreateNew = () => {
-    setSelectedArtist(null);
-    setImageUrl("");
-  };
+    fetchArtists();
+  }, [tab]);
 
   const handleSelectArtist = (artist: FeaturedArtist) => {
     setSelectedArtist(artist);
   };
 
-  const handleSaveArtist = async (values: ArtistFormValues) => {
-    // Format the data for the API
-    const formData: FeaturedArtistFormData = {
+  const handleNewArtist = () => {
+    setSelectedArtist(null);
+    setTab("active"); // Switch to active tab when creating new artist
+  };
+
+  const handleImageSelected = async (file: File) => {
+    const imageUrl = await uploadImage(file);
+    return imageUrl;
+  };
+
+  const handleSaveArtist = async (values: any) => {
+    const formData = {
       name: values.name,
       bio: values.bio,
-      image_url: imageUrl,
+      image_url: values.image_url,
       website: values.website || null,
       social_links: {
         spotify: values.spotify || null,
@@ -83,162 +62,79 @@ const FeaturedArtistManager: React.FC = () => {
         youtube: values.youtube || null
       }
     };
-
+    
     if (selectedArtist) {
-      // Update existing artist
-      const updated = await updateArtist(selectedArtist.id, formData);
-      if (updated) {
-        await fetchActiveArtists();
-        await fetchArchivedArtists();
-        setSelectedArtist(updated);
-      }
+      await updateArtist(selectedArtist.id, formData);
     } else {
-      // Create new artist
-      const created = await createArtist(formData);
-      if (created) {
-        await fetchActiveArtists();
-        setSelectedArtist(created);
+      const newArtist = await createArtist(formData);
+      if (newArtist) {
+        setSelectedArtist(newArtist);
       }
     }
+    
+    await fetchArtists();
   };
 
   const handleDeleteArtist = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this artist?")) {
-      return;
-    }
-    
-    const success = await deleteArtist(id);
-    if (success) {
-      await fetchActiveArtists();
-      await fetchArchivedArtists();
+    if (window.confirm("Are you sure you want to delete this artist? This action cannot be undone.")) {
+      await deleteArtist(id);
       setSelectedArtist(null);
+      await fetchArtists();
     }
   };
 
   const handleArchiveArtist = async (id: string) => {
-    if (!window.confirm("Are you sure you want to archive this artist?")) {
-      return;
-    }
-    
-    const archivedArtist = await archiveArtist(id);
-    if (archivedArtist) {
-      await fetchActiveArtists();
-      await fetchArchivedArtists();
-      setSelectedArtist(null);
-    }
+    await archiveArtist(id);
+    setSelectedArtist(null);
+    await fetchArtists();
   };
 
   const handleRestoreArtist = async (id: string) => {
-    if (!window.confirm("Are you sure you want to restore this artist?")) {
-      return;
-    }
-    
-    const restoredArtist = await restoreArtist(id);
-    if (restoredArtist) {
-      await fetchActiveArtists();
-      await fetchArchivedArtists();
-      setSelectedArtist(restoredArtist);
-    }
+    await restoreArtist(id);
+    setSelectedArtist(null);
+    await fetchArtists();
   };
-
-  const renderArtistList = (artists: FeaturedArtist[], loading: boolean, isArchived: boolean) => {
-    if (loading) {
-      return (
-        <div className="flex justify-center items-center h-32">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-2">
-        {artists.length === 0 ? (
-          <Card className="p-4 text-center text-muted-foreground">
-            No {isArchived ? "archived" : "active"} artists found
-          </Card>
-        ) : (
-          artists.map(artist => (
-            <Card 
-              key={artist.id} 
-              className={`p-3 cursor-pointer hover:bg-accent/50 ${selectedArtist?.id === artist.id ? 'border-primary' : ''}`}
-              onClick={() => handleSelectArtist(artist)}
-            >
-              <div className="flex items-center gap-3">
-                {artist.image_url ? (
-                  <img 
-                    src={artist.image_url} 
-                    alt={artist.name} 
-                    className="h-10 w-10 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
-                    <Music className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                )}
-                <div className="flex-1">
-                  <p className="font-medium">{artist.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {isArchived ? 
-                      `Archived: ${new Date(artist.archived_at || "").toLocaleDateString()}` : 
-                      `Created: ${new Date(artist.created_at || "").toLocaleDateString()}`
-                    }
-                  </p>
-                </div>
-                {isArchived && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRestoreArtist(artist.id);
-                    }}
-                    title="Restore artist"
-                  >
-                    <Clock className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </Card>
-          ))
-        )}
-      </div>
-    );
-  };
-
-  const isSaving = isSavingActive || isSavingArchived;
-  const showArchiveButton = selectedArtist && !selectedArtist.is_archived;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="md:col-span-1">
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium">Featured Artists</h3>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleCreateNew}
-              className="gap-1"
-            >
-              <PlusCircle className="h-4 w-4" />
-              New
-            </Button>
-          </div>
-          
-          <Tabs defaultValue="active" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-2 mb-4">
-              <TabsTrigger value="active">Active</TabsTrigger>
-              <TabsTrigger value="archived">Archived</TabsTrigger>
-            </TabsList>
-            <TabsContent value="active">
-              {renderArtistList(activeArtists, loadingActive, false)}
-            </TabsContent>
-            <TabsContent value="archived">
-              {renderArtistList(archivedArtists, loadingArchived, true)}
-            </TabsContent>
-          </Tabs>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-medium">Artists</h3>
+          <Button onClick={handleNewArtist} size="sm" className="gap-1">
+            <Plus className="h-4 w-4" />
+            New Artist
+          </Button>
         </div>
+        
+        <Tabs value={tab} onValueChange={setTab} className="w-full">
+          <TabsList className="grid grid-cols-2 mb-4 w-full">
+            <TabsTrigger value="active">Active</TabsTrigger>
+            <TabsTrigger value="archived">Archived</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="active" className="mt-0">
+            <ScrollArea className="h-[calc(100vh-320px)] pr-4">
+              <ArtistList 
+                artists={artists}
+                loading={loading}
+                onSelectArtist={handleSelectArtist}
+                selectedArtistId={selectedArtist?.id}
+              />
+            </ScrollArea>
+          </TabsContent>
+          
+          <TabsContent value="archived" className="mt-0">
+            <ScrollArea className="h-[calc(100vh-320px)] pr-4">
+              <ArtistList 
+                artists={artists}
+                loading={loading}
+                onSelectArtist={handleSelectArtist}
+                selectedArtistId={selectedArtist?.id}
+                isArchived
+              />
+            </ScrollArea>
+          </TabsContent>
+        </Tabs>
       </div>
       
       <div className="md:col-span-2">
@@ -246,7 +142,8 @@ const FeaturedArtistManager: React.FC = () => {
           selectedArtist={selectedArtist}
           onSave={handleSaveArtist}
           onDelete={handleDeleteArtist}
-          onArchive={showArchiveButton ? handleArchiveArtist : undefined}
+          onArchive={tab === "active" ? handleArchiveArtist : undefined}
+          onRestore={tab === "archived" ? handleRestoreArtist : undefined}
           isSaving={isSaving}
           isUploading={isUploading}
           onImageSelected={handleImageSelected}
