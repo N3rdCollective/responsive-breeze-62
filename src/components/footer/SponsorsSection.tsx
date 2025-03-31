@@ -39,15 +39,15 @@ const SponsorsSection = () => {
   return (
     <div className="mt-10 pt-6 border-t border-[#666666]/20 dark:border-white/10">
       <h3 className="text-lg font-semibold mb-6 text-gray-900 dark:text-[#FFD700] text-center">Affiliates</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 max-w-4xl mx-auto">
+      <div className="flex flex-wrap justify-center gap-6 max-w-4xl mx-auto">
         {sponsors.map((sponsor) => (
-          <div key={sponsor.id} className="flex items-center justify-center">
+          <div key={sponsor.id} className="flex items-center justify-center" style={{ width: '150px' }}>
             {sponsor.website_url ? (
               <a 
                 href={sponsor.website_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block hover:opacity-80 transition-opacity w-full flex items-center justify-center"
+                className="block hover:opacity-80 transition-opacity w-full h-full flex items-center justify-center"
                 title={sponsor.description || sponsor.name}
               >
                 {sponsor.logo_url ? (
