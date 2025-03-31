@@ -7,13 +7,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
+import { 
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const FeaturedArtistSection: React.FC = () => {
-  const [featuredArtist, setFeaturedArtist] = useState<FeaturedArtistType | null>(null);
+  const [featuredArtists, setFeaturedArtists] = useState<FeaturedArtistType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchFeaturedArtist = async () => {
+    const fetchFeaturedArtists = async () => {
       try {
         setIsLoading(true);
         const { data, error } = await supabase
@@ -21,44 +28,47 @@ const FeaturedArtistSection: React.FC = () => {
           .select("*")
           .eq("is_archived", false)
           .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
+          .limit(4);
 
         if (error) {
-          console.error("Error fetching featured artist:", error);
+          console.error("Error fetching featured artists:", error);
           return;
         }
 
-        setFeaturedArtist(data as FeaturedArtistType);
+        setFeaturedArtists(data as FeaturedArtistType[]);
       } catch (error) {
-        console.error("Error in fetchFeaturedArtist:", error);
+        console.error("Error in fetchFeaturedArtists:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchFeaturedArtist();
+    fetchFeaturedArtists();
   }, []);
 
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Featured Artist</h2>
+          <h2 className="text-2xl font-bold">Featured Artists</h2>
         </div>
-        <Skeleton className="w-full h-80 rounded-lg" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, index) => (
+            <Skeleton key={index} className="w-full h-80 rounded-lg" />
+          ))}
+        </div>
       </div>
     );
   }
 
-  if (!featuredArtist) {
+  if (!featuredArtists.length) {
     return null;
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Featured Artist</h2>
+        <h2 className="text-2xl font-bold">Featured Artists</h2>
         <div className="flex gap-2">
           <Link to="/artists">
             <Button variant="ghost" className="gap-1">
@@ -74,7 +84,30 @@ const FeaturedArtistSection: React.FC = () => {
           </Link>
         </div>
       </div>
-      <FeaturedArtist artist={featuredArtist} />
+
+      {/* Desktop layout */}
+      <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {featuredArtists.map((artist) => (
+          <FeaturedArtist key={artist.id} artist={artist} />
+        ))}
+      </div>
+
+      {/* Mobile carousel */}
+      <div className="md:hidden">
+        <Carousel className="w-full">
+          <CarouselContent>
+            {featuredArtists.map((artist) => (
+              <CarouselItem key={artist.id} className="basis-full md:basis-1/2 lg:basis-1/4">
+                <FeaturedArtist artist={artist} />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <div className="flex justify-center mt-4">
+            <CarouselPrevious className="relative static translate-y-0 mx-2" />
+            <CarouselNext className="relative static translate-y-0 mx-2" />
+          </div>
+        </Carousel>
+      </div>
     </div>
   );
 };
