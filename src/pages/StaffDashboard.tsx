@@ -8,12 +8,16 @@ import AdminCard from "@/components/staff/AdminCard";
 import StatsPanel from "@/components/staff/StatsPanel";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 import ManageStaffModal from "@/components/ManageStaffModal";
+import StaffProfileEditor from "@/components/staff/StaffProfileEditor";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { UserCog } from "lucide-react";
 
 const StaffDashboard = () => {
   const { userRole, isLoading, staffName, isAdmin, handleLogout } = useStaffAuth();
   const [isManageStaffOpen, setIsManageStaffOpen] = useState(false);
+  const [isProfileEditorOpen, setIsProfileEditorOpen] = useState(false);
   
   const handleManageUsers = () => {
     setIsManageStaffOpen(true);
@@ -35,12 +39,23 @@ const StaffDashboard = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container mx-auto px-4 pt-24 pb-16 max-w-5xl">
-        <StaffHeader 
-          staffName={staffName}
-          isAdmin={isAdmin}
-          showLogoutButton={true}
-          onLogout={handleLogout}
-        />
+        <div className="flex flex-col sm:flex-row justify-between mb-4">
+          <StaffHeader 
+            staffName={staffName}
+            isAdmin={isAdmin}
+            showLogoutButton={true}
+            onLogout={handleLogout}
+          />
+          
+          <Button 
+            variant="outline" 
+            onClick={() => setIsProfileEditorOpen(true)}
+            className="mt-4 sm:mt-0 flex items-center gap-2"
+          >
+            <UserCog className="h-4 w-4" />
+            Edit Profile
+          </Button>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
           <ContentManagementCard userRole={userRole} />
@@ -65,6 +80,11 @@ const StaffDashboard = () => {
           open={isManageStaffOpen}
           onOpenChange={setIsManageStaffOpen}
           currentUserRole={userRole}
+        />
+        
+        <StaffProfileEditor
+          open={isProfileEditorOpen}
+          onOpenChange={setIsProfileEditorOpen}
         />
       </div>
       <Footer />
