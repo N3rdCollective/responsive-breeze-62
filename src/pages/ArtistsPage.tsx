@@ -3,15 +3,15 @@ import React, { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
-import { FeaturedArtist } from "@/components/news/types/newsTypes";
+import { FeaturedArtist as FeaturedArtistType } from "@/components/news/types/newsTypes";
 import { Skeleton } from "@/components/ui/skeleton";
-import FeaturedArtist from "@/components/home/FeaturedArtist";
+import FeaturedArtistComponent from "@/components/home/FeaturedArtist";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 
 const ArtistsPage = () => {
-  const [artists, setArtists] = useState<FeaturedArtist[]>([]);
+  const [artists, setArtists] = useState<FeaturedArtistType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -29,7 +29,7 @@ const ArtistsPage = () => {
           return;
         }
 
-        setArtists(data as FeaturedArtist[]);
+        setArtists(data as FeaturedArtistType[]);
       } catch (error) {
         console.error("Error fetching artists:", error);
       } finally {
@@ -68,7 +68,7 @@ const ArtistsPage = () => {
         ) : (
           <div className="grid grid-cols-1 gap-12">
             {artists.map(artist => (
-              <FeaturedArtist key={artist.id} artist={artist} />
+              <FeaturedArtistComponent key={artist.id} artist={artist} />
             ))}
           </div>
         )}

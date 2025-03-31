@@ -3,15 +3,15 @@ import React, { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
-import { FeaturedArtist } from "@/components/news/types/newsTypes";
+import { FeaturedArtist as FeaturedArtistType } from "@/components/news/types/newsTypes";
 import { Skeleton } from "@/components/ui/skeleton";
-import FeaturedArtist from "@/components/home/FeaturedArtist";
+import FeaturedArtistComponent from "@/components/home/FeaturedArtist";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, History } from "lucide-react";
 
 const ArtistsArchivePage = () => {
-  const [archivedArtists, setArchivedArtists] = useState<FeaturedArtist[]>([]);
+  const [archivedArtists, setArchivedArtists] = useState<FeaturedArtistType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -29,7 +29,7 @@ const ArtistsArchivePage = () => {
           return;
         }
 
-        setArchivedArtists(data as FeaturedArtist[]);
+        setArchivedArtists(data as FeaturedArtistType[]);
       } catch (error) {
         console.error("Error fetching archived artists:", error);
       } finally {
@@ -79,7 +79,7 @@ const ArtistsArchivePage = () => {
                   <History className="h-3 w-3" />
                   Archived: {new Date(artist.archived_at || "").toLocaleDateString()}
                 </div>
-                <FeaturedArtist artist={artist} />
+                <FeaturedArtistComponent key={artist.id} artist={artist} />
               </div>
             ))}
           </div>
