@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
 import StaffHeader from "@/components/staff/StaffHeader";
-import { ContentManagementCard } from "@/components/staff/ContentManagementCard";
+import ContentManagementCard from "@/components/staff/ContentManagementCard";
 import ShowManagementCard from "@/components/staff/ShowManagementCard";
 import AdminCard from "@/components/staff/AdminCard";
 import StatsPanel from "@/components/staff/StatsPanel";
@@ -43,7 +43,7 @@ const StaffDashboard = () => {
         />
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-          <ContentManagementCard />
+          <ContentManagementCard userRole={userRole} />
           
           <div className="space-y-6">
             <ShowManagementCard />
