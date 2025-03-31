@@ -34,8 +34,7 @@ export const useEditorUtils = (editor: Editor) => {
     const url = window.prompt('Enter YouTube, Vimeo, or other video URL');
     
     if (url) {
-      // Using an any type assertion to avoid TypeScript errors
-      (editor.chain().focus() as any).setVideo({ src: url }).run();
+      editor.chain().focus().setVideo({ src: url }).run();
     }
   };
 

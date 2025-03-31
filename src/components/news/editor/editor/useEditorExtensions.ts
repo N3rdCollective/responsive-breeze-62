@@ -90,11 +90,13 @@ const Video = Node.create({
   
   addCommands() {
     return {
-      setVideo: (options) => ({ commands }) => {
-        return commands.insertContent({
-          type: this.name,
-          attrs: options,
-        });
+      setVideo: (options) => {
+        return ({ commands }) => {
+          return commands.insertContent({
+            type: this.name,
+            attrs: options,
+          });
+        };
       },
     };
   },
