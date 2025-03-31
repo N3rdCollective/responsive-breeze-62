@@ -6,7 +6,8 @@ import { useNewsState } from "./hooks/useNewsState";
 import { useNewsData } from "./hooks/useNewsData";
 import { useImageHandler } from "./hooks/useImageHandler";
 import { useCallback, useEffect, useRef } from "react";
-import { useStaffActivityLogger } from "@/hooks/useStaffActivityLogger";
+import { useNewsPermissions } from "./hooks/useNewsPermissions";
+import { useSaveNewsWorkflow } from "./hooks/useSaveNewsWorkflow";
 
 interface UseNewsEditorProps {
   id?: string;
@@ -19,8 +20,9 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
   const { toast } = useToast();
   const { handleImageUpload } = useImageHandler();
   const { fetchNewsPost, saveNewsPost } = useNewsData();
+  const { canPublish, getFinalStatus } = useNewsPermissions({ userRole });
+  const { executeSaveWorkflow } = useSaveNewsWorkflow({ staffName });
   const fetchedRef = useRef(false);
-  const { logActivity } = useStaffActivityLogger();
   
   // Use the state hook to manage all form state
   const {
@@ -37,10 +39,6 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
     isUploading, setIsUploading,
     isPreviewModalOpen, setIsPreviewModalOpen
   } = useNewsState();
-
-  // Check if user has permission to publish
-  const canPublish = userRole === 'admin' || userRole === 'super_admin' || 
-                     userRole === 'moderator' || userRole === 'content_manager';
 
   // Fetch the news post data
   const fetchNewsPostData = useCallback(() => {
@@ -96,36 +94,14 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
   const handleSave = async () => {
     console.log("[useNewsEditor] Save requested with status:", status);
     console.log("[useNewsEditor] User role:", userRole, "Can publish:", canPublish);
-    console.log("[useNewsEditor] Current ID:", id);
-    console.log("[useNewsEditor] Current category:", category);
-    console.log("[useNewsEditor] Current title:", title);
-    console.log("[useNewsEditor] Current content length:", content?.length || 0);
     
-    // If trying to publish but doesn't have permission, save as draft
-    const finalStatus = (status === 'published' && !canPublish) ? 'draft' : status;
+    // Determine final status based on permissions
+    const finalStatus = getFinalStatus(status);
     
-    if (finalStatus !== status) {
-      toast({
-        title: "Permission Required",
-        description: "You don't have permission to publish posts. Saving as draft instead.",
-        variant: "destructive",
-      });
-    }
-    
-    console.log("[useNewsEditor] Saving post with final data:", {
-      id,
-      title,
-      content: content ? `${content.substring(0, 30)}...` : 'empty',
-      excerpt: excerpt ? `${excerpt.substring(0, 30)}...` : 'empty',
-      status: finalStatus,
-      category,
-      tags,
-      featuredImage: featuredImage ? 'Selected' : 'None',
-      currentFeaturedImageUrl: currentFeaturedImageUrl ? 'Has URL' : 'None',
-      staffName
-    });
+    setIsSaving(true);
     
     try {
+      // Save the post with error handling
       const saveResult = await saveNewsPost(
         {
           id,
@@ -153,47 +129,20 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
         }
       );
       
-      // Extract the returned ID from the saveResult
-      // Use optional chaining and nullish coalescing to safely handle undefined values
-      const resultId = saveResult?.id || id;
-      
-      if (!resultId) {
-        console.error("[useNewsEditor] No post ID found after save operation");
-        return;
-      }
-      
-      // Log the activity after successful save
-      const actionType = id ? 'update_post' : 'create_post';
-      const isPublishing = finalStatus === 'published';
-      
-      // If we're updating and publishing, log a publish action instead
-      const finalActionType = id && isPublishing ? 'publish_post' : actionType;
-      const description = id 
-        ? `${isPublishing ? 'Published' : 'Updated'} post: ${title}`
-        : `Created new post: ${title}`;
-      
-      await logActivity(
-        finalActionType,
-        description,
-        'post',
-        resultId,
+      // Handle activity logging through our workflow helper
+      await executeSaveWorkflow(
+        () => Promise.resolve(saveResult), // Pass the already-completed save result
         {
+          id,
           title,
-          category,
           status: finalStatus,
+          category,
           hasImage: !!featuredImage || !!currentFeaturedImageUrl
         }
       );
-      
-      console.log("[useNewsEditor] Activity logged:", {
-        action: finalActionType,
-        description,
-        entityType: 'post',
-        entityId: resultId
-      });
-      
     } catch (error) {
       console.error("[useNewsEditor] Error saving post:", error);
+      setIsSaving(false);
     }
   };
 
