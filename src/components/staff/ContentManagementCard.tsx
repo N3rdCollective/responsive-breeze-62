@@ -1,5 +1,5 @@
 
-import { Newspaper, Home, Users, Radio, FileText } from "lucide-react";
+import { Newspaper, Home, Users, Radio, FileText, Music } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { ROLE_PERMISSIONS } from "./manage-staff/types/pendingStaffTypes";
@@ -75,6 +75,17 @@ export const ContentManagementCard = ({ userRole }: ContentManagementCardProps =
               <div>
                 <div className="font-medium">Radio Shows</div>
                 <div className="text-sm text-muted-foreground">Manage show schedule and details</div>
+              </div>
+            </Link>
+            
+            <Link 
+              to="/staff/featured-artists" 
+              className="flex items-center p-3 hover:bg-accent rounded-md transition-colors"
+            >
+              <Music className="h-5 w-5 mr-3 text-primary" />
+              <div>
+                <div className="font-medium">Featured Artists</div>
+                <div className="text-sm text-muted-foreground">Manage featured and archived artists</div>
               </div>
             </Link>
           </>

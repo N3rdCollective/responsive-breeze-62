@@ -3,6 +3,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { FeaturedArtist } from "@/components/news/types/newsTypes";
+import { useStaffActivityLogger } from "@/hooks/useStaffActivityLogger";
 
 export interface FeaturedArtistFormData {
   name: string;
@@ -22,6 +23,7 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+  const logger = useStaffActivityLogger();
 
   const fetchArtists = async () => {
     try {
@@ -66,6 +68,14 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
       
       if (error) throw error;
       
+      // Log the action
+      await logger.log({
+        action: "create",
+        resource: "featured_artist",
+        resourceId: data.id,
+        details: { artistName: data.name }
+      });
+      
       toast({
         title: "Success",
         description: "Featured artist created successfully",
@@ -97,6 +107,14 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
       
       if (error) throw error;
       
+      // Log the action
+      await logger.log({
+        action: "update",
+        resource: "featured_artist",
+        resourceId: id,
+        details: { artistName: data.name }
+      });
+      
       toast({
         title: "Success",
         description: "Featured artist updated successfully",
@@ -119,12 +137,27 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
     try {
       setIsSaving(true);
       
+      // Get the artist name before deletion for logging
+      const { data: artistData } = await supabase
+        .from("featured_artists")
+        .select("name")
+        .eq("id", id)
+        .single();
+      
       const { error } = await supabase
         .from("featured_artists")
         .delete()
         .eq("id", id);
       
       if (error) throw error;
+      
+      // Log the action
+      await logger.log({
+        action: "delete",
+        resource: "featured_artist",
+        resourceId: id,
+        details: { artistName: artistData?.name || "Unknown artist" }
+      });
       
       toast({
         title: "Success",
@@ -161,6 +194,14 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
       
       if (error) throw error;
       
+      // Log the action
+      await logger.log({
+        action: "archive",
+        resource: "featured_artist",
+        resourceId: id,
+        details: { artistName: data.name }
+      });
+      
       toast({
         title: "Success",
         description: "Artist archived successfully",
@@ -194,6 +235,14 @@ export const useFeaturedArtists = (showArchived: boolean = false) => {
         .single();
       
       if (error) throw error;
+      
+      // Log the action
+      await logger.log({
+        action: "restore",
+        resource: "featured_artist",
+        resourceId: id,
+        details: { artistName: data.name }
+      });
       
       toast({
         title: "Success",
