@@ -24,7 +24,7 @@ const StaffLogin = () => {
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
       if (data.session) {
-        navigate("/staff");
+        navigate("/staff/panel");
       }
     };
     
@@ -80,7 +80,7 @@ const StaffLogin = () => {
         });
         
         // Redirect to staff panel
-        navigate("/staff");
+        navigate("/staff/panel");
       }
     } catch (error: any) {
       console.error("Login error:", error);

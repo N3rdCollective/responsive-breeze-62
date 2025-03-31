@@ -1,5 +1,5 @@
 
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Index from "@/pages/Index";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
@@ -15,7 +15,6 @@ import NewsEditor from "@/pages/NewsEditor";
 import RouteErrorElement from "@/components/RouteErrorElement";
 import StaffNews from "@/pages/StaffNews";
 import StaffPanel from "@/pages/StaffPanel";
-import StaffDashboard from "@/pages/StaffDashboard";
 import StaffSponsors from "@/pages/StaffSponsors";
 import StaffSystemSettings from "@/pages/StaffSystemSettings";
 import StaffHomePage from "@/pages/StaffHomePage";
@@ -41,7 +40,7 @@ function App() {
         <Route path="/artists" element={<ArtistsPage />} errorElement={<RouteErrorElement />} />
         <Route path="/artists/archive" element={<ArtistsArchivePage />} errorElement={<RouteErrorElement />} />
         <Route path="/artists/:id" element={<ArtistDetail />} errorElement={<RouteErrorElement />} />
-        <Route path="/staff" element={<StaffDashboard />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff" element={<Navigate to="/staff/panel" replace />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/panel" element={<StaffPanel />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/news" element={<StaffNews />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/login" element={<StaffLogin />} errorElement={<RouteErrorElement />} />
