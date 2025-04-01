@@ -89,14 +89,15 @@ const Video = Node.create({
   },
   
   addCommands() {
-    // Return commands as direct values, not nested functions,
-    // to match TipTap's expected command structure
+    // The correct way to define commands for TipTap extensions
     return {
-      setVideo: (attributes) => ({ commands }) => {
-        return commands.insertContent({
-          type: this.name,
-          attrs: attributes,
-        });
+      setVideo: attributes => ({ chain }) => {
+        return chain()
+          .insertContent({
+            type: this.name,
+            attrs: attributes,
+          })
+          .run();
       },
     };
   },
