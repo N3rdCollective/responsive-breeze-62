@@ -43,10 +43,12 @@ export const preparePostData = (
  */
 export const createNewsPost = async (postData: any) => {
   try {
-    return await supabase
+    const response = await supabase
       .from('posts')
       .insert(postData)
       .select('id');
+    
+    return response;
   } catch (error) {
     console.error("Error creating news post:", error);
     return { error };
@@ -61,11 +63,13 @@ export const updateNewsPost = async (id: string, postData: any) => {
     console.log("Updating post with ID:", id);
     console.log("Update data:", postData);
     
-    return await supabase
+    const response = await supabase
       .from('posts')
       .update(postData)
       .eq('id', id)
       .select('id');
+    
+    return response;
   } catch (error) {
     console.error("Error updating news post:", error);
     return { error };
@@ -77,11 +81,13 @@ export const updateNewsPost = async (id: string, postData: any) => {
  */
 export const fetchUpdatedPost = async (id: string) => {
   try {
-    return await supabase
+    const response = await supabase
       .from('posts')
       .select('*')
       .eq('id', id)
       .single();
+    
+    return response;
   } catch (error) {
     console.error("Error fetching updated post:", error);
     return { error };

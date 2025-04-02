@@ -81,7 +81,7 @@ export const useSaveNewsPost = () => {
       
       console.log("Saving post data with explicitly set status:", newsData.status);
       
-      let result: { data?: any, error?: any } = { data: null, error: null };
+      let result;
       let postId = id;
       
       if (id) {
