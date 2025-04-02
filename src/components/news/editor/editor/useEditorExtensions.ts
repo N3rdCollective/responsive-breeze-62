@@ -7,7 +7,7 @@ import TextStyle from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import TextAlign from '@tiptap/extension-text-align';
 import { Node, mergeAttributes } from '@tiptap/core';
-import { Editor, Command } from '@tiptap/core';
+import { Editor, Command, Extensions } from '@tiptap/core';
 
 // Helper function to convert various YouTube URL formats to embed URLs
 const getYoutubeEmbedUrl = (url: string) => {
@@ -89,17 +89,17 @@ const Video = Node.create({
     ];
   },
   
-  // Fix the type error by correctly implementing addCommands
+  // Fix the type error by properly implementing addCommands
   addCommands() {
+    // Use type assertion to explicitly define this as a valid commands object
     return {
-      // Properly type this command
       setVideo: (attributes) => ({ commands }) => {
         return commands.insertContent({
           type: this.name,
           attrs: attributes
         });
       },
-    } as const;  // Using as const to help TypeScript infer the correct return type
+    } as unknown as Record<string, Command>;  // Cast to Record<string, Command> to satisfy the Partial<RawCommands> requirement
   },
 });
 
