@@ -7,6 +7,7 @@ import TextStyle from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import TextAlign from '@tiptap/extension-text-align';
 import { Node, mergeAttributes } from '@tiptap/core';
+import { Editor } from '@tiptap/core';
 
 // Helper function to convert various YouTube URL formats to embed URLs
 const getYoutubeEmbedUrl = (url: string) => {
@@ -89,15 +90,13 @@ const Video = Node.create({
   },
   
   addCommands() {
-    // The correct way to define commands for TipTap extensions
+    // The correct format for TipTap command definitions
     return {
-      setVideo: attributes => ({ chain }) => {
-        return chain()
-          .insertContent({
-            type: this.name,
-            attrs: attributes,
-          })
-          .run();
+      setVideo: (attributes) => ({ commands }) => {
+        return commands.insertContent({
+          type: this.name,
+          attrs: attributes,
+        });
       },
     };
   },

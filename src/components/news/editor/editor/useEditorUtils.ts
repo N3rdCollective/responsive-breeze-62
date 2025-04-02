@@ -34,9 +34,16 @@ export const useEditorUtils = (editor: Editor) => {
     const url = window.prompt('Enter YouTube, Vimeo, or other video URL');
     
     if (url) {
-      // Call our custom setVideo command
-      // Need to use type assertion since TypeScript doesn't know about our custom commands
-      (editor.chain().focus() as any).setVideo({ src: url }).run();
+      // Use type assertion since TypeScript doesn't know about our custom commands
+      type EditorWithVideo = Editor & {
+        chain: () => {
+          focus: () => {
+            setVideo: (attrs: { src: string }) => { run: () => void }
+          }
+        }
+      };
+      
+      (editor as EditorWithVideo).chain().focus().setVideo({ src: url }).run();
     }
   };
 
