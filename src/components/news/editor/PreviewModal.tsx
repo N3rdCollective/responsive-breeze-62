@@ -99,8 +99,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
             <p className="text-muted-foreground">No content yet. Start writing to see a preview.</p>
           )}
         </article>
-      </DialogContent>
-
+      
       <style>
         {`
         .video-embed {
@@ -134,6 +133,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
         }
         `}
       </style>
+      </DialogContent>
     </Dialog>
   );
 };
