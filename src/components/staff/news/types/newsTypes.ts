@@ -7,6 +7,7 @@ export interface Post {
   post_date: string;
   category: string | null;
   author: string | null;
+  author_name: string | null; // Add author_name property
   status: string;
   created_at: string;
   tags?: string[]; // Add tags property
