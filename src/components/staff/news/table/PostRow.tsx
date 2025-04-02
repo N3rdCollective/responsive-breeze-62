@@ -25,13 +25,16 @@ const PostRow = ({ post, refetch }: PostRowProps) => {
     }
   };
   
+  // Determine the author name to display
+  const authorName = post.author_name || "Unknown";
+  
   return (
     <TableRow key={post.id} className="hover:bg-muted/30">
       <TableCell className="font-medium">
         <div className="flex flex-col">
           {post.title}
           <span className="text-xs text-muted-foreground">
-            By {post.author || "Unknown"}
+            By {authorName}
           </span>
           {post.tags && post.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-1">
