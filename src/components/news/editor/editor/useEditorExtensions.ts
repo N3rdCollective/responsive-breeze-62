@@ -89,19 +89,17 @@ const Video = Node.create({
     ];
   },
   
+  // Fix the type error by correctly implementing addCommands
   addCommands() {
     return {
-      setVideo: (attributes) => {
-        // Return a function that accepts the editor's command API
-        return ({ commands }) => {
-          // Use the insertContent command from the commands API
-          return commands.insertContent({
-            type: this.name,
-            attrs: attributes
-          });
-        };
-      }
-    };
+      // Properly type this command
+      setVideo: (attributes) => ({ commands }) => {
+        return commands.insertContent({
+          type: this.name,
+          attrs: attributes
+        });
+      },
+    } as const;  // Using as const to help TypeScript infer the correct return type
   },
 });
 
