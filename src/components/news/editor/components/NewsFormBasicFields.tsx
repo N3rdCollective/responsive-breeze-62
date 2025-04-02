@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -183,9 +182,6 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
                 <ToggleLeft className="h-5 w-5 text-gray-400" />
               )}
               <span className="flex-1 text-left">{status === "published" ? "Published" : "Draft"}</span>
-              <span className="text-xs text-muted-foreground">
-                {status === "published" ? "Visible to all" : "Staff only"}
-              </span>
             </Button>
           </div>
           
