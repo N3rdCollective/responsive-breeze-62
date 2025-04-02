@@ -105,12 +105,32 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
         {`
         .video-embed {
           position: relative;
-          margin: 1em 0;
+          margin: 2em 0;
+          display: flex;
+          justify-content: center;
+          width: 100%;
         }
+        
+        .video-container {
+          position: relative;
+          width: 100%;
+          max-width: 48rem; /* 768px */
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+          border-radius: 0.5rem;
+          overflow: hidden;
+          background-color: rgba(0, 0, 0, 0.05);
+          border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
         .video-embed iframe {
           border-radius: 0.375rem;
           aspect-ratio: 16/9;
           width: 100%;
+        }
+        
+        .dark .video-container {
+          background-color: rgba(255, 255, 255, 0.05);
+          border-color: rgba(255, 255, 255, 0.1);
         }
         `}
       </style>

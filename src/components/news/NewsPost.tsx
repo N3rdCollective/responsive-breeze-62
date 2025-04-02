@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -154,7 +153,6 @@ const NewsPost = () => {
         )}
       </div>
       
-      {/* Display tags if available */}
       {post.tags && post.tags.length > 0 && (
         <div className="mb-6">
           <div className="flex items-center gap-2 flex-wrap">
@@ -182,6 +180,40 @@ const NewsPost = () => {
         className="prose prose-lg max-w-none dark:prose-invert mb-8"
         dangerouslySetInnerHTML={{ __html: post.content }}
       />
+      
+      <style>
+        {`
+        .video-embed {
+          position: relative;
+          margin: 2em 0;
+          display: flex;
+          justify-content: center;
+          width: 100%;
+        }
+        
+        .video-container {
+          position: relative;
+          width: 100%;
+          max-width: 48rem; /* 768px */
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+          border-radius: 0.5rem;
+          overflow: hidden;
+          background-color: rgba(0, 0, 0, 0.05);
+          border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .video-embed iframe {
+          border-radius: 0.375rem;
+          aspect-ratio: 16/9;
+          width: 100%;
+        }
+        
+        .dark .video-container {
+          background-color: rgba(255, 255, 255, 0.05);
+          border-color: rgba(255, 255, 255, 0.1);
+        }
+        `}
+      </style>
       
       <div className="border-t pt-6 mt-6">
         <Button asChild>

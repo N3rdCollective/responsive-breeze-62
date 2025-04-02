@@ -69,22 +69,29 @@ const Video = Node.create({
   renderHTML({ HTMLAttributes }) {
     return [
       'div',
-      { 'data-video': '', class: 'video-embed' },
+      { 
+        'data-video': '', 
+        class: 'video-embed flex justify-center items-center my-6 w-full' 
+      },
       [
-        'iframe',
-        mergeAttributes(
-          this.options.HTMLAttributes,
-          {
-            src: getYoutubeEmbedUrl(HTMLAttributes.src),
-            title: HTMLAttributes.title,
-            frameborder: '0',
-            allowfullscreen: 'true',
-            allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
-            width: HTMLAttributes.width,
-            height: HTMLAttributes.height,
-            class: 'w-full aspect-video rounded-md',
-          }
-        ),
+        'div',
+        { class: 'video-container w-full max-w-3xl relative shadow-lg rounded-lg overflow-hidden' },
+        [
+          'iframe',
+          mergeAttributes(
+            this.options.HTMLAttributes,
+            {
+              src: getYoutubeEmbedUrl(HTMLAttributes.src),
+              title: HTMLAttributes.title,
+              frameborder: '0',
+              allowfullscreen: 'true',
+              allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
+              width: HTMLAttributes.width,
+              height: HTMLAttributes.height,
+              class: 'w-full aspect-video rounded-md',
+            }
+          ),
+        ],
       ],
     ];
   },
