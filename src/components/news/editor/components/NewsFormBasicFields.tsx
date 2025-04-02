@@ -1,13 +1,13 @@
+
 import React, { useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NewsStatus } from "../NewsForm";
 import { Badge } from "@/components/ui/badge";
-import { X, AlertCircle } from "lucide-react";
+import { X, AlertCircle, ToggleLeft, ToggleRight } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Toggle } from "@/components/ui/toggle";
 
 const PREDEFINED_CATEGORIES = [
   "News",
@@ -80,9 +80,11 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
   };
   
   const toggleStatus = () => {
-    const newStatus: NewsStatus = status === "published" ? "draft" : "published";
-    console.log(`[NewsFormBasicFields] Explicitly setting status from ${status} to ${newStatus}`);
-    setStatus(newStatus);
+    if (canPublish || status === "published") {
+      const newStatus: NewsStatus = status === "published" ? "draft" : "published";
+      console.log(`[NewsFormBasicFields] Explicitly setting status from ${status} to ${newStatus}`);
+      setStatus(newStatus);
+    }
   };
   
   return (
@@ -163,50 +165,34 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
             </Alert>
           )}
           
-          <div className="flex flex-wrap gap-3 items-center">
-            <div className="flex items-center gap-2">
-              <Toggle 
-                pressed={status === "published"}
-                onPressedChange={() => {
-                  console.log("[NewsFormBasicFields] Toggle pressed, current status:", status);
-                  if (canPublish || status === "published") {
-                    toggleStatus();
-                  }
-                }}
-                disabled={!canPublish && status === "draft"}
-                className={`min-w-[100px] justify-between px-4 w-[120px] ${
-                  status === "published" 
-                    ? "bg-green-500 hover:bg-green-600" 
-                    : "bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600"
-                } text-white`}
-                aria-label="Toggle publish status"
-              >
-                <span>{status === "published" ? "Published" : "Draft"}</span>
-              </Toggle>
-              
-              <span className="text-sm text-muted-foreground whitespace-nowrap">
-                {status === "published" 
-                  ? "Visible to everyone" 
-                  : "Only visible to staff"}
-              </span>
-            </div>
-            
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="sm"
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
+            <Button
+              type="button"
+              variant="outline"
               onClick={toggleStatus}
               disabled={!canPublish && status === "draft"}
-              className="text-sm whitespace-nowrap"
+              className={`flex justify-between items-center gap-2 w-full sm:w-auto px-4 py-2 ${
+                status === "published"
+                  ? "border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                  : "border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-900/20"
+              }`}
             >
-              {status === "published" ? "Switch to Draft" : "Publish Now"}
+              {status === "published" ? (
+                <ToggleRight className="h-5 w-5 text-green-500" />
+              ) : (
+                <ToggleLeft className="h-5 w-5 text-gray-400" />
+              )}
+              <span className="flex-1 text-left">{status === "published" ? "Published" : "Draft"}</span>
+              <span className="text-xs text-muted-foreground">
+                {status === "published" ? "Visible to all" : "Staff only"}
+              </span>
             </Button>
           </div>
           
           <p className="mt-3 text-xs text-muted-foreground">
             {status === "published" 
-              ? "Click to unpublish and save as draft" 
-              : "Click to publish and make visible to everyone"}
+              ? "Your post is currently live and visible to everyone" 
+              : "Your post is saved as a draft and only visible to staff"}
           </p>
         </div>
       </div>
