@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -166,8 +167,9 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
             </Alert>
           )}
           
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
+            {/* Status Toggle Button */}
+            <div className="flex items-center space-x-2">
               <Toggle 
                 pressed={status === "published"}
                 onPressedChange={() => {
@@ -177,35 +179,34 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
                   }
                 }}
                 disabled={!canPublish && status === "draft"}
-                className={`${
+                className={`min-w-[100px] justify-between px-4 ${
                   status === "published" 
                     ? "bg-green-500 hover:bg-green-600" 
                     : "bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600"
                 } text-white`}
                 aria-label="Toggle publish status"
               >
-                {status === "published" ? "Published" : "Draft"}
+                <span>{status === "published" ? "Published" : "Draft"}</span>
               </Toggle>
               
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-muted-foreground hidden sm:inline-block">
                 {status === "published" 
                   ? "Visible to everyone" 
                   : "Only visible to staff"}
               </span>
             </div>
             
-            <div className="flex-1">
-              <Button 
-                type="button" 
-                variant="ghost" 
-                size="sm"
-                onClick={toggleStatus}
-                disabled={!canPublish && status === "draft"}
-                className="text-sm"
-              >
-                {status === "published" ? "Switch to Draft" : "Publish Now"}
-              </Button>
-            </div>
+            {/* Alternative Action Button */}
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm"
+              onClick={toggleStatus}
+              disabled={!canPublish && status === "draft"}
+              className="text-sm"
+            >
+              {status === "published" ? "Switch to Draft" : "Publish Now"}
+            </Button>
           </div>
           
           <p className="mt-2 text-xs text-muted-foreground">
