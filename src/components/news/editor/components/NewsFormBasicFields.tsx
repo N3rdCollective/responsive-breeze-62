@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -10,7 +9,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 
-// Predefined categories for the dropdown
 const PREDEFINED_CATEGORIES = [
   "News",
   "Events",
@@ -51,7 +49,6 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
 }) => {
   const [tagInput, setTagInput] = React.useState("");
   
-  // Log status changes
   useEffect(() => {
     console.log("[NewsFormBasicFields] Current status:", status);
   }, [status]);
@@ -66,7 +63,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
   
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && tagInput.trim()) {
-      e.preventDefault(); // Prevent form submission
+      e.preventDefault();
       if (!tags.includes(tagInput.trim())) {
         setTags([...tags, tagInput.trim()]);
       }
@@ -82,7 +79,6 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
     setTagInput(e.target.value);
   };
   
-  // Direct status toggle that immediately calls setStatus
   const toggleStatus = () => {
     const newStatus: NewsStatus = status === "published" ? "draft" : "published";
     console.log(`[NewsFormBasicFields] Explicitly setting status from ${status} to ${newStatus}`);
@@ -154,12 +150,12 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
         />
       </div>
       
-      <div>
-        <Label htmlFor="status">Status</Label>
+      <div className="space-y-2 border rounded-md p-4 bg-background/50">
+        <Label htmlFor="status" className="text-base font-medium">Status</Label>
         
         <div className="mt-2">
           {!canPublish && status === "draft" && (
-            <Alert className="mb-2 text-amber-800 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-300">
+            <Alert className="mb-4 text-amber-800 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-300">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
                 You need admin permissions to publish posts
@@ -167,9 +163,8 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
             </Alert>
           )}
           
-          <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
-            {/* Status Toggle Button */}
-            <div className="flex items-center space-x-2">
+          <div className="flex flex-wrap gap-3 items-center">
+            <div className="flex items-center gap-2">
               <Toggle 
                 pressed={status === "published"}
                 onPressedChange={() => {
@@ -179,7 +174,7 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
                   }
                 }}
                 disabled={!canPublish && status === "draft"}
-                className={`min-w-[100px] justify-between px-4 ${
+                className={`min-w-[100px] justify-between px-4 w-[120px] ${
                   status === "published" 
                     ? "bg-green-500 hover:bg-green-600" 
                     : "bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600"
@@ -189,27 +184,26 @@ const NewsFormBasicFields: React.FC<NewsFormBasicFieldsProps> = ({
                 <span>{status === "published" ? "Published" : "Draft"}</span>
               </Toggle>
               
-              <span className="text-sm text-muted-foreground hidden sm:inline-block">
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
                 {status === "published" 
                   ? "Visible to everyone" 
                   : "Only visible to staff"}
               </span>
             </div>
             
-            {/* Alternative Action Button */}
             <Button 
               type="button" 
               variant="outline" 
               size="sm"
               onClick={toggleStatus}
               disabled={!canPublish && status === "draft"}
-              className="text-sm"
+              className="text-sm whitespace-nowrap"
             >
               {status === "published" ? "Switch to Draft" : "Publish Now"}
             </Button>
           </div>
           
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p className="mt-3 text-xs text-muted-foreground">
             {status === "published" 
               ? "Click to unpublish and save as draft" 
               : "Click to publish and make visible to everyone"}
