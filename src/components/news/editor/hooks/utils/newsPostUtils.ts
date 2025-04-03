@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { NewsPostData } from "../types/newsPostTypes";
+import { PostgrestResponse } from "@supabase/supabase-js";
 
 /**
  * Prepare post data for database storage
@@ -51,7 +52,7 @@ export const createNewsPost = async (postData: any) => {
     return response;
   } catch (error) {
     console.error("Error creating news post:", error);
-    return { error };
+    return { error, data: null }; // Ensure consistent return shape
   }
 };
 
@@ -72,7 +73,7 @@ export const updateNewsPost = async (id: string, postData: any) => {
     return response;
   } catch (error) {
     console.error("Error updating news post:", error);
-    return { error };
+    return { error, data: null }; // Ensure consistent return shape
   }
 };
 
@@ -90,6 +91,6 @@ export const fetchUpdatedPost = async (id: string) => {
     return response;
   } catch (error) {
     console.error("Error fetching updated post:", error);
-    return { error };
+    return { error, data: null }; // Ensure consistent return shape
   }
 };

@@ -95,7 +95,11 @@ export const useSaveNewsPost = () => {
         
         // Verify the update
         const verifiedResult = await fetchUpdatedPost(id);
-        console.log("Verified post update:", verifiedResult.data);
+        if (verifiedResult.error) {
+          console.error("Error verifying post update:", verifiedResult.error);
+        } else {
+          console.log("Verified post update:", verifiedResult.data);
+        }
       } else {
         // Create new post
         result = await createNewsPost(newsData);
@@ -104,7 +108,7 @@ export const useSaveNewsPost = () => {
           throw new Error(`Database error: ${result.error.message} (${result.error.code})`);
         }
         
-        // Get the new post ID
+        // Get the new post ID - safely access data
         if (result.data && result.data.length > 0) {
           postId = result.data[0].id;
         }
