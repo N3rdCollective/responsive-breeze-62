@@ -71,7 +71,8 @@ const RadioWidget = ({ embedId = "w34954fe" }: RadioWidgetProps) => {
       />
       
       {/* Custom styles for the widget to match site theme */}
-      <style jsx global>{`
+      <style>
+        {`
         /* Light mode styles */
         :root {
           --radio-bg: hsl(var(--background));
@@ -118,7 +119,8 @@ const RadioWidget = ({ embedId = "w34954fe" }: RadioWidgetProps) => {
         .radio-co-request button:hover {
           opacity: 0.9 !important;
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };
