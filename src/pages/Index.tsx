@@ -8,7 +8,6 @@ import HomeNewsSection from "@/components/home/HomeNewsSection";
 import PersonalitySlider from "@/components/home/PersonalitySlider";
 import VideoGallery from "@/components/VideoGallery";
 import FeaturedArtistSection from "@/components/home/FeaturedArtistSection";
-import RadioWidget from "@/components/music/RadioWidget";
 import { supabase } from "@/integrations/supabase/client";
 import { HomeSettings, defaultSettings, VideoData } from "@/components/staff/home/context/HomeSettingsContext";
 
@@ -92,11 +91,14 @@ const Index = () => {
             {settings.show_personalities && <PersonalitySlider />}
           </div>
           
-          {/* Sidebar with Radio Widget */}
+          {/* Sidebar - Radio Widget has been removed */}
           <div className="md:col-span-1 space-y-8">
             <div className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
-              <h2 className="text-xl font-bold mb-4">Listen & Request</h2>
-              <RadioWidget />
+              <h2 className="text-xl font-bold mb-4">Latest Updates</h2>
+              <p className="text-muted-foreground">
+                Stay tuned for the latest updates from Rappin' Lounge Radio. 
+                Check our schedule for upcoming shows and featured artists.
+              </p>
             </div>
           </div>
         </div>
