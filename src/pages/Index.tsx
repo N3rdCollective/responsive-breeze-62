@@ -82,25 +82,12 @@ const Index = () => {
       </div>
       
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="md:col-span-2 space-y-16">
-            {/* Featured Artist Section */}
-            {showFeaturedArtist && <FeaturedArtistSection />}
-            
-            {settings.show_news_section && <HomeNewsSection />}
-            {settings.show_personalities && <PersonalitySlider />}
-          </div>
+        <div className="space-y-16">
+          {/* Featured Artist Section */}
+          {showFeaturedArtist && <FeaturedArtistSection />}
           
-          {/* Sidebar - Radio Widget has been removed */}
-          <div className="md:col-span-1 space-y-8">
-            <div className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
-              <h2 className="text-xl font-bold mb-4">Latest Updates</h2>
-              <p className="text-muted-foreground">
-                Stay tuned for the latest updates from Rappin' Lounge Radio. 
-                Check our schedule for upcoming shows and featured artists.
-              </p>
-            </div>
-          </div>
+          {settings.show_news_section && <HomeNewsSection />}
+          {settings.show_personalities && <PersonalitySlider />}
         </div>
       </div>
       
