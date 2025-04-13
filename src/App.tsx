@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
 import Index from "@/pages/Index";
 import About from "@/pages/About";
@@ -25,6 +24,7 @@ import ArtistsPage from "@/pages/ArtistsPage";
 import ArtistsArchivePage from "@/pages/ArtistsArchivePage";
 import ArtistDetail from "@/pages/ArtistDetail";
 import MusicPlayer from "@/components/MusicPlayer";
+import BookingRequests from "@/pages/BookingRequests";
 
 function App() {
   return (
@@ -55,6 +55,7 @@ function App() {
         <Route path="/staff/personalities" element={<StaffPersonalitiesPage />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/activity-logs" element={<StaffActivityLogs />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/featured-artists" element={<StaffFeaturedArtists />} errorElement={<RouteErrorElement />} />
+        <Route path="/booking-requests" element={<BookingRequests />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       

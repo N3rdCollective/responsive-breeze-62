@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import DesktopNav from "./navbar/DesktopNav";
@@ -55,6 +54,7 @@ const Navbar = () => {
     { path: "/about", label: "About" },
     { path: "/news", label: "News" },
     { path: "/contact", label: "Contact" },
+    { path: "/booking-requests", label: "Booking Requests" },
   ];
 
   // Add staff portal link if user is logged in
