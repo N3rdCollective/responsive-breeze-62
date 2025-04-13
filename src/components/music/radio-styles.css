@@ -1,0 +1,93 @@
+
+/* Radio widget custom styles */
+.radio-widget-container {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.radio-request-button {
+  margin-top: 1rem;
+  width: 100%;
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.radio-request-button:hover {
+  opacity: 0.9;
+}
+
+/* Music request modal styles */
+.music-request-modal {
+  max-width: 500px;
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.search-box {
+  position: relative;
+  display: flex;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.5rem 2.5rem 0.5rem 0.75rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.search-button {
+  padding: 0.5rem 1rem;
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-radius: var(--radius);
+  margin-left: 0.5rem;
+}
+
+.search-result-item {
+  padding: 0.75rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.search-result-item:hover {
+  background-color: hsl(var(--accent));
+}
+
+.song-title {
+  font-weight: 500;
+}
+
+.song-artist {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.request-button {
+  padding: 0.35rem 0.75rem;
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+}

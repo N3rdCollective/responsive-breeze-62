@@ -8,6 +8,7 @@ import HomeNewsSection from "@/components/home/HomeNewsSection";
 import PersonalitySlider from "@/components/home/PersonalitySlider";
 import VideoGallery from "@/components/VideoGallery";
 import FeaturedArtistSection from "@/components/home/FeaturedArtistSection";
+import RadioWidget from "@/components/music/RadioWidget";
 import { supabase } from "@/integrations/supabase/client";
 import { HomeSettings, defaultSettings, VideoData } from "@/components/staff/home/context/HomeSettingsContext";
 
@@ -82,12 +83,22 @@ const Index = () => {
       </div>
       
       <div className="container mx-auto px-4 py-8">
-        <div className="space-y-16">
-          {/* Featured Artist Section */}
-          {showFeaturedArtist && <FeaturedArtistSection />}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="md:col-span-2 space-y-16">
+            {/* Featured Artist Section */}
+            {showFeaturedArtist && <FeaturedArtistSection />}
+            
+            {settings.show_news_section && <HomeNewsSection />}
+            {settings.show_personalities && <PersonalitySlider />}
+          </div>
           
-          {settings.show_news_section && <HomeNewsSection />}
-          {settings.show_personalities && <PersonalitySlider />}
+          {/* Sidebar with Radio Widget */}
+          <div className="md:col-span-1 space-y-8">
+            <div className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
+              <h2 className="text-xl font-bold mb-4">Listen & Request</h2>
+              <RadioWidget />
+            </div>
+          </div>
         </div>
       </div>
       
