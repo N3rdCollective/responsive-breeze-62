@@ -1,3 +1,4 @@
+
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import ReactGA from "react-ga4";
@@ -32,6 +33,7 @@ import MemberSignup from "@/pages/MemberSignup";
 import MemberProfile from "@/pages/MemberProfile";
 import { setupAvatarsBucket } from "@/components/storage/setupStorageBucket";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import TitleUpdater from "@/components/TitleUpdater";
 
 function App() {
   useEffect(() => {
@@ -52,6 +54,7 @@ function App() {
 
   return (
     <>
+      <TitleUpdater />
       <Routes>
         <Route path="/" element={<Index />} errorElement={<RouteErrorElement />} />
         <Route path="/about" element={<About />} errorElement={<RouteErrorElement />} />
