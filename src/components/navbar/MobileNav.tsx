@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu } from "lucide-react";
+import { Menu, User, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import NavItem from "./NavItem";
@@ -19,6 +19,7 @@ interface MobileNavProps {
   isHomePage: boolean;
   isScrolled: boolean;
   mounted: boolean;
+  isLoggedIn?: boolean;
 }
 
 const MobileNav = ({ 
@@ -26,7 +27,8 @@ const MobileNav = ({
   isActive, 
   isHomePage, 
   isScrolled,
-  mounted
+  mounted,
+  isLoggedIn = false
 }: MobileNavProps) => {
   const [isOpen, setIsOpen] = useState(false);
   
@@ -77,6 +79,39 @@ const MobileNav = ({
                 {item.label}
               </Link>
             ))}
+            
+            {/* Auth Links */}
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
+              {isLoggedIn ? (
+                <Link
+                  to="/profile"
+                  onClick={() => handleNavigation("/profile")}
+                  className="flex items-center text-[#333333] dark:text-white hover:text-[#FFD700] dark:hover:text-[#FFD700] text-lg font-medium"
+                >
+                  <User className="mr-2 h-5 w-5" />
+                  Profile
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={() => handleNavigation("/login")}
+                    className="flex items-center text-[#333333] dark:text-white hover:text-[#FFD700] dark:hover:text-[#FFD700] text-lg font-medium mb-3"
+                  >
+                    <LogIn className="mr-2 h-5 w-5" />
+                    Log In
+                  </Link>
+                  <Link
+                    to="/signup"
+                    onClick={() => handleNavigation("/signup")}
+                    className="bg-[#FFD700] text-black hover:bg-[#FFD700]/90 px-4 py-2 rounded-md font-medium text-center block"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
+            </div>
+            
             {mounted && (
               <ThemeToggle isHomePage={isHomePage} isScrolled={isScrolled} mobile />
             )}

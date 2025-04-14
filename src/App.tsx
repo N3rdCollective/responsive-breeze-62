@@ -26,6 +26,9 @@ import ArtistsArchivePage from "@/pages/ArtistsArchivePage";
 import ArtistDetail from "@/pages/ArtistDetail";
 import Messages from "@/pages/Messages";
 import MusicPlayer from "@/components/MusicPlayer";
+import MemberLogin from "@/pages/MemberLogin";
+import MemberSignup from "@/pages/MemberSignup";
+import MemberProfile from "@/pages/MemberProfile";
 
 function App() {
   return (
@@ -43,6 +46,13 @@ function App() {
         <Route path="/artists/:id" element={<ArtistDetail />} errorElement={<RouteErrorElement />} />
         <Route path="/messages" element={<Messages />} errorElement={<RouteErrorElement />} />
         <Route path="/messages/:conversationId" element={<Messages />} errorElement={<RouteErrorElement />} />
+        
+        {/* Member authentication routes */}
+        <Route path="/login" element={<MemberLogin />} errorElement={<RouteErrorElement />} />
+        <Route path="/signup" element={<MemberSignup />} errorElement={<RouteErrorElement />} />
+        <Route path="/profile" element={<MemberProfile />} errorElement={<RouteErrorElement />} />
+        
+        {/* Staff routes */}
         <Route path="/staff" element={<Navigate to="/staff/panel" replace />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/panel" element={<StaffPanel />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/news" element={<StaffNews />} errorElement={<RouteErrorElement />} />

@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import DesktopNav from "./navbar/DesktopNav";
 import MobileNav from "./navbar/MobileNav";
 import { supabase } from "@/integrations/supabase/client";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, User, LogIn } from "lucide-react";
 import { Button } from "./ui/button";
 
 const Navbar = () => {
@@ -12,6 +12,7 @@ const Navbar = () => {
   const location = useLocation();
   const [mounted, setMounted] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -20,14 +21,42 @@ const Navbar = () => {
     const checkAuth = async () => {
       const { data } = await supabase.auth.getSession();
       setIsLoggedIn(!!data.session);
+      
+      if (data.session) {
+        // Get user's role if available
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.session.user.id)
+          .single();
+          
+        if (profileData) {
+          setUserRole(profileData.role);
+        }
+      }
     };
     
     checkAuth();
     
     // Subscribe to auth changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setIsLoggedIn(!!session);
+        
+        if (session) {
+          // Get user's role if available
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single();
+            
+          if (profileData) {
+            setUserRole(profileData.role);
+          }
+        } else {
+          setUserRole(null);
+        }
       }
     );
     
@@ -64,8 +93,8 @@ const Navbar = () => {
     navigationItems.push({ path: "/messages", label: "Messages" });
   }
 
-  // Add staff portal link if user is logged in
-  if (isLoggedIn) {
+  // Add staff portal link if user is logged in as staff
+  if (isLoggedIn && userRole === "staff") {
     navigationItems.push({ path: "/staff/panel", label: "Staff Portal" });
   }
 
@@ -98,6 +127,54 @@ const Navbar = () => {
             mounted={mounted}
           />
 
+          {/* Auth Buttons */}
+          <div className="hidden md:flex items-center gap-2 ml-4">
+            {isLoggedIn ? (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className={`flex items-center gap-1 ${
+                  isHomePage && !isScrolled
+                    ? "text-white hover:text-white/90 hover:bg-white/10"
+                    : "text-primary hover:text-primary/90"
+                }`}
+                asChild
+              >
+                <Link to="/profile">
+                  <User className="h-4 w-4" />
+                  <span>Profile</span>
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className={`${
+                    isHomePage && !isScrolled
+                      ? "text-white hover:text-white/90 hover:bg-white/10"
+                      : "text-primary hover:text-primary/90"
+                  }`}
+                  asChild
+                >
+                  <Link to="/login">
+                    <LogIn className="h-4 w-4 mr-1" />
+                    Log In
+                  </Link>
+                </Button>
+                <Button 
+                  size="sm" 
+                  className="bg-[#FFD700] hover:bg-[#FFD700]/90 text-black"
+                  asChild
+                >
+                  <Link to="/signup">
+                    Sign Up
+                  </Link>
+                </Button>
+              </>
+            )}
+          </div>
+
           {/* Mobile Navigation */}
           <MobileNav
             navigationItems={navigationItems}
@@ -105,6 +182,7 @@ const Navbar = () => {
             isHomePage={isHomePage}
             isScrolled={isScrolled}
             mounted={mounted}
+            isLoggedIn={isLoggedIn}
           />
         </div>
       </div>
