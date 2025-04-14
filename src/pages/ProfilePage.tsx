@@ -59,30 +59,32 @@ const ProfilePage = () => {
       try {
         // Use more generic query approach to avoid TypeScript errors with table types
         const { data, error } = await supabase
-          .from('user_profiles' as any)
+          .from('profiles')
           .select('*')
           .eq('id', user.id)
           .single();
           
         if (error) throw error;
         
-        // Explicitly type the data to match UserProfile interface
-        const userProfile: UserProfile = {
-          id: data.id,
-          username: data.username || "",
-          display_name: data.display_name,
-          bio: data.bio,
-          favorite_genres: data.favorite_genres,
-          avatar_url: data.avatar_url,
-          role: data.role
-        };
-        
-        setProfile(userProfile);
-        setDisplayName(userProfile.display_name || "");
-        setUsername(userProfile.username || "");
-        setBio(userProfile.bio || "");
-        setSelectedGenres(userProfile.favorite_genres || []);
-        setSelectedRole(userProfile.role);
+        if (data) {
+          // Explicitly type the data to match UserProfile interface
+          const userProfile: UserProfile = {
+            id: data.id,
+            username: data.username || "",
+            display_name: data.display_name,
+            bio: data.bio,
+            favorite_genres: data.favorite_genres,
+            avatar_url: data.avatar_url,
+            role: data.role || "user"
+          };
+          
+          setProfile(userProfile);
+          setDisplayName(userProfile.display_name || "");
+          setUsername(userProfile.username || "");
+          setBio(userProfile.bio || "");
+          setSelectedGenres(userProfile.favorite_genres || []);
+          setSelectedRole(userProfile.role);
+        }
       } catch (error: any) {
         console.error("Error fetching profile:", error.message);
         setError("Failed to load profile. Please try again.");
@@ -104,7 +106,7 @@ const ProfilePage = () => {
       // Check if username is taken by another user
       if (username !== profile?.username) {
         const { data: existingUser, error: checkError } = await supabase
-          .from('user_profiles' as any)
+          .from('profiles')
           .select('id')
           .eq('username', username)
           .neq('id', user.id)
@@ -116,7 +118,7 @@ const ProfilePage = () => {
       }
       
       const { error } = await supabase
-        .from('user_profiles' as any)
+        .from('profiles')
         .update({
           username,
           display_name: displayName,

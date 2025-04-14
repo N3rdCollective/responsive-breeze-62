@@ -50,7 +50,6 @@ export const useSaveNewsPost = () => {
     setIsSaving(true);
     
     try {
-      // Handle image upload
       let featuredImageUrl = currentFeaturedImageUrl;
       try {
         featuredImageUrl = await handlePostImage(
@@ -68,11 +67,9 @@ export const useSaveNewsPost = () => {
         });
       }
       
-      // Generate an excerpt from content if none is provided
       const finalExcerpt = postData.excerpt || extractTextFromHtml(content);
       console.log("Generated excerpt:", finalExcerpt);
       
-      // Prepare the data for the database
       const newsData = preparePostData(
         { ...postData, excerpt: finalExcerpt },
         featuredImageUrl
@@ -84,7 +81,6 @@ export const useSaveNewsPost = () => {
       let postId = id;
       
       if (id) {
-        // Update existing post
         result = await updateNewsPost(id, newsData);
         
         if (result.error) {
@@ -92,18 +88,15 @@ export const useSaveNewsPost = () => {
           throw new Error(`Database error: ${result.error.message} (${result.error.code})`);
         }
         
-        // Verify the update
         const verifiedResult = await fetchUpdatedPost(id);
         console.log("Verified post update:", verifiedResult.data);
       } else {
-        // Create new post
         result = await createNewsPost(newsData);
         
         if (result.error) {
           throw new Error(`Database error: ${result.error.message} (${result.error.code})`);
         }
         
-        // Get the new post ID
         if (result && 'data' in result && result.data && result.data.length > 0) {
           postId = result.data[0].id;
         }
@@ -114,7 +107,6 @@ export const useSaveNewsPost = () => {
         description: id ? "News post updated" : "News post created",
       });
       
-      // Short delay before navigation to ensure state updates are complete
       setTimeout(() => {
         onSuccess();
       }, 500);
