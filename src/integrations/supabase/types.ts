@@ -87,6 +87,30 @@ export type Database = {
         }
         Relationships: []
       }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_timestamp: string
+          participant1_id: string
+          participant2_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_timestamp?: string
+          participant1_id: string
+          participant2_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_timestamp?: string
+          participant1_id?: string
+          participant2_id?: string
+        }
+        Relationships: []
+      }
       featured_artists: {
         Row: {
           archived_at: string | null
@@ -239,6 +263,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      messages: {
+        Row: {
+          content: string
+          id: string
+          is_deleted: boolean
+          media_url: string | null
+          recipient_id: string
+          sender_id: string
+          status: string
+          timestamp: string
+        }
+        Insert: {
+          content: string
+          id?: string
+          is_deleted?: boolean
+          media_url?: string | null
+          recipient_id: string
+          sender_id: string
+          status?: string
+          timestamp?: string
+        }
+        Update: {
+          content?: string
+          id?: string
+          is_deleted?: boolean
+          media_url?: string | null
+          recipient_id?: string
+          sender_id?: string
+          status?: string
+          timestamp?: string
+        }
+        Relationships: []
       }
       pending_staff: {
         Row: {
@@ -451,6 +508,7 @@ export type Database = {
           first_name: string | null
           id: string
           last_name: string | null
+          profile_picture: string | null
           role: string
           updated_at: string | null
         }
@@ -461,6 +519,7 @@ export type Database = {
           first_name?: string | null
           id: string
           last_name?: string | null
+          profile_picture?: string | null
           role?: string
           updated_at?: string | null
         }
@@ -471,6 +530,7 @@ export type Database = {
           first_name?: string | null
           id?: string
           last_name?: string | null
+          profile_picture?: string | null
           role?: string
           updated_at?: string | null
         }

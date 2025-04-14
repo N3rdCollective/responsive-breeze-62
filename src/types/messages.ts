@@ -9,6 +9,7 @@ export interface Message {
   timestamp: string;
   media_url?: string | null;
   status: 'sent' | 'delivered' | 'seen';
+  is_deleted?: boolean;
 }
 
 export interface Conversation {
@@ -16,6 +17,7 @@ export interface Conversation {
   participant1_id: string;
   participant2_id: string;
   last_message_timestamp: string;
+  created_at: string;
   participant: {
     id: string;
     email: string;
