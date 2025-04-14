@@ -1,6 +1,6 @@
 
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useEffect } from "react"; // Fix: Import useEffect from react
+import { useEffect } from "react";
 import Index from "@/pages/Index";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
@@ -55,8 +55,9 @@ function App() {
         <Route path="/messages/:conversationId" element={<Messages />} errorElement={<RouteErrorElement />} />
         
         {/* Member authentication routes */}
-        <Route path="/login" element={<MemberLogin />} errorElement={<RouteErrorElement />} />
-        <Route path="/signup" element={<MemberSignup />} errorElement={<RouteErrorElement />} />
+        <Route path="/login" element={<MemberLogin />} errorElement={<RouteErrorElement />}>
+          <Route path="signup" element={<MemberSignup />} errorElement={<RouteErrorElement />} />
+        </Route>
         <Route path="/profile" element={<MemberProfile />} errorElement={<RouteErrorElement />} />
         
         {/* Staff routes */}
@@ -85,3 +86,4 @@ function App() {
 }
 
 export default App;
+

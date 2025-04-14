@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation, Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -145,7 +144,7 @@ const MemberLogin = () => {
                     Don't have an account?
                   </p>
                   <Link 
-                    to="/signup" 
+                    to="/login/signup" 
                     className="text-sm font-medium text-primary hover:underline"
                   >
                     Sign up now
@@ -154,6 +153,8 @@ const MemberLogin = () => {
               </CardFooter>
             </form>
           </Card>
+          
+          <Outlet />
         </div>
       </div>
       

@@ -82,11 +82,11 @@ const Navbar = () => {
     { path: "/news", label: "News" },
     { path: "/contact", label: "Contact" },
   ];
-  
+
   if (!isLoggedIn) {
     navigationItems.push(
       { path: "/login", label: "Log In" },
-      { path: "/signup", label: "Sign Up" }
+      { path: "/login/signup", label: "Sign Up" }
     );
   }
 
