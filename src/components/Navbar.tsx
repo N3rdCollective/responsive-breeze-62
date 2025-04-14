@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import DesktopNav from "./navbar/DesktopNav";
@@ -60,6 +59,11 @@ const Navbar = () => {
   // Add staff portal link if user is logged in
   if (isLoggedIn) {
     navigationItems.push({ path: "/staff/panel", label: "Staff Portal" });
+  }
+  
+  // Add auth link if user is not logged in
+  if (!isLoggedIn) {
+    navigationItems.push({ path: "/auth", label: "Sign In" });
   }
 
   return (
