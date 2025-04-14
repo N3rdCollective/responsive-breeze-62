@@ -92,6 +92,7 @@ const Navbar = () => {
 
   if (isLoggedIn) {
     navigationItems.push({ path: "/messages", label: "Messages" });
+    navigationItems.push({ path: "/profile", label: "Profile" });
   }
 
   if (isLoggedIn && userRole === "staff") {
@@ -125,22 +126,6 @@ const Navbar = () => {
             isScrolled={isScrolled}
             mounted={mounted}
           />
-
-          <div className="hidden md:flex items-center gap-6">
-            {isLoggedIn && (
-              <Link 
-                to="/profile"
-                className={`flex items-center gap-1 hover:underline ${
-                  isHomePage && !isScrolled
-                    ? "text-white hover:text-white/90"
-                    : "text-primary hover:text-primary/90"
-                }`}
-              >
-                <User className="h-4 w-4" />
-                <span>Profile</span>
-              </Link>
-            )}
-          </div>
 
           <MobileNav
             navigationItems={navigationItems}
