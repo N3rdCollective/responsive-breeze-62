@@ -4,6 +4,8 @@ import { Link, useLocation } from "react-router-dom";
 import DesktopNav from "./navbar/DesktopNav";
 import MobileNav from "./navbar/MobileNav";
 import { supabase } from "@/integrations/supabase/client";
+import { MessageCircle } from "lucide-react";
+import { Button } from "./ui/button";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -56,6 +58,11 @@ const Navbar = () => {
     { path: "/news", label: "News" },
     { path: "/contact", label: "Contact" },
   ];
+  
+  // Add messages link if user is logged in
+  if (isLoggedIn) {
+    navigationItems.push({ path: "/messages", label: "Messages" });
+  }
 
   // Add staff portal link if user is logged in
   if (isLoggedIn) {

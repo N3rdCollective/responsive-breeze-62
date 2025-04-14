@@ -24,6 +24,7 @@ import StaffFeaturedArtists from "@/pages/StaffFeaturedArtists";
 import ArtistsPage from "@/pages/ArtistsPage";
 import ArtistsArchivePage from "@/pages/ArtistsArchivePage";
 import ArtistDetail from "@/pages/ArtistDetail";
+import Messages from "@/pages/Messages";
 import MusicPlayer from "@/components/MusicPlayer";
 
 function App() {
@@ -40,6 +41,8 @@ function App() {
         <Route path="/artists" element={<ArtistsPage />} errorElement={<RouteErrorElement />} />
         <Route path="/artists/archive" element={<ArtistsArchivePage />} errorElement={<RouteErrorElement />} />
         <Route path="/artists/:id" element={<ArtistDetail />} errorElement={<RouteErrorElement />} />
+        <Route path="/messages" element={<Messages />} errorElement={<RouteErrorElement />} />
+        <Route path="/messages/:conversationId" element={<Messages />} errorElement={<RouteErrorElement />} />
         <Route path="/staff" element={<Navigate to="/staff/panel" replace />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/panel" element={<StaffPanel />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/news" element={<StaffNews />} errorElement={<RouteErrorElement />} />
