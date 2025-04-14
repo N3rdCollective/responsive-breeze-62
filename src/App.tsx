@@ -31,6 +31,7 @@ import MemberLogin from "@/pages/MemberLogin";
 import MemberSignup from "@/pages/MemberSignup";
 import MemberProfile from "@/pages/MemberProfile";
 import { setupAvatarsBucket } from "@/components/storage/setupStorageBucket";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
 
 function App() {
   useEffect(() => {
@@ -85,6 +86,7 @@ function App() {
         <Route path="/staff/personalities" element={<StaffPersonalitiesPage />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/activity-logs" element={<StaffActivityLogs />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/featured-artists" element={<StaffFeaturedArtists />} errorElement={<RouteErrorElement />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} errorElement={<RouteErrorElement />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       
