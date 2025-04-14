@@ -1,3 +1,4 @@
+
 import { Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
 import SponsorsSection from './footer/SponsorsSection';
 import { useState, useEffect } from 'react';
@@ -131,15 +132,6 @@ const Footer = () => {
         <SponsorsSection />
         
         <div className="mt-12 pt-8 border-t border-[#666666]/20 dark:border-white/10 text-center text-gray-700 dark:text-white">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
-            <Link 
-              to="/privacy-policy" 
-              className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors"
-              onClick={() => window.scrollTo(0, 0)}
-            >
-              Privacy Policy
-            </Link>
-          </div>
           <p>&copy; {new Date().getFullYear()} Radio Station. All rights reserved.</p>
         </div>
       </div>

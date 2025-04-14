@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import ReactGA from "react-ga4";
@@ -32,13 +31,11 @@ import MemberLogin from "@/pages/MemberLogin";
 import MemberSignup from "@/pages/MemberSignup";
 import MemberProfile from "@/pages/MemberProfile";
 import { setupAvatarsBucket } from "@/components/storage/setupStorageBucket";
-import PrivacyPolicy from "@/pages/PrivacyPolicy";
-import TitleUpdater from "@/components/TitleUpdater";
 
 function App() {
   useEffect(() => {
     // Initialize GA4
-    ReactGA.initialize("G-Y2NLXFE5XJ"); // Replace with your actual Measurement ID
+    ReactGA.initialize("G-XXXXXXXXXX"); // Replace with your actual Measurement ID
     
     // Setup avatars storage bucket
     setupAvatarsBucket();
@@ -54,7 +51,6 @@ function App() {
 
   return (
     <>
-      <TitleUpdater />
       <Routes>
         <Route path="/" element={<Index />} errorElement={<RouteErrorElement />} />
         <Route path="/about" element={<About />} errorElement={<RouteErrorElement />} />
@@ -69,11 +65,13 @@ function App() {
         <Route path="/messages" element={<Messages />} errorElement={<RouteErrorElement />} />
         <Route path="/messages/:conversationId" element={<Messages />} errorElement={<RouteErrorElement />} />
         
+        {/* Member authentication routes */}
         <Route path="/login" element={<MemberLogin />} errorElement={<RouteErrorElement />}>
           <Route path="signup" element={<MemberSignup />} errorElement={<RouteErrorElement />} />
         </Route>
         <Route path="/profile" element={<MemberProfile />} errorElement={<RouteErrorElement />} />
         
+        {/* Staff routes */}
         <Route path="/staff" element={<Navigate to="/staff/panel" replace />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/panel" element={<StaffPanel />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/news" element={<StaffNews />} errorElement={<RouteErrorElement />} />
@@ -89,10 +87,10 @@ function App() {
         <Route path="/staff/personalities" element={<StaffPersonalitiesPage />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/activity-logs" element={<StaffActivityLogs />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/featured-artists" element={<StaffFeaturedArtists />} errorElement={<RouteErrorElement />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} errorElement={<RouteErrorElement />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       
+      {/* Always render the MusicPlayer outside of routes to ensure it's always visible */}
       <MusicPlayer />
     </>
   );
