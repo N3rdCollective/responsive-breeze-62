@@ -1,3 +1,4 @@
+
 import { Routes, Route, Navigate } from "react-router-dom";
 import Index from "@/pages/Index";
 import About from "@/pages/About";
@@ -24,6 +25,8 @@ import ArtistsPage from "@/pages/ArtistsPage";
 import ArtistsArchivePage from "@/pages/ArtistsArchivePage";
 import ArtistDetail from "@/pages/ArtistDetail";
 import MusicPlayer from "@/components/MusicPlayer";
+import AuthPage from "@/pages/AuthPage";
+import ProfilePage from "@/pages/ProfilePage";
 
 function App() {
   return (
@@ -39,6 +42,7 @@ function App() {
         <Route path="/artists" element={<ArtistsPage />} errorElement={<RouteErrorElement />} />
         <Route path="/artists/archive" element={<ArtistsArchivePage />} errorElement={<RouteErrorElement />} />
         <Route path="/artists/:id" element={<ArtistDetail />} errorElement={<RouteErrorElement />} />
+        <Route path="/profile" element={<ProfilePage />} errorElement={<RouteErrorElement />} />
         <Route path="/staff" element={<Navigate to="/staff/panel" replace />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/panel" element={<StaffPanel />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/news" element={<StaffNews />} errorElement={<RouteErrorElement />} />
@@ -54,7 +58,7 @@ function App() {
         <Route path="/staff/personalities" element={<StaffPersonalitiesPage />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/activity-logs" element={<StaffActivityLogs />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/featured-artists" element={<StaffFeaturedArtists />} errorElement={<RouteErrorElement />} />
-        <Route path="/auth" element={<Auth />} errorElement={<RouteErrorElement />} />
+        <Route path="/auth" element={<AuthPage />} errorElement={<RouteErrorElement />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       

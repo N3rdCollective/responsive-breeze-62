@@ -11,6 +11,7 @@ import ListenButton from "./ListenButton";
 interface NavigationItem {
   path: string;
   label: string;
+  onClick?: () => void;
 }
 
 interface MobileNavProps {
@@ -30,8 +31,12 @@ const MobileNav = ({
 }: MobileNavProps) => {
   const [isOpen, setIsOpen] = useState(false);
   
-  const handleNavigation = (path: string) => {
-    window.scrollTo(0, 0);
+  const handleNavigation = (path: string, onClick?: () => void) => {
+    if (onClick) {
+      onClick();
+    } else {
+      window.scrollTo(0, 0);
+    }
     setIsOpen(false);
   };
   
@@ -62,20 +67,39 @@ const MobileNav = ({
           </SheetHeader>
           <div className="flex flex-col space-y-4 mt-8">
             {navigationItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => handleNavigation(item.path)}
-                className={`
-                  ${isActive(item.path)
-                    ? 'text-[#FFD700] dark:text-[#FFD700]'
-                    : 'text-[#333333] dark:text-white hover:text-[#FFD700] dark:hover:text-[#FFD700]'
-                  }
-                  text-lg font-medium transition-colors duration-200
-                `}
-              >
-                {item.label}
-              </Link>
+              item.path === "#" && item.onClick ? (
+                <button
+                  key={item.path + item.label}
+                  onClick={() => {
+                    item.onClick && item.onClick();
+                    setIsOpen(false);
+                  }}
+                  className={`
+                    ${isActive(item.path)
+                      ? 'text-[#FFD700] dark:text-[#FFD700]'
+                      : 'text-[#333333] dark:text-white hover:text-[#FFD700] dark:hover:text-[#FFD700]'
+                    }
+                    text-lg font-medium transition-colors duration-200 text-left
+                  `}
+                >
+                  {item.label}
+                </button>
+              ) : (
+                <Link
+                  key={item.path + item.label}
+                  to={item.path}
+                  onClick={() => handleNavigation(item.path, item.onClick)}
+                  className={`
+                    ${isActive(item.path)
+                      ? 'text-[#FFD700] dark:text-[#FFD700]'
+                      : 'text-[#333333] dark:text-white hover:text-[#FFD700] dark:hover:text-[#FFD700]'
+                    }
+                    text-lg font-medium transition-colors duration-200
+                  `}
+                >
+                  {item.label}
+                </Link>
+              )
             ))}
             {mounted && (
               <ThemeToggle isHomePage={isHomePage} isScrolled={isScrolled} mobile />

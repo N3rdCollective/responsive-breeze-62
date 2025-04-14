@@ -1,38 +1,18 @@
+
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import DesktopNav from "./navbar/DesktopNav";
 import MobileNav from "./navbar/MobileNav";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const [mounted, setMounted] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     setMounted(true);
-    
-    // Check if the user is logged in
-    const checkAuth = async () => {
-      const { data } = await supabase.auth.getSession();
-      setIsLoggedIn(!!data.session);
-    };
-    
-    checkAuth();
-    
-    // Subscribe to auth changes
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setIsLoggedIn(!!session);
-      }
-    );
-    
-    return () => {
-      if (authListener && authListener.subscription) {
-        authListener.subscription.unsubscribe();
-      }
-    };
   }, []);
 
   useEffect(() => {
@@ -57,13 +37,25 @@ const Navbar = () => {
   ];
 
   // Add staff portal link if user is logged in
-  if (isLoggedIn) {
-    navigationItems.push({ path: "/staff/panel", label: "Staff Portal" });
+  if (user) {
+    // Check if user is staff (this would require a way to check user roles)
+    // For now, we'll just add the auth-related links
+    navigationItems.push({ path: "/profile", label: "Profile" });
   }
   
   // Add auth link if user is not logged in
-  if (!isLoggedIn) {
+  if (!user) {
     navigationItems.push({ path: "/auth", label: "Sign In" });
+  } else {
+    // Add logout option for logged in users
+    navigationItems.push({ 
+      path: "#", 
+      label: "Logout",
+      onClick: () => {
+        logout();
+        window.location.href = "/";
+      }
+    });
   }
 
   return (

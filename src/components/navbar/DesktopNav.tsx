@@ -6,6 +6,7 @@ import ListenButton from "./ListenButton";
 interface NavigationItem {
   path: string;
   label: string;
+  onClick?: () => void;
 }
 
 interface DesktopNavProps {
@@ -27,12 +28,13 @@ const DesktopNav = ({
     <div className="hidden md:flex items-center space-x-8">
       {navigationItems.map((item) => (
         <NavItem 
-          key={item.path}
+          key={item.path + item.label}
           path={item.path}
           label={item.label}
           isActive={isActive(item.path)}
           isHomePage={isHomePage}
           isScrolled={isScrolled}
+          onClick={item.onClick}
         />
       ))}
       <ListenButton isScrolled={isScrolled} isHomePage={isHomePage} />
