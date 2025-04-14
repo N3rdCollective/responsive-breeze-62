@@ -1,6 +1,6 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
+import ReactGA from "react-ga4";
 import Index from "@/pages/Index";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
@@ -34,9 +34,20 @@ import { setupAvatarsBucket } from "@/components/storage/setupStorageBucket";
 
 function App() {
   useEffect(() => {
+    // Initialize GA4
+    ReactGA.initialize("G-XXXXXXXXXX"); // Replace with your actual Measurement ID
+    
     // Setup avatars storage bucket
     setupAvatarsBucket();
   }, []);
+
+  // Track page views
+  useEffect(() => {
+    ReactGA.send({ 
+      hitType: "pageview", 
+      page: window.location.pathname 
+    });
+  }, [window.location.pathname]);
 
   return (
     <>
@@ -86,4 +97,3 @@ function App() {
 }
 
 export default App;
-
