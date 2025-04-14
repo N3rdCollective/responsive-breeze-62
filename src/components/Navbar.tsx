@@ -25,14 +25,14 @@ const Navbar = () => {
       
       if (data.session) {
         // Get user's role if available
-        const { data: profileData } = await supabase
+        const { data: profileData, error } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', data.session.user.id)
           .single();
           
         if (profileData) {
-          setUserRole((profileData as any).role);
+          setUserRole((profileData as Profile).role);
         }
       }
     };
@@ -46,14 +46,14 @@ const Navbar = () => {
         
         if (session) {
           // Get user's role if available
-          const { data: profileData } = await supabase
+          const { data: profileData, error } = await supabase
             .from('profiles')
             .select('role')
             .eq('id', session.user.id)
             .single();
             
           if (profileData) {
-            setUserRole((profileData as any).role);
+            setUserRole((profileData as Profile).role);
           }
         } else {
           setUserRole(null);

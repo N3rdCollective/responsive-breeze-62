@@ -4,7 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 export const setupAvatarsBucket = async () => {
   try {
     // Check if bucket exists
-    const { data: buckets } = await supabase.storage.listBuckets();
+    const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+    
+    if (listError) {
+      console.error('Error listing buckets:', listError);
+      return false;
+    }
+    
     const avatarBucketExists = buckets?.some(bucket => bucket.name === 'avatars');
     
     if (!avatarBucketExists) {

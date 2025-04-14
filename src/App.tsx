@@ -1,5 +1,6 @@
 
-import { Routes, Route, Navigate, useEffect } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useEffect } from "react"; // Fix: Import useEffect from react
 import Index from "@/pages/Index";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";

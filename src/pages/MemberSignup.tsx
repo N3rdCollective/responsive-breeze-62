@@ -16,7 +16,6 @@ import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-// Form validation schema
 const signupSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
@@ -36,7 +35,6 @@ const MemberSignup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Check if user is already logged in
   useEffect(() => {
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
@@ -64,7 +62,6 @@ const MemberSignup = () => {
     setIsLoading(true);
     
     try {
-      // Create user account
       const { data, error: signupError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -79,13 +76,11 @@ const MemberSignup = () => {
       if (signupError) throw signupError;
       
       if (data.user) {
-        // The trigger function handle_new_user will create the profile record automatically
         toast({
           title: "Account created successfully",
           description: "Welcome to Rappin' Lounge! Please check your email to verify your account.",
         });
         
-        // Redirect to homepage or profile page
         navigate("/");
       }
     } catch (error: any) {
