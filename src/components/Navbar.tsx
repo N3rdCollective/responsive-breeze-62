@@ -1,11 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import DesktopNav from "./navbar/DesktopNav";
 import MobileNav from "./navbar/MobileNav";
 import { supabase } from "@/integrations/supabase/client";
-import { MessageCircle, User, LogIn } from "lucide-react";
-import { Button } from "./ui/button";
+import { User, LogIn } from "lucide-react";
 import { Profile } from "@/types/supabase";
 
 const Navbar = () => {
@@ -18,13 +16,11 @@ const Navbar = () => {
   useEffect(() => {
     setMounted(true);
     
-    // Check if the user is logged in
     const checkAuth = async () => {
       const { data } = await supabase.auth.getSession();
       setIsLoggedIn(!!data.session);
       
       if (data.session) {
-        // Get user's role if available
         const { data: profileData, error } = await supabase
           .from('profiles')
           .select('role')
@@ -39,13 +35,11 @@ const Navbar = () => {
     
     checkAuth();
     
-    // Subscribe to auth changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setIsLoggedIn(!!session);
         
         if (session) {
-          // Get user's role if available
           const { data: profileData, error } = await supabase
             .from('profiles')
             .select('role')
@@ -89,12 +83,10 @@ const Navbar = () => {
     { path: "/contact", label: "Contact" },
   ];
   
-  // Add messages link if user is logged in
   if (isLoggedIn) {
     navigationItems.push({ path: "/messages", label: "Messages" });
   }
 
-  // Add staff portal link if user is logged in as staff
   if (isLoggedIn && userRole === "staff") {
     navigationItems.push({ path: "/staff/panel", label: "Staff Portal" });
   }
@@ -119,7 +111,6 @@ const Navbar = () => {
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
           <DesktopNav 
             navigationItems={navigationItems}
             isActive={isActive}
@@ -128,55 +119,45 @@ const Navbar = () => {
             mounted={mounted}
           />
 
-          {/* Auth Buttons */}
-          <div className="hidden md:flex items-center gap-2 ml-4">
+          <div className="hidden md:flex items-center gap-6">
             {isLoggedIn ? (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className={`flex items-center gap-1 ${
+              <Link 
+                to="/profile"
+                className={`flex items-center gap-1 hover:underline ${
                   isHomePage && !isScrolled
-                    ? "text-white hover:text-white/90 hover:bg-white/10"
+                    ? "text-white hover:text-white/90"
                     : "text-primary hover:text-primary/90"
                 }`}
-                asChild
               >
-                <Link to="/profile">
-                  <User className="h-4 w-4" />
-                  <span>Profile</span>
-                </Link>
-              </Button>
+                <User className="h-4 w-4" />
+                <span>Profile</span>
+              </Link>
             ) : (
               <>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Link
+                  to="/login"
                   className={`${
                     isHomePage && !isScrolled
-                      ? "text-white hover:text-white/90 hover:bg-white/10"
+                      ? "text-white hover:text-white/90"
                       : "text-primary hover:text-primary/90"
-                  }`}
-                  asChild
+                  } hover:underline`}
                 >
-                  <Link to="/login">
-                    <LogIn className="h-4 w-4 mr-1" />
-                    Log In
-                  </Link>
-                </Button>
-                <Button 
-                  size="sm" 
-                  className="bg-[#FFD700] hover:bg-[#FFD700]/90 text-black"
-                  asChild
+                  Log In
+                </Link>
+                <Link
+                  to="/signup"
+                  className={`${
+                    isHomePage && !isScrolled
+                      ? "text-white hover:text-white/90"
+                      : "text-primary hover:text-primary/90"
+                  } hover:underline`}
                 >
-                  <Link to="/signup">
-                    Sign Up
-                  </Link>
-                </Button>
+                  Sign Up
+                </Link>
               </>
             )}
           </div>
 
-          {/* Mobile Navigation */}
           <MobileNav
             navigationItems={navigationItems}
             isActive={isActive}
