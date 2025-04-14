@@ -1,4 +1,3 @@
-
 import { useToast } from "@/hooks/use-toast";
 import { extractTextFromHtml } from "../utils/textUtils";
 import { NewsPostData, SaveNewsPostCallbacks } from "./types/newsPostTypes";
@@ -105,7 +104,7 @@ export const useSaveNewsPost = () => {
         }
         
         // Get the new post ID
-        if (result.data && result.data.length > 0) {
+        if (result && 'data' in result && result.data && result.data.length > 0) {
           postId = result.data[0].id;
         }
       }

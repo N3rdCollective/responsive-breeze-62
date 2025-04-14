@@ -57,20 +57,32 @@ const ProfilePage = () => {
       if (!user) return;
       
       try {
+        // Use more generic query approach to avoid TypeScript errors with table types
         const { data, error } = await supabase
-          .from('user_profiles')
+          .from('user_profiles' as any)
           .select('*')
           .eq('id', user.id)
           .single();
           
         if (error) throw error;
         
-        setProfile(data);
-        setDisplayName(data.display_name || "");
-        setUsername(data.username || "");
-        setBio(data.bio || "");
-        setSelectedGenres(data.favorite_genres || []);
-        setSelectedRole(data.role);
+        // Explicitly type the data to match UserProfile interface
+        const userProfile: UserProfile = {
+          id: data.id,
+          username: data.username || "",
+          display_name: data.display_name,
+          bio: data.bio,
+          favorite_genres: data.favorite_genres,
+          avatar_url: data.avatar_url,
+          role: data.role
+        };
+        
+        setProfile(userProfile);
+        setDisplayName(userProfile.display_name || "");
+        setUsername(userProfile.username || "");
+        setBio(userProfile.bio || "");
+        setSelectedGenres(userProfile.favorite_genres || []);
+        setSelectedRole(userProfile.role);
       } catch (error: any) {
         console.error("Error fetching profile:", error.message);
         setError("Failed to load profile. Please try again.");
@@ -92,7 +104,7 @@ const ProfilePage = () => {
       // Check if username is taken by another user
       if (username !== profile?.username) {
         const { data: existingUser, error: checkError } = await supabase
-          .from('user_profiles')
+          .from('user_profiles' as any)
           .select('id')
           .eq('username', username)
           .neq('id', user.id)
@@ -104,7 +116,7 @@ const ProfilePage = () => {
       }
       
       const { error } = await supabase
-        .from('user_profiles')
+        .from('user_profiles' as any)
         .update({
           username,
           display_name: displayName,
