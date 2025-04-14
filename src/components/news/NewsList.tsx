@@ -24,9 +24,10 @@ export const NewsList = () => {
       hasPosts: Boolean(posts?.length), 
       postsCount: posts?.length,
       isLoading, 
-      hasError: Boolean(error) 
+      hasError: Boolean(error),
+      selectedCategory
     });
-  }, [categories, posts, isLoading, error]);
+  }, [categories, posts, isLoading, error, selectedCategory]);
 
   if (error) {
     console.error("[NewsList] Error:", error);
@@ -47,7 +48,7 @@ export const NewsList = () => {
       
       {/* Category filters */}
       <CategoryFilters 
-        categories={categories} 
+        categories={categories || []} 
         selectedCategory={selectedCategory} 
         onCategorySelect={handleCategoryFilter} 
       />

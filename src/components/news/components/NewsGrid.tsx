@@ -11,7 +11,9 @@ interface NewsGridProps {
 export const NewsGrid = ({ posts, selectedCategory }: NewsGridProps) => {
   console.log("[NewsGrid] Rendering with posts:", posts?.length, "selectedCategory:", selectedCategory);
   
+  // More explicit check for undefined, null, or empty array
   if (!posts || posts.length === 0) {
+    console.log("[NewsGrid] No posts to display, showing empty state");
     return <EmptyNewsState selectedCategory={selectedCategory} />;
   }
 
