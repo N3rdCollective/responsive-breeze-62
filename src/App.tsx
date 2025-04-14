@@ -1,5 +1,5 @@
 
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useEffect } from "react-router-dom";
 import Index from "@/pages/Index";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
@@ -29,8 +29,14 @@ import MusicPlayer from "@/components/MusicPlayer";
 import MemberLogin from "@/pages/MemberLogin";
 import MemberSignup from "@/pages/MemberSignup";
 import MemberProfile from "@/pages/MemberProfile";
+import { setupAvatarsBucket } from "@/components/storage/setupStorageBucket";
 
 function App() {
+  useEffect(() => {
+    // Setup avatars storage bucket
+    setupAvatarsBucket();
+  }, []);
+
   return (
     <>
       <Routes>

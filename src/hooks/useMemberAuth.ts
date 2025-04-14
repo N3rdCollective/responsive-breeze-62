@@ -3,14 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
-
-interface Profile {
-  id: string;
-  display_name: string | null;
-  role: string | null;
-  profile_picture: string | null;
-  bio?: string | null;
-}
+import { Profile } from '@/types/supabase';
 
 interface MemberAuthState {
   user: User | null;
@@ -45,16 +38,16 @@ export function useMemberAuth() {
         if (session?.user) {
           setTimeout(async () => {
             try {
-              const { data: profileData, error: profileError } = await supabase
+              const { data, error } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', session.user.id)
                 .single();
                 
-              if (!profileError && profileData) {
+              if (!error && data) {
                 setAuthState(prevState => ({
                   ...prevState,
-                  profile: profileData,
+                  profile: data as Profile,
                 }));
               }
             } catch (error) {
@@ -79,16 +72,16 @@ export function useMemberAuth() {
         
         // If session exists, fetch profile data
         if (session?.user) {
-          const { data: profileData, error: profileError } = await supabase
+          const { data, error } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
             .single();
             
-          if (!profileError && profileData) {
+          if (!error && data) {
             setAuthState(prevState => ({
               ...prevState,
-              profile: profileData,
+              profile: data as Profile,
             }));
           }
         }

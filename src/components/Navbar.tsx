@@ -6,6 +6,7 @@ import MobileNav from "./navbar/MobileNav";
 import { supabase } from "@/integrations/supabase/client";
 import { MessageCircle, User, LogIn } from "lucide-react";
 import { Button } from "./ui/button";
+import { Profile } from "@/types/supabase";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -31,7 +32,7 @@ const Navbar = () => {
           .single();
           
         if (profileData) {
-          setUserRole(profileData.role);
+          setUserRole((profileData as any).role);
         }
       }
     };
@@ -52,7 +53,7 @@ const Navbar = () => {
             .single();
             
           if (profileData) {
-            setUserRole(profileData.role);
+            setUserRole((profileData as any).role);
           }
         } else {
           setUserRole(null);

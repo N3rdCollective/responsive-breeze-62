@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -80,20 +79,7 @@ const MemberSignup = () => {
       if (signupError) throw signupError;
       
       if (data.user) {
-        // Create profile record
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            display_name: values.displayName,
-            role: values.userRole,
-          });
-          
-        if (profileError) {
-          console.error("Profile creation error:", profileError);
-          throw new Error("An error occurred while creating your profile.");
-        }
-        
+        // The trigger function handle_new_user will create the profile record automatically
         toast({
           title: "Account created successfully",
           description: "Welcome to Rappin' Lounge! Please check your email to verify your account.",

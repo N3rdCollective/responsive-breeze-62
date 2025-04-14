@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -13,15 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-
-// Define profile type
-interface Profile {
-  id: string;
-  display_name: string | null;
-  bio: string | null;
-  profile_picture: string | null;
-  role: string | null;
-}
+import { Profile } from "@/types/supabase";
 
 const MemberProfile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -34,21 +25,18 @@ const MemberProfile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Check if user is logged in and fetch profile data
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const { data: sessionData } = await supabase.auth.getSession();
         
         if (!sessionData.session) {
-          // Redirect to login if not logged in
           navigate("/login", { state: { from: { pathname: "/profile" } } });
           return;
         }
         
         const userId = sessionData.session.user.id;
         
-        // Fetch profile data
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
           .select("*")
@@ -60,7 +48,7 @@ const MemberProfile = () => {
           throw new Error("Failed to load profile data.");
         }
         
-        setProfile(profileData);
+        setProfile(profileData as Profile);
         setDisplayName(profileData.display_name || "");
         setBio(profileData.bio || "");
       } catch (error: any) {
@@ -114,7 +102,6 @@ const MemberProfile = () => {
         description: "Your profile information has been saved.",
       });
       
-      // Update local profile state
       setProfile({
         ...profile,
         display_name: displayName,
@@ -136,7 +123,6 @@ const MemberProfile = () => {
     setError(null);
     
     try {
-      // Upload image to Supabase Storage
       const fileExt = file.name.split('.').pop();
       const fileName = `${profile.id}-${Date.now()}.${fileExt}`;
       const filePath = `profile-pictures/${fileName}`;
@@ -147,12 +133,10 @@ const MemberProfile = () => {
         
       if (uploadError) throw uploadError;
       
-      // Get public URL
       const { data: publicUrlData } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath);
         
-      // Update profile with new image URL
       const { error: updateError } = await supabase
         .from("profiles")
         .update({
@@ -162,7 +146,6 @@ const MemberProfile = () => {
         
       if (updateError) throw updateError;
       
-      // Update local profile state
       setProfile({
         ...profile,
         profile_picture: publicUrlData.publicUrl,
