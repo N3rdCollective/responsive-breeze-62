@@ -9,6 +9,8 @@ interface NewsGridProps {
 }
 
 export const NewsGrid = ({ posts, selectedCategory }: NewsGridProps) => {
+  console.log("[NewsGrid] Rendering with posts:", posts?.length, "selectedCategory:", selectedCategory);
+  
   if (!posts || posts.length === 0) {
     return <EmptyNewsState selectedCategory={selectedCategory} />;
   }

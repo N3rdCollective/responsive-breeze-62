@@ -11,10 +11,13 @@ interface NewsCardProps {
 }
 
 export const NewsCard = ({ post }: NewsCardProps) => {
-  // Only use image URL if it's not a blob URL
+  // Only use image URL if it's not a blob URL and exists
   const imageUrl = post.featured_image && 
     !post.featured_image.startsWith('blob:') ? 
     post.featured_image : null;
+  
+  const safeContent = post.content || "";
+  const plainTextContent = safeContent.replace(/<[^>]*>/g, '');
     
   return (
     <Card key={post.id} className="overflow-hidden h-full flex flex-col hover:shadow-md transition-shadow duration-300">
@@ -44,7 +47,7 @@ export const NewsCard = ({ post }: NewsCardProps) => {
       </CardHeader>
       <CardContent className="flex-grow">
         <p className="text-muted-foreground line-clamp-3">
-          {post.content.replace(/<[^>]*>/g, '')}
+          {plainTextContent}
         </p>
         
         {/* Display tags if available */}

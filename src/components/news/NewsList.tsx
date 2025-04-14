@@ -1,4 +1,5 @@
 
+import { useEffect } from "react";
 import CategoryFilters from "./components/CategoryFilters";
 import NewsLoadingSkeleton from "./components/NewsLoadingSkeleton";
 import NewsGrid from "./components/NewsGrid";
@@ -16,7 +17,19 @@ export const NewsList = () => {
     handleSearch,
   } = useNewsData();
 
+  useEffect(() => {
+    console.log("[NewsList] Data state:", { 
+      hasCategories: Boolean(categories?.length), 
+      categoriesCount: categories?.length,
+      hasPosts: Boolean(posts?.length), 
+      postsCount: posts?.length,
+      isLoading, 
+      hasError: Boolean(error) 
+    });
+  }, [categories, posts, isLoading, error]);
+
   if (error) {
+    console.error("[NewsList] Error:", error);
     return (
       <div className="text-center py-12">
         <h3 className="text-xl font-semibold text-destructive">Error loading news</h3>
