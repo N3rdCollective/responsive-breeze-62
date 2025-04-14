@@ -48,7 +48,7 @@ const ThemeToggle = ({ isHomePage, isScrolled, mobile = false }: ThemeToggleProp
       variant="ghost"
       size="icon"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="text-foreground"
+      className="text-foreground hover:bg-accent/50 dark:hover:bg-accent/50 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
     >
       {theme === "light" ? (
         <Moon className="h-5 w-5" />
