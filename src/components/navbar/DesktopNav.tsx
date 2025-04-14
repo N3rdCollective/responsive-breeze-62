@@ -1,13 +1,7 @@
-
 import NavItem from "./NavItem";
 import ThemeToggle from "./ThemeToggle";
 import ListenButton from "./ListenButton";
-
-interface NavigationItem {
-  path: string;
-  label: string;
-  onClick?: () => void;
-}
+import { NavigationItem } from "@/types/profile";
 
 interface DesktopNavProps {
   navigationItems: NavigationItem[];
