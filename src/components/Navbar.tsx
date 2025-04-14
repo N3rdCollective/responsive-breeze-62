@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import DesktopNav from "./navbar/DesktopNav";
 import MobileNav from "./navbar/MobileNav";
 import { supabase } from "@/integrations/supabase/client";
-import { User, LogIn } from "lucide-react";
+import { User } from "lucide-react";
 import { Profile } from "@/types/supabase";
 
 const Navbar = () => {
@@ -83,6 +83,13 @@ const Navbar = () => {
     { path: "/contact", label: "Contact" },
   ];
   
+  if (!isLoggedIn) {
+    navigationItems.push(
+      { path: "/login", label: "Log In" },
+      { path: "/signup", label: "Sign Up" }
+    );
+  }
+
   if (isLoggedIn) {
     navigationItems.push({ path: "/messages", label: "Messages" });
   }
@@ -120,7 +127,7 @@ const Navbar = () => {
           />
 
           <div className="hidden md:flex items-center gap-6">
-            {isLoggedIn ? (
+            {isLoggedIn && (
               <Link 
                 to="/profile"
                 className={`flex items-center gap-1 hover:underline ${
@@ -132,29 +139,6 @@ const Navbar = () => {
                 <User className="h-4 w-4" />
                 <span>Profile</span>
               </Link>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  className={`${
-                    isHomePage && !isScrolled
-                      ? "text-white hover:text-white/90"
-                      : "text-primary hover:text-primary/90"
-                  } hover:underline`}
-                >
-                  Log In
-                </Link>
-                <Link
-                  to="/signup"
-                  className={`${
-                    isHomePage && !isScrolled
-                      ? "text-white hover:text-white/90"
-                      : "text-primary hover:text-primary/90"
-                  } hover:underline`}
-                >
-                  Sign Up
-                </Link>
-              </>
             )}
           </div>
 
