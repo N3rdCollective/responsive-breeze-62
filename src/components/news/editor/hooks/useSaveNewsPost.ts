@@ -1,3 +1,4 @@
+
 import { useToast } from "@/hooks/use-toast";
 import { extractTextFromHtml } from "../utils/textUtils";
 import { NewsPostData, SaveNewsPostCallbacks } from "./types/newsPostTypes";
@@ -88,8 +89,11 @@ export const useSaveNewsPost = () => {
           throw new Error(`Database error: ${result.error.message} (${result.error.code})`);
         }
         
+        // Fix the type checking to ensure 'data' exists before accessing it
         const verifiedResult = await fetchUpdatedPost(id);
-        console.log("Verified post update:", verifiedResult.data);
+        if ('data' in verifiedResult && verifiedResult.data) {
+          console.log("Verified post update:", verifiedResult.data);
+        }
       } else {
         result = await createNewsPost(newsData);
         
@@ -97,7 +101,7 @@ export const useSaveNewsPost = () => {
           throw new Error(`Database error: ${result.error.message} (${result.error.code})`);
         }
         
-        if (result && 'data' in result && result.data && result.data.length > 0) {
+        if ('data' in result && result.data && result.data.length > 0) {
           postId = result.data[0].id;
         }
       }

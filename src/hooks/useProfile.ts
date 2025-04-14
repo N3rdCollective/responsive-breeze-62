@@ -37,6 +37,7 @@ export const useProfile = (user: User | null) => {
       if (error) throw error;
       
       if (data) {
+        // Create a properly typed UserProfile object from the database data
         const userProfile: UserProfile = {
           id: data.id,
           username: data.username || "",
@@ -69,6 +70,7 @@ export const useProfile = (user: User | null) => {
     setError("");
     
     try {
+      // Check if username is already taken
       if (username !== profile?.username) {
         const { data: existingUser, error: checkError } = await supabase
           .from('profiles')
@@ -82,6 +84,7 @@ export const useProfile = (user: User | null) => {
         }
       }
       
+      // Update profile in database
       const { error } = await supabase
         .from('profiles')
         .update({
