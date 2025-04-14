@@ -9,6 +9,7 @@ interface Profile {
   display_name: string | null;
   role: string | null;
   profile_picture: string | null;
+  bio?: string | null;
 }
 
 interface MemberAuthState {
