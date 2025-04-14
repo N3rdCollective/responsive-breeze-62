@@ -13,7 +13,9 @@ export const useStaffAuth = (props: UseStaffAuthProps = {}) => {
 
   return {
     ...authState,
-    handleLogout
+    handleLogout,
+    user: authState.user, // Explicitly add user
+    isLoggedIn: !!authState.user // Convert to boolean login status
   };
 };
 
