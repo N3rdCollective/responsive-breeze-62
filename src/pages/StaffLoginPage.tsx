@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,18 @@ const StaffLoginPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        navigate("/staff/panel");
+      }
+    };
+    
+    checkSession();
+  }, [navigate]);
+  
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -31,11 +43,26 @@ const StaffLoginPage = () => {
       if (error) throw error;
       
       if (data?.user) {
+        // Check if the user is staff by querying the staff table
+        const { data: staffData, error: staffError } = await supabase
+          .from("staff")
+          .select("*")
+          .eq("id", data.user.id)
+          .single();
+          
+        if (staffError || !staffData) {
+          console.error("Staff check error:", staffError);
+          // If no staff record, log them out
+          await supabase.auth.signOut();
+          throw new Error("You don't have permission to access the staff portal.");
+        }
+        
         toast({
           title: "Login successful",
-          description: "Welcome back to the staff portal.",
+          description: `Welcome back, ${staffData.first_name || staffData.display_name || email}!`,
         });
-        navigate("/staff");
+        
+        navigate("/staff/panel");
       }
     } catch (error: any) {
       console.error("Login error:", error);
@@ -85,6 +112,7 @@ const StaffLoginPage = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={isLoading}
                 />
               </div>
               
@@ -104,6 +132,7 @@ const StaffLoginPage = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled={isLoading}
                 />
               </div>
             </CardContent>
@@ -127,10 +156,10 @@ const StaffLoginPage = () => {
               <p className="text-center text-sm mt-4">
                 Don't have an account?{" "}
                 <Link 
-                  to="/staff/signup" 
+                  to="/staff/registration" 
                   className="text-primary hover:underline"
                 >
-                  Sign up
+                  Register
                 </Link>
               </p>
             </CardFooter>

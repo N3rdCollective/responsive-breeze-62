@@ -8,7 +8,7 @@ import News from "@/pages/News";
 import NewsPost from "@/pages/NewsPost";
 import Personalities from "@/pages/Personalities";
 import NotFound from "@/pages/NotFound";
-import StaffLogin from "@/pages/StaffLogin";
+import StaffLoginPage from "@/pages/StaffLoginPage";
 import StaffSignup from "@/pages/StaffSignup";
 import StaffRegistration from "@/pages/StaffRegistration";
 import NewsEditor from "@/pages/NewsEditor";
@@ -46,7 +46,7 @@ function App() {
         <Route path="/staff" element={<Navigate to="/staff/panel" replace />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/panel" element={<StaffPanel />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/news" element={<StaffNews />} errorElement={<RouteErrorElement />} />
-        <Route path="/staff/login" element={<StaffLogin />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/login" element={<StaffLoginPage />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/signup" element={<StaffSignup />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/registration" element={<StaffRegistration />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/news/editor" element={<NewsEditor />} errorElement={<RouteErrorElement />} />
