@@ -1,57 +1,31 @@
+
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import DesktopNav from "./navbar/DesktopNav";
 import MobileNav from "./navbar/MobileNav";
 import { supabase } from "@/integrations/supabase/client";
-import { User } from "lucide-react";
-import { Profile } from "@/types/supabase";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const [mounted, setMounted] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
     
+    // Check if the user is logged in
     const checkAuth = async () => {
       const { data } = await supabase.auth.getSession();
       setIsLoggedIn(!!data.session);
-      
-      if (data.session) {
-        const { data: profileData, error } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', data.session.user.id)
-          .single();
-          
-        if (profileData) {
-          setUserRole((profileData as Profile).role);
-        }
-      }
     };
     
     checkAuth();
     
+    // Subscribe to auth changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         setIsLoggedIn(!!session);
-        
-        if (session) {
-          const { data: profileData, error } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', session.user.id)
-            .single();
-            
-          if (profileData) {
-            setUserRole((profileData as Profile).role);
-          }
-        } else {
-          setUserRole(null);
-        }
       }
     );
     
@@ -83,19 +57,8 @@ const Navbar = () => {
     { path: "/contact", label: "Contact" },
   ];
 
-  if (!isLoggedIn) {
-    navigationItems.push(
-      { path: "/login", label: "Log In" },
-      { path: "/login/signup", label: "Sign Up" }
-    );
-  }
-
+  // Add staff portal link if user is logged in
   if (isLoggedIn) {
-    navigationItems.push({ path: "/messages", label: "Messages" });
-    navigationItems.push({ path: "/profile", label: "Profile" });
-  }
-
-  if (isLoggedIn && userRole === "staff") {
     navigationItems.push({ path: "/staff/panel", label: "Staff Portal" });
   }
 
@@ -119,6 +82,7 @@ const Navbar = () => {
             </Link>
           </div>
 
+          {/* Desktop Navigation */}
           <DesktopNav 
             navigationItems={navigationItems}
             isActive={isActive}
@@ -127,13 +91,13 @@ const Navbar = () => {
             mounted={mounted}
           />
 
+          {/* Mobile Navigation */}
           <MobileNav
             navigationItems={navigationItems}
             isActive={isActive}
             isHomePage={isHomePage}
             isScrolled={isScrolled}
             mounted={mounted}
-            isLoggedIn={isLoggedIn}
           />
         </div>
       </div>

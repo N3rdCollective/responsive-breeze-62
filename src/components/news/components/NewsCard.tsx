@@ -11,24 +11,10 @@ interface NewsCardProps {
 }
 
 export const NewsCard = ({ post }: NewsCardProps) => {
-  // Safety check: Ensure post object has required properties
-  if (!post || !post.id || !post.title) {
-    console.error("[NewsCard] Invalid post data:", post);
-    return null;
-  }
-  
-  // Only use image URL if it's not a blob URL and exists
+  // Only use image URL if it's not a blob URL
   const imageUrl = post.featured_image && 
     !post.featured_image.startsWith('blob:') ? 
     post.featured_image : null;
-  
-  const safeContent = post.content || "";
-  const plainTextContent = safeContent.replace(/<[^>]*>/g, '');
-  
-  // Safely format date or use fallback
-  const formattedDate = post.post_date 
-    ? formatDistanceToNow(new Date(post.post_date), { addSuffix: true })
-    : "recently";
     
   return (
     <Card key={post.id} className="overflow-hidden h-full flex flex-col hover:shadow-md transition-shadow duration-300">
@@ -52,13 +38,13 @@ export const NewsCard = ({ post }: NewsCardProps) => {
             )}
           </div>
           <p className="text-xs text-muted-foreground">
-            {formattedDate}
+            {formatDistanceToNow(new Date(post.post_date), { addSuffix: true })}
           </p>
         </div>
       </CardHeader>
       <CardContent className="flex-grow">
         <p className="text-muted-foreground line-clamp-3">
-          {plainTextContent}
+          {post.content.replace(/<[^>]*>/g, '')}
         </p>
         
         {/* Display tags if available */}

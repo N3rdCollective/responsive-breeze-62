@@ -1,6 +1,5 @@
+
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useEffect } from "react";
-import ReactGA from "react-ga4";
 import Index from "@/pages/Index";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
@@ -9,7 +8,7 @@ import News from "@/pages/News";
 import NewsPost from "@/pages/NewsPost";
 import Personalities from "@/pages/Personalities";
 import NotFound from "@/pages/NotFound";
-import StaffLoginPage from "@/pages/StaffLoginPage";
+import StaffLogin from "@/pages/StaffLogin";
 import StaffSignup from "@/pages/StaffSignup";
 import StaffRegistration from "@/pages/StaffRegistration";
 import NewsEditor from "@/pages/NewsEditor";
@@ -25,30 +24,9 @@ import StaffFeaturedArtists from "@/pages/StaffFeaturedArtists";
 import ArtistsPage from "@/pages/ArtistsPage";
 import ArtistsArchivePage from "@/pages/ArtistsArchivePage";
 import ArtistDetail from "@/pages/ArtistDetail";
-import Messages from "@/pages/Messages";
 import MusicPlayer from "@/components/MusicPlayer";
-import MemberLogin from "@/pages/MemberLogin";
-import MemberSignup from "@/pages/MemberSignup";
-import MemberProfile from "@/pages/MemberProfile";
-import { setupAvatarsBucket } from "@/components/storage/setupStorageBucket";
 
 function App() {
-  useEffect(() => {
-    // Initialize GA4
-    ReactGA.initialize("G-XXXXXXXXXX"); // Replace with your actual Measurement ID
-    
-    // Setup avatars storage bucket
-    setupAvatarsBucket();
-  }, []);
-
-  // Track page views
-  useEffect(() => {
-    ReactGA.send({ 
-      hitType: "pageview", 
-      page: window.location.pathname 
-    });
-  }, [window.location.pathname]);
-
   return (
     <>
       <Routes>
@@ -62,20 +40,10 @@ function App() {
         <Route path="/artists" element={<ArtistsPage />} errorElement={<RouteErrorElement />} />
         <Route path="/artists/archive" element={<ArtistsArchivePage />} errorElement={<RouteErrorElement />} />
         <Route path="/artists/:id" element={<ArtistDetail />} errorElement={<RouteErrorElement />} />
-        <Route path="/messages" element={<Messages />} errorElement={<RouteErrorElement />} />
-        <Route path="/messages/:conversationId" element={<Messages />} errorElement={<RouteErrorElement />} />
-        
-        {/* Member authentication routes */}
-        <Route path="/login" element={<MemberLogin />} errorElement={<RouteErrorElement />}>
-          <Route path="signup" element={<MemberSignup />} errorElement={<RouteErrorElement />} />
-        </Route>
-        <Route path="/profile" element={<MemberProfile />} errorElement={<RouteErrorElement />} />
-        
-        {/* Staff routes */}
         <Route path="/staff" element={<Navigate to="/staff/panel" replace />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/panel" element={<StaffPanel />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/news" element={<StaffNews />} errorElement={<RouteErrorElement />} />
-        <Route path="/staff/login" element={<StaffLoginPage />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/login" element={<StaffLogin />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/signup" element={<StaffSignup />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/registration" element={<StaffRegistration />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/news/editor" element={<NewsEditor />} errorElement={<RouteErrorElement />} />
