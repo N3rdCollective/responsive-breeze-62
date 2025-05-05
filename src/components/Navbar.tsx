@@ -1,16 +1,18 @@
 
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import DesktopNav from "./navbar/DesktopNav";
 import MobileNav from "./navbar/MobileNav";
 import { useAuth } from "@/hooks/useAuth";
 import { NavigationItem } from "@/types/profile";
+import { toast } from "@/hooks/use-toast";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const [mounted, setMounted] = useState(false);
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     setMounted(true);
@@ -27,6 +29,24 @@ const Navbar = () => {
 
   const isActive = (path: string) => location.pathname === path;
   const isHomePage = location.pathname === "/";
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast({
+        title: "Successfully logged out",
+        description: "You have been logged out of your account"
+      });
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "Logout failed",
+        description: "There was a problem logging out. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
 
   const navigationItems: NavigationItem[] = [
     { path: "/", label: "Home" },
@@ -52,10 +72,7 @@ const Navbar = () => {
     navigationItems.push({ 
       path: "#", 
       label: "Logout",
-      onClick: () => {
-        logout();
-        window.location.href = "/";
-      }
+      onClick: handleLogout
     });
   }
 
