@@ -1,12 +1,13 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Home } from "lucide-react";
+import { Loader2, ArrowLeft, Home, Edit, Eye } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import ProfileForm from "@/components/profile/ProfileForm";
+import ProfileView from "@/components/profile/ProfileView";
 import Navbar from "@/components/Navbar";
 
 const genres = [
@@ -17,11 +18,13 @@ const genres = [
 const ProfilePage = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [isEditMode, setIsEditMode] = useState(false);
   
   const {
     isLoading,
     isSaving,
     error,
+    profile,
     displayName,
     username,
     bio,
@@ -49,6 +52,11 @@ const ProfilePage = () => {
     }
   };
   
+  const handleSave = async () => {
+    await handleSaveProfile();
+    setIsEditMode(false);
+  };
+  
   if (loading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -73,45 +81,79 @@ const ProfilePage = () => {
         </div>
         
         <Card>
-          <CardHeader>
-            <CardTitle>Your Profile</CardTitle>
-            <CardDescription>
-              Manage your profile information and preferences
-            </CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Your Profile</CardTitle>
+              <CardDescription>
+                {isEditMode 
+                  ? "Edit your profile information and preferences"
+                  : "View your profile information and preferences"}
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditMode(!isEditMode)}
+              className="ml-auto"
+            >
+              {isEditMode ? (
+                <>
+                  <Eye className="h-4 w-4 mr-2" />
+                  View Mode
+                </>
+              ) : (
+                <>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Profile
+                </>
+              )}
+            </Button>
           </CardHeader>
           
           <CardContent>
-            <ProfileForm
-              displayName={displayName}
-              username={username}
-              bio={bio}
-              selectedGenres={selectedGenres}
-              selectedRole={selectedRole}
-              error={error}
-              disabled={isSaving}
-              genres={genres}
-              onDisplayNameChange={setDisplayName}
-              onUsernameChange={setUsername}
-              onBioChange={setBio}
-              onToggleGenre={toggleGenre}
-              onRoleChange={setSelectedRole}
-            />
+            {isEditMode ? (
+              <ProfileForm
+                displayName={displayName}
+                username={username}
+                bio={bio}
+                selectedGenres={selectedGenres}
+                selectedRole={selectedRole}
+                error={error}
+                disabled={isSaving}
+                genres={genres}
+                onDisplayNameChange={setDisplayName}
+                onUsernameChange={setUsername}
+                onBioChange={setBio}
+                onToggleGenre={toggleGenre}
+                onRoleChange={setSelectedRole}
+              />
+            ) : (
+              <ProfileView
+                displayName={displayName}
+                username={username}
+                bio={bio}
+                selectedGenres={selectedGenres}
+                selectedRole={selectedRole}
+              />
+            )}
           </CardContent>
           
-          <CardFooter>
-            <Button 
-              onClick={handleSaveProfile} 
-              disabled={isSaving}
-              className="ml-auto"
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : "Save Changes"}
-            </Button>
-          </CardFooter>
+          {isEditMode && (
+            <CardFooter>
+              <Button 
+                onClick={handleSave} 
+                disabled={isSaving}
+                className="ml-auto"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : "Save Changes"}
+              </Button>
+            </CardFooter>
+          )}
         </Card>
       </div>
     </div>
