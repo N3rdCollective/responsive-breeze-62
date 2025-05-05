@@ -10,7 +10,6 @@ import { AlertCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { useEffect } from "react";
 
 const AuthPage = () => {
   const [email, setEmail] = useState("");
