@@ -44,7 +44,7 @@ export const useProfile = (user: User | null) => {
           display_name: data.display_name,
           bio: data.bio,
           favorite_genres: data.favorite_genres || [],
-          avatar_url: data.profile_picture,
+          avatar_url: data.profile_picture, // Map profile_picture to avatar_url
           role: (data.role as UserProfile['role']) || "user"
         };
         
@@ -77,7 +77,7 @@ export const useProfile = (user: User | null) => {
           .select('id')
           .eq('username', username)
           .neq('id', user.id)
-          .single();
+          .maybeSingle();
           
         if (!checkError && existingUser) {
           throw new Error("Username is already taken. Please choose another one.");

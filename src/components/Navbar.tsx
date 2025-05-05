@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import DesktopNav from "./navbar/DesktopNav";
 import MobileNav from "./navbar/MobileNav";
 import { useAuth } from "@/hooks/useAuth";
+import { NavigationItem } from "@/types/profile";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -27,7 +28,7 @@ const Navbar = () => {
   const isActive = (path: string) => location.pathname === path;
   const isHomePage = location.pathname === "/";
 
-  const navigationItems = [
+  const navigationItems: NavigationItem[] = [
     { path: "/", label: "Home" },
     { path: "/personalities", label: "Personalities" },
     { path: "/schedule", label: "Schedule" },
