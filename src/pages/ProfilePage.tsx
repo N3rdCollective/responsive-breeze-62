@@ -9,6 +9,7 @@ import { useProfile } from "@/hooks/useProfile";
 import ProfileForm from "@/components/profile/ProfileForm";
 import ProfileView from "@/components/profile/ProfileView";
 import Navbar from "@/components/Navbar";
+import { useToast } from "@/hooks/use-toast";
 
 const genres = [
   "Hip Hop", "Rap", "R&B", "Trap", "Drill", "Pop", "Rock", "Electronic", 
@@ -17,8 +18,9 @@ const genres = [
 
 const ProfilePage = () => {
   const { user, loading } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(true); // Default to edit mode
   
   const {
     isLoading,
@@ -38,8 +40,10 @@ const ProfilePage = () => {
     handleSaveProfile
   } = useProfile(user);
   
+  // Redirect to login if not authenticated
   useEffect(() => {
     if (!loading && !user) {
+      console.log("User not authenticated, redirecting to auth page");
       navigate("/auth");
     }
   }, [user, loading, navigate]);
@@ -53,8 +57,16 @@ const ProfilePage = () => {
   };
   
   const handleSave = async () => {
-    await handleSaveProfile();
-    setIsEditMode(false);
+    try {
+      await handleSaveProfile();
+      toast({
+        title: "Profile updated",
+        description: "Your changes have been saved successfully"
+      });
+      setIsEditMode(false);
+    } catch (err) {
+      console.error("Error saving profile:", err);
+    }
   };
   
   if (loading || isLoading) {
@@ -63,6 +75,11 @@ const ProfilePage = () => {
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
+  }
+  
+  // Make sure we're logged in before showing the profile
+  if (!user) {
+    return null; // Will redirect in the useEffect
   }
   
   return (

@@ -28,6 +28,7 @@ export const useProfile = (user: User | null) => {
 
   const fetchProfile = async () => {
     try {
+      console.log("Fetching profile for user:", user?.id);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -35,6 +36,8 @@ export const useProfile = (user: User | null) => {
         .maybeSingle();
         
       if (error) throw error;
+      
+      console.log("Profile data returned:", data);
       
       if (data) {
         // Create a properly typed UserProfile object from the database data
@@ -54,6 +57,8 @@ export const useProfile = (user: User | null) => {
         setBio(userProfile.bio || "");
         setSelectedGenres(userProfile.favorite_genres || []);
         setSelectedRole(userProfile.role);
+      } else {
+        console.log("No profile found, will create one when saving");
       }
     } catch (error: any) {
       console.error("Error fetching profile:", error.message);
@@ -70,6 +75,15 @@ export const useProfile = (user: User | null) => {
     setError("");
     
     try {
+      console.log("Saving profile for user:", user.id);
+      console.log("Profile data to save:", {
+        username,
+        display_name: displayName,
+        bio,
+        favorite_genres: selectedGenres,
+        role: selectedRole
+      });
+      
       // Check if username is already taken
       if (username !== profile?.username) {
         const { data: existingUser, error: checkError } = await supabase
@@ -84,20 +98,47 @@ export const useProfile = (user: User | null) => {
         }
       }
       
-      // Update profile in database
-      const { error } = await supabase
+      // Check if profile exists first
+      const { data: existingProfile } = await supabase
         .from('profiles')
-        .update({
-          username,
-          display_name: displayName,
-          bio,
-          favorite_genres: selectedGenres,
-          role: selectedRole,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
-        
-      if (error) throw error;
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle();
+      
+      let result;
+      
+      if (existingProfile) {
+        // Update existing profile
+        result = await supabase
+          .from('profiles')
+          .update({
+            username,
+            display_name: displayName,
+            bio,
+            favorite_genres: selectedGenres,
+            role: selectedRole,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', user.id);
+      } else {
+        // Insert new profile if it doesn't exist
+        result = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            username,
+            display_name: displayName,
+            bio,
+            favorite_genres: selectedGenres,
+            role: selectedRole,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+      }
+      
+      if (result.error) throw result.error;
+      
+      console.log("Profile saved successfully");
       
       toast({
         title: "Profile updated",
