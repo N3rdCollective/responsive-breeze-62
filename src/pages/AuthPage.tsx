@@ -60,11 +60,13 @@ const AuthPage = () => {
           
           // Create initial profile immediately to avoid potential issues later
           try {
+            const defaultUsername = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
+            
             const { error: profileError } = await supabase
               .from('profiles')
               .insert({
                 id: data.user.id,
-                username: email.split('@')[0], // Create a default username from email
+                username: defaultUsername,
                 display_name: "New User",
                 role: "user",
                 created_at: new Date().toISOString(),
@@ -73,14 +75,16 @@ const AuthPage = () => {
               
             if (profileError) {
               console.error("Failed to create initial profile:", profileError);
+              // Don't throw, continue with signup flow
             } else {
               console.log("Initial profile created successfully");
             }
           } catch (profileErr) {
             console.error("Error creating initial profile:", profileErr);
+            // Don't throw, continue with signup flow
           }
           
-          // Redirect user after successful sign up
+          // Redirect user after successful sign up to profile page to complete their profile
           navigate("/profile");
         }
       } else {

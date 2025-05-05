@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "./use-toast";
@@ -27,12 +26,14 @@ export const useProfile = (user: User | null) => {
   }, [user]);
 
   const fetchProfile = async () => {
+    if (!user) return;
+    
     try {
-      console.log("Fetching profile for user:", user?.id);
+      console.log("Fetching profile for user:", user.id);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user?.id)
+        .eq('id', user.id)
         .maybeSingle();
         
       if (error) throw error;
@@ -53,12 +54,16 @@ export const useProfile = (user: User | null) => {
         
         setProfile(userProfile);
         setDisplayName(userProfile.display_name || "");
-        setUsername(userProfile.username);
+        setUsername(userProfile.username || "");
         setBio(userProfile.bio || "");
         setSelectedGenres(userProfile.favorite_genres || []);
         setSelectedRole(userProfile.role);
       } else {
         console.log("No profile found, will create one when saving");
+        // Set default values even when no profile is found
+        setUsername(user.email?.split('@')[0] || "");
+        setDisplayName("New User");
+        // Other fields remain with their default empty values
       }
     } catch (error: any) {
       console.error("Error fetching profile:", error.message);
@@ -77,11 +82,13 @@ export const useProfile = (user: User | null) => {
     try {
       console.log("Saving profile for user:", user.id);
       console.log("Profile data to save:", {
+        id: user.id, // Make sure we're specifying the user ID
         username,
         display_name: displayName,
         bio,
         favorite_genres: selectedGenres,
-        role: selectedRole
+        role: selectedRole,
+        updated_at: new Date().toISOString()
       });
       
       // Check if username is already taken
@@ -136,9 +143,12 @@ export const useProfile = (user: User | null) => {
           });
       }
       
-      if (result.error) throw result.error;
+      if (result.error) {
+        console.error("Error from Supabase:", result.error);
+        throw result.error;
+      }
       
-      console.log("Profile saved successfully");
+      console.log("Profile saved successfully", result);
       
       toast({
         title: "Profile updated",
@@ -146,10 +156,16 @@ export const useProfile = (user: User | null) => {
       });
       
       // Refresh profile data after saving
-      fetchProfile();
+      await fetchProfile();
     } catch (error: any) {
       console.error("Error updating profile:", error.message);
       setError(error.message);
+      
+      toast({
+        title: "Error updating profile",
+        description: error.message,
+        variant: "destructive"
+      });
     } finally {
       setIsSaving(false);
     }
