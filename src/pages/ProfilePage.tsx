@@ -1,12 +1,13 @@
 
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft, Home } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import ProfileForm from "@/components/profile/ProfileForm";
+import Navbar from "@/components/Navbar";
 
 const genres = [
   "Hip Hop", "Rap", "R&B", "Trap", "Drill", "Pop", "Rock", "Electronic", 
@@ -57,8 +58,20 @@ const ProfilePage = () => {
   }
   
   return (
-    <div className="min-h-screen pt-20 pb-10 px-4">
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen">
+      <Navbar />
+      <div className="pt-20 pb-10 px-4 max-w-3xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/')}
+            className="gap-1"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Website
+          </Button>
+        </div>
+        
         <Card>
           <CardHeader>
             <CardTitle>Your Profile</CardTitle>
