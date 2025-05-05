@@ -41,8 +41,8 @@ export const useProfile = (user: User | null) => {
         const userProfile: UserProfile = {
           id: data.id,
           username: data.username || "",
-          display_name: data.display_name,
-          bio: data.bio,
+          display_name: data.display_name || "",
+          bio: data.bio || "",
           favorite_genres: data.favorite_genres || [],
           avatar_url: data.profile_picture, // Map profile_picture to avatar_url
           role: (data.role as UserProfile['role']) || "user"
@@ -103,6 +103,9 @@ export const useProfile = (user: User | null) => {
         title: "Profile updated",
         description: "Your profile has been updated successfully."
       });
+      
+      // Refresh profile data after saving
+      fetchProfile();
     } catch (error: any) {
       console.error("Error updating profile:", error.message);
       setError(error.message);
