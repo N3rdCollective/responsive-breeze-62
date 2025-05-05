@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -33,32 +33,84 @@ const AuthPage = () => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
+    
+    console.log(`Attempting to ${isSignUp ? 'sign up' : 'sign in'} user with email: ${email}`);
 
     try {
-      const { data, error } = isSignUp
-        ? await supabase.auth.signUp({
-            email,
-            password,
-          })
-        : await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-
-      if (error) throw error;
-
-      if (data?.user) {
-        toast({
-          title: isSignUp ? "Account created successfully" : "Welcome back!",
-          description: isSignUp
-            ? "Please check your email for verification instructions."
-            : "You have been successfully logged in.",
+      if (isSignUp) {
+        // Sign up process
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              user_role: "user" // explicitly set default role
+            }
+          }
         });
-        navigate("/");
+
+        if (error) throw error;
+        
+        console.log("Sign up response:", data);
+
+        if (data?.user) {
+          toast({
+            title: "Account created successfully",
+            description: "You have been successfully registered and logged in.",
+          });
+          
+          // Create initial profile immediately to avoid potential issues later
+          try {
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .insert({
+                id: data.user.id,
+                username: email.split('@')[0], // Create a default username from email
+                display_name: "New User",
+                role: "user",
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              });
+              
+            if (profileError) {
+              console.error("Failed to create initial profile:", profileError);
+            } else {
+              console.log("Initial profile created successfully");
+            }
+          } catch (profileErr) {
+            console.error("Error creating initial profile:", profileErr);
+          }
+          
+          // Redirect user after successful sign up
+          navigate("/profile");
+        }
+      } else {
+        // Sign in process
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+
+        if (data?.user) {
+          console.log("Sign in successful:", data.user);
+          toast({
+            title: "Welcome back!",
+            description: "You have been successfully logged in.",
+          });
+          navigate("/");
+        }
       }
     } catch (error: any) {
       console.error("Auth error:", error);
-      setError(error.message);
+      setError(error.message || "An unexpected error occurred");
+      
+      toast({
+        title: "Authentication failed",
+        description: error.message || "There was a problem with authentication",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
