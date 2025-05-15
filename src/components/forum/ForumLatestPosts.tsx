@@ -23,9 +23,9 @@ interface LatestPost {
     }
   };
   profile: {
-    username?: string;
-    display_name?: string;
-    avatar_url?: string;
+    username?: string | null;
+    display_name?: string | null;
+    avatar_url?: string | null;
   };
 }
 
@@ -96,12 +96,12 @@ const ForumLatestPosts = () => {
   return (
     <div className="space-y-4">
       {posts.map((post) => (
-        <Card key={post.id} className="overflow-hidden">
+        <Card key={post.id} className="overflow-hidden hover:border-primary/40 transition-colors">
           <CardContent className="p-4">
             <div className="flex items-start gap-4">
-              <Avatar className="h-10 w-10">
+              <Avatar className="h-10 w-10 ring-2 ring-primary/10">
                 <AvatarImage src={post.profile?.avatar_url || ''} alt={post.profile?.display_name || 'User'} />
-                <AvatarFallback>
+                <AvatarFallback className="bg-primary/20 text-primary-foreground">
                   {(post.profile?.display_name?.[0] || post.profile?.username?.[0] || 'U').toUpperCase()}
                 </AvatarFallback>
               </Avatar>

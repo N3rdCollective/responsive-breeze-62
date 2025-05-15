@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
@@ -11,7 +11,6 @@ import { Loader2, PlusCircle } from "lucide-react";
 import { toast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { ForumCategory, ForumTopic } from "@/types/forum";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
@@ -99,7 +98,7 @@ const ForumCategoryPage = () => {
             _count: {
               posts: count || 0
             }
-          };
+          } as ForumTopic;
         }));
         
         setTopics(topicsWithCounts);
@@ -166,7 +165,7 @@ const ForumCategoryPage = () => {
                 <p className="text-gray-600 dark:text-gray-400 mt-1">{category.description}</p>
               )}
             </div>
-            <Button asChild>
+            <Button asChild className="bg-primary hover:bg-primary/90">
               <Link to={`/members/forum/${categorySlug}/new`}>
                 <PlusCircle className="h-4 w-4 mr-2" /> New Topic
               </Link>
@@ -179,8 +178,8 @@ const ForumCategoryPage = () => {
             </Link>
           </div>
           
-          <Card>
-            <CardHeader className="bg-gray-50 dark:bg-gray-800/50 py-4">
+          <Card className="border-primary/20">
+            <CardHeader className="bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 py-4">
               <div className="grid grid-cols-12 gap-4">
                 <div className="col-span-7 sm:col-span-8">
                   <CardTitle className="text-sm sm:text-base">Topic</CardTitle>
@@ -200,7 +199,7 @@ const ForumCategoryPage = () => {
                 <p className="text-muted-foreground mb-4">
                   Be the first to start a discussion in this category!
                 </p>
-                <Button asChild>
+                <Button asChild className="bg-primary hover:bg-primary/90">
                   <Link to={`/members/forum/${categorySlug}/new`}>
                     <PlusCircle className="h-4 w-4 mr-2" /> Create Topic
                   </Link>
@@ -214,9 +213,9 @@ const ForumCategoryPage = () => {
                       <div className="grid grid-cols-12 gap-4">
                         <div className="col-span-7 sm:col-span-8">
                           <div className="flex items-center space-x-3">
-                            <Avatar className="h-10 w-10">
+                            <Avatar className="h-10 w-10 ring-2 ring-primary/10">
                               <AvatarImage src={topic.profile?.avatar_url || ''} alt={topic.profile?.display_name || 'User'} />
-                              <AvatarFallback>
+                              <AvatarFallback className="bg-primary/20 text-primary-foreground">
                                 {(topic.profile?.display_name?.[0] || topic.profile?.username?.[0] || 'U').toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
@@ -229,7 +228,7 @@ const ForumCategoryPage = () => {
                                   {topic.title}
                                 </Link>
                                 {topic.is_sticky && (
-                                  <Badge variant="outline" className="text-xs">Pinned</Badge>
+                                  <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">Pinned</Badge>
                                 )}
                                 {topic.is_locked && (
                                   <Badge variant="destructive" className="text-xs">Locked</Badge>
@@ -310,6 +309,7 @@ const ForumCategoryPage = () => {
                                     setPage(pageNum);
                                   }}
                                   isActive={page === pageNum}
+                                  className={page === pageNum ? "bg-primary text-primary-foreground" : ""}
                                 >
                                   {pageNum}
                                 </PaginationLink>

@@ -45,18 +45,23 @@ const ForumCategories = () => {
             
           if (topicsError) throw topicsError;
           
-          // Get posts count
-          const { count: postsCount, error: postsError } = await supabase
-            .from('forum_posts')
-            .select('*', { count: 'exact', head: true })
-            .in('topic_id', 
-              supabase
-                .from('forum_topics')
-                .select('id')
-                .eq('category_id', category.id)
-            );
-            
-          if (postsError) throw postsError;
+          // Get posts count for topics in this category
+          const { data: topicIds } = await supabase
+            .from('forum_topics')
+            .select('id')
+            .eq('category_id', category.id);
+          
+          let postsCount = 0;
+          if (topicIds && topicIds.length > 0) {
+            const topicIdArray = topicIds.map(t => t.id);
+            const { count: pCount, error: postsError } = await supabase
+              .from('forum_posts')
+              .select('*', { count: 'exact', head: true })
+              .in('topic_id', topicIdArray);
+              
+            if (postsError) throw postsError;
+            postsCount = pCount || 0;
+          }
           
           return {
             id: category.id,
@@ -115,10 +120,10 @@ const ForumCategories = () => {
   return (
     <div className="space-y-6">
       {categories.map(category => (
-        <Card key={category.id} className="overflow-hidden">
-          <CardHeader className="bg-gray-50 dark:bg-gray-800/50">
+        <Card key={category.id} className="overflow-hidden border-primary/20">
+          <CardHeader className="bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80">
             <CardTitle>
-              <Link to={`/members/forum/${category.slug}`} className="hover:text-primary transition-colors">
+              <Link to={`/members/forum/${category.slug}`} className="hover:text-primary transition-colors text-xl">
                 {category.name}
               </Link>
             </CardTitle>
@@ -126,7 +131,7 @@ const ForumCategories = () => {
           </CardHeader>
           <CardContent className="py-4">
             <div className="flex items-center gap-4">
-              <MessagesSquare className="h-8 w-8 text-muted-foreground" />
+              <MessagesSquare className="h-8 w-8 text-primary opacity-80" />
               <div>
                 <p className="font-medium">{stats[category.id]?.topics || 0} Topics</p>
                 <p className="text-sm text-muted-foreground">{stats[category.id]?.posts || 0} Posts</p>
@@ -134,10 +139,10 @@ const ForumCategories = () => {
             </div>
           </CardContent>
           <CardFooter className="bg-gray-50/50 dark:bg-gray-800/30 flex justify-between">
-            <Button variant="ghost" asChild>
+            <Button variant="ghost" asChild className="hover:text-primary">
               <Link to={`/members/forum/${category.slug}`}>View Topics</Link>
             </Button>
-            <Button variant="outline" asChild>
+            <Button variant="outline" asChild className="bg-primary/10 hover:bg-primary/20 border-primary/20">
               <Link to={`/members/forum/${category.slug}/new`}>New Topic</Link>
             </Button>
           </CardFooter>

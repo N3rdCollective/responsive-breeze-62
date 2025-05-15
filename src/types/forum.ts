@@ -30,6 +30,10 @@ export interface ForumTopic {
   _count?: {
     posts: number;
   };
+  category?: {
+    name: string;
+    slug: string;
+  };
 }
 
 export interface ForumPost {

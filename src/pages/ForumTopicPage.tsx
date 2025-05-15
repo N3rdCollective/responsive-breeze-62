@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
@@ -73,7 +73,7 @@ const ForumTopicPage = () => {
           return;
         }
         
-        setTopic(topicData);
+        setTopic(topicData as ForumTopic);
         
         // Count total posts for pagination
         const { count, error: countError } = await supabase
@@ -99,7 +99,7 @@ const ForumTopicPage = () => {
           
         if (postsError) throw postsError;
         
-        setPosts(postsData);
+        setPosts(postsData as ForumPost[]);
         
         // Increment view count
         if (page === 1) {
@@ -152,7 +152,7 @@ const ForumTopicPage = () => {
       setReplyContent("");
       // Add the new post to the list if we're on the last page
       if (page === totalPages) {
-        setPosts(prev => [...prev, result]);
+        setPosts(prev => [...prev, result as unknown as ForumPost]);
       } else {
         // Navigate to the last page
         setPage(totalPages);
@@ -196,6 +196,10 @@ const ForumTopicPage = () => {
     );
   }
   
+  // Get category data from topic object
+  const categoryName = topic.category?.name || '';
+  const categorySlugPath = topic.category?.slug || categorySlug; 
+  
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
@@ -210,25 +214,25 @@ const ForumTopicPage = () => {
                 )}
               </h1>
               <div className="text-sm text-muted-foreground mt-1">
-                Posted in <Link to={`/members/forum/${topic.category.slug}`} className="text-primary hover:underline">{topic.category.name}</Link>
+                Posted in <Link to={`/members/forum/${categorySlugPath}`} className="text-primary hover:underline">{categoryName}</Link>
               </div>
             </div>
           </div>
           
           <div className="mb-6">
-            <Link to={`/members/forum/${topic.category.slug}`} className="text-sm text-primary hover:underline">
-              &larr; Back to {topic.category.name}
+            <Link to={`/members/forum/${categorySlugPath}`} className="text-sm text-primary hover:underline">
+              &larr; Back to {categoryName}
             </Link>
           </div>
           
           <div className="space-y-6">
             {posts.map((post, index) => (
-              <Card key={post.id} id={`post-${post.id}`} className={index === 0 ? "border-primary" : ""}>
-                <CardHeader className="bg-gray-50 dark:bg-gray-800/50 py-3 px-4 flex flex-row items-center justify-between">
+              <Card key={post.id} id={`post-${post.id}`} className={`${index === 0 ? "border-primary" : "border-primary/20"} overflow-hidden`}>
+                <CardHeader className="bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 py-3 px-4 flex flex-row items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8">
+                    <Avatar className="h-8 w-8 ring-2 ring-primary/10">
                       <AvatarImage src={post.profile?.avatar_url || ''} alt={post.profile?.display_name || 'User'} />
-                      <AvatarFallback>
+                      <AvatarFallback className="bg-primary/20 text-primary-foreground">
                         {(post.profile?.display_name?.[0] || post.profile?.username?.[0] || 'U').toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
@@ -291,6 +295,7 @@ const ForumTopicPage = () => {
                                     setPage(pageNum);
                                   }}
                                   isActive={page === pageNum}
+                                  className={page === pageNum ? "bg-primary text-primary-foreground" : ""}
                                 >
                                   {pageNum}
                                 </PaginationLink>
@@ -308,6 +313,7 @@ const ForumTopicPage = () => {
                                 setPage(pageNum);
                               }}
                               isActive={page === pageNum}
+                              className={page === pageNum ? "bg-primary text-primary-foreground" : ""}
                             >
                               {pageNum}
                             </PaginationLink>
@@ -333,20 +339,24 @@ const ForumTopicPage = () => {
             )}
             
             {!topic.is_locked ? (
-              <Card>
-                <CardHeader className="py-3 px-4">
+              <Card className="border-primary/20">
+                <CardHeader className="py-3 px-4 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80">
                   <CardTitle className="text-lg">Post a Reply</CardTitle>
                 </CardHeader>
                 <CardContent className="p-4">
                   <form onSubmit={handleSubmitReply}>
                     <Textarea
-                      className="min-h-[120px] mb-4"
+                      className="min-h-[120px] mb-4 border-primary/20 focus-visible:ring-primary"
                       placeholder="Write your reply here..."
                       value={replyContent}
                       onChange={(e) => setReplyContent(e.target.value)}
                       disabled={submitting}
                     />
-                    <Button type="submit" disabled={submitting || !replyContent.trim()}>
+                    <Button 
+                      type="submit" 
+                      disabled={submitting || !replyContent.trim()}
+                      className="bg-primary hover:bg-primary/90"
+                    >
                       {submitting ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />

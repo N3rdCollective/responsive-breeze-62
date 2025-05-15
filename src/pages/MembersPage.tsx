@@ -38,21 +38,33 @@ const MembersPage = () => {
       <div className="pt-20 pb-20 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Rappin' Lounge Forum</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
+              Rappin' Lounge Forum
+            </h1>
             <p className="mt-2 text-gray-600 dark:text-gray-400">Connect with other members of the community</p>
           </div>
           
           <Tabs defaultValue="categories" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="categories">Forum Categories</TabsTrigger>
-              <TabsTrigger value="latest">Latest Posts</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 mb-6 bg-gray-100/70 dark:bg-gray-800/50 border border-primary/20">
+              <TabsTrigger 
+                value="categories"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                Forum Categories
+              </TabsTrigger>
+              <TabsTrigger 
+                value="latest"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                Latest Posts
+              </TabsTrigger>
             </TabsList>
             
-            <TabsContent value="categories">
+            <TabsContent value="categories" className="animate-fadeIn">
               <ForumCategories />
             </TabsContent>
             
-            <TabsContent value="latest">
+            <TabsContent value="latest" className="animate-fadeIn">
               <ForumLatestPosts />
             </TabsContent>
           </Tabs>

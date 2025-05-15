@@ -125,7 +125,11 @@ export const useForum = () => {
   
   const incrementViewCount = async (topicId: string) => {
     try {
-      await supabase.rpc('increment_topic_views', { topic_id: topicId });
+      // Instead of calling an RPC function, use a direct update
+      await supabase
+        .from('forum_topics')
+        .update({ view_count: supabase.rpc('increment') })
+        .eq('id', topicId);
     } catch (error) {
       // Silently fail, this is not critical
       console.error('Error incrementing view count:', error);
