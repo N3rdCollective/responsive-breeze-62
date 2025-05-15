@@ -28,6 +28,9 @@ import MusicPlayer from "@/components/MusicPlayer";
 import AuthPage from "@/pages/AuthPage";
 import ProfilePage from "@/pages/ProfilePage";
 import MembersPage from "@/pages/MembersPage";
+import ForumCategoryPage from "@/pages/ForumCategoryPage";
+import ForumTopicPage from "@/pages/ForumTopicPage";
+import NewForumTopicPage from "@/pages/NewForumTopicPage";
 
 function App() {
   return (
@@ -45,6 +48,9 @@ function App() {
         <Route path="/artists/:id" element={<ArtistDetail />} errorElement={<RouteErrorElement />} />
         <Route path="/profile" element={<ProfilePage />} errorElement={<RouteErrorElement />} />
         <Route path="/members" element={<MembersPage />} errorElement={<RouteErrorElement />} />
+        <Route path="/members/forum/:categorySlug" element={<ForumCategoryPage />} errorElement={<RouteErrorElement />} />
+        <Route path="/members/forum/:categorySlug/new" element={<NewForumTopicPage />} errorElement={<RouteErrorElement />} />
+        <Route path="/members/forum/:categorySlug/:topicId" element={<ForumTopicPage />} errorElement={<RouteErrorElement />} />
         <Route path="/staff" element={<Navigate to="/staff/panel" replace />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/panel" element={<StaffPanel />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/news" element={<StaffNews />} errorElement={<RouteErrorElement />} />

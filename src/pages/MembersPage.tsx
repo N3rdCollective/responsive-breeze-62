@@ -3,8 +3,9 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
-import Timeline from "@/components/timeline/Timeline";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ForumCategories from "@/components/forum/ForumCategories";
+import ForumLatestPosts from "@/components/forum/ForumLatestPosts";
 
 const MembersPage = () => {
   const { user, loading } = useAuth();
@@ -32,29 +33,27 @@ const MembersPage = () => {
   }
   
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
       <div className="pt-20 pb-20 px-4">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8 text-center">Members Community</h1>
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-8 text-center">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Rappin' Lounge Forum</h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">Connect with other members of the community</p>
+          </div>
           
-          <Tabs defaultValue="timeline" className="w-full">
+          <Tabs defaultValue="categories" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="timeline">Timeline</TabsTrigger>
-              <TabsTrigger value="discover">Discover</TabsTrigger>
+              <TabsTrigger value="categories">Forum Categories</TabsTrigger>
+              <TabsTrigger value="latest">Latest Posts</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="timeline">
-              <Timeline />
+            <TabsContent value="categories">
+              <ForumCategories />
             </TabsContent>
             
-            <TabsContent value="discover">
-              <div className="text-center py-12">
-                <h2 className="text-xl font-semibold mb-2">Discover feature coming soon!</h2>
-                <p className="text-gray-500">
-                  We're working on a way for you to discover new members and content.
-                </p>
-              </div>
+            <TabsContent value="latest">
+              <ForumLatestPosts />
             </TabsContent>
           </Tabs>
         </div>
