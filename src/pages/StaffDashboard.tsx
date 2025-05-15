@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
 import StaffHeader from "@/components/staff/StaffHeader";
@@ -67,6 +66,7 @@ const StaffDashboard = () => {
               <AdminCard 
                 onManageStaff={handleManageUsers} 
                 onLogout={handleLogout}
+                userRole={userRole} // Pass userRole here
               />
             )}
           </div>

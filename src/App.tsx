@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
 import Index from "@/pages/Index";
 import About from "@/pages/About";
@@ -31,6 +30,7 @@ import MembersPage from "@/pages/MembersPage";
 import ForumCategoryPage from "@/pages/ForumCategoryPage";
 import ForumTopicPage from "@/pages/ForumTopicPage";
 import NewForumTopicPage from "@/pages/NewForumTopicPage";
+import StaffForumManagementPage from "@/pages/StaffForumManagementPage";
 
 function App() {
   return (
@@ -51,6 +51,7 @@ function App() {
         <Route path="/members/forum/:categorySlug" element={<ForumCategoryPage />} errorElement={<RouteErrorElement />} />
         <Route path="/members/forum/:categorySlug/new" element={<NewForumTopicPage />} errorElement={<RouteErrorElement />} />
         <Route path="/members/forum/:categorySlug/:topicId" element={<ForumTopicPage />} errorElement={<RouteErrorElement />} />
+        
         <Route path="/staff" element={<Navigate to="/staff/panel" replace />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/panel" element={<StaffPanel />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/news" element={<StaffNews />} errorElement={<RouteErrorElement />} />
@@ -66,6 +67,8 @@ function App() {
         <Route path="/staff/personalities" element={<StaffPersonalitiesPage />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/activity-logs" element={<StaffActivityLogs />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/featured-artists" element={<StaffFeaturedArtists />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/forum-management" element={<StaffForumManagementPage />} errorElement={<RouteErrorElement />} />
+        
         <Route path="/auth" element={<AuthPage />} errorElement={<RouteErrorElement />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

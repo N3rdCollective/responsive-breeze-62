@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -60,6 +59,7 @@ const StaffPanel = () => {
             <AdminCard 
               onManageStaff={handleManageUsers} 
               onLogout={handleLogout} 
+              userRole={userRole} // Pass userRole here
             />
           </div>
 
