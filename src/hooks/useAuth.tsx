@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
+import { toast } from '@/hooks/use-toast';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -33,16 +34,53 @@ export const useAuth = () => {
   const logout = async () => {
     try {
       console.log("Logging out...");
-      const { error } = await supabase.auth.signOut();
+      
+      // First, attempt to clean up any local storage tokens to avoid auth limbo states
+      const cleanupAuthState = () => {
+        // Remove standard auth tokens
+        localStorage.removeItem('supabase.auth.token');
+        // Remove all Supabase auth keys from localStorage
+        Object.keys(localStorage).forEach((key) => {
+          if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+            localStorage.removeItem(key);
+          }
+        });
+        // Remove from sessionStorage if in use
+        Object.keys(sessionStorage || {}).forEach((key) => {
+          if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+            sessionStorage.removeItem(key);
+          }
+        });
+      };
+      
+      // Clean up auth state
+      cleanupAuthState();
+      
+      // Perform the actual logout
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
+      
       if (error) {
         console.error('Error logging out:', error.message);
+        toast({
+          title: "Logout Error",
+          description: "There was an error logging out. Please try again.",
+          variant: "destructive"
+        });
         throw error;
       }
       
       // Clear local state immediately
       setUser(null);
       setSession(null);
+      
       console.log("Logout successful");
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out."
+      });
+      
+      // Force a page reload to ensure a clean state
+      window.location.href = "/auth";
     } catch (error) {
       console.error("Logout failed:", error);
       throw error;

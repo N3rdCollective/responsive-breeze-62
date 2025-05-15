@@ -24,7 +24,7 @@ const AuthPage = () => {
   // Redirect if user is already logged in
   useEffect(() => {
     if (user) {
-      navigate("/");
+      navigate("/profile");
     }
   }, [user, navigate]);
 
@@ -102,7 +102,8 @@ const AuthPage = () => {
             title: "Welcome back!",
             description: "You have been successfully logged in.",
           });
-          navigate("/");
+          // Redirect to profile page (members area) after sign in
+          navigate("/profile");
         }
       }
     } catch (error: any) {
