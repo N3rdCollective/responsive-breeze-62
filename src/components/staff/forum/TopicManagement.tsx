@@ -79,7 +79,7 @@ const TopicManagement: React.FC<TopicManagementProps> = ({ userRole }) => {
         .select(`
           *,
           category:forum_categories(name, slug),
-          profile:profiles(username, display_name, avatar_url),
+          profile:profiles!forum_topics_user_id_fkey(username, display_name, avatar_url),
           _count:forum_posts(count)
         `)
         .order("is_sticky", { ascending: false })
@@ -92,7 +92,10 @@ const TopicManagement: React.FC<TopicManagementProps> = ({ userRole }) => {
       const { data, error } = await query;
       
       if (error) throw error;
-      setTopics(data || []);
+      
+      // Explicitly cast data to ForumTopic[] type
+      const typedData = (data || []) as unknown as ForumTopic[];
+      setTopics(typedData);
       setError(null);
     } catch (err: any) {
       setError(err.message);

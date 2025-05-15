@@ -1,8 +1,9 @@
+
 import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-type EntityType = 'post' | 'staff' | 'settings' | 'video' | 'sponsor' | 'personality' | 'show' | 'artist';
+type EntityType = 'post' | 'staff' | 'settings' | 'video' | 'sponsor' | 'personality' | 'show' | 'artist' | 'forum_category' | 'forum_topic';
 type ActionType = 
   | 'login' 
   | 'logout'
@@ -32,6 +33,14 @@ type ActionType =
   | 'create_artist'
   | 'update_artist'
   | 'delete_artist'
+  | 'create_forum_category'
+  | 'update_forum_category'
+  | 'delete_forum_category'
+  | 'sticky_forum_topic'
+  | 'unsticky_forum_topic'
+  | 'lock_forum_topic'
+  | 'unlock_forum_topic'
+  | 'delete_forum_topic'
   | string;
 
 export const useStaffActivityLogger = () => {
