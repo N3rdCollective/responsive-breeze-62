@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -49,7 +48,7 @@ const ForumTopicPage = () => {
           .from('forum_topics')
           .select(`
             *,
-            profile:profiles(username, display_name, avatar_url),
+            profile:profiles!forum_topics_user_id_fkey(username, display_name, avatar_url),
             category:forum_categories(name, slug)
           `)
           .eq('id', topicId)
@@ -91,7 +90,7 @@ const ForumTopicPage = () => {
           .from('forum_posts')
           .select(`
             *,
-            profile:profiles(username, display_name, avatar_url)
+            profile:profiles!forum_posts_user_id_fkey(username, display_name, avatar_url)
           `)
           .eq('topic_id', topicId)
           .order('created_at', { ascending: true })
@@ -118,7 +117,7 @@ const ForumTopicPage = () => {
     };
     
     fetchTopic();
-  }, [topicId, categorySlug, navigate, page]);
+  }, [topicId, categorySlug, navigate, page, incrementViewCount]); // Added incrementViewCount to dependency array
   
   const handleSubmitReply = async (e: React.FormEvent) => {
     e.preventDefault();
