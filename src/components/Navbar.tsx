@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import DesktopNav from "./navbar/DesktopNav";
@@ -57,10 +56,9 @@ const Navbar = () => {
     { path: "/contact", label: "Contact" },
   ];
 
-  // Add staff portal link if user is logged in
+  // Add members page link if user is logged in
   if (user) {
-    // Check if user is staff (this would require a way to check user roles)
-    // For now, we'll just add the auth-related links
+    navigationItems.push({ path: "/members", label: "Members" });
     navigationItems.push({ path: "/profile", label: "Profile" });
   }
   
