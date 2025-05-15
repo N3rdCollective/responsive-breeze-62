@@ -873,6 +873,10 @@ export type Database = {
           device_breakdown: Json
         }[]
       }
+      increment_topic_view_count: {
+        Args: { topic_id_param: string }
+        Returns: undefined
+      }
       staff_has_role: {
         Args: { user_id: string; required_roles: string[] }
         Returns: boolean
