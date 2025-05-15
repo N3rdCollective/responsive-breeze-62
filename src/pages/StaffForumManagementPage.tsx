@@ -1,21 +1,53 @@
 
+import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import StaffHeader from "@/components/staff/StaffHeader";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { MessageSquare } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import CategoryManagement from "@/components/staff/forum/CategoryManagement";
+import TopicManagement from "@/components/staff/forum/TopicManagement";
 
 const StaffForumManagementPage = () => {
-  const { staffName, isAdmin, isLoading, handleLogout } = useStaffAuth({ redirectUnauthorized: true });
+  const { staffName, isAdmin, isLoading, userRole, handleLogout } = useStaffAuth({ redirectUnauthorized: true });
+  const [activeTab, setActiveTab] = useState("categories");
+  
+  // Check if user has permission to access this page
+  const canManageForum = userRole === 'admin' || userRole === 'super_admin' || userRole === 'moderator';
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="flex items-center justify-center h-[calc(100vh-128px)]"> {/* Adjust height for navbar/footer */}
+        <div className="flex items-center justify-center h-[calc(100vh-128px)]">
           <LoadingSpinner />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+  
+  // If user doesn't have permission, show access denied message
+  if (!canManageForum) {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <Navbar />
+        <div className="container mx-auto px-4 pt-24 pb-16">
+          <StaffHeader
+            title="Access Denied"
+            staffName={staffName}
+            isAdmin={isAdmin}
+            showLogoutButton={true}
+            onLogout={handleLogout}
+          />
+          <div className="mt-8 p-8 border border-destructive/20 rounded-lg bg-destructive/5 text-center">
+            <h2 className="text-2xl font-bold text-destructive mb-2">Permission Denied</h2>
+            <p className="text-muted-foreground">
+              You don't have the necessary permissions to manage the forum.
+              Please contact an administrator if you believe this is an error.
+            </p>
+          </div>
         </div>
         <Footer />
       </div>
@@ -33,29 +65,23 @@ const StaffForumManagementPage = () => {
           showLogoutButton={true}
           onLogout={handleLogout}
         />
-        <Card className="mt-8">
-          <CardHeader className="flex flex-row items-center gap-4">
-            <MessageSquare className="h-8 w-8 text-primary" />
-            <div>
-              <CardTitle className="text-2xl">Manage Forum</CardTitle>
-              <CardDescription>Oversee forum categories, topics, and posts.</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Forum management features are under development. Soon you'll be able to:
-            </p>
-            <ul className="list-disc list-inside mt-4 space-y-1 text-muted-foreground">
-              <li>Create, edit, and delete forum categories.</li>
-              <li>Moderate topics: lock, sticky, move, or delete topics.</li>
-              <li>Moderate posts: edit or delete user posts.</li>
-              <li>View forum statistics and user activity.</li>
-            </ul>
-            <p className="mt-6 font-semibold">
-              This section will provide tools for admins and moderators to ensure the forum remains a constructive and engaging space for the community.
-            </p>
-          </CardContent>
-        </Card>
+        
+        <div className="mt-8">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid grid-cols-2 w-[400px] mb-6">
+              <TabsTrigger value="categories">Categories</TabsTrigger>
+              <TabsTrigger value="topics">Topics</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="categories" className="mt-0">
+              <CategoryManagement userRole={userRole} />
+            </TabsContent>
+            
+            <TabsContent value="topics" className="mt-0">
+              <TopicManagement userRole={userRole} />
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
       <Footer />
     </div>
