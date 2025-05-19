@@ -1,15 +1,14 @@
 
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { AlertCircle, Loader2 } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import AuthHeader from "@/components/auth/AuthHeader";
+import AuthErrorAlert from "@/components/auth/AuthErrorAlert";
+import AuthFormFields from "@/components/auth/AuthFormFields";
+import AuthFormActions from "@/components/auth/AuthFormActions";
 
 const AuthPage = () => {
   const [email, setEmail] = useState("");
@@ -38,7 +37,7 @@ const AuthPage = () => {
     try {
       if (isSignUp) {
         // Sign up process
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -48,7 +47,7 @@ const AuthPage = () => {
           }
         });
 
-        if (error) throw error;
+        if (signUpError) throw signUpError;
         
         console.log("Sign up response:", data);
 
@@ -79,8 +78,8 @@ const AuthPage = () => {
             } else {
               console.log("Initial profile created successfully");
             }
-          } catch (profileErr) {
-            console.error("Error creating initial profile:", profileErr);
+          } catch (profileCreationError) {
+            console.error("Error creating initial profile:", profileCreationError);
             // Don't throw, continue with signup flow
           }
           
@@ -89,12 +88,12 @@ const AuthPage = () => {
         }
       } else {
         // Sign in process
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
-        if (error) throw error;
+        if (signInError) throw signInError;
 
         if (data?.user) {
           console.log("Sign in successful:", data.user);
@@ -106,13 +105,13 @@ const AuthPage = () => {
           navigate("/profile");
         }
       }
-    } catch (error: any) {
-      console.error("Auth error:", error);
-      setError(error.message || "An unexpected error occurred");
+    } catch (authError: any) {
+      console.error("Auth error:", authError);
+      setError(authError.message || "An unexpected error occurred");
       
       toast({
         title: "Authentication failed",
-        description: error.message || "There was a problem with authentication",
+        description: authError.message || "There was a problem with authentication",
         variant: "destructive"
       });
     } finally {
@@ -124,85 +123,28 @@ const AuthPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl">
-            {isSignUp ? "Create an account" : "Welcome back"}
-          </CardTitle>
-          <CardDescription>
-            {isSignUp
-              ? "Sign up to join our music community"
-              : "Sign in to your account"}
-          </CardDescription>
+          <AuthHeader isSignUp={isSignUp} />
         </CardHeader>
 
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                {!isSignUp && (
-                  <Link
-                    to="/request-password-reset"
-                    className="text-xs text-primary hover:underline"
-                  >
-                    Forgot password?
-                  </Link>
-                )}
-              </div>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
+            <AuthErrorAlert error={error} />
+            <AuthFormFields
+              email={email}
+              setEmail={setEmail}
+              password={password}
+              setPassword={setPassword}
+              isSignUp={isSignUp}
+              isLoading={isLoading}
+            />
           </CardContent>
 
           <CardFooter className="flex flex-col space-y-4">
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {isSignUp ? "Creating account..." : "Signing in..."}
-                </>
-              ) : (
-                isSignUp ? "Sign Up" : "Sign In"
-              )}
-            </Button>
-
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full"
-              onClick={() => setIsSignUp(!isSignUp)}
-            >
-              {isSignUp
-                ? "Already have an account? Sign in"
-                : "Don't have an account? Sign up"}
-            </Button>
+            <AuthFormActions
+              isLoading={isLoading}
+              isSignUp={isSignUp}
+              setIsSignUp={setIsSignUp}
+            />
           </CardFooter>
         </form>
       </Card>
