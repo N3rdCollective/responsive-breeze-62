@@ -31,6 +31,8 @@ import ForumCategoryPage from "@/pages/ForumCategoryPage";
 import ForumTopicPage from "@/pages/ForumTopicPage";
 import NewForumTopicPage from "@/pages/NewForumTopicPage";
 import StaffForumManagementPage from "@/pages/StaffForumManagementPage";
+import RequestPasswordResetPage from "@/pages/RequestPasswordResetPage";
+import UpdatePasswordPage from "@/pages/UpdatePasswordPage";
 
 function App() {
   return (
@@ -70,6 +72,9 @@ function App() {
         <Route path="/staff/forum-management" element={<StaffForumManagementPage />} errorElement={<RouteErrorElement />} />
         
         <Route path="/auth" element={<AuthPage />} errorElement={<RouteErrorElement />} />
+        <Route path="/request-password-reset" element={<RequestPasswordResetPage />} errorElement={<RouteErrorElement />} />
+        <Route path="/update-password" element={<UpdatePasswordPage />} errorElement={<RouteErrorElement />} />
+        
         <Route path="*" element={<NotFound />} />
       </Routes>
       
