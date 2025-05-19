@@ -1,16 +1,17 @@
-
 import { Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
 import SponsorsSection from './footer/SponsorsSection';
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 const Footer = () => {
   const [aboutSubtitle, setAboutSubtitle] = useState<string>("");
   const { toast } = useToast();
   const navigate = useNavigate();
-  
+  const { user, loading: authLoading } = useAuth();
+
   useEffect(() => {
     const fetchAboutContent = async () => {
       try {
@@ -50,10 +51,10 @@ const Footer = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleStaffLogin = (e: React.MouseEvent) => {
+  const handleDashboardNavigation = (e: React.MouseEvent) => {
     e.preventDefault();
     window.scrollTo(0, 0);
-    navigate('/staff/login');
+    navigate('/staff/panel');
   };
 
   const handleNavigation = (path: string) => {
@@ -118,12 +119,14 @@ const Footer = () => {
               </a>
             </div>
             <div>
-              <button 
-                onClick={handleStaffLogin} 
-                className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors text-sm"
-              >
-                Staff Login
-              </button>
+              {!authLoading && user && (
+                <button 
+                  onClick={handleDashboardNavigation} 
+                  className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors text-sm"
+                >
+                  Dashboard
+                </button>
+              )}
             </div>
           </div>
         </div>
