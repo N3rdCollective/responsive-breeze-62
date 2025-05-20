@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,7 +11,7 @@ import { toast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { Badge } from "@/components/ui/badge";
 import { ForumCategory, ForumTopic } from "@/types/forum";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from "@/components/ui/pagination";
 
 const ForumCategoryPage = () => {
   const { categorySlug } = useParams<{ categorySlug: string }>();
@@ -77,7 +76,7 @@ const ForumCategoryPage = () => {
           .from('forum_topics')
           .select(`
             *,
-            profile:profiles(username, display_name, avatar_url)
+            profile:profiles(username, display_name, profile_picture)
           `)
           .eq('category_id', categoryData.id)
           .order('is_sticky', { ascending: false })
@@ -86,22 +85,34 @@ const ForumCategoryPage = () => {
           
         if (topicsError) throw topicsError;
         
-        // Get post counts for each topic
-        const topicsWithCounts = await Promise.all(topicsData.map(async (topic) => {
-          const { count, error } = await supabase
+        // Get post counts for each topic and map profile_picture
+        const topicsWithCountsAndMappedProfiles = await Promise.all((topicsData || []).map(async (topic) => {
+          const { count: postCount, error: postCountError } = await supabase
             .from('forum_posts')
             .select('*', { count: 'exact', head: true })
             .eq('topic_id', topic.id);
+
+          if (postCountError) {
+            console.error(`Error fetching post count for topic ${topic.id}:`, postCountError);
+          }
+          
+          // Map profile_picture to avatar_url
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { profile_picture, ...restOfProfileDetails } = topic.profile || {};
+          const newProfile = topic.profile 
+            ? { ...restOfProfileDetails, avatar_url: profile_picture } 
+            : undefined;
             
           return {
             ...topic,
+            profile: newProfile,
             _count: {
-              posts: count || 0
+              posts: postCount || 0
             }
           } as ForumTopic;
         }));
         
-        setTopics(topicsWithCounts);
+        setTopics(topicsWithCountsAndMappedProfiles);
       } catch (error: any) {
         console.error('Error fetching forum data:', error.message);
         toast({
@@ -242,7 +253,7 @@ const ForumCategoryPage = () => {
                           </div>
                         </div>
                         <div className="hidden sm:flex sm:col-span-1 items-center justify-center">
-                          <span className="font-medium">{(topic._count?.posts || 1) - 1}</span>
+                          <span className="font-medium">{(topic._count?.posts || 1) -1 }</span> {/* Display replies, not total posts */}
                         </div>
                         <div className="col-span-5 sm:col-span-3 flex items-center justify-end sm:justify-center">
                           <span className="text-xs text-right sm:text-center text-muted-foreground">
@@ -343,30 +354,6 @@ const ForumCategoryPage = () => {
         </div>
       </div>
     </div>
-  );
-};
-
-// Define the missing Pagination component
-const PaginationEllipsis = () => {
-  return (
-    <span className="flex h-9 w-9 items-center justify-center">
-      <svg
-        className="h-4 w-4"
-        fill="none"
-        height="24"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        viewBox="0 0 24 24"
-        width="24"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle cx="12" cy="12" r="1" />
-        <circle cx="19" cy="12" r="1" />
-        <circle cx="5" cy="12" r="1" />
-      </svg>
-    </span>
   );
 };
 

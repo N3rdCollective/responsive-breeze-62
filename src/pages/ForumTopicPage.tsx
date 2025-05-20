@@ -44,11 +44,11 @@ const ForumTopicPage = () => {
         setLoading(true);
         
         // Fetch topic
-        const { data: topicData, error: topicError } = await supabase
+        const { data: topicRawData, error: topicError } = await supabase
           .from('forum_topics')
           .select(`
             *,
-            profile:profiles!forum_topics_user_id_fkey(username, display_name, avatar_url),
+            profile:profiles!forum_topics_user_id_fkey(username, display_name, profile_picture),
             category:forum_categories(name, slug)
           `)
           .eq('id', topicId)
@@ -56,7 +56,7 @@ const ForumTopicPage = () => {
           
         if (topicError) throw topicError;
         
-        if (!topicData) {
+        if (!topicRawData) {
           navigate('/members');
           toast({
             title: "Topic not found",
@@ -66,6 +66,18 @@ const ForumTopicPage = () => {
           return;
         }
         
+        // Map profile_picture to avatar_url for topic author
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { profile_picture, ...restOfProfileDetails } = topicRawData.profile || {};
+        const newProfile = topicRawData.profile 
+          ? { ...restOfProfileDetails, avatar_url: profile_picture } 
+          : undefined;
+        
+        const topicData = {
+          ...topicRawData,
+          profile: newProfile,
+        };
+
         // Check if category slug matches
         if (topicData.category.slug !== categorySlug) {
           navigate(`/members/forum/${topicData.category.slug}/${topicId}`);
@@ -86,17 +98,27 @@ const ForumTopicPage = () => {
         setTotalPages(totalPageCount || 1);
         
         // Fetch posts
-        const { data: postsData, error: postsError } = await supabase
+        const { data: postsRawData, error: postsError } = await supabase
           .from('forum_posts')
           .select(`
             *,
-            profile:profiles!forum_posts_user_id_fkey(username, display_name, avatar_url)
+            profile:profiles!forum_posts_user_id_fkey(username, display_name, profile_picture)
           `)
           .eq('topic_id', topicId)
           .order('created_at', { ascending: true })
           .range((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE - 1);
           
         if (postsError) throw postsError;
+
+        // Map profile_picture to avatar_url for post authors
+        const postsData = (postsRawData || []).map(post => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { profile_picture: postAuthorProfilePicture, ...restOfPostAuthorProfile } = post.profile || {};
+          const newPostAuthorProfile = post.profile
+            ? { ...restOfPostAuthorProfile, avatar_url: postAuthorProfilePicture }
+            : undefined;
+          return { ...post, profile: newPostAuthorProfile };
+        });
         
         setPosts(postsData as ForumPost[]);
         
@@ -150,11 +172,18 @@ const ForumTopicPage = () => {
     if (result) {
       setReplyContent("");
       // Add the new post to the list if we're on the last page
+      // The 'result' from createPost should already have avatar_url due to alias in useForum.ts
+      const newPost = result as ForumPost; // Assuming result matches ForumPost type
       if (page === totalPages) {
-        setPosts(prev => [...prev, result as unknown as ForumPost]);
+          setPosts(prev => [...prev, newPost]);
       } else {
-        // Navigate to the last page
-        setPage(totalPages);
+        // Refresh current page or navigate to last page to see the new post
+        // For simplicity, let's refresh the topic data which re-fetches posts for the current page
+        // Or navigate to last page if it's a new page
+        const newTotalPosts = (topic?._count?.posts || 0) + 1; // Assuming _count was part of topic
+        const newTotalPages = Math.ceil(newTotalPosts / ITEMS_PER_PAGE);
+        setTotalPages(newTotalPages);
+        setPage(newTotalPages); // Navigate to the new last page
       }
     }
   };

@@ -100,9 +100,15 @@ const TopicManagement: React.FC<TopicManagementProps> = ({ userRole }) => {
           ? { ...restOfProfileDetails, avatar_url: profile_picture } 
           : undefined;
 
+        // Correctly map _count from an array like [{ count: number }] to an object { posts: number }
+        const postsCount = topic._count && Array.isArray(topic._count) && topic._count.length > 0 
+          ? (topic._count[0] as { count: number }).count 
+          : 0;
+
         return {
           ...topic,
           profile: newProfile,
+          _count: { posts: postsCount },
         };
       });
       
