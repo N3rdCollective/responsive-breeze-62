@@ -18,7 +18,7 @@ export const useForumTopic = () => {
   const [topic, setTopic] = useState<ForumTopic | null>(null);
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [replyContent, setReplyContent] = useState("");
+  const [replyContent, setReplyContent] = useState(""); // Will store HTML string
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [viewCountIncremented, setViewCountIncremented] = useState(false);
@@ -126,10 +126,15 @@ export const useForumTopic = () => {
 
   const handleSubmitReply = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!replyContent.trim()) {
+    
+    // Check if replyContent is empty or just empty HTML like <p></p>
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = replyContent;
+    if (!replyContent.trim() || !tempDiv.textContent?.trim()) {
       toast({ title: "Empty reply", description: "Please enter a message for your reply.", variant: "destructive" });
       return;
     }
+
     if (!topic || !topic.id) return;
     if (topic.is_locked) {
       toast({ title: "Topic is locked", description: "This topic is locked and cannot be replied to.", variant: "destructive" });
@@ -139,7 +144,7 @@ export const useForumTopic = () => {
     const result = await createPost({ topic_id: topic.id, content: replyContent });
     
     if (result) {
-      setReplyContent("");
+      setReplyContent(""); // Reset editor content
       const newPost = result as ForumPost;
       
       // Calculate current total posts before adding the new one
@@ -149,15 +154,12 @@ export const useForumTopic = () => {
 
       if (page === totalPages && posts.length < ITEMS_PER_PAGE) {
         setPosts(prev => [...prev, newPost]);
-         // If current page was already the last page and not full, it might still be the last page
-        if (totalPages !== newTotalPages) { // If a new page was created
+        if (totalPages !== newTotalPages) { 
             setTotalPages(newTotalPages);
         }
       } else {
-        // If new post makes current page full or pushes to a new page
         setTotalPages(newTotalPages);
-        setPage(newTotalPages); // Navigate to the new last page
-        // Data will be refetched by the useEffect listening on 'page'
+        setPage(newTotalPages); 
       }
     }
   };

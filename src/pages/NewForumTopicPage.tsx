@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { toast } from '@/hooks/use-toast';
-import { Textarea } from "@/components/ui/textarea";
+import RichTextEditor from "@/components/news/editor/RichTextEditor";
 import { useForum } from "@/hooks/useForum";
 import { ForumCategory } from "@/types/forum";
 
@@ -23,7 +22,7 @@ const NewForumTopicPage = () => {
   const [category, setCategory] = useState<ForumCategory | null>(null);
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState(""); // Content will now be HTML string
   
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -86,7 +85,10 @@ const NewForumTopicPage = () => {
       return;
     }
     
-    if (!content.trim()) {
+    // Check if content is empty or just empty HTML like <p></p>
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content;
+    if (!content.trim() || !tempDiv.textContent?.trim()) {
       toast({
         title: "Content required",
         description: "Please enter content for your topic.",
@@ -100,11 +102,11 @@ const NewForumTopicPage = () => {
     const result = await createTopic({
       category_id: category.id,
       title,
-      content
+      content // Pass HTML content
     });
     
     if (result) {
-      navigate(`/members/forum/${categorySlug}/${result.id}`);
+      navigate(`/members/forum/${categorySlug}/${result.slug || result.id}`);
     }
   };
   
@@ -166,11 +168,11 @@ const NewForumTopicPage = () => {
           
           <Card className="border-primary/20">
             <CardHeader className="bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80">
-              <CardTitle>New Topic</CardTitle>
+              <CardTitle>New Topic Details</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <form onSubmit={handleSubmit}>
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div>
                     <Label htmlFor="title">Topic Title</Label>
                     <Input
@@ -183,14 +185,13 @@ const NewForumTopicPage = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="content">Content</Label>
-                    <Textarea
+                    {/* Using RichTextEditor for content */}
+                    <RichTextEditor
                       id="content"
                       value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      placeholder="Write your post here..."
-                      className="mt-1 min-h-[200px] border-primary/20 focus-visible:ring-primary"
-                      disabled={submitting}
+                      onChange={setContent}
+                      label="Content"
+                      height={300} // Adjusted height for forum context
                     />
                   </div>
                   <div className="flex justify-end space-x-2 pt-4">
@@ -205,7 +206,7 @@ const NewForumTopicPage = () => {
                     </Button>
                     <Button 
                       type="submit" 
-                      disabled={submitting || !title.trim() || !content.trim()}
+                      disabled={submitting || !title.trim() || !content.trim()} // Basic check, refined in handleSubmit
                       className="bg-primary hover:bg-primary/90"
                     >
                       {submitting ? (
