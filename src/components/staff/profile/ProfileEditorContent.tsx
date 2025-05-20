@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { SheetFooter } from "@/components/ui/sheet";
@@ -65,7 +64,7 @@ const ProfileEditorContent = ({
         </div>
       </div>
       
-      <SheetFooter className="flex space-x-2 sm:space-x-0">
+      <SheetFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4">
         <Button 
           variant="outline" 
           onClick={onCancel}

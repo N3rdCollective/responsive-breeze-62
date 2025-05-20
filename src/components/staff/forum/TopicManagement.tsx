@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -79,7 +78,7 @@ const TopicManagement: React.FC<TopicManagementProps> = ({ userRole }) => {
         .select(`
           *,
           category:forum_categories(name, slug),
-          profile:profiles!forum_topics_user_id_fkey(username, display_name, avatar_url),
+          profile:profiles!forum_topics_user_id_fkey(username, display_name, profile_picture:avatar_url),
           _count:forum_posts(count)
         `)
         .order("is_sticky", { ascending: false })
@@ -93,7 +92,6 @@ const TopicManagement: React.FC<TopicManagementProps> = ({ userRole }) => {
       
       if (error) throw error;
       
-      // Explicitly cast data to ForumTopic[] type
       const typedData = (data || []) as unknown as ForumTopic[];
       setTopics(typedData);
       setError(null);
