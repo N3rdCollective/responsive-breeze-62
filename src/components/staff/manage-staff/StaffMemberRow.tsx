@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -57,7 +58,7 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
 
   return (
     <tr className="border-b hover:bg-muted/50">
-      <td className="p-2 pl-4">{staff.email}</td>
+      <td className="p-2 pl-4 break-all">{staff.email}</td> {/* Added break-all for long emails */}
       <td className="p-2">{getDisplayName()}</td>
       <td className="p-2">
         <span className={`font-medium ${getRoleColor(staff.role)}`}>
@@ -66,8 +67,8 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
             : ROLE_DISPLAY_NAMES[staff.role as StaffRole] || staff.role}
         </span>
       </td>
-      <td className="p-2 pr-4 whitespace-nowrap">
-        <div className="flex flex-row gap-2 justify-end items-center">
+      <td className="p-2 pr-4"> {/* Removed whitespace-nowrap */}
+        <div className="flex flex-wrap gap-2 justify-end items-center"> {/* Added flex-wrap */}
           {isTargetSuperAdmin ? (
             <span className="text-sm text-gray-500 italic px-2">Super Admin cannot be modified</span>
           ) : (
@@ -76,7 +77,7 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
                 staff={staff}
                 currentUserRole={currentUserRole}
                 canSendReset={canSendPasswordReset}
-                isTargetSuperAdmin={isTargetSuperAdmin} // Pass this, though canSendReset already considers it
+                isTargetSuperAdmin={isTargetSuperAdmin}
                 disabled={isProcessing}
                 onUpdate={onUpdate}
                 setParentIsSendingReset={setIsSendingReset}
@@ -94,7 +95,7 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
               <StaffMemberRemoveButton
                 staff={staff}
                 currentUserRole={currentUserRole}
-                canRemove={canModifyDetails} // Remove action shares permission with role modification
+                canRemove={canModifyDetails}
                 disabled={isProcessing}
                 onUpdate={onUpdate}
               />

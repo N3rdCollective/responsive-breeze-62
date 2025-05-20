@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import StaffMemberRow from "./StaffMemberRow";
 import { StaffMember } from "./types/pendingStaffTypes";
@@ -22,13 +23,13 @@ const StaffTable = ({ staffMembers, loading, onStaffUpdate, currentUserRole }: S
           No staff members found.
         </div>
       ) : (
-        <table className="w-full min-w-[600px]">
+        <table className="w-full"> {/* Removed min-w-[600px] */}
           <thead>
             <tr className="border-b bg-muted/50">
               <th className="text-left p-2 pl-4 w-1/3">Email</th>
               <th className="text-left p-2 w-1/4">Name</th>
               <th className="text-left p-2 w-1/6">Role</th>
-              <th className="p-2 text-right w-1/4">Actions</th>
+              <th className="p-2 text-right pr-4 w-1/4">Actions</th> {/* Added pr-4 for consistency */}
             </tr>
           </thead>
           <tbody>
