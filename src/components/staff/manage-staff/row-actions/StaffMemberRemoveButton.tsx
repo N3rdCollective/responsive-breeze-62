@@ -1,10 +1,17 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { StaffMember } from "../types/pendingStaffTypes";
 import { useToast } from "@/hooks/use-toast";
 import { useStaffActivityLogger } from "@/hooks/useStaffActivityLogger";
+import { X } from "lucide-react"; // Import X icon
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 
 interface StaffMemberRemoveButtonProps {
   staff: StaffMember;
@@ -69,15 +76,25 @@ const StaffMemberRemoveButton: React.FC<StaffMemberRemoveButtonProps> = ({
   }
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-      onClick={handleRemoveStaff}
-      disabled={disabled}
-    >
-      Remove
-    </Button>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon" // Changed to icon size
+            className="h-8 w-8 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20" // Adjusted size and kept colors
+            onClick={handleRemoveStaff}
+            disabled={disabled}
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Remove Staff Member</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Remove Staff Member</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
 

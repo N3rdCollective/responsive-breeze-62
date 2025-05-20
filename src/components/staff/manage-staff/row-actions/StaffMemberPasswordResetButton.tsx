@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +5,12 @@ import { KeyRound } from "lucide-react";
 import { StaffMember } from "../types/pendingStaffTypes";
 import { useToast } from "@/hooks/use-toast";
 import { useStaffActivityLogger } from "@/hooks/useStaffActivityLogger";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface StaffMemberPasswordResetButtonProps {
   staff: StaffMember;
@@ -13,7 +18,7 @@ interface StaffMemberPasswordResetButtonProps {
   canSendReset: boolean;
   isTargetSuperAdmin: boolean;
   disabled: boolean;
-  onUpdate: () => void; // Though not strictly an update, good for consistency if table needs refresh
+  onUpdate: () => void;
   setParentIsSendingReset: (isSending: boolean) => void;
 }
 
@@ -87,16 +92,25 @@ const StaffMemberPasswordResetButton: React.FC<StaffMemberPasswordResetButtonPro
   }
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={handleSendPasswordReset}
-      disabled={disabled}
-      className="flex items-center"
-    >
-      <KeyRound className="h-4 w-4 mr-1.5" />
-      Reset Pass
-    </Button>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon" // Changed to icon size
+            onClick={handleSendPasswordReset}
+            disabled={disabled}
+            className="h-8 w-8" // Adjust size as needed
+          >
+            <KeyRound className="h-4 w-4" />
+            <span className="sr-only">Reset Password</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Reset Password</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
 
