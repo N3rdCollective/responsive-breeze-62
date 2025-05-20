@@ -88,8 +88,8 @@ export const useAuth = () => {
         description: "You have been successfully logged out."
       });
       
-      // Force a page reload to ensure a clean state
-      window.location.href = "/auth";
+      // Redirect to homepage instead of /auth
+      window.location.href = "/";
     } catch (error) {
       console.error("Logout failed:", error);
       throw error;
