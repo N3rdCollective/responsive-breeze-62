@@ -10,7 +10,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import ForumRichTextEditor from '@/components/forum/ForumRichTextEditor'; // Assuming this can be used for input
+import ForumRichTextEditor from '@/components/forum/ForumRichTextEditor';
 import { Loader2 } from 'lucide-react';
 
 interface EditPostDialogProps {
@@ -58,9 +58,11 @@ const EditPostDialog: React.FC<EditPostDialogProps> = ({
         </DialogHeader>
         <div className="py-4">
           <ForumRichTextEditor
-            content={editedContent}
+            value={editedContent}
             onChange={setEditedContent}
-            isEditable={!isSaving && !topicIsLocked} 
+            // isEditable prop removed as it's not accepted by ForumRichTextEditor
+            // The underlying RichTextEditor is currently always editable.
+            // Disabling is handled by the Save button's state.
             placeholder="Edit your post content here..."
           />
         </div>
