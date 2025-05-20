@@ -27,6 +27,7 @@ const ForumTopicPage = () => {
   const [replyContent, setReplyContent] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [viewCountIncremented, setViewCountIncremented] = useState(false); // New state variable
   const ITEMS_PER_PAGE = 10;
   
   // Redirect to login if not authenticated
@@ -36,6 +37,11 @@ const ForumTopicPage = () => {
     }
   }, [user, authLoading, navigate]);
   
+  useEffect(() => {
+    // Reset viewCountIncremented when topicId changes
+    setViewCountIncremented(false);
+  }, [topicId]);
+
   useEffect(() => {
     const fetchTopic = async () => {
       if (!topicId) return;
@@ -73,50 +79,52 @@ const ForumTopicPage = () => {
           return;
         }
         
-        // Profile mapping is now handled by the select query alias for topic author
         const topicData = {
           ...topicRawData,
         };
 
-        // Check if category slug matches
-        // Ensure category exists before accessing slug
         if (topicData.category && topicData.category.slug !== categorySlug) {
-          navigate(`/members/forum/${topicData.category.slug}/${topicData.slug || topicData.id}`); // Use slug for navigation, fallback to id
+          navigate(`/members/forum/${topicData.category.slug}/${topicData.slug || topicData.id}`);
           return;
         }
         
         setTopic(topicData as ForumTopic);
         
-        // Count total posts for pagination
         const { count, error: countError } = await supabase
           .from('forum_posts')
           .select('*', { count: 'exact', head: true })
-          .eq('topic_id', topicData.id); // Use topicData.id here as it's guaranteed to be the UUID
+          .eq('topic_id', topicData.id); 
           
         if (countError) throw countError;
         
         const totalPageCount = Math.ceil((count || 0) / ITEMS_PER_PAGE);
         setTotalPages(totalPageCount || 1);
         
-        // Fetch posts
         const { data: postsRawData, error: postsError } = await supabase
           .from('forum_posts')
           .select(`
             *,
             profile:profiles!forum_posts_user_id_fkey(username, display_name, avatar_url:profile_picture)
           `)
-          .eq('topic_id', topicData.id) // Use topicData.id here
+          .eq('topic_id', topicData.id)
           .order('created_at', { ascending: true })
           .range((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE - 1);
           
         if (postsError) throw postsError;
 
-        // Profile mapping is now handled by the select query alias for post authors
         setPosts((postsRawData || []) as ForumPost[]);
         
-        // Increment view count
-        if (page === 1) {
-          incrementViewCount(topicData.id); // Use topicData.id here
+        // Increment view count only on the first page and if not already incremented
+        if (page === 1 && topicData.id && !viewCountIncremented) {
+          try {
+            console.log(`Attempting to increment view count for topic ID: ${topicData.id}`);
+            await incrementViewCount(topicData.id); // Ensure this is the UUID
+            setViewCountIncremented(true); // Mark as incremented
+            console.log(`Successfully incremented view count for topic ID: ${topicData.id}`);
+          } catch (viewCountError: any) {
+            // Silently fail or log, this is not critical to page load but good to know if it fails
+            console.error('Error incrementing view count:', viewCountError.message);
+          }
         }
       } catch (error: any) {
         console.error('Error fetching topic data:', error.message);
@@ -131,7 +139,7 @@ const ForumTopicPage = () => {
     };
     
     fetchTopic();
-  }, [topicId, categorySlug, navigate, page, incrementViewCount]); // Added incrementViewCount to dependency array
+  }, [topicId, categorySlug, navigate, page, viewCountIncremented, incrementViewCount]); // viewCountIncremented and incrementViewCount added back to ensure effect runs if these change, but logic inside controls the call
   
   const handleSubmitReply = async (e: React.FormEvent) => {
     e.preventDefault();
