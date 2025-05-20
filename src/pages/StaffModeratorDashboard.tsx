@@ -1,12 +1,11 @@
-
 import React, { useState } from 'react';
 import { Shield, Flag, UserX, MessageSquare, Eye, CheckCircle, XCircle, AlertTriangle, Clock, Filter, Search, RefreshCw, ChevronDown, Settings, Users, BarChart2, Trash2, Edit, Lock, Move } from 'lucide-react';
-import TitleUpdater from '@/components/TitleUpdater'; // Added for page title
+import TitleUpdater from '@/components/TitleUpdater';
 
 const ModeratorDashboard = () => {
   // States for dashboard functionality
   const [activeSection, setActiveSection] = useState('overview');
-  const [selectedFlag, setSelectedFlag] = useState<any | null>(null); // Adjusted type for selectedFlag
+  const [selectedFlag, setSelectedFlag] = useState<any | null>(null);
   const [filterStatus, setFilterStatus] = useState('all');
   const [moderationNote, setModerationNote] = useState('');
   
@@ -21,12 +20,12 @@ const ModeratorDashboard = () => {
       reporter: {
         id: 'user-456',
         name: 'Michael Johnson',
-        avatar: 'https://avatar.iran.liara.run/public/boy?username=MichaelJ' // Using placeholder service
+        avatar: 'https://avatar.iran.liara.run/public/boy?username=MichaelJ'
       },
       author: {
         id: 'user-789',
         name: 'Robert Davis',
-        avatar: 'https://avatar.iran.liara.run/public/boy?username=RobertD', // Using placeholder service
+        avatar: 'https://avatar.iran.liara.run/public/boy?username=RobertD',
         joinDate: '2024-12-10T08:00:00Z',
         postCount: 27,
         previousFlags: 2
@@ -48,12 +47,12 @@ const ModeratorDashboard = () => {
       reporter: {
         id: 'user-101',
         name: 'Sarah Wilson',
-        avatar: 'https://avatar.iran.liara.run/public/girl?username=SarahW' // Using placeholder service
+        avatar: 'https://avatar.iran.liara.run/public/girl?username=SarahW'
       },
       author: {
         id: 'user-102',
         name: 'New User',
-        avatar: 'https://avatar.iran.liara.run/public/boy?username=NewUser', // Using placeholder service
+        avatar: 'https://avatar.iran.liara.run/public/boy?username=NewUser',
         joinDate: '2025-05-15T10:30:00Z',
         postCount: 3,
         previousFlags: 0
@@ -75,12 +74,12 @@ const ModeratorDashboard = () => {
       reporter: {
         id: 'user-103',
         name: 'Emily Thompson',
-        avatar: 'https://avatar.iran.liara.run/public/girl?username=EmilyT' // Using placeholder service
+        avatar: 'https://avatar.iran.liara.run/public/girl?username=EmilyT'
       },
       author: {
         id: 'user-104',
         name: 'Regular Member',
-        avatar: 'https://avatar.iran.liara.run/public/boy?username=RegularM', // Using placeholder service
+        avatar: 'https://avatar.iran.liara.run/public/boy?username=RegularM',
         joinDate: '2024-06-22T14:20:00Z',
         postCount: 156,
         previousFlags: 0
@@ -108,12 +107,12 @@ const ModeratorDashboard = () => {
       reporter: {
         id: 'user-105',
         name: 'David Brown',
-        avatar: 'https://avatar.iran.liara.run/public/boy?username=DavidB' // Using placeholder service
+        avatar: 'https://avatar.iran.liara.run/public/boy?username=DavidB'
       },
       author: {
         id: 'user-106',
         name: 'John Smith',
-        avatar: 'https://avatar.iran.liara.run/public/boy?username=JohnS', // Using placeholder service
+        avatar: 'https://avatar.iran.liara.run/public/boy?username=JohnS',
         joinDate: '2024-08-05T11:15:00Z',
         postCount: 42,
         previousFlags: 1
@@ -141,12 +140,12 @@ const ModeratorDashboard = () => {
       reporter: {
         id: 'user-107',
         name: 'Jennifer Lee',
-        avatar: 'https://avatar.iran.liara.run/public/girl?username=JenniferL' // Using placeholder service
+        avatar: 'https://avatar.iran.liara.run/public/girl?username=JenniferL'
       },
       author: {
         id: 'user-108',
         name: 'Spammer Account',
-        avatar: 'https://avatar.iran.liara.run/public/boy?username=SpammerA', // Using placeholder service
+        avatar: 'https://avatar.iran.liara.run/public/boy?username=SpammerA',
         joinDate: '2025-05-10T09:30:00Z',
         postCount: 15,
         previousFlags: 8
@@ -174,16 +173,15 @@ const ModeratorDashboard = () => {
   });
   
   // Format date
-  const formatDate = (dateString: string) => { // Added type for dateString
-    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' }; // Typed options
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
   
   // Handle resolution actions
-  const handleAction = (action: string, reportId: string) => { // Added types
+  const handleAction = (action: string, reportId: string) => {
     console.log(`Taking action "${action}" on report ${reportId}`);
     console.log(`Moderation note: ${moderationNote}`);
-    // In a real implementation, this would call an API
     setSelectedFlag(null);
     setModerationNote('');
   };
@@ -208,10 +206,9 @@ const ModeratorDashboard = () => {
   
   const selectedReportData = selectedFlag ? reportedContent.find(r => r.id === selectedFlag) : null;
 
-
   return (
     <>
-      <TitleUpdater title="Moderator Dashboard - Staff Panel" />
+      <TitleUpdater>Moderator Dashboard - Staff Panel</TitleUpdater>
       <div className="bg-gray-100 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100">
         {/* Header */}
         <div className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700">
@@ -228,7 +225,7 @@ const ModeratorDashboard = () => {
                   <span className="font-medium">Admin User</span>
                 </div>
                 <img 
-                  src="https://avatar.iran.liara.run/public/boy?username=Admin" // Using placeholder service
+                  src="https://avatar.iran.liara.run/public/boy?username=Admin"
                   alt="Admin User" 
                   className="w-8 h-8 rounded-full"
                 />
@@ -481,7 +478,7 @@ const ModeratorDashboard = () => {
                               </td>
                               <td className="px-6 py-4 text-sm font-medium">
                                 <button 
-                                   onClick={(e) => { e.stopPropagation(); setSelectedFlag(report.id); /* Add logic to scroll to details or open modal */ }}
+                                   onClick={(e) => { e.stopPropagation(); setSelectedFlag(report.id); }}
                                    className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-2"
                                 >
                                   View Details
@@ -610,7 +607,7 @@ const ModeratorDashboard = () => {
                             ...(selectedReportData.contentType === 'topic' ? [{ label: 'Move Topic', action: 'move_topic', icon: Move, color: 'yellow' }] : []),
                             { label: 'Lock Thread', action: 'lock_topic', icon: Lock, color: 'purple' },
                             { label: 'Warn User', action: 'warn_user', icon: AlertTriangle, color: 'orange' },
-                            { label: 'Ban User', action: 'ban_user', icon: UserX, color: 'red', variant: 'destructive' }, // Use a more destructive variant if available
+                            { label: 'Ban User', action: 'ban_user', icon: UserX, color: 'red', variant: 'destructive' },
                             { label: 'Dismiss Report', action: 'dismiss', icon: XCircle, color: 'gray' },
                           ].map(btn => (
                             <button 
@@ -692,4 +689,3 @@ const ModeratorDashboard = () => {
 };
 
 export default ModeratorDashboard;
-
