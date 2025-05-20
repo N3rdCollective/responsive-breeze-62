@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from "react-router-dom"; // Added for navigation
+import { useNavigate } from "react-router-dom";
 import { 
   Card, 
   CardContent, 
@@ -31,15 +31,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { useAuth } from "@/hooks/useAuth";
+import { useProfileData } from "@/hooks/profile/useProfileData";
+import { useProfileFormFields } from "@/hooks/profile/useProfileFormFields";
+import { useProfileSave } from "@/hooks/profile/useProfileSave";
+import type { ProfileDataToSave } from "@/hooks/profile/useProfileSave";
+import type { UserProfile } from "@/types/profile";
 import { AlertCircle, Loader2, ChevronLeft, Camera, Music, Save, Eye, Paintbrush, UserCircle } from 'lucide-react';
 import { Instagram, Twitter, Globe } from 'lucide-react';
-import Navbar from "@/components/Navbar"; // Added Navbar
-
-// Actual project hooks
-import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
-import type { UserProfile } from "@/types/profile"; // Ensure this import is present and correct
+import Navbar from "@/components/Navbar";
 
 // Genre data (expanded) - consider moving to a constants file if used elsewhere
 const genres = [
@@ -65,68 +65,82 @@ const themes = [
 ];
 
 const EnhancedProfilePage = () => {
-  const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate(); // For navigation
+  const navigate = useNavigate();
+
+  const { 
+    profile, 
+    defaultUsernameForNewUser, 
+    isNewUserMode, 
+    isLoading: profileLoading, 
+    error: fetchProfileError, 
+    refetchProfile 
+  } = useProfileData(user);
 
   const {
-    profile, // Get the whole profile object
     displayName, setDisplayName,
     username, setUsername,
     bio, setBio,
     selectedGenres, setSelectedGenres,
     selectedRole, setSelectedRole,
     socialLinks, setSocialLinks,
-    theme, setTheme,
+    theme, setTheme, // This theme is the form field's state
     isPublic, setIsPublic,
-    isLoading: profileLoading, // Renamed to avoid conflict with authLoading
-    isSaving,
-    error,
-    handleSaveProfile
-  } = useProfile(user); // Pass user to useProfile hook
+    getProfileFormData
+  } = useProfileFormFields({
+    profileData: profile,
+    defaultUsernameForNewUser,
+    isNewUserMode,
+    userEmail: user?.email 
+  });
+  
+  // The theme from the actual profile data for display purposes (e.g. page background)
+  const displayTheme = profile?.theme || (isNewUserMode ? 'default' : 'default');
 
-  const [activeTab, setActiveTab] = useState('edit'); // Default to edit
-  // avatarUrl will now come from profile.avatar_url
+  const { 
+    handleSaveProfile: execSaveProfile, 
+    isSaving, 
+    error: saveProfileError,
+    // savedProfile // We can use this if needed, for now refetchProfile updates the main `profile`
+  } = useProfileSave(user, profile?.username); // Pass current actual username for check
+
+  const [activeTab, setActiveTab] = useState('edit');
   const [showGenreSelector, setShowGenreSelector] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
-      console.log("User not authenticated, redirecting...");
-      // The AuthModal should be handled by Navbar or a global context
-      // For now, let's assume Navbar handles AuthModal display
-      // If direct navigation to a login page was needed: navigate("/auth-modal-trigger-path");
-      // However, profile page should ideally just not render or show a "please login" message
-      // if not for useAuth hook taking care of a general redirect.
+      console.log("User not authenticated, redirecting or showing message...");
+      // Auth handling should be managed globally or by Navbar
     }
   }, [user, authLoading, navigate]);
 
   // Apply theme to body for wider effect if desired, or keep it scoped
+  // This useEffect should use the `profile` from `useProfileData` for consistency in display
   useEffect(() => {
-    // Example: document.body.className = profile?.theme === 'dark' ? 'dark-theme-class' : '';
-    // For now, scoped to the page div
+    // Using `profile?.theme` which is the persisted theme
   }, [profile?.theme]);
 
 
   const handleSave = async () => {
+    const formData = getProfileFormData();
     try {
-      await handleSaveProfile();
-      // Toast is already handled in useProfile on success
-      // toast({
-      //   title: "Profile updated",
-      //   description: "Your profile has been successfully saved.",
-      // });
-      setActiveTab('view'); // Switch to view tab on successful save
+      const result = await execSaveProfile(formData as ProfileDataToSave); // Cast as ProfileDataToSave
+      if (result) { 
+        setActiveTab('view');
+        refetchProfile(); // Refresh profile data after successful save
+      }
     } catch (err) {
-      // Error toast is already handled in useProfile hook, but can add specific one here if needed
+      // Error toast is handled within useProfileSave
       console.error("Error saving from page:", err);
     }
   };
 
   const handleBack = () => {
-    navigate('/'); // Navigate to home
+    navigate('/');
   };
 
   const toggleGenre = (genre: string) => {
+    if (isSaving) return;
     if (selectedGenres.includes(genre)) {
       setSelectedGenres(selectedGenres.filter(g => g !== genre));
     } else {
@@ -135,11 +149,12 @@ const EnhancedProfilePage = () => {
   };
 
   const updateSocialLink = (platform: 'instagram' | 'twitter' | 'website', value: string) => {
+    if (isSaving) return;
     setSocialLinks(prev => ({ ...(prev || { instagram: null, twitter: null, website: null }), [platform]: value }));
   };
-
+  
   const getInitials = (name?: string | null) => {
-    if (!name) return <UserCircle className="h-full w-full" />; // Return icon if no name
+    if (!name) return <UserCircle className="h-full w-full" />;
     return name
       .split(' ')
       .map(part => part[0])
@@ -147,7 +162,8 @@ const EnhancedProfilePage = () => {
       .toUpperCase();
   };
 
-  // Loading state
+  const pageError = fetchProfileError || saveProfileError;
+
   if (profileLoading || authLoading) {
     return (
       <>
@@ -166,16 +182,16 @@ const EnhancedProfilePage = () => {
         <Navbar />
         <div className="flex flex-col justify-center items-center h-screen">
           <p className="mb-4">Please sign in to view your profile.</p>
-          {/* The Navbar should have the sign-in button that opens AuthModal */}
         </div>
       </>
     );
   }
-
+  
+  // Use `displayTheme` for page-level theming
   return (
-    <div className={`min-h-screen ${profile?.theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100'}`}>
+    <div className={`min-h-screen ${displayTheme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100'}`}>
       <Navbar />
-      <div className="container mx-auto px-4 py-10 pt-20"> {/* Added pt-20 for Navbar */}
+      <div className="container mx-auto px-4 py-10 pt-20">
         <Button
           variant="ghost"
           onClick={handleBack}
@@ -186,49 +202,55 @@ const EnhancedProfilePage = () => {
         </Button>
 
         <div className="grid md:grid-cols-3 gap-6">
-          {/* Left sidebar - Avatar and Quick Info */}
           <div className="md:col-span-1">
-            <Card className={`${profile?.theme === 'dark' ? 'bg-gray-800 text-white border-gray-700' : ''}`}>
+            {/* Use `displayTheme` for card theming */}
+            <Card className={`${displayTheme === 'dark' ? 'bg-gray-800 text-white border-gray-700' : ''}`}>
               <CardHeader className="flex flex-col items-center pt-6 pb-2">
                 <div className="relative group">
                   <Avatar className="h-24 w-24 mb-2 border-4 border-primary">
+                    {/* `profile` from useProfileData is the source for avatar_url */}
                     <AvatarImage src={profile?.avatar_url || undefined} alt={displayName || "User"} />
                     <AvatarFallback className="text-lg bg-muted">
-                      {getInitials(displayName)}
+                      {/* `displayName` from useProfileFormFields is used for initials during editing */}
+                      {getInitials(displayName)} 
                     </AvatarFallback>
                   </Avatar>
                   {activeTab === 'edit' && (
                     <div className="absolute bottom-0 right-0">
-                      {/* TODO: Implement avatar upload functionality */}
                       <Button size="sm" variant="secondary" className="rounded-full h-8 w-8 p-0" title="Change_avatar_coming_soon">
                         <Camera className="h-4 w-4" />
                       </Button>
                     </div>
                   )}
                 </div>
+                {/* Display name from form fields for immediate reflection */}
                 <h2 className="text-2xl font-bold mt-2">{displayName}</h2>
+                {/* Username from form fields */}
                 <div className="text-sm text-muted-foreground">@{username}</div>
                 <div className="flex items-center mt-2">
                   <Music className="h-4 w-4 mr-1 text-primary" />
+                  {/* Role from form fields */}
                   <span className="text-sm">{selectedRole}</span>
                 </div>
               </CardHeader>
               <CardContent className="text-center pb-6">
+                {/* Selected genres from form fields */}
                 {selectedGenres.length > 0 && (
                   <div className="flex flex-wrap justify-center gap-1 mt-3">
                     {selectedGenres.slice(0, 5).map(genre => (
-                      <Badge key={genre} variant="secondary" className={`text-xs ${profile?.theme === 'dark' ? 'bg-gray-700 text-gray-200' : ''}`}>
+                      <Badge key={genre} variant="secondary" className={`text-xs ${displayTheme === 'dark' ? 'bg-gray-700 text-gray-200' : ''}`}>
                         {genre}
                       </Badge>
                     ))}
                     {selectedGenres.length > 5 && (
-                      <Badge variant="outline" className={`text-xs ${profile?.theme === 'dark' ? 'border-gray-600 text-gray-300' : ''}`}>
+                      <Badge variant="outline" className={`text-xs ${displayTheme === 'dark' ? 'border-gray-600 text-gray-300' : ''}`}>
                         +{selectedGenres.length - 5} more
                       </Badge>
                     )}
                   </div>
                 )}
 
+                {/* Social links from form fields */}
                 <div className="flex justify-center mt-4 space-x-3">
                   {socialLinks?.instagram && (
                     <a href={`https://instagram.com/${socialLinks.instagram}`} target="_blank" rel="noopener noreferrer">
@@ -256,19 +278,19 @@ const EnhancedProfilePage = () => {
             </Card>
           </div>
 
-          {/* Main content area */}
           <div className="md:col-span-2">
-            <Card className={`${profile?.theme === 'dark' ? 'bg-gray-800 text-white border-gray-700' : ''}`}>
+            {/* Use `displayTheme` for card theming */}
+            <Card className={`${displayTheme === 'dark' ? 'bg-gray-800 text-white border-gray-700' : ''}`}>
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-center">
                     <h2 className="text-xl font-semibold">Your Profile</h2>
-                    <TabsList className={`${profile?.theme === 'dark' ? 'bg-gray-700' : ''}`}>
-                      <TabsTrigger value="edit" className={`flex items-center ${profile?.theme === 'dark' ? 'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground' : ''}`}>
+                    <TabsList className={`${displayTheme === 'dark' ? 'bg-gray-700' : ''}`}>
+                      <TabsTrigger value="edit" className={`flex items-center ${displayTheme === 'dark' ? 'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground' : ''}`}>
                         <Paintbrush className="mr-1 h-4 w-4" />
                         Edit
                       </TabsTrigger>
-                      <TabsTrigger value="view" className={`flex items-center ${profile?.theme === 'dark' ? 'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground' : ''}`}>
+                      <TabsTrigger value="view" className={`flex items-center ${displayTheme === 'dark' ? 'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground' : ''}`}>
                         <Eye className="mr-1 h-4 w-4" />
                         Preview
                       </TabsTrigger>
@@ -276,14 +298,13 @@ const EnhancedProfilePage = () => {
                   </div>
                 </CardHeader>
                 
-                {/* Common class for dark theme form elements */}
-                <div className={`${profile?.theme === 'dark' ? '[&_input]:bg-gray-700 [&_textarea]:bg-gray-700 [&_select]:bg-gray-700 [&_button[variant=outline]]:border-gray-600 [&_button[variant=outline]]:text-gray-300' : ''}`}>
+                <div className={`${displayTheme === 'dark' ? '[&_input]:bg-gray-700 [&_textarea]:bg-gray-700 [&_select]:bg-gray-700 [&_button[variant=outline]]:border-gray-600 [&_button[variant=outline]]:text-gray-300' : ''}`}>
                   <TabsContent value="edit" className="m-0">
                     <CardContent className="pt-4">
-                      {error && (
+                      {pageError && (
                         <Alert variant="destructive" className="mb-4">
                           <AlertCircle className="h-4 w-4" />
-                          <AlertDescription>{error}</AlertDescription>
+                          <AlertDescription>{pageError}</AlertDescription>
                         </Alert>
                       )}
 
@@ -357,8 +378,8 @@ const EnhancedProfilePage = () => {
                               <Badge 
                                 key={genre}
                                 variant={selectedGenres.includes(genre) ? "default" : "outline"}
-                                className={`cursor-pointer ${isSaving ? 'opacity-50 cursor-not-allowed' : ''} ${profile?.theme === 'dark' && !selectedGenres.includes(genre) ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : ''} ${profile?.theme === 'dark' && selectedGenres.includes(genre) ? 'bg-primary text-primary-foreground' : ''}`}
-                                onClick={() => !isSaving && toggleGenre(genre)}
+                                className={`cursor-pointer ${isSaving ? 'opacity-50 cursor-not-allowed' : ''} ${displayTheme === 'dark' && !selectedGenres.includes(genre) ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : ''} ${displayTheme === 'dark' && selectedGenres.includes(genre) ? 'bg-primary text-primary-foreground' : ''}`}
+                                onClick={() => toggleGenre(genre)}
                               >
                                 {genre}
                               </Badge>
@@ -375,7 +396,7 @@ const EnhancedProfilePage = () => {
                                 Instagram
                               </Label>
                               <div className="flex">
-                                <span className={`px-2 py-2 border border-r-0 rounded-l-md text-sm ${profile?.theme === 'dark' ? 'bg-gray-600 text-gray-300 border-gray-500' : 'bg-gray-100 text-gray-500 border-gray-300'}`}>@</span>
+                                <span className={`px-2 py-2 border border-r-0 rounded-l-md text-sm ${displayTheme === 'dark' ? 'bg-gray-600 text-gray-300 border-gray-500' : 'bg-gray-100 text-gray-500 border-gray-300'}`}>@</span>
                                 <Input
                                   id="instagram"
                                   value={socialLinks?.instagram || ''}
@@ -392,7 +413,7 @@ const EnhancedProfilePage = () => {
                                 Twitter / X
                               </Label>
                               <div className="flex">
-                                <span className={`px-2 py-2 border border-r-0 rounded-l-md text-sm ${profile?.theme === 'dark' ? 'bg-gray-600 text-gray-300 border-gray-500' : 'bg-gray-100 text-gray-500 border-gray-300'}`}>@</span>
+                                <span className={`px-2 py-2 border border-r-0 rounded-l-md text-sm ${displayTheme === 'dark' ? 'bg-gray-600 text-gray-300 border-gray-500' : 'bg-gray-100 text-gray-500 border-gray-300'}`}>@</span>
                                 <Input
                                   id="twitter"
                                   value={socialLinks?.twitter || ''}
@@ -422,12 +443,14 @@ const EnhancedProfilePage = () => {
                         <div className="pt-3 border-t">
                           <h3 className="text-base font-medium mb-2">Appearance</h3>
                           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                            {/* `theme` here is the form field state from useProfileFormFields */}
+                            {/* `displayTheme` is for consistent UI element styling if needed, but here we compare against the form's `theme` state */}
                             {themes.map((themeOption) => (
                               <div 
                                 key={themeOption.id}
                                 onClick={() => !isSaving && setTheme(themeOption.id)}
                                 className={`cursor-pointer p-2 rounded-md border-2 transition-all ${isSaving ? 'opacity-50 cursor-not-allowed' : ''} ${
-                                  theme === themeOption.id ? 'border-primary scale-105 shadow-lg' : (profile?.theme === 'dark' ? 'border-gray-700 hover:border-gray-500' : 'border-transparent hover:border-gray-300')
+                                  theme === themeOption.id ? 'border-primary scale-105 shadow-lg' : (displayTheme === 'dark' ? 'border-gray-700 hover:border-gray-500' : 'border-transparent hover:border-gray-300')
                                 }`}
                               >
                                 <div className={`${themeOption.color} h-8 w-full rounded mb-1 shadow-inner`}></div>
@@ -464,7 +487,7 @@ const EnhancedProfilePage = () => {
                       </Button>
                       <Button 
                         onClick={handleSave} 
-                        disabled={isSaving}
+                        disabled={isSaving || profileLoading} // Disable if loading profile too
                         className="flex items-center"
                       >
                         {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -476,19 +499,21 @@ const EnhancedProfilePage = () => {
 
                   <TabsContent value="view" className="m-0">
                     <CardContent className="pt-4">
-                      {/* Apply prose styles based on theme */}
-                      <div className={`prose max-w-none ${profile?.theme === 'dark' ? 'prose-invert' : ''}`}>
+                      {/* Use `displayTheme` for prose styles */}
+                      <div className={`prose max-w-none ${displayTheme === 'dark' ? 'prose-invert' : ''}`}>
                         <div className="mb-6">
                           <h3 className="text-lg font-semibold mb-1">About Me</h3>
+                          {/* `bio` from form fields for preview */}
                           <p className="whitespace-pre-line text-sm">{bio || <span className="italic text-muted-foreground">No bio provided yet.</span>}</p>
                         </div>
 
+                        {/* `selectedGenres` from form fields for preview */}
                         {selectedGenres.length > 0 && (
                           <div className="mb-6">
                             <h3 className="text-lg font-semibold mb-2">Favorite Genres</h3>
                             <div className="flex flex-wrap gap-1.5">
                               {selectedGenres.map(genre => (
-                                <Badge key={genre} variant="secondary" className={`${profile?.theme === 'dark' ? 'bg-gray-700 text-gray-200' : ''}`}>
+                                <Badge key={genre} variant="secondary" className={`${displayTheme === 'dark' ? 'bg-gray-700 text-gray-200' : ''}`}>
                                   {genre}
                                 </Badge>
                               ))}
@@ -499,6 +524,7 @@ const EnhancedProfilePage = () => {
                         <div className="mb-6">
                           <h3 className="text-lg font-semibold mb-2">Connect</h3>
                           <div className="flex flex-col space-y-2">
+                            {/* `socialLinks` from form fields for preview */}
                             {socialLinks?.instagram && (
                               <a href={`https://instagram.com/${socialLinks.instagram}`} target="_blank" rel="noopener noreferrer" className="flex items-center text-sm hover:text-primary transition-colors">
                                 <Instagram className="h-4 w-4 mr-2 text-pink-500" />
@@ -524,6 +550,7 @@ const EnhancedProfilePage = () => {
                         </div>
                         <div className="mb-6">
                           <h3 className="text-lg font-semibold mb-1">Profile Visibility</h3>
+                          {/* `isPublic` from form fields for preview */}
                           <p className="text-sm">
                             This profile is currently <strong>{isPublic ? 'Public' : 'Private'}</strong>.
                           </p>
@@ -538,7 +565,7 @@ const EnhancedProfilePage = () => {
                     </CardFooter>
                   </TabsContent>
                 </div>
-              </Tabs> {/* Tabs end here */}
+              </Tabs>
             </Card>
           </div>
         </div>
