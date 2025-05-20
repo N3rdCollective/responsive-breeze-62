@@ -1,15 +1,16 @@
-
 import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import ForumPagination from "@/components/forum/ForumPagination"; // Using the existing component
+import ForumPagination from "@/components/forum/ForumPagination";
 import { useForumTopic } from "@/hooks/forum/useForumTopic";
 import TopicHeaderDisplay from "@/components/forum/TopicPage/TopicHeaderDisplay";
 import ForumPostCard from "@/components/forum/TopicPage/ForumPostCard";
 import ReplyFormCard from "@/components/forum/TopicPage/ReplyFormCard";
+import EditPostDialog from "@/components/forum/TopicPage/EditPostDialog";
+import DeletePostConfirmDialog from "@/components/forum/TopicPage/DeletePostConfirmDialog";
 
 const ForumTopicPage = () => {
   const navigate = useNavigate();
@@ -27,6 +28,18 @@ const ForumTopicPage = () => {
     isSubmittingReply,
     handleSubmitReply,
     categorySlug,
+    editingPost,
+    showEditDialog,
+    deletingPostId,
+    showDeleteConfirmDialog,
+    isProcessingPostAction,
+    handleOpenEditDialog,
+    handleCloseEditDialog,
+    handleSaveEditedPost,
+    handleOpenDeleteDialog,
+    handleCloseDeleteDialog,
+    handleConfirmDeletePost,
+    handleToggleReaction,
   } = useForumTopic();
   
   useEffect(() => {
@@ -35,7 +48,7 @@ const ForumTopicPage = () => {
     }
   }, [user, authLoading, navigate]);
   
-  if (authLoading || (loadingData && !topic)) { // Show loader if auth is loading OR data is loading and no topic yet
+  if (authLoading || (loadingData && !topic)) {
     return (
       <div className="min-h-screen">
         <Navbar />
@@ -47,15 +60,10 @@ const ForumTopicPage = () => {
   }
   
   if (!user) {
-    // This case should ideally be handled by the redirect,
-    // but as a fallback or if redirect hasn't happened yet.
     return null; 
   }
   
   if (!topic) {
-    // This implies loadingData is false and topic is still null, meaning topic not found or error.
-    // The hook useForumTopic handles navigation for "not found", so this state might be brief
-    // or indicate an unhandled error case not leading to navigation.
     return (
       <div className="min-h-screen">
         <Navbar />
@@ -83,7 +91,7 @@ const ForumTopicPage = () => {
         <div className="max-w-6xl mx-auto">
           <TopicHeaderDisplay topic={topic} categorySlug={categorySlug} />
           
-          {loadingData && posts.length === 0 && ( // Show loader specifically for posts if topic is loaded but posts are still fetching
+          {loadingData && posts.length === 0 && (
              <div className="py-10 flex justify-center items-center">
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
              </div>
@@ -91,11 +99,21 @@ const ForumTopicPage = () => {
 
           <div className="space-y-6">
             {posts.map((post, index) => (
-              <ForumPostCard key={post.id} post={post} isFirstPost={index === 0 && page === 1} />
+              <ForumPostCard 
+                key={post.id} 
+                post={post} 
+                isFirstPost={index === 0 && page === 1}
+                currentUser={user}
+                onEdit={handleOpenEditDialog}
+                onDelete={handleOpenDeleteDialog}
+                onToggleReaction={handleToggleReaction}
+                isTopicLocked={topic.is_locked}
+                isProcessingAction={isProcessingPostAction || (isSubmittingReply && post.id === 'temp-replying-post-id')}
+              />
             ))}
 
             {totalPages > 1 && (
-               <div className="py-4"> {/* Ensure pagination has some spacing */}
+               <div className="py-4">
                 <ForumPagination
                     page={page}
                     totalPages={totalPages}
@@ -114,6 +132,27 @@ const ForumTopicPage = () => {
           </div>
         </div>
       </div>
+
+      {editingPost && (
+        <EditPostDialog
+          open={showEditDialog}
+          onOpenChange={handleCloseEditDialog}
+          postContent={editingPost.content}
+          onSave={handleSaveEditedPost}
+          isSaving={isProcessingPostAction}
+          topicIsLocked={topic.is_locked}
+        />
+      )}
+
+      {deletingPostId && (
+        <DeletePostConfirmDialog
+          open={showDeleteConfirmDialog}
+          onOpenChange={handleCloseDeleteDialog}
+          onConfirm={handleConfirmDeletePost}
+          isDeleting={isProcessingPostAction}
+          topicIsLocked={topic.is_locked}
+        />
+      )}
     </div>
   );
 };

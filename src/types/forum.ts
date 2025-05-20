@@ -35,6 +35,14 @@ export interface ForumTopic {
   };
 }
 
+export interface ForumPostReaction {
+  id: string;
+  post_id: string;
+  user_id: string;
+  reaction_type: 'like'; // For now, only 'like'
+  created_at: string;
+}
+
 export interface ForumPost {
   id: string;
   topic_id: string;
@@ -46,8 +54,9 @@ export interface ForumPost {
   profile?: {
     username?: string | null;
     display_name?: string | null;
-    profile_picture?: string | null; // Changed from avatar_url
+    profile_picture?: string | null;
   };
+  forum_post_reactions?: ForumPostReaction[]; 
 }
 
 export interface CreateTopicInput {
