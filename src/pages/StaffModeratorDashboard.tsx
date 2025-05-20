@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Shield, Flag, UserX, MessageSquare, Eye, CheckCircle, XCircle, AlertTriangle, Clock, Filter, Search, RefreshCw, ChevronDown, Settings, Users, BarChart2, Trash2, Edit, Lock, Move } from 'lucide-react';
 import TitleUpdater from '@/components/TitleUpdater';
 
@@ -206,9 +206,13 @@ const ModeratorDashboard = () => {
   
   const selectedReportData = selectedFlag ? reportedContent.find(r => r.id === selectedFlag) : null;
 
+  useEffect(() => {
+    document.title = "Moderator Dashboard - Staff Panel";
+  }, []);
+
   return (
     <>
-      <TitleUpdater>Moderator Dashboard - Staff Panel</TitleUpdater>
+      <TitleUpdater />
       <div className="bg-gray-100 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100">
         {/* Header */}
         <div className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700">
