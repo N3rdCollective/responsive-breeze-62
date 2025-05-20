@@ -15,7 +15,9 @@ const NotificationIcon: React.FC<NotificationIconProps> = ({ type, size = 18, cl
       return <MessageSquare className={`text-blue-500 ${className}`} size={size} />;
     case 'like':
       return <Heart className={`text-red-500 fill-red-500 ${className}`} size={size} />;
-    case 'mention':
+    case 'mention': 
+    case 'mention_reply':
+    case 'mention_post':
       return <AtSign className={`text-purple-500 ${className}`} size={size} />;
     case 'tag':
       return <Tag className={`text-green-500 ${className}`} size={size} />;
@@ -26,9 +28,10 @@ const NotificationIcon: React.FC<NotificationIconProps> = ({ type, size = 18, cl
     case 'system':
       return <Bell className={`text-gray-600 ${className}`} size={size} />;
     default:
+      // Fallback for any unhandled or new types
+      console.warn(`NotificationIcon: Unknown notification type encountered - "${type}"`);
       return <Star className={`text-gray-400 ${className}`} size={size} />;
   }
 };
 
 export default NotificationIcon;
-

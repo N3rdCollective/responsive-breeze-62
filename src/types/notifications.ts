@@ -1,16 +1,31 @@
+
 export interface NotificationUser {
   id: string;
   name: string;
   avatar?: string | null;
 }
 
-export type NotificationType = 'reply' | 'like' | 'system' | 'mention_reply' | 'mention_post';
+// Added 'mention' for broader use if needed by NotificationIcon, 
+// but 'mention_reply' and 'mention_post' are primary for forum.
+// Also added 'tag', 'follow', 'new_post' back for compatibility with NotificationIcon,
+// though they might be phased out or mapped differently later.
+export type NotificationType = 
+  | 'reply' 
+  | 'like' 
+  | 'system' 
+  | 'mention_reply' 
+  | 'mention_post'
+  | 'mention' // Generic mention for other contexts if any
+  | 'tag'     // For NotificationIcon compatibility
+  | 'follow'  // For NotificationIcon compatibility
+  | 'new_post'; // For NotificationIcon compatibility
+
 
 export interface Notification {
   id: string;
   type: NotificationType;
   read: boolean;
-  actor?: NotificationUser; // User who performed the action
+  actor?: NotificationUser; // User who performed theaction
   content: string; // The main notification text
   link?: string; // Link to navigate to
   timestamp: string; // ISO string

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -102,8 +101,8 @@ const NewForumTopicPage = () => {
       content
     });
     
-    if (result) {
-      navigate(`/members/forum/${categorySlug}/${result.slug || result.id}`);
+    if (result && result.topic) { // Check if result and result.topic exist
+      navigate(`/members/forum/${categorySlug}/${result.topic.slug || result.topic.id}`); // Access slug and id via result.topic
     }
   };
   

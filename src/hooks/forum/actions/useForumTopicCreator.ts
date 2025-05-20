@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -67,7 +66,7 @@ export const useForumTopicCreator = () => {
       }
       if (!postData) throw new Error("Failed to create the first post for the topic.");
 
-      toast({ title: "Topic Created!", description: "Your new topic has been successfully created.", variant: "success" });
+      toast({ title: "Topic Created!", description: "Your new topic has been successfully created.", variant: "default" });
 
       // Handle mention notifications for the first post
       const mentionedUserIds = extractMentionedUserIds(input.content);

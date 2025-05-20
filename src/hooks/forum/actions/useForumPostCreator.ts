@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -36,7 +35,7 @@ export const useForumPostCreator = () => {
       if (error) throw error;
 
       if (postData) {
-        toast({ title: "Post Created!", description: "Your post has been successfully created.", variant: "success" });
+        toast({ title: "Post Created!", description: "Your post has been successfully created.", variant: "default" });
 
         // Handle mention notifications
         const mentionedUserIds = extractMentionedUserIds(input.content);
@@ -55,7 +54,7 @@ export const useForumPostCreator = () => {
               await createForumNotification(
                 mentionedUserId,
                 user.id,
-                'mention_reply', // Or 'mention_post' if this creator is also for first posts
+                'mention_reply', 
                 input.topic_id,
                 postData.id,
                 contentPreview
