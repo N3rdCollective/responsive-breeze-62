@@ -20,6 +20,7 @@ interface MobileNavProps {
   isHomePage: boolean;
   isScrolled: boolean;
   mounted: boolean;
+  isUserLoggedIn: boolean;
 }
 
 const MobileNav = ({ 
@@ -27,7 +28,8 @@ const MobileNav = ({
   isActive, 
   isHomePage, 
   isScrolled,
-  mounted
+  mounted,
+  isUserLoggedIn
 }: MobileNavProps) => {
   const [isOpen, setIsOpen] = useState(false);
   
@@ -43,7 +45,7 @@ const MobileNav = ({
   return (
     <div className="md:hidden flex items-center space-x-2">
       <ListenButton isScrolled={isScrolled} isHomePage={isHomePage} />
-      <NotificationBell isHomePage={isHomePage} isScrolled={isScrolled} mobile />
+      {isUserLoggedIn && <NotificationBell isHomePage={isHomePage} isScrolled={isScrolled} mobile />}
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
           <Button

@@ -2,7 +2,7 @@
 import NavItem from "./NavItem";
 import ThemeToggle from "./ThemeToggle";
 import ListenButton from "./ListenButton";
-import NotificationBell from "@/components/notifications/NotificationBell"; // Added import
+import NotificationBell from "@/components/notifications/NotificationBell";
 import { NavigationItem } from "@/types/profile";
 
 interface DesktopNavProps {
@@ -11,6 +11,7 @@ interface DesktopNavProps {
   isHomePage: boolean;
   isScrolled: boolean;
   mounted: boolean;
+  isUserLoggedIn: boolean;
 }
 
 const DesktopNav = ({ 
@@ -18,7 +19,8 @@ const DesktopNav = ({
   isActive, 
   isHomePage, 
   isScrolled,
-  mounted
+  mounted,
+  isUserLoggedIn
 }: DesktopNavProps) => {
   return (
     <div className="hidden md:flex items-center space-x-1"> {/* Adjusted space-x for more items */}
@@ -36,7 +38,7 @@ const DesktopNav = ({
       ))}
       <div className="flex items-center space-x-1 ml-4"> {/* Group right-side icons */}
         <ListenButton isScrolled={isScrolled} isHomePage={isHomePage} />
-        <NotificationBell isHomePage={isHomePage} isScrolled={isScrolled} /> 
+        {isUserLoggedIn && <NotificationBell isHomePage={isHomePage} isScrolled={isScrolled} />} 
         {mounted && (
           <ThemeToggle isHomePage={isHomePage} isScrolled={isScrolled} />
         )}
@@ -46,4 +48,3 @@ const DesktopNav = ({
 };
 
 export default DesktopNav;
-

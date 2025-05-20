@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import DesktopNav from "./navbar/DesktopNav";
@@ -28,6 +29,7 @@ const Navbar = () => {
 
   const isActive = (path: string) => location.pathname === path;
   const isHomePage = location.pathname === "/";
+  const isUserLoggedIn = !!user;
 
   const handleLogout = async () => {
     try {
@@ -101,6 +103,7 @@ const Navbar = () => {
             isHomePage={isHomePage}
             isScrolled={isScrolled}
             mounted={mounted}
+            isUserLoggedIn={isUserLoggedIn}
           />
 
           {/* Mobile Navigation */}
@@ -110,6 +113,7 @@ const Navbar = () => {
             isHomePage={isHomePage}
             isScrolled={isScrolled}
             mounted={mounted}
+            isUserLoggedIn={isUserLoggedIn}
           />
         </div>
       </div>
