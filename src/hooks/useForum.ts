@@ -4,6 +4,35 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { ForumTopic, CreateTopicInput, CreatePostInput, ForumPost, ForumPostReaction } from '@/types/forum';
 
+// Helper function to create a notification
+const createForumNotification = async (
+  recipientId: string,
+  actorId: string,
+  type: 'reply' | 'like',
+  topicId: string,
+  postId?: string,
+  contentPreview?: string
+) => {
+  if (recipientId === actorId) return; // Don't notify users about their own actions
+
+  try {
+    const { error } = await supabase.from('forum_notifications').insert({
+      recipient_id: recipientId,
+      actor_id: actorId,
+      type: type,
+      topic_id: topicId,
+      post_id: postId,
+      content_preview: contentPreview,
+    });
+    if (error) {
+      console.error(`Error creating ${type} notification:`, error);
+      // Potentially throw error or handle more gracefully depending on requirements
+    }
+  } catch (err) {
+    console.error(`Exception while creating ${type} notification:`, err);
+  }
+};
+
 export const useForum = () => {
   const [submitting, setSubmitting] = useState(false);
   const { user } = useAuth();
@@ -85,6 +114,8 @@ export const useForum = () => {
       return null;
     }
     
+    let createdPostData: ForumPost | null = null;
+
     try {
       setSubmitting(true);
       
@@ -103,13 +134,43 @@ export const useForum = () => {
         .single();
         
       if (error) throw error;
+      createdPostData = data as ForumPost;
       
       toast({
         title: "Reply posted",
         description: "Your reply has been posted successfully!"
       });
+
+      // --- Create Notification for Reply ---
+      if (createdPostData && user) {
+        const { data: topicData, error: topicFetchError } = await supabase
+          .from('forum_topics')
+          .select('user_id, title') // Select topic creator's ID and title
+          .eq('id', createdPostData.topic_id)
+          .single();
+
+        if (topicFetchError) {
+          console.error("Error fetching topic creator for notification:", topicFetchError);
+        } else if (topicData && topicData.user_id !== user.id) {
+          // Create a preview for the notification content
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = createdPostData.content;
+          const textContent = tempDiv.textContent || tempDiv.innerText || "";
+          const contentPreview = textContent.substring(0, 100) + (textContent.length > 100 ? "..." : "");
+
+          await createForumNotification(
+            topicData.user_id,        // recipientId (topic creator)
+            user.id,                  // actorId (current user who replied)
+            'reply',                  // type
+            createdPostData.topic_id, // topicId
+            createdPostData.id,       // postId (the new reply)
+            contentPreview            // contentPreview
+          );
+        }
+      }
+      // --- End Notification for Reply ---
       
-      return data as ForumPost;
+      return createdPostData;
     } catch (err: any) {
       console.error('Error posting reply:', err.message);
       toast({
@@ -182,29 +243,49 @@ export const useForum = () => {
       toast({ title: "Authentication required", variant: "destructive" });
       return null;
     }
+    let addedReactionData: ForumPostReaction | null = null;
     try {
-      // No need to set submitting here as it's usually a quick action
       const { data, error } = await supabase
         .from('forum_post_reactions')
         .insert({ post_id: postId, user_id: user.id, reaction_type: reactionType })
         .select()
         .single();
+      
       if (error) {
-        // Handle unique constraint violation (already reacted) somewhat gracefully
-        if (error.code === '23505') { // Unique violation
-          // Optionally, remove existing reaction if logic is "toggle"
-          // For now, just inform or silently fail if it's a strict "add only if not exists"
+        if (error.code === '23505') { 
           console.warn("User has already reacted to this post or tried to add duplicate.");
-          // If this was a toggle, we'd call removeReaction here.
-          // For now, if it fails, it fails. The UI should prevent this.
           return null;
         }
         throw error;
       }
-      return data as ForumPostReaction;
+      addedReactionData = data as ForumPostReaction;
+
+      // --- Create Notification for Like ---
+      if (addedReactionData && user) {
+        const { data: postData, error: postFetchError } = await supabase
+          .from('forum_posts')
+          .select('user_id, topic_id') // Select post author's ID and topic_id
+          .eq('id', postId)
+          .single();
+
+        if (postFetchError) {
+          console.error("Error fetching post author for notification:", postFetchError);
+        } else if (postData && postData.user_id !== user.id) {
+          await createForumNotification(
+            postData.user_id,    // recipientId (post author)
+            user.id,             // actorId (current user who liked)
+            'like',              // type
+            postData.topic_id,   // topicId
+            postId               // postId (the liked post)
+            // No contentPreview needed for likes, or could be post title if fetched
+          );
+        }
+      }
+      // --- End Notification for Like ---
+      return addedReactionData;
+
     } catch (err: any) {
       console.error('Error adding reaction:', err.message);
-      // Don't show toast for reactions usually, can be too noisy
       return null;
     }
   };

@@ -216,6 +216,74 @@ export type Database = {
         }
         Relationships: []
       }
+      forum_notifications: {
+        Row: {
+          actor_id: string | null
+          content_preview: string | null
+          created_at: string
+          id: string
+          post_id: string | null
+          read: boolean
+          recipient_id: string
+          topic_id: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          actor_id?: string | null
+          content_preview?: string | null
+          created_at?: string
+          id?: string
+          post_id?: string | null
+          read?: boolean
+          recipient_id: string
+          topic_id?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          actor_id?: string | null
+          content_preview?: string | null
+          created_at?: string
+          id?: string
+          post_id?: string | null
+          read?: boolean
+          recipient_id?: string
+          topic_id?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_notifications_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "forum_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_notifications_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "forum_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forum_post_reactions: {
         Row: {
           created_at: string
