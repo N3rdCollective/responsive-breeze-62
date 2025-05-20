@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
@@ -13,7 +12,7 @@ export const useAuth = () => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log("Auth state changed:", event, session?.user?.email);
+        console.log("Auth state changed (useAuth):", event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -21,12 +20,22 @@ export const useAuth = () => {
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Initial session check:", session?.user?.email);
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    supabase.auth.getSession()
+      .then(({ data: { session: currentSession } }) => { // Renamed to currentSession to avoid conflict in logs
+        console.log("Initial session check (useAuth success):", currentSession?.user?.email);
+        // It's possible onAuthStateChange fired an INITIAL_SESSION event already.
+        // Setting state here ensures we cover cases where getSession resolves first or provides the initial state.
+        // If onAuthStateChange has already set a more current state, React handles batching.
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Initial session check (useAuth error):", error.message);
+        // Session and user will remain null or as set by any prior onAuthStateChange event.
+        // Crucially, ensure loading is set to false so the UI doesn't hang.
+        setLoading(false);
+      });
 
     return () => subscription.unsubscribe();
   }, []);
