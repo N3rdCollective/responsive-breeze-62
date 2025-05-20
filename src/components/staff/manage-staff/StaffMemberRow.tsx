@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -61,11 +60,24 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
       <td className="p-2 pl-4 break-all">{staff.email}</td> {/* Added break-all for long emails */}
       <td className="p-2">{getDisplayName()}</td>
       <td className="p-2">
-        <span className={`font-medium ${getRoleColor(staff.role)}`}>
-          {isTargetSuperAdmin 
-            ? "Super Admin" 
-            : ROLE_DISPLAY_NAMES[staff.role as StaffRole] || staff.role}
-        </span>
+        {isTargetSuperAdmin ? (
+          <span className={`font-medium ${getRoleColor(staff.role)}`}>
+            Super Admin
+          </span>
+        ) : canModifyDetails ? (
+          <StaffMemberRoleSelect
+            staff={staff}
+            currentUserRole={currentUserRole}
+            canModify={canModifyDetails} // This is true here
+            disabled={isProcessing || isTargetSuperAdmin} // Disable if super admin, though covered by outer condition
+            onUpdate={onUpdate}
+            setParentIsUpdatingRole={setIsUpdatingRole}
+          />
+        ) : (
+          <span className={`font-medium ${getRoleColor(staff.role)}`}>
+            {ROLE_DISPLAY_NAMES[staff.role as StaffRole] || staff.role}
+          </span>
+        )}
       </td>
       <td className="p-2 pr-4"> {/* Removed whitespace-nowrap */}
         <div className="flex flex-wrap gap-2 justify-end items-center"> {/* Added flex-wrap */}
@@ -81,15 +93,6 @@ const StaffMemberRow = ({ staff, onUpdate, currentUserRole }: StaffMemberRowProp
                 disabled={isProcessing}
                 onUpdate={onUpdate}
                 setParentIsSendingReset={setIsSendingReset}
-              />
-              
-              <StaffMemberRoleSelect
-                staff={staff}
-                currentUserRole={currentUserRole}
-                canModify={canModifyDetails}
-                disabled={isProcessing}
-                onUpdate={onUpdate}
-                setParentIsUpdatingRole={setIsUpdatingRole}
               />
               
               <StaffMemberRemoveButton
