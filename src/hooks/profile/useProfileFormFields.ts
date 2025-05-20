@@ -59,7 +59,7 @@ export const useProfileFormFields = ({
 
   useEffect(() => {
     populateFormFields();
-  }, [populateFormFields]); // profileData, isNewUserMode, defaultUsername, userEmail are dependencies of populateFormFields
+  }, [populateFormFields]);
 
   return {
     displayName, setDisplayName,
