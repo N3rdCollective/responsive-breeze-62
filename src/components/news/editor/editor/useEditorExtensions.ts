@@ -79,24 +79,21 @@ export const useEditorExtensions = (props?: EditorExtensionsProps) => {
           }
           return data.map(user => ({
             id: user.id,
-            label: user.username || user.display_name || 'Unknown',
+            label: user.username || user.display_name || 'Unknown User', // Ensure a fallback label
             username: user.username,
             displayName: user.display_name,
             avatar: user.profile_picture,
           }));
         },
         render: () => {
-          let component: ReactRenderer<typeof MentionList, MentionListProps & { ref: React.Ref<MentionListRef> }>;
-          let popup: TippyInstance<TippyProps>[] | undefined;
+          let component: ReactRenderer<MentionListRef, MentionListProps>;
+          let popup: TippyInstance | undefined; // Tippy returns a single instance here
 
           return {
             onStart: options => {
               component = new ReactRenderer(MentionList, {
-                props: { items: options.items, command: options.command },
+                props: { items: options.items, command: options.command }, // Pass items and command directly
                 editor: options.editor,
-                // The 'ref' for useImperativeHandle is handled by ReactRenderer itself
-                // when it instantiates MentionList as a forwardRef component.
-                // The instance with the imperative handle will be available on component.ref.
               });
 
               if (!options.clientRect) {
@@ -120,28 +117,27 @@ export const useEditorExtensions = (props?: EditorExtensionsProps) => {
                 return;
               }
               
-              if (popup && popup[0]) {
-                 popup[0].setProps({ 
+              if (popup) { // Check if popup exists
+                 popup.setProps({ 
                     getReferenceClientRect: options.clientRect as () => DOMRect,
                  });
               }
             },
             onKeyDown(options) {
-              if (options.event.key === 'Escape' && popup && popup[0]) {
-                popup[0].hide();
+              if (options.event.key === 'Escape' && popup) {
+                popup.hide();
                 return true;
               }
-              if (component && component.ref) {
-                return (component.ref as MentionListRef).onKeyDown(options);
+              // component.ref will be of type MentionListRef | null
+              // The onKeyDown method is defined on MentionListRef
+              if (component && component.ref && typeof component.ref.onKeyDown === 'function') {
+                return component.ref.onKeyDown(options);
               }
               return false;
             },
             onExit() {
-              if (popup && popup[0]) popup[0].destroy();
-              if (popup && popup.length > 1) { // Safety for multiple tippy instances
-                popup.forEach(p => p.destroy());
-              }
-              component.destroy();
+              if (popup) popup.destroy(); // Destroy single instance
+              if (component) component.destroy();
             },
           };
         },
