@@ -31,18 +31,18 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onMar
           <NotificationIcon type={notification.type} />
         </div>
         <div className="flex-1 min-w-0">
-          {notification.user && (
+          {notification.actor && (
             <div className="flex items-center mb-0.5">
               <Avatar className="w-5 h-5 mr-2">
-                <AvatarImage src={notification.user.avatar} alt={notification.user.name} />
-                <AvatarFallback>{notification.user.name.substring(0, 1)}</AvatarFallback>
+                <AvatarImage src={notification.actor.avatar} alt={notification.actor.name} />
+                <AvatarFallback>{notification.actor.name.substring(0, 1)}</AvatarFallback>
               </Avatar>
               <span className="font-medium text-sm truncate text-gray-800 dark:text-gray-200">
-                {notification.user.name}
+                {notification.actor.name}
               </span>
             </div>
           )}
-          <p className={`text-sm ${notification.user ? 'text-gray-600 dark:text-gray-400' : 'text-gray-700 dark:text-gray-300'}`}>
+          <p className={`text-sm ${notification.actor ? 'text-gray-600 dark:text-gray-400' : 'text-gray-700 dark:text-gray-300'}`}>
             {notification.content}
           </p>
           <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
@@ -63,4 +63,3 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onMar
 };
 
 export default NotificationItem;
-
