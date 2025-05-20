@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { toast } from '@/hooks/use-toast';
-import RichTextEditor from "@/components/news/editor/RichTextEditor";
+import ForumRichTextEditor from "@/components/forum/ForumRichTextEditor";
 import { useForum } from "@/hooks/useForum";
 import { ForumCategory } from "@/types/forum";
 
@@ -185,13 +186,14 @@ const NewForumTopicPage = () => {
                     />
                   </div>
                   <div>
-                    {/* Using RichTextEditor for content */}
-                    <RichTextEditor
+                    {/* Using ForumRichTextEditor for content */}
+                    <ForumRichTextEditor
                       id="content"
                       value={content}
                       onChange={setContent}
                       label="Content"
                       height={300} // Adjusted height for forum context
+                      placeholder="Write your post here..."
                     />
                   </div>
                   <div className="flex justify-end space-x-2 pt-4">

@@ -14,6 +14,7 @@ interface RichTextEditorProps {
   onChange: (content: string) => void;
   label?: string;
   height?: number;
+  placeholder?: string;
 }
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({
@@ -21,7 +22,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   value,
   onChange,
   label,
-  height = 500
+  height = 500,
+  placeholder
 }) => {
   const extensions = useEditorExtensions();
   const [isHtmlMode, setIsHtmlMode] = useState(false);
@@ -37,6 +39,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       setHtmlContent(html);
       onChange(html);
     },
+    editorProps: {
+      attributes: {
+        placeholder: placeholder || 'Start writing...',
+      },
+    }
   });
 
   // Update editor content when value prop changes
@@ -99,6 +106,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             onChange={handleHtmlChange}
             className="font-mono text-sm p-4 min-h-[500px] w-full border-0 rounded-none focus-visible:ring-0 bg-slate-800 text-slate-50 dark:bg-slate-900"
             style={{ minHeight: height, height: height }}
+            placeholder={placeholder}
           />
         ) : (
           <div 
@@ -140,6 +148,14 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         .dark .video-container {
           background-color: rgba(255, 255, 255, 0.05);
           border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .ProseMirror p.is-editor-empty:first-child::before {
+          content: attr(data-placeholder);
+          float: left;
+          color: #adb5bd;
+          pointer-events: none;
+          height: 0;
         }
         `}
       </style>

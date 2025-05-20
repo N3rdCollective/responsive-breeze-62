@@ -2,8 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-// Removed Textarea, importing RichTextEditor instead
-import RichTextEditor from '@/components/news/editor/RichTextEditor';
+import ForumRichTextEditor from '@/components/forum/ForumRichTextEditor';
 import { Loader2, MessageSquareText, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -67,7 +66,6 @@ const ReplyFormCard: React.FC<ReplyFormCardProps> = ({
     return !replyContent.trim() || !tempDiv.textContent?.trim();
   };
 
-
   return (
     <Card className="mt-6 border-primary/20">
       <CardHeader className="bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80">
@@ -79,13 +77,12 @@ const ReplyFormCard: React.FC<ReplyFormCardProps> = ({
       <CardContent className="pt-6">
         <form onSubmit={onSubmitReply}>
           <div className="space-y-4">
-            {/* Using RichTextEditor for reply content */}
-            <RichTextEditor
+            {/* Using ForumRichTextEditor for reply content */}
+            <ForumRichTextEditor
               id="replyContent"
               value={replyContent}
               onChange={onReplyContentChange}
-              label="Your Reply"
-              height={250} // Adjusted height for reply context
+              placeholder="Write your reply here..."
             />
             <div className="flex justify-end">
               <Button type="submit" disabled={isSubmitting || isContentEffectivelyEmpty()} className="bg-primary hover:bg-primary/90">
