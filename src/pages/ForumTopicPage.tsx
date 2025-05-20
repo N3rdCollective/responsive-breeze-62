@@ -43,16 +43,23 @@ const ForumTopicPage = () => {
       try {
         setLoading(true);
         
-        // Fetch topic
-        const { data: topicRawData, error: topicError } = await supabase
+        const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(topicId);
+        
+        let query = supabase
           .from('forum_topics')
           .select(`
             *,
-            profile:profiles!forum_topics_user_id_fkey(username, display_name, profile_picture),
+            profile:profiles!forum_topics_user_id_fkey(username, display_name, avatar_url:profile_picture),
             category:forum_categories(name, slug)
-          `)
-          .eq('id', topicId)
-          .single();
+          `);
+
+        if (isUUID) {
+          query = query.eq('id', topicId);
+        } else {
+          query = query.eq('slug', topicId);
+        }
+        
+        const { data: topicRawData, error: topicError } = await query.single();
           
         if (topicError) throw topicError;
         
@@ -66,21 +73,15 @@ const ForumTopicPage = () => {
           return;
         }
         
-        // Map profile_picture to avatar_url for topic author
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { profile_picture, ...restOfProfileDetails } = topicRawData.profile || {};
-        const newProfile = topicRawData.profile 
-          ? { ...restOfProfileDetails, avatar_url: profile_picture } 
-          : undefined;
-        
+        // Profile mapping is now handled by the select query alias for topic author
         const topicData = {
           ...topicRawData,
-          profile: newProfile,
         };
 
         // Check if category slug matches
-        if (topicData.category.slug !== categorySlug) {
-          navigate(`/members/forum/${topicData.category.slug}/${topicId}`);
+        // Ensure category exists before accessing slug
+        if (topicData.category && topicData.category.slug !== categorySlug) {
+          navigate(`/members/forum/${topicData.category.slug}/${topicData.slug || topicData.id}`); // Use slug for navigation, fallback to id
           return;
         }
         
@@ -90,7 +91,7 @@ const ForumTopicPage = () => {
         const { count, error: countError } = await supabase
           .from('forum_posts')
           .select('*', { count: 'exact', head: true })
-          .eq('topic_id', topicId);
+          .eq('topic_id', topicData.id); // Use topicData.id here as it's guaranteed to be the UUID
           
         if (countError) throw countError;
         
@@ -102,29 +103,20 @@ const ForumTopicPage = () => {
           .from('forum_posts')
           .select(`
             *,
-            profile:profiles!forum_posts_user_id_fkey(username, display_name, profile_picture)
+            profile:profiles!forum_posts_user_id_fkey(username, display_name, avatar_url:profile_picture)
           `)
-          .eq('topic_id', topicId)
+          .eq('topic_id', topicData.id) // Use topicData.id here
           .order('created_at', { ascending: true })
           .range((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE - 1);
           
         if (postsError) throw postsError;
 
-        // Map profile_picture to avatar_url for post authors
-        const postsData = (postsRawData || []).map(post => {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { profile_picture: postAuthorProfilePicture, ...restOfPostAuthorProfile } = post.profile || {};
-          const newPostAuthorProfile = post.profile
-            ? { ...restOfPostAuthorProfile, avatar_url: postAuthorProfilePicture }
-            : undefined;
-          return { ...post, profile: newPostAuthorProfile };
-        });
-        
-        setPosts(postsData as ForumPost[]);
+        // Profile mapping is now handled by the select query alias for post authors
+        setPosts((postsRawData || []) as ForumPost[]);
         
         // Increment view count
         if (page === 1) {
-          incrementViewCount(topicId);
+          incrementViewCount(topicData.id); // Use topicData.id here
         }
       } catch (error: any) {
         console.error('Error fetching topic data:', error.message);
@@ -153,7 +145,7 @@ const ForumTopicPage = () => {
       return;
     }
     
-    if (!topicId) return;
+    if (!topic || !topic.id) return;
     
     if (topic?.is_locked) {
       toast({
@@ -165,7 +157,7 @@ const ForumTopicPage = () => {
     }
     
     const result = await createPost({
-      topic_id: topicId,
+      topic_id: topic.id, // Use topic.id (UUID)
       content: replyContent
     });
     
@@ -180,7 +172,8 @@ const ForumTopicPage = () => {
         // Refresh current page or navigate to last page to see the new post
         // For simplicity, let's refresh the topic data which re-fetches posts for the current page
         // Or navigate to last page if it's a new page
-        const newTotalPosts = (topic?._count?.posts || 0) + 1; // Assuming _count was part of topic
+        const currentPostCount = (posts?.length || 0) + ((page -1) * ITEMS_PER_PAGE); // More robust count
+        const newTotalPosts = currentPostCount + 1; 
         const newTotalPages = Math.ceil(newTotalPosts / ITEMS_PER_PAGE);
         setTotalPages(newTotalPages);
         setPage(newTotalPages); // Navigate to the new last page
