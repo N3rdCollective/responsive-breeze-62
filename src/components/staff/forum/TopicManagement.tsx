@@ -57,15 +57,16 @@ const TopicManagement: React.FC<TopicManagementProps> = ({ userRole }) => {
   
   const fetchCategories = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from("forum_categories")
         .select("*")
         .order("display_order", { ascending: true });
       
-      if (error) throw error;
-      setCategories(data);
+      if (fetchError) throw fetchError;
+      setCategories(data || []);
     } catch (err: any) {
       console.error("Error fetching categories:", err);
+      // Optionally show a toast for category fetch error
     }
   };
   
@@ -78,7 +79,7 @@ const TopicManagement: React.FC<TopicManagementProps> = ({ userRole }) => {
         .select(`
           *,
           category:forum_categories(name, slug),
-          profile:profiles!forum_topics_user_id_fkey(username, display_name, profile_picture:avatar_url),
+          profile:profiles!forum_topics_user_id_fkey(username, display_name, profile_picture),
           _count:forum_posts(count)
         `)
         .order("is_sticky", { ascending: false })
@@ -88,12 +89,24 @@ const TopicManagement: React.FC<TopicManagementProps> = ({ userRole }) => {
         query = query.eq("category_id", selectedCategory);
       }
       
-      const { data, error } = await query;
+      const { data: rawData, error: fetchError } = await query;
       
-      if (error) throw error;
+      if (fetchError) throw fetchError;
       
-      const typedData = (data || []) as unknown as ForumTopic[];
-      setTopics(typedData);
+      const mappedTopics = (rawData || []).map(topic => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { profile_picture, ...restOfProfileDetails } = topic.profile || {};
+        const newProfile = topic.profile 
+          ? { ...restOfProfileDetails, avatar_url: profile_picture } 
+          : undefined;
+
+        return {
+          ...topic,
+          profile: newProfile,
+        };
+      });
+      
+      setTopics(mappedTopics as ForumTopic[]);
       setError(null);
     } catch (err: any) {
       setError(err.message);
@@ -120,12 +133,12 @@ const TopicManagement: React.FC<TopicManagementProps> = ({ userRole }) => {
     try {
       const newStatus = !topic.is_sticky;
       
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from("forum_topics")
         .update({ is_sticky: newStatus })
         .eq("id", topic.id);
       
-      if (error) throw error;
+      if (updateError) throw updateError;
       
       await logActivity(
         newStatus ? "sticky_forum_topic" : "unsticky_forum_topic",
@@ -162,12 +175,12 @@ const TopicManagement: React.FC<TopicManagementProps> = ({ userRole }) => {
     try {
       const newStatus = !topic.is_locked;
       
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from("forum_topics")
         .update({ is_locked: newStatus })
         .eq("id", topic.id);
       
-      if (error) throw error;
+      if (updateError) throw updateError;
       
       await logActivity(
         newStatus ? "lock_forum_topic" : "unlock_forum_topic",
@@ -202,13 +215,12 @@ const TopicManagement: React.FC<TopicManagementProps> = ({ userRole }) => {
     }
     
     try {
-      // Delete topic (cascade will delete related posts)
-      const { error } = await supabase
+      const { error: deleteError } = await supabase
         .from("forum_topics")
         .delete()
         .eq("id", topicToDelete.id);
       
-      if (error) throw error;
+      if (deleteError) throw deleteError;
       
       await logActivity(
         "delete_forum_topic",
@@ -222,7 +234,6 @@ const TopicManagement: React.FC<TopicManagementProps> = ({ userRole }) => {
         description: "Topic deleted successfully",
       });
       
-      // Close dialog and refresh topics
       setDeleteDialogOpen(false);
       setTopicToDelete(null);
       await fetchTopics();
