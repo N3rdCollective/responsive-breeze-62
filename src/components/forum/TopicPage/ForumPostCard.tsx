@@ -14,14 +14,14 @@ interface ForumPostCardProps {
 const ForumPostCard: React.FC<ForumPostCardProps> = ({ post, isFirstPost }) => {
   const timeAgo = post.created_at ? formatDistanceToNow(new Date(post.created_at), { addSuffix: true }) : 'some time ago';
   const userDisplayName = post.profile?.display_name || post.profile?.username || 'User';
-  const userAvatarUrl = post.profile?.avatar_url;
+  const userAvatarUrl = post.profile?.profile_picture; // Changed from avatar_url
 
   return (
     <Card className={`border-primary/10 ${isFirstPost ? 'border-primary/30 shadow-md' : 'shadow-sm'}`}>
       <CardHeader className={`flex flex-row items-center justify-between p-4 ${isFirstPost ? 'bg-gradient-to-r from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10' : 'bg-gray-50 dark:bg-gray-800/50'}`}>
         <div className="flex items-center space-x-3">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={userAvatarUrl} alt={userDisplayName} />
+            <AvatarImage src={userAvatarUrl || undefined} alt={userDisplayName} /> {/* Ensure src can handle null/undefined */}
             <AvatarFallback>
               <UserCircle2 className="h-6 w-6 text-muted-foreground" />
             </AvatarFallback>

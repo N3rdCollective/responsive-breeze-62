@@ -97,8 +97,8 @@ export const useForum = () => {
         })
         .select(`
           *,
-          profile:profiles!forum_posts_user_id_fkey(username, display_name, avatar_url)
-        `)
+          profile:profiles!forum_posts_user_id_fkey(username, display_name, profile_picture)
+        `) // Changed avatar_url to profile_picture
         .single();
         
       if (error) throw error;

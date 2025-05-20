@@ -38,9 +38,9 @@ export const useForumTopic = () => {
         .from('forum_topics')
         .select(`
           *,
-          profile:profiles!forum_topics_user_id_fkey(username, display_name, avatar_url),
+          profile:profiles!forum_topics_user_id_fkey(username, display_name, profile_picture), 
           category:forum_categories(name, slug)
-        `);
+        `); // Changed avatar_url to profile_picture
 
       if (isUUID) {
         query = query.eq('id', topicId);
@@ -85,8 +85,8 @@ export const useForumTopic = () => {
         .from('forum_posts')
         .select(`
           *,
-          profile:profiles!forum_posts_user_id_fkey(username, display_name, avatar_url)
-        `)
+          profile:profiles!forum_posts_user_id_fkey(username, display_name, profile_picture)
+        `) // Changed avatar_url to profile_picture
         .eq('topic_id', topicData.id)
         .order('created_at', { ascending: true })
         .range((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE - 1);
@@ -116,13 +116,14 @@ export const useForumTopic = () => {
       setLoadingData(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [topicId, categorySlug, navigate, page, viewCountIncremented, user]);
+  }, [topicId, categorySlug, navigate, page, viewCountIncremented, user]); // Removed incrementViewCount from deps as it's from useForum and stable
 
   useEffect(() => {
-    if (user) { // Only fetch if user is loaded
+    if (user || !authLoading) { // Fetch data if user is loaded or auth check is complete and there's no user (for public topics if ever implemented)
+        // Current implementation redirects if !user, so this check is mainly for when user IS loaded.
       fetchTopicData();
     }
-  }, [user, fetchTopicData]);
+  }, [user, authLoading, fetchTopicData]);
 
   const handleSubmitReply = async (e: React.FormEvent) => {
     e.preventDefault();

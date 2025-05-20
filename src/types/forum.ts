@@ -1,4 +1,3 @@
-
 export interface ForumCategory {
   id: string;
   name: string;
@@ -25,7 +24,7 @@ export interface ForumTopic {
   profile?: {
     username?: string | null;
     display_name?: string | null;
-    avatar_url?: string | null;
+    profile_picture?: string | null; // Changed from avatar_url
   };
   _count?: {
     posts: number;
@@ -47,7 +46,7 @@ export interface ForumPost {
   profile?: {
     username?: string | null;
     display_name?: string | null;
-    avatar_url?: string | null;
+    profile_picture?: string | null; // Changed from avatar_url
   };
 }
 
