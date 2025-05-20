@@ -1,23 +1,23 @@
-
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ForumCategories from "@/components/forum/ForumCategories";
-import ForumLatestPosts from "@/components/forum/ForumLatestPosts"; // Re-enabled
+import ForumLatestPosts from "@/components/forum/ForumLatestPosts";
 
 const MembersPage = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  
+  const [latestPostsKey, setLatestPostsKey] = useState(Date.now());
+
   useEffect(() => {
     if (!loading && !user) {
       console.log("User not authenticated, redirecting to auth page");
       navigate("/auth");
     }
   }, [user, loading, navigate]);
-  
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -25,12 +25,17 @@ const MembersPage = () => {
       </div>
     );
   }
-  
-  // Make sure we're logged in before showing the page
+
   if (!user) {
-    return null; // Will redirect in the useEffect
+    return null;
   }
-  
+
+  const handleTabChange = (value: string) => {
+    if (value === "latest") {
+      setLatestPostsKey(Date.now());
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
@@ -43,8 +48,8 @@ const MembersPage = () => {
             <p className="mt-2 text-gray-600 dark:text-gray-400">Connect with other members of the community</p>
           </div>
           
-          <Tabs defaultValue="categories" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6 bg-gray-100/70 dark:bg-gray-800/50 border border-primary/20"> {/* Reverted grid-cols to 2 */}
+          <Tabs defaultValue="categories" className="w-full" onValueChange={handleTabChange}>
+            <TabsList className="grid w-full grid-cols-2 mb-6 bg-gray-100/70 dark:bg-gray-800/50 border border-primary/20">
               <TabsTrigger 
                 value="categories"
                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
@@ -64,7 +69,7 @@ const MembersPage = () => {
             </TabsContent>
             
             <TabsContent value="latest" className="animate-fadeIn">
-              <ForumLatestPosts />
+              <ForumLatestPosts key={latestPostsKey} />
             </TabsContent>
           </Tabs>
         </div>
@@ -74,4 +79,3 @@ const MembersPage = () => {
 };
 
 export default MembersPage;
-
