@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import TitleUpdater from '@/components/TitleUpdater';
 import ModeratorHeader from '@/components/staff/moderator-dashboard/ModeratorHeader';
@@ -14,6 +13,7 @@ const ModeratorDashboard = () => {
   const [activeSection, setActiveSection] = useState('overview');
   const [selectedFlagId, setSelectedFlagId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
   const [moderationNote, setModerationNote] = useState('');
   
   // For this example, we'll use the imported mock data directly.
@@ -30,8 +30,17 @@ const ModeratorDashboard = () => {
   }, [reportsData]);
 
   const filteredReports = reportsData.filter(report => {
-    if (filterStatus === 'all') return true;
-    return report.status === filterStatus;
+    const statusMatch = filterStatus === 'all' || report.status === filterStatus;
+    
+    const searchLower = searchTerm.toLowerCase();
+    const termMatch = searchTerm === '' || 
+                      report.content.toLowerCase().includes(searchLower) ||
+                      report.reportReason.toLowerCase().includes(searchLower) ||
+                      report.reporter.name.toLowerCase().includes(searchLower) ||
+                      report.author.name.toLowerCase().includes(searchLower) ||
+                      report.topic.title.toLowerCase().includes(searchLower);
+
+    return statusMatch && termMatch;
   });
   
   const handleAction = (action: string, reportId: string) => {
@@ -86,6 +95,8 @@ const ModeratorDashboard = () => {
                   setSelectedFlag={setSelectedFlagId}
                   filterStatus={filterStatus}
                   setFilterStatus={setFilterStatus}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
                 />
               )}
               
@@ -111,4 +122,3 @@ const ModeratorDashboard = () => {
 };
 
 export default ModeratorDashboard;
-

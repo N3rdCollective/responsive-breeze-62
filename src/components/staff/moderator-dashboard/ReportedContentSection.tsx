@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ChevronDown, Search, RefreshCw } from 'lucide-react';
 import { Report } from './types';
@@ -10,7 +9,8 @@ interface ReportedContentSectionProps {
   setSelectedFlag: (id: string | null) => void;
   filterStatus: string;
   setFilterStatus: (status: string) => void;
-  // onSearch: (term: string) => void; // Future: for search functionality
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
   // onRefresh: () => void; // Future: for refresh functionality
 }
 
@@ -20,6 +20,8 @@ const ReportedContentSection: React.FC<ReportedContentSectionProps> = ({
   setSelectedFlag,
   filterStatus,
   setFilterStatus,
+  searchTerm,
+  setSearchTerm,
 }) => {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
@@ -47,7 +49,8 @@ const ReportedContentSection: React.FC<ReportedContentSectionProps> = ({
                 type="text"
                 className="w-full border dark:border-gray-600 rounded-md pl-8 pr-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Search reports..."
-                // onChange={(e) => onSearch(e.target.value)} // Future
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
               <div className="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none text-gray-500 dark:text-gray-400">
                 <Search size={16} />
@@ -78,7 +81,9 @@ const ReportedContentSection: React.FC<ReportedContentSectionProps> = ({
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {filteredReports.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">No reported content found</td>
+                <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                  {searchTerm ? `No reports found for "${searchTerm}"` : "No reported content found"}
+                </td>
               </tr>
             ) : (
               filteredReports.map((report) => (
