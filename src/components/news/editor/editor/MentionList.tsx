@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useImperativeHandle, forwardRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export interface MentionListItem {
@@ -15,9 +15,13 @@ export interface MentionListProps {
   command: (item: MentionListItem) => void;
 }
 
-const MentionList = React.forwardRef<HTMLDivElement, MentionListProps>((props, ref) => {
+export interface MentionListRef {
+  onKeyDown: (props: { event: KeyboardEvent }) => boolean;
+}
+
+const MentionList = forwardRef<MentionListRef, MentionListProps>((props, ref) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const componentRef = useRef<HTMLDivElement>(null);
+  const componentRef = useRef<HTMLDivElement>(null); // For scrolling
 
   const selectItem = useCallback((index: number) => {
     const item = props.items[index];
@@ -26,46 +30,45 @@ const MentionList = React.forwardRef<HTMLDivElement, MentionListProps>((props, r
     }
   }, [props]);
 
-  useEffect(() => {
+  // This handler will be called by the Tiptap extension
+  const onKeyDownHandler = useCallback((event: KeyboardEvent): boolean => {
     const navigationKeys = ['ArrowUp', 'ArrowDown', 'Enter', 'Tab'];
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (navigationKeys.includes(e.key)) {
-        e.preventDefault();
-        if (e.key === 'ArrowUp') {
-          setSelectedIndex((selectedIndex + props.items.length - 1) % props.items.length);
-          return true;
-        }
-        if (e.key === 'ArrowDown') {
-          setSelectedIndex((selectedIndex + 1) % props.items.length);
-          return true;
-        }
-        if (e.key === 'Enter' || e.key === 'Tab') {
-          selectItem(selectedIndex);
-          return true;
-        }
+    if (navigationKeys.includes(event.key)) {
+      event.preventDefault();
+      if (event.key === 'ArrowUp') {
+        setSelectedIndex((prevIndex) => (prevIndex + props.items.length - 1) % props.items.length);
+        return true;
       }
-      return false;
-    };
-
-    // Attach the event listener to the componentRef if it's the active element,
-    // or more broadly to the document if needed for global capture during suggestion.
-    // For simplicity, we'll assume the editor handles focusing the suggestion list
-    // or that these key events are appropriately propagated.
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('keydown', onKeyDown);
-    };
-  }, [props.items, selectedIndex, selectItem]);
-  
-  useEffect(() => {
-     // Scroll to selected item
-    if (componentRef.current && props.items.length > 0) {
-      const selectedElement = componentRef.current.children[selectedIndex] as HTMLElement;
-      if (selectedElement) {
-        selectedElement.scrollIntoView({ block: 'nearest' });
+      if (event.key === 'ArrowDown') {
+        setSelectedIndex((prevIndex) => (prevIndex + 1) % props.items.length);
+        return true;
+      }
+      if (event.key === 'Enter' || event.key === 'Tab') {
+        selectItem(selectedIndex);
+        return true;
       }
     }
-  }, [selectedIndex, props.items.length]);
+    return false;
+  }, [props.items, selectedIndex, selectItem, setSelectedIndex]);
+
+  useImperativeHandle(ref, () => ({
+    onKeyDown: ({ event }: { event: KeyboardEvent }) => {
+      return onKeyDownHandler(event);
+    }
+  }), [onKeyDownHandler]);
+  
+  // Reset selectedIndex when items change
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [props.items]);
+
+  useEffect(() => {
+    // Scroll to selected item
+    if (componentRef.current && props.items.length > 0 && componentRef.current.children[selectedIndex]) {
+      const selectedElement = componentRef.current.children[selectedIndex] as HTMLElement;
+      selectedElement.scrollIntoView({ block: 'nearest' });
+    }
+  }, [selectedIndex, props.items, componentRef]);
 
 
   if (props.items.length === 0) {
@@ -73,8 +76,8 @@ const MentionList = React.forwardRef<HTMLDivElement, MentionListProps>((props, r
   }
 
   return (
-    <div 
-      ref={ref} 
+    <div
+      ref={componentRef} // Use componentRef for the div to manage scrolling
       className="z-50 border bg-background shadow-md rounded-md p-1 max-h-60 overflow-y-auto"
       data-testid="mention-list"
     >
@@ -91,7 +94,7 @@ const MentionList = React.forwardRef<HTMLDivElement, MentionListProps>((props, r
             <AvatarImage src={item.avatar ?? undefined} alt={item.label} />
             <AvatarFallback>{item.label.substring(0, 1).toUpperCase()}</AvatarFallback>
           </Avatar>
-          <span className="font-medium">{item.displayName || item.username}</span>
+          <span className="font-medium">{item.displayName || item.username || item.label}</span>
           {item.username && item.displayName && (
             <span className="text-xs text-muted-foreground ml-1">(@{item.username})</span>
           )}
@@ -103,4 +106,3 @@ const MentionList = React.forwardRef<HTMLDivElement, MentionListProps>((props, r
 
 MentionList.displayName = 'MentionList';
 export default MentionList;
-
