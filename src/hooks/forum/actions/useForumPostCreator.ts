@@ -1,37 +1,30 @@
 
-import { useState } from 'react';
+import { useState } from "react";
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { CreatePostInput, ForumPost } from '@/types/forum';
-import { createForumNotification } from '@/hooks/forum/utils/forumNotificationUtils';
+import { CreatePostInput, ForumPost } from "@/types/forum";
+import { createForumNotification } from "../utils/forumNotificationUtils";
+import { extractMentionedUserIds } from "@/utils/mentionUtils"; // Import the new utility
 
 export const useForumPostCreator = () => {
-  const [submitting, setSubmitting] = useState(false);
-  const { user } = useAuth();
   const { toast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
 
   const createPost = async (input: CreatePostInput): Promise<ForumPost | null> => {
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "You must be logged in to reply to a topic.",
-        variant: "destructive"
-      });
-      return null;
-    }
-    
-    let createdPostData: ForumPost | null = null;
-
+    setSubmitting(true);
     try {
-      setSubmitting(true);
-      
-      const { data, error } = await supabase
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({ title: "Authentication Error", description: "You must be logged in to create a post.", variant: "destructive" });
+        return null;
+      }
+
+      const { data: postData, error } = await supabase
         .from('forum_posts')
         .insert({
           topic_id: input.topic_id,
           user_id: user.id,
-          content: input.content
+          content: input.content,
         })
         .select(`
           *,
@@ -39,50 +32,43 @@ export const useForumPostCreator = () => {
           forum_post_reactions (id, user_id, reaction_type)
         `)
         .single();
-        
+
       if (error) throw error;
-      if (!data) throw new Error("Failed to create post, no data returned.");
-      createdPostData = data as ForumPost;
-      
-      toast({
-        title: "Reply posted",
-        description: "Your reply has been posted successfully!"
-      });
 
-      if (createdPostData && user) {
-        const { data: topicData, error: topicFetchError } = await supabase
-          .from('forum_topics')
-          .select('user_id, title')
-          .eq('id', createdPostData.topic_id)
-          .single();
+      if (postData) {
+        toast({ title: "Post Created!", description: "Your post has been successfully created.", variant: "success" });
 
-        if (topicFetchError) {
-          console.error("Error fetching topic creator for notification:", topicFetchError);
-        } else if (topicData && topicData.user_id !== user.id) {
-          const tempDiv = document.createElement('div');
-          tempDiv.innerHTML = createdPostData.content;
-          const textContent = tempDiv.textContent || tempDiv.innerText || "";
-          const contentPreview = textContent.substring(0, 100) + (textContent.length > 100 ? "..." : "");
+        // Handle mention notifications
+        const mentionedUserIds = extractMentionedUserIds(input.content);
+        if (mentionedUserIds.length > 0) {
+          const { data: topicData, error: topicError } = await supabase
+            .from('forum_topics')
+            .select('title')
+            .eq('id', input.topic_id)
+            .single();
 
-          await createForumNotification(
-            topicData.user_id,
-            user.id,
-            'reply',
-            createdPostData.topic_id,
-            createdPostData.id,
-            contentPreview
-          );
+          const topicTitle = topicError || !topicData ? 'a topic' : topicData.title;
+          const contentPreview = `${user.user_metadata?.display_name || user.email || 'Someone'} mentioned you in a reply on "${topicTitle}"`;
+
+          for (const mentionedUserId of mentionedUserIds) {
+            if (mentionedUserId !== user.id) { // Don't notify self
+              await createForumNotification(
+                mentionedUserId,
+                user.id,
+                'mention_reply', // Or 'mention_post' if this creator is also for first posts
+                input.topic_id,
+                postData.id,
+                contentPreview
+              );
+            }
+          }
         }
+        return postData as ForumPost;
       }
-      
-      return createdPostData;
-    } catch (err: any) {
-      console.error('Error posting reply:', err.message);
-      toast({
-        title: "Error posting reply",
-        description: err.message || "Failed to post your reply. Please try again.",
-        variant: "destructive"
-      });
+      return null;
+    } catch (error: any) {
+      console.error("Error creating post:", error);
+      toast({ title: "Error creating post", description: error.message || "An unexpected error occurred.", variant: "destructive" });
       return null;
     } finally {
       setSubmitting(false);

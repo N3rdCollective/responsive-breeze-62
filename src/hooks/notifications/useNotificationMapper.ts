@@ -1,7 +1,7 @@
 
 import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Notification, NotificationUser } from '@/types/notifications';
+import { Notification, NotificationUser, NotificationType } from '@/types/notifications';
 
 export const useNotificationMapper = () => {
   const mapDbNotificationToType = useCallback(async (dbNotif: any): Promise<Notification> => {
@@ -11,10 +11,13 @@ export const useNotificationMapper = () => {
       let actorAvatar: string | undefined = undefined;
       let actorId = dbNotif.actor_id;
 
+      // Prefer pre-fetched actor_profiles if available
       if (dbNotif.actor_profiles) {
         actorName = dbNotif.actor_profiles.display_name || dbNotif.actor_profiles.username || 'User';
         actorAvatar = dbNotif.actor_profiles.profile_picture;
+        actorId = dbNotif.actor_profiles.id || dbNotif.actor_id;
       } else {
+        // Fallback to fetching profile if actor_profiles is not available
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('id, display_name, username, profile_picture')
@@ -30,7 +33,7 @@ export const useNotificationMapper = () => {
     }
 
     let content = dbNotif.content_preview || `Notification type: ${dbNotif.type}`;
-    let link = '/members/forum'; 
+    let link = '/members/forum';
     let topicTitle = '';
     let topicSlugVal: string | undefined = undefined;
     let categorySlugVal: string | undefined = undefined;
@@ -46,29 +49,60 @@ export const useNotificationMapper = () => {
         topicSlugVal = topicDetails.slug;
         if (topicDetails.category && typeof topicDetails.category === 'object' && topicDetails.category !== null && 'slug' in topicDetails.category) {
           categorySlugVal = (topicDetails.category as { slug: string }).slug;
+        } else if (typeof topicDetails.category === 'string') {
+            // This case should ideally not happen if the query is correct
+            // but as a fallback, if category is just a slug string (old structure?)
+            console.warn("Topic category data is not in expected object format, attempting to use as slug.");
+            categorySlugVal = topicDetails.category;
         }
       }
     }
+    
+    const notificationType = dbNotif.type as NotificationType;
 
-    if (dbNotif.type === 'reply' && actorProfile && topicTitle) {
-      content = `${actorProfile.name} replied to your topic: "${topicTitle}"`;
-      if (categorySlugVal && (topicSlugVal || dbNotif.topic_id)) {
-        link = `/members/forum/${categorySlugVal}/${topicSlugVal || dbNotif.topic_id}`;
-        if (dbNotif.post_id) link += `?post_id=${dbNotif.post_id}`;
-      }
-    } else if (dbNotif.type === 'like' && actorProfile && topicTitle) {
-      content = `${actorProfile.name} liked your post in: "${topicTitle}"`;
-      if (categorySlugVal && (topicSlugVal || dbNotif.topic_id)) {
-        link = `/members/forum/${categorySlugVal}/${topicSlugVal || dbNotif.topic_id}`;
-        if (dbNotif.post_id) link += `?post_id=${dbNotif.post_id}`;
-      }
-    } else if (dbNotif.type === 'system') {
-      content = dbNotif.content_preview || "System notification";
+    switch (notificationType) {
+      case 'reply':
+        if (actorProfile && topicTitle) {
+          content = `${actorProfile.name} replied to your topic: "${topicTitle}"`;
+        }
+        break;
+      case 'like':
+        if (actorProfile && topicTitle) {
+          content = `${actorProfile.name} liked your post in: "${topicTitle}"`;
+        }
+        break;
+      case 'mention_reply':
+        if (actorProfile && topicTitle) {
+          content = `${actorProfile.name} mentioned you in a reply on topic: "${topicTitle}"`;
+        } else if (actorProfile) {
+          content = `${actorProfile.name} mentioned you in a reply.`;
+        }
+        break;
+      case 'mention_post':
+         if (actorProfile && topicTitle) {
+          content = `${actorProfile.name} mentioned you in a post on topic: "${topicTitle}"`;
+        } else if (actorProfile) {
+          content = `${actorProfile.name} mentioned you in a post.`;
+        }
+        break;
+      case 'system':
+        content = dbNotif.content_preview || "System notification";
+        break;
+      default:
+        // For unknown types, use the content_preview or a generic message
+        content = dbNotif.content_preview || `Notification: ${dbNotif.type}`;
     }
+
+    // Construct link, ensuring topicSlugVal or dbNotif.topic_id is used
+    if (categorySlugVal && (topicSlugVal || dbNotif.topic_id)) {
+      link = `/members/forum/${categorySlugVal}/${topicSlugVal || dbNotif.topic_id}`;
+      if (dbNotif.post_id) link += `?post_id=${dbNotif.post_id}#post-${dbNotif.post_id}`;
+    }
+
 
     return {
       id: dbNotif.id,
-      type: dbNotif.type,
+      type: notificationType,
       read: dbNotif.read,
       actor: actorProfile,
       content: content,
@@ -85,4 +119,3 @@ export const useNotificationMapper = () => {
 
   return { mapDbNotificationToType };
 };
-
