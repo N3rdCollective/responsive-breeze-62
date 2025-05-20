@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
@@ -39,7 +38,7 @@ export const useForumTopic = () => {
         .from('forum_topics')
         .select(`
           *,
-          profile:profiles!forum_topics_user_id_fkey(username, display_name, avatar_url:profile_picture),
+          profile:profiles!forum_topics_user_id_fkey(username, display_name, avatar_url),
           category:forum_categories(name, slug)
         `);
 
@@ -86,7 +85,7 @@ export const useForumTopic = () => {
         .from('forum_posts')
         .select(`
           *,
-          profile:profiles!forum_posts_user_id_fkey(username, display_name, avatar_url:profile_picture)
+          profile:profiles!forum_posts_user_id_fkey(username, display_name, avatar_url)
         `)
         .eq('topic_id', topicData.id)
         .order('created_at', { ascending: true })
@@ -117,7 +116,7 @@ export const useForumTopic = () => {
       setLoadingData(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [topicId, categorySlug, navigate, page, viewCountIncremented, user]); // Removed incrementViewCount, toast as they are stable from their hooks
+  }, [topicId, categorySlug, navigate, page, viewCountIncremented, user]);
 
   useEffect(() => {
     if (user) { // Only fetch if user is loaded
