@@ -27,7 +27,7 @@ const ManageStaffModal = ({ open, onOpenChange, currentUserRole }: ManageStaffMo
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-6 py-4">
+        <div className="space-y-6 py-4 max-h-[70vh] overflow-y-auto">
           <StaffSectionHeader title="Pending Invitations" />
           
           <PendingStaffTable
