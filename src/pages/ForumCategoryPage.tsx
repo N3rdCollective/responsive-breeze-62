@@ -33,7 +33,7 @@ const ForumCategoryPage = () => {
   }, [user, authLoading, navigate]);
   
   useEffect(() => {
-    const fetchCategory = async () => {
+    const fetchCategoryAndTopics = async () => {
       if (!categorySlug) return;
       
       try {
@@ -72,11 +72,19 @@ const ForumCategoryPage = () => {
         setTotalPages(totalPageCount || 1);
         
         // Fetch topics
-        const { data: topicsData, error: topicsError } = await supabase
+        const { data: topicsRawData, error: topicsError } = await supabase
           .from('forum_topics')
           .select(`
-            *,
-            profile:profiles(username, display_name, profile_picture)
+            id,
+            title,
+            slug,
+            is_sticky,
+            is_locked,
+            created_at,
+            last_post_at,
+            user_id,
+            category_id,
+            profile:profiles!forum_topics_user_id_fkey(username, display_name, profile_picture)
           `)
           .eq('category_id', categoryData.id)
           .order('is_sticky', { ascending: false })
@@ -86,7 +94,7 @@ const ForumCategoryPage = () => {
         if (topicsError) throw topicsError;
         
         // Get post counts for each topic and map profile_picture
-        const topicsWithCountsAndMappedProfiles = await Promise.all((topicsData || []).map(async (topic) => {
+        const topicsWithCountsAndMappedProfiles = await Promise.all((topicsRawData || []).map(async (topic) => {
           const { count: postCount, error: postCountError } = await supabase
             .from('forum_posts')
             .select('*', { count: 'exact', head: true })
@@ -97,9 +105,10 @@ const ForumCategoryPage = () => {
           }
           
           // Map profile_picture to avatar_url
+          const profileData = topic.profile as { username?: string | null; display_name?: string | null; profile_picture?: string | null; } | null;
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { profile_picture, ...restOfProfileDetails } = topic.profile || {};
-          const newProfile = topic.profile 
+          const { profile_picture, ...restOfProfileDetails } = profileData || {};
+          const newProfile = profileData
             ? { ...restOfProfileDetails, avatar_url: profile_picture } 
             : undefined;
             
@@ -125,7 +134,7 @@ const ForumCategoryPage = () => {
       }
     };
     
-    fetchCategory();
+    fetchCategoryAndTopics();
   }, [categorySlug, navigate, page]);
   
   if (authLoading || loading) {
@@ -233,7 +242,7 @@ const ForumCategoryPage = () => {
                             <div>
                               <div className="flex items-center gap-2">
                                 <Link 
-                                  to={`/members/forum/${categorySlug}/${topic.id}`}
+                                  to={`/members/forum/${categorySlug}/${topic.slug || topic.id}`}
                                   className="font-medium hover:text-primary transition-colors line-clamp-1"
                                 >
                                   {topic.title}
