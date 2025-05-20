@@ -1,17 +1,15 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ForumCategories from "@/components/forum/ForumCategories";
-import ForumLatestPosts from "@/components/forum/ForumLatestPosts";
+// import ForumLatestPosts from "@/components/forum/ForumLatestPosts"; // Commented out as it's temporarily removed
 
 const MembersPage = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   
-  // Redirect to login if not authenticated
   useEffect(() => {
     if (!loading && !user) {
       console.log("User not authenticated, redirecting to auth page");
@@ -45,28 +43,32 @@ const MembersPage = () => {
           </div>
           
           <Tabs defaultValue="categories" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6 bg-gray-100/70 dark:bg-gray-800/50 border border-primary/20">
+            <TabsList className="grid w-full grid-cols-1 mb-6 bg-gray-100/70 dark:bg-gray-800/50 border border-primary/20"> {/* Updated grid-cols to 1 */}
               <TabsTrigger 
                 value="categories"
                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
               >
                 Forum Categories
               </TabsTrigger>
+              {/*
               <TabsTrigger 
                 value="latest"
                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
               >
                 Latest Posts
               </TabsTrigger>
+              */}
             </TabsList>
             
             <TabsContent value="categories" className="animate-fadeIn">
               <ForumCategories />
             </TabsContent>
             
+            {/*
             <TabsContent value="latest" className="animate-fadeIn">
               <ForumLatestPosts />
             </TabsContent>
+            */}
           </Tabs>
         </div>
       </div>
