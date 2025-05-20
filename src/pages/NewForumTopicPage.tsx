@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,21 +10,20 @@ import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { toast } from '@/hooks/use-toast';
 import ForumRichTextEditor from "@/components/forum/ForumRichTextEditor";
-import { useForum } from "@/hooks/useForum";
+import { useForumTopicCreator } from "@/hooks/forum/actions/useForumTopicCreator";
 import { ForumCategory } from "@/types/forum";
 
 const NewForumTopicPage = () => {
   const { categorySlug } = useParams<{ categorySlug: string }>();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { createTopic, submitting } = useForum();
+  const { createTopic, submitting } = useForumTopicCreator();
   
   const [category, setCategory] = useState<ForumCategory | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loadingCategory, setLoadingCategory] = useState(true);
   const [title, setTitle] = useState("");
-  const [content, setContent] = useState(""); // Content will now be HTML string
+  const [content, setContent] = useState("");
   
-  // Redirect to login if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth");
@@ -37,7 +35,7 @@ const NewForumTopicPage = () => {
       if (!categorySlug) return;
       
       try {
-        setLoading(true);
+        setLoadingCategory(true);
         
         // Fetch category
         const { data, error } = await supabase
@@ -49,7 +47,7 @@ const NewForumTopicPage = () => {
         if (error) throw error;
         
         if (!data) {
-          navigate('/members');
+          navigate('/members/forum');
           toast({
             title: "Category not found",
             description: "The forum category you're looking for doesn't exist.",
@@ -66,8 +64,9 @@ const NewForumTopicPage = () => {
           description: "We couldn't load the category data. Please try again.",
           variant: "destructive"
         });
+        navigate('/members/forum');
       } finally {
-        setLoading(false);
+        setLoadingCategory(false);
       }
     };
     
@@ -86,7 +85,6 @@ const NewForumTopicPage = () => {
       return;
     }
     
-    // Check if content is empty or just empty HTML like <p></p>
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = content;
     if (!content.trim() || !tempDiv.textContent?.trim()) {
@@ -103,7 +101,7 @@ const NewForumTopicPage = () => {
     const result = await createTopic({
       category_id: category.id,
       title,
-      content // Pass HTML content
+      content
     });
     
     if (result) {
@@ -111,7 +109,7 @@ const NewForumTopicPage = () => {
     }
   };
   
-  if (authLoading || loading) {
+  if (authLoading || loadingCategory) {
     return (
       <div className="min-h-screen">
         <Navbar />
@@ -123,7 +121,7 @@ const NewForumTopicPage = () => {
   }
   
   if (!user) {
-    return null; // Will redirect in the useEffect
+    return null;
   }
   
   if (!category) {
@@ -138,7 +136,7 @@ const NewForumTopicPage = () => {
                 The forum category you're looking for doesn't exist.
               </p>
               <Button asChild>
-                <Link to="/members">Back to Forum</Link>
+                <Link to="/members/forum">Back to Forum</Link>
               </Button>
             </CardContent>
           </Card>
@@ -186,13 +184,12 @@ const NewForumTopicPage = () => {
                     />
                   </div>
                   <div>
-                    {/* Using ForumRichTextEditor for content */}
                     <ForumRichTextEditor
                       id="content"
                       value={content}
                       onChange={setContent}
                       label="Content"
-                      height={300} // Adjusted height for forum context
+                      height={300}
                       placeholder="Write your post here..."
                     />
                   </div>
@@ -208,7 +205,7 @@ const NewForumTopicPage = () => {
                     </Button>
                     <Button 
                       type="submit" 
-                      disabled={submitting || !title.trim() || !content.trim()} // Basic check, refined in handleSubmit
+                      disabled={submitting || !title.trim() || !tempDiv.textContent?.trim()}
                       className="bg-primary hover:bg-primary/90"
                     >
                       {submitting ? (

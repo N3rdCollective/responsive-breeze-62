@@ -4,26 +4,29 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from '@/hooks/use-toast';
-import { useForum } from "@/hooks/useForum"; // Ensure this is imported
+// Removed: import { useForum } from "@/hooks/useForum"; 
 import { ForumTopic, ForumPost, ForumPostReaction } from "@/types/forum";
+
+// Import new action hooks
+import { useForumPostCreator } from "./actions/useForumPostCreator";
+import { useForumPostEditor } from "./actions/useForumPostEditor";
+import { useForumReactions } from "./actions/useForumReactions";
+import { useForumTopicViews } from "./actions/useForumTopicViews";
 
 const ITEMS_PER_PAGE = 10;
 
 export const useForumTopic = () => {
-  const { categorySlug, topicId: routeTopicId } = useParams<{ categorySlug: string, topicId: string }>(); // Renamed to routeTopicId
+  const { categorySlug, topicId: routeTopicId } = useParams<{ categorySlug: string, topicId: string }>();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { 
-    createPost,
-    updatePost,
-    deletePost,
-    addReaction,
-    removeReaction,
-    submitting: isSubmittingCore, // Renamed to avoid conflict
-    incrementViewCount 
-  } = useForum();
 
+  // Instantiate new action hooks
+  const { createPost, submitting: submittingCreatePost } = useForumPostCreator();
+  const { updatePost, submittingUpdate: submittingUpdatePost, deletePost, submittingDelete: submittingDeletePost } = useForumPostEditor();
+  const { addReaction, removeReaction, submitting: submittingReaction } = useForumReactions();
+  const { incrementViewCount } = useForumTopicViews();
+  
   const [topic, setTopic] = useState<ForumTopic | null>(null);
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -32,12 +35,14 @@ export const useForumTopic = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [viewCountIncremented, setViewCountIncremented] = useState(false);
 
-  // State for editing/deleting posts
   const [editingPost, setEditingPost] = useState<ForumPost | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
   const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
-  const [isProcessingPostAction, setIsProcessingPostAction] = useState(false);
+  
+  // Combined loading state for any post-related actions
+  const isProcessingPostAction = submittingUpdatePost || submittingDeletePost || submittingReaction;
+  const isSubmittingReply = submittingCreatePost;
 
 
   useEffect(() => {
@@ -45,7 +50,7 @@ export const useForumTopic = () => {
     setPage(1); 
   }, [routeTopicId]);
 
-  const fetchTopicData = useCallback(async (currentPage = page) => { // Added currentPage param
+  const fetchTopicData = useCallback(async (currentPage = page) => {
     if (!routeTopicId) return;
 
     try {
@@ -70,7 +75,7 @@ export const useForumTopic = () => {
       if (topicError) throw topicError;
       
       if (!topicRawData) {
-        navigate('/members');
+        navigate('/members/forum'); // Corrected redirect
         toast({
           title: "Topic not found",
           description: "The forum topic you're looking for doesn't exist.",
@@ -99,12 +104,9 @@ export const useForumTopic = () => {
       const totalPageCount = Math.ceil(totalPostsCount / ITEMS_PER_PAGE);
       setTotalPages(totalPageCount || 1);
       
-      // Ensure current page is valid after potential deletions
       const validCurrentPage = Math.min(currentPage, totalPageCount || 1);
       if (currentPage !== validCurrentPage && totalPostsCount > 0) {
-        setPage(validCurrentPage); // This will trigger a re-fetch if page changed
-        // If page didn't change but currentPage was adjusted, we need to fetch with validCurrentPage
-        // This will be handled by the useEffect below that listens to 'page'
+        setPage(validCurrentPage);
       }
       
       const { data: postsRawData, error: postsError } = await supabase
@@ -123,12 +125,9 @@ export const useForumTopic = () => {
       setPosts((postsRawData || []) as ForumPost[]);
       
       if (currentPage === 1 && fetchedTopic.id && !viewCountIncremented) {
-        try {
-          await incrementViewCount(fetchedTopic.id);
-          setViewCountIncremented(true);
-        } catch (viewCountError: any) {
-          console.error('Error incrementing view count:', viewCountError.message);
-        }
+        // No await needed here, fire and forget for view count.
+        incrementViewCount(fetchedTopic.id);
+        setViewCountIncremented(true);
       }
     } catch (error: any) {
       console.error('Error fetching topic data:', error.message);
@@ -141,13 +140,13 @@ export const useForumTopic = () => {
       setLoadingData(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [routeTopicId, categorySlug, navigate, page, viewCountIncremented, user]); // Removed incrementViewCount, kept 'page'
+  }, [routeTopicId, categorySlug, navigate, page, viewCountIncremented, user, incrementViewCount]); // Added incrementViewCount
 
   useEffect(() => {
     if (user || !authLoading) {
-      fetchTopicData(page); // Pass current page to fetchTopicData
+      fetchTopicData(page);
     }
-  }, [user, authLoading, fetchTopicData, page]); // Add page to dependencies
+  }, [user, authLoading, fetchTopicData, page]);
 
   const handleSubmitReply = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,21 +163,25 @@ export const useForumTopic = () => {
       toast({ title: "Topic is locked", description: "This topic is locked and cannot be replied to.", variant: "destructive" });
       return;
     }
-    setIsProcessingPostAction(true);
+    
     const result = await createPost({ topic_id: topic.id, content: replyContent });
-    setIsProcessingPostAction(false);
     
     if (result) {
       setReplyContent("");
-      // Instead of complex client-side pagination update, just refetch current page or navigate to new page.
-      // For simplicity, after a reply, it often makes sense to go to the last page.
-      const { count } = await supabase.from('forum_posts').select('*', { count: 'exact', head: true }).eq('topic_id', topic.id);
-      const newTotalPages = Math.ceil((count || 0) / ITEMS_PER_PAGE);
-      if (page === newTotalPages && posts.length < ITEMS_PER_PAGE && newTotalPages === totalPages) {
-        // If on the last page and it's not full, append locally
+      const { count, error: countError } = await supabase.from('forum_posts').select('*', { count: 'exact', head: true }).eq('topic_id', topic.id);
+      if (countError) {
+        console.error("Error fetching post count after reply:", countError);
+        fetchTopicData(page); // fallback to refetch current page
+        return;
+      }
+
+      const newTotalPosts = count || 0;
+      const newTotalPages = Math.ceil(newTotalPosts / ITEMS_PER_PAGE);
+      
+      if (page === newTotalPages && posts.length < ITEMS_PER_PAGE && newTotalPages === totalPages && newTotalPosts <= page * ITEMS_PER_PAGE) {
          setPosts(prev => [...prev, result as ForumPost]);
       } else {
-        setPage(newTotalPages); // This will trigger a refetch via useEffect
+        setPage(newTotalPages); 
       }
       setTotalPages(newTotalPages);
     }
@@ -200,14 +203,12 @@ export const useForumTopic = () => {
 
   const handleSaveEditedPost = async (newContent: string) => {
     if (!editingPost || !editingPost.id) return;
-    if (topic?.is_locked) return; // Should be handled by dialog button too
+    if (topic?.is_locked) return;
 
-    setIsProcessingPostAction(true);
     const updatedPostData = await updatePost(editingPost.id, newContent);
-    setIsProcessingPostAction(false);
 
     if (updatedPostData) {
-      setPosts(prevPosts => prevPosts.map(p => p.id === updatedPostData.id ? { ...p, ...updatedPostData, forum_post_reactions: p.forum_post_reactions } : p)); // Preserve existing reactions if not returned by update
+      setPosts(prevPosts => prevPosts.map(p => p.id === updatedPostData.id ? { ...p, ...updatedPostData, forum_post_reactions: p.forum_post_reactions || updatedPostData.forum_post_reactions } : p));
       handleCloseEditDialog();
     }
   };
@@ -228,26 +229,18 @@ export const useForumTopic = () => {
 
   const handleConfirmDeletePost = async () => {
     if (!deletingPostId) return;
-    if (topic?.is_locked) return; // Should be handled by dialog button too
+    if (topic?.is_locked) return;
 
-    // Special check: prevent deleting the first post of a topic for now
-    // This logic might need to be more complex (e.g. delete topic if last post is deleted)
-    const postToDelete = posts.find(p => p.id === deletingPostId);
     const isFirstPost = posts.findIndex(p => p.id === deletingPostId) === 0 && page === 1;
     if (isFirstPost && posts.length > 1) {
          toast({ title: "Action Denied", description: "The first post of a topic cannot be deleted if other replies exist. Consider editing it or contacting a moderator to delete the entire topic.", variant: "destructive" });
          handleCloseDeleteDialog();
          return;
     }
-    // If it's the first and ONLY post, deleting it effectively deletes the topic content.
-    // The topic itself would remain for now. Could add logic to delete topic if last post deleted.
 
-    setIsProcessingPostAction(true);
     const success = await deletePost(deletingPostId);
-    setIsProcessingPostAction(false);
 
     if (success) {
-      // Refetch data for current page to handle pagination and counts correctly
       fetchTopicData(page); 
       handleCloseDeleteDialog();
     }
@@ -259,7 +252,7 @@ export const useForumTopic = () => {
       return;
     }
     if (topic?.is_locked) {
-      toast({ title: "Topic Locked", description: "Cannot react to posts in a locked topic.", variant: "default" }); // Not destructive, just info
+      toast({ title: "Topic Locked", description: "Cannot react to posts in a locked topic.", variant: "default" });
       return;
     }
 
@@ -269,9 +262,8 @@ export const useForumTopic = () => {
     const currentPost = posts[postIndex];
     const existingReaction = currentPost.forum_post_reactions?.find(r => r.user_id === user.id && r.reaction_type === reactionType);
 
-    setIsProcessingPostAction(true); // Generic loading for quick actions
     if (existingReaction) {
-      const success = await removeReaction(postId); // Assuming removeReaction takes postId and userId is inferred by RLS
+      const success = await removeReaction(postId, reactionType);
       if (success) {
         const updatedReactions = currentPost.forum_post_reactions?.filter(r => r.id !== existingReaction.id);
         setPosts(prev => prev.map(p => p.id === postId ? { ...p, forum_post_reactions: updatedReactions } : p));
@@ -283,9 +275,7 @@ export const useForumTopic = () => {
         setPosts(prev => prev.map(p => p.id === postId ? { ...p, forum_post_reactions: updatedReactions } : p));
       }
     }
-    setIsProcessingPostAction(false);
   };
-
 
   return {
     user,
@@ -298,17 +288,16 @@ export const useForumTopic = () => {
     page,
     setPage,
     totalPages,
-    isSubmittingReply: isSubmittingCore || isProcessingPostAction, // Combine loading states
+    isSubmittingReply, // Now uses submittingCreatePost
     handleSubmitReply,
     categorySlug,
     topicId: routeTopicId,
 
-    // Edit/Delete post states and handlers
     editingPost,
     showEditDialog,
     deletingPostId,
     showDeleteConfirmDialog,
-    isProcessingPostAction,
+    isProcessingPostAction, // Now combined from update, delete, reaction submit states
     handleOpenEditDialog,
     handleCloseEditDialog,
     handleSaveEditedPost,
