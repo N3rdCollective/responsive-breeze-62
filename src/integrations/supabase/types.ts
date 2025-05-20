@@ -563,8 +563,11 @@ export type Database = {
           display_name: string | null
           favorite_genres: string[] | null
           id: string
+          is_public: boolean | null
           profile_picture: string | null
           role: string | null
+          social_links: Json | null
+          theme: string | null
           updated_at: string | null
           username: string | null
         }
@@ -574,8 +577,11 @@ export type Database = {
           display_name?: string | null
           favorite_genres?: string[] | null
           id: string
+          is_public?: boolean | null
           profile_picture?: string | null
           role?: string | null
+          social_links?: Json | null
+          theme?: string | null
           updated_at?: string | null
           username?: string | null
         }
@@ -585,8 +591,11 @@ export type Database = {
           display_name?: string | null
           favorite_genres?: string[] | null
           id?: string
+          is_public?: boolean | null
           profile_picture?: string | null
           role?: string | null
+          social_links?: Json | null
+          theme?: string | null
           updated_at?: string | null
           username?: string | null
         }
