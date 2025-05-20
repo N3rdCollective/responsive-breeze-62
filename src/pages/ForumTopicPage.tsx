@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
@@ -11,9 +11,11 @@ import ForumPostCard from "@/components/forum/TopicPage/ForumPostCard";
 import ReplyFormCard from "@/components/forum/TopicPage/ReplyFormCard";
 import EditPostDialog from "@/components/forum/TopicPage/EditPostDialog";
 import DeletePostConfirmDialog from "@/components/forum/TopicPage/DeletePostConfirmDialog";
+import { ForumPost } from "@/types/forum";
 
 const ForumTopicPage = () => {
   const navigate = useNavigate();
+  const replyFormRef = useRef<HTMLDivElement>(null);
   const {
     user,
     authLoading,
@@ -47,6 +49,12 @@ const ForumTopicPage = () => {
       navigate("/auth");
     }
   }, [user, authLoading, navigate]);
+  
+  const handleQuotePost = (postToQuote: ForumPost) => {
+    const authorName = postToQuote.profile?.display_name || postToQuote.profile?.username || 'A user';
+    setReplyContent(`<blockquote><p><strong>${authorName} wrote:</strong></p>${postToQuote.content}</blockquote><p>&nbsp;</p>`);
+    replyFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
   
   if (authLoading || (loadingData && !topic)) {
     return (
@@ -106,6 +114,7 @@ const ForumTopicPage = () => {
                 currentUser={user}
                 onEdit={handleOpenEditDialog}
                 onDelete={handleOpenDeleteDialog}
+                onQuote={handleQuotePost}
                 onToggleReaction={handleToggleReaction}
                 isTopicLocked={topic.is_locked}
                 isProcessingAction={isProcessingPostAction || (isSubmittingReply && post.id === 'temp-replying-post-id')}
@@ -122,13 +131,15 @@ const ForumTopicPage = () => {
                </div>
             )}
             
-            <ReplyFormCard
-              replyContent={replyContent}
-              onReplyContentChange={setReplyContent}
-              onSubmitReply={handleSubmitReply}
-              isSubmitting={isSubmittingReply}
-              isLocked={topic.is_locked}
-            />
+            <div ref={replyFormRef}>
+              <ReplyFormCard
+                replyContent={replyContent}
+                onReplyContentChange={setReplyContent}
+                onSubmitReply={handleSubmitReply}
+                isSubmitting={isSubmittingReply}
+                isLocked={topic.is_locked}
+              />
+            </div>
           </div>
         </div>
       </div>
