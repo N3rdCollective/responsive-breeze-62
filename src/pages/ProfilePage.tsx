@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom"; // Added for navigation
 import { 
@@ -40,7 +39,7 @@ import Navbar from "@/components/Navbar"; // Added Navbar
 // Actual project hooks
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import type { UserProfile } from "@/types/profile"; // Added this import
+import type { UserProfile } from "@/types/profile"; // Ensure this import is present and correct
 
 // Genre data (expanded) - consider moving to a constants file if used elsewhere
 const genres = [
@@ -52,8 +51,8 @@ const genres = [
 
 // Available roles - ensure these align with UserProfile type
 const roles: UserProfile['role'][] = [ // Typed for safety
-  'Music Fan', 'Artist', 'Producer', 'DJ', 'Band Member', 
-  'Industry Professional', 'Music Journalist', 'Label Owner', 'user' // 'user' is a valid fallback
+  'Music Fan', 'artist', 'producer', 'DJ', 'Band Member', 
+  'industry_professional', 'Music Journalist', 'Label Owner', 'user'
 ];
 
 // Theme options
