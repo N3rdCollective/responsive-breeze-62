@@ -18,7 +18,7 @@ const TopicListItem: React.FC<TopicListItemProps> = ({ topic, categorySlug }) =>
         <div className="col-span-7 sm:col-span-8">
           <div className="flex items-center space-x-3">
             <Avatar className="h-10 w-10 ring-2 ring-primary/10">
-              <AvatarImage src={topic.profile?.avatar_url || ''} alt={topic.profile?.display_name || topic.profile?.username || 'User'} />
+              <AvatarImage src={topic.profile?.profile_picture || ''} alt={topic.profile?.display_name || topic.profile?.username || 'User'} />
               <AvatarFallback className="bg-primary/20 text-primary-foreground">
                 {(topic.profile?.display_name?.[0] || topic.profile?.username?.[0] || 'U').toUpperCase()}
               </AvatarFallback>

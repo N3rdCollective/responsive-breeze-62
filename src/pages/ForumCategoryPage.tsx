@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -82,9 +81,12 @@ const ForumCategoryPage = () => {
             is_sticky,
             is_locked,
             created_at,
+            updated_at, 
             last_post_at,
+            last_post_user_id, 
             user_id,
             category_id,
+            view_count, 
             profile:profiles!forum_topics_user_id_fkey(username, display_name, profile_picture)
           `)
           .eq('category_id', categoryData.id)
@@ -94,8 +96,8 @@ const ForumCategoryPage = () => {
           
         if (topicsError) throw topicsError;
         
-        // Get post counts for each topic and map profile_picture
-        const topicsWithCountsAndMappedProfiles = await Promise.all((topicsRawData || []).map(async (topic) => {
+        // Get post counts for each topic
+        const topicsWithCounts = await Promise.all((topicsRawData || []).map(async (topic) => {
           const { count: postCount, error: postCountError } = await supabase
             .from('forum_posts')
             .select('*', { count: 'exact', head: true })
@@ -104,24 +106,16 @@ const ForumCategoryPage = () => {
           if (postCountError) {
             console.error(`Error fetching post count for topic ${topic.id}:`, postCountError);
           }
-          
-          const profileData = topic.profile as { username?: string | null; display_name?: string | null; profile_picture?: string | null; } | null;
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { profile_picture, ...restOfProfileDetails } = profileData || {};
-          const newProfile = profileData
-            ? { ...restOfProfileDetails, avatar_url: profile_picture } 
-            : undefined;
-            
+                      
           return {
             ...topic,
-            profile: newProfile,
             _count: {
               posts: postCount || 0
             }
-          } as ForumTopic;
+          } as ForumTopic; // Ensure all fields from ForumTopic are present due to the select query
         }));
         
-        setTopics(topicsWithCountsAndMappedProfiles);
+        setTopics(topicsWithCounts);
       } catch (error: any) {
         console.error('Error fetching forum data:', error.message);
         toast({
