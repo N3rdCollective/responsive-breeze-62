@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu } from "lucide-react";
@@ -7,6 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import NavItem from "./NavItem";
 import ThemeToggle from "./ThemeToggle";
 import ListenButton from "./ListenButton";
+import NotificationBell from "@/components/notifications/NotificationBell";
 
 interface NavigationItem {
   path: string;
@@ -41,8 +41,9 @@ const MobileNav = ({
   };
   
   return (
-    <div className="md:hidden flex items-center space-x-4">
+    <div className="md:hidden flex items-center space-x-2">
       <ListenButton isScrolled={isScrolled} isHomePage={isHomePage} />
+      <NotificationBell isHomePage={isHomePage} isScrolled={isScrolled} mobile />
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
           <Button
@@ -50,18 +51,17 @@ const MobileNav = ({
             size="icon"
             className={`
               ${isHomePage && !isScrolled
-                ? "text-white hover:text-[#FFD700]"
-                : "text-[#333333] hover:text-[#FFD700]"
+                ? "text-white hover:text-primary dark:text-primary dark:hover:text-white"
+                : "text-foreground hover:text-primary dark:hover:text-primary"
               }
-              dark:text-white dark:hover:text-[#FFD700]
             `}
           >
             <Menu className="h-6 w-6" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+        <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-background text-foreground">
           <SheetHeader>
-            <SheetTitle className="text-left text-xl font-bold text-[#333333] dark:text-[#FFD700]">
+            <SheetTitle className="text-left text-xl font-bold text-primary dark:text-primary">
               Menu
             </SheetTitle>
           </SheetHeader>
@@ -76,8 +76,8 @@ const MobileNav = ({
                   }}
                   className={`
                     ${isActive(item.path)
-                      ? 'text-[#FFD700] dark:text-[#FFD700]'
-                      : 'text-[#333333] dark:text-white hover:text-[#FFD700] dark:hover:text-[#FFD700]'
+                      ? 'text-primary dark:text-primary'
+                      : 'text-foreground hover:text-primary dark:hover:text-primary'
                     }
                     text-lg font-medium transition-colors duration-200 text-left
                   `}
@@ -91,8 +91,8 @@ const MobileNav = ({
                   onClick={() => handleNavigation(item.path, item.onClick)}
                   className={`
                     ${isActive(item.path)
-                      ? 'text-[#FFD700] dark:text-[#FFD700]'
-                      : 'text-[#333333] dark:text-white hover:text-[#FFD700] dark:hover:text-[#FFD700]'
+                      ? 'text-primary dark:text-primary'
+                      : 'text-foreground hover:text-primary dark:hover:text-primary'
                     }
                     text-lg font-medium transition-colors duration-200
                   `}
@@ -102,7 +102,9 @@ const MobileNav = ({
               )
             ))}
             {mounted && (
-              <ThemeToggle isHomePage={isHomePage} isScrolled={isScrolled} mobile />
+              <div className="pt-4 border-t border-border">
+                <ThemeToggle isHomePage={isHomePage} isScrolled={isScrolled} mobile />
+              </div>
             )}
           </div>
         </SheetContent>
