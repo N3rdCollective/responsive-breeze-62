@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { 
@@ -42,6 +41,7 @@ import type { UserProfile } from "@/types/profile";
 import { AlertCircle, Loader2, ChevronLeft, Camera, Music, Save, Eye, Paintbrush, UserCircle } from 'lucide-react';
 import { Instagram, Twitter, Globe } from 'lucide-react';
 import Navbar from "@/components/Navbar";
+import AvatarUploadDialog from "@/components/profile/AvatarUploadDialog";
 
 // Genre data (expanded) - consider moving to a constants file if used elsewhere
 const genres = [
@@ -85,6 +85,7 @@ const EnhancedProfilePage = () => {
     socialLinks, setSocialLinks,
     theme, setTheme,
     isPublic, setIsPublic,
+    avatarUrl, setAvatarUrl,
     getProfileFormData
   } = useProfileFormFields({
     profileData: profile,
@@ -104,6 +105,7 @@ const EnhancedProfilePage = () => {
 
   const [activeTab, setActiveTab] = useState('edit');
   const [showGenreSelector, setShowGenreSelector] = useState(false);
+  const [isAvatarUploadOpen, setIsAvatarUploadOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -153,6 +155,10 @@ const EnhancedProfilePage = () => {
       .toUpperCase();
   };
 
+  const handleAvatarUploaded = (newAvatarUrl: string) => {
+    setAvatarUrl(newAvatarUrl);
+  };
+
   const pageError = fetchProfileError || saveProfileError;
 
   if (profileLoading || authLoading) {
@@ -178,6 +184,8 @@ const EnhancedProfilePage = () => {
     );
   }
   
+  const displayAvatarUrl = avatarUrl !== null ? avatarUrl : profile?.avatar_url;
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
@@ -197,14 +205,21 @@ const EnhancedProfilePage = () => {
               <CardHeader className="flex flex-col items-center pt-6 pb-2">
                 <div className="relative group">
                   <Avatar className="h-24 w-24 mb-2 border-4 border-primary">
-                    <AvatarImage src={profile?.avatar_url || undefined} alt={displayName || "User"} />
+                    <AvatarImage src={displayAvatarUrl || undefined} alt={displayName || "User"} />
                     <AvatarFallback className="text-lg bg-muted">
                       {getInitials(displayName)} 
                     </AvatarFallback>
                   </Avatar>
                   {activeTab === 'edit' && (
                     <div className="absolute bottom-0 right-0">
-                      <Button size="sm" variant="secondary" className="rounded-full h-8 w-8 p-0" title="Change_avatar_coming_soon">
+                      <Button 
+                        size="sm" 
+                        variant="secondary" 
+                        className="rounded-full h-8 w-8 p-0" 
+                        title="Change Avatar"
+                        onClick={() => setIsAvatarUploadOpen(true)}
+                        disabled={isSaving}
+                      >
                         <Camera className="h-4 w-4" />
                       </Button>
                     </div>
@@ -545,6 +560,16 @@ const EnhancedProfilePage = () => {
           </div>
         </div>
       </div>
+      {user && (
+        <AvatarUploadDialog
+          open={isAvatarUploadOpen}
+          onOpenChange={setIsAvatarUploadOpen}
+          onAvatarUploaded={handleAvatarUploaded}
+          currentAvatarUrl={displayAvatarUrl}
+          displayName={displayName}
+          user={user}
+        />
+      )}
     </div>
   );
 };

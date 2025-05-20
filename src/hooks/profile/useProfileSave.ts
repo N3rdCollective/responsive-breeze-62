@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import type { UserProfile } from "@/types/profile";
@@ -14,6 +13,7 @@ export interface ProfileDataToSave {
   socialLinks: UserProfile['social_links'];
   theme: string;
   isPublic: boolean;
+  avatarUrl?: string | null; // Added avatarUrl
 }
 
 export const useProfileSave = (user: User | null, currentUsernameFromProfile: string | undefined) => {
@@ -34,6 +34,7 @@ export const useProfileSave = (user: User | null, currentUsernameFromProfile: st
     setSavedProfile(null);
     
     try {
+      // Pass avatarUrl to saveUserProfileData
       const updatedProfile = await saveUserProfileData(user, dataToSave, currentUsernameFromProfile);
       setSavedProfile(updatedProfile);
       toast({

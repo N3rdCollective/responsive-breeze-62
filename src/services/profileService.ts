@@ -5,6 +5,42 @@ import { User } from "@supabase/supabase-js";
 
 const initialSocialLinksService: UserProfile['social_links'] = { instagram: null, twitter: null, website: null };
 
+// New function to upload avatar
+export const uploadAvatar = async (user: User, file: File): Promise<string> => {
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+  const filePath = `${fileName}`; // Store at the root of 'avatars' bucket
+
+  console.log(`Service: Uploading avatar ${filePath} for user ${user.id}`);
+
+  const { error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(filePath, file, {
+      cacheControl: '3600', // Cache for 1 hour
+      upsert: true, // Replace if exists, useful for re-uploads
+    });
+
+  if (uploadError) {
+    console.error("Service: Error uploading avatar:", uploadError.message);
+    throw uploadError;
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from('avatars')
+    .getPublicUrl(filePath);
+
+  if (!publicUrlData?.publicUrl) {
+    console.error("Service: Could not get public URL for avatar.");
+    throw new Error('Failed to get public URL for avatar.');
+  }
+  
+  // Append a timestamp to bust cache for the new image
+  const newAvatarUrlWithCacheBuster = `${publicUrlData.publicUrl}?t=${new Date().getTime()}`;
+  console.log("Service: Avatar uploaded, public URL:", newAvatarUrlWithCacheBuster);
+  return newAvatarUrlWithCacheBuster;
+};
+
+
 export const fetchUserProfileData = async (
   user: User,
   initialSocialLinks: UserProfile['social_links']
@@ -40,7 +76,8 @@ export const fetchUserProfileData = async (
       display_name: data.display_name || "",
       bio: data.bio || "",
       favorite_genres: data.favorite_genres || [],
-      avatar_url: data.profile_picture, // ensure this mapping is consistent
+      // The database column is 'profile_picture', we map it to 'avatar_url' in the type
+      avatar_url: data.profile_picture, 
       role: (data.role as UserProfile['role']) || "user",
       social_links: processedSocialLinks,
       theme: data.theme || 'default',
@@ -64,12 +101,13 @@ export const saveUserProfileData = async (
     socialLinks: UserProfile['social_links'];
     theme: string;
     isPublic: boolean;
+    avatarUrl?: string | null; // Added avatarUrl
   },
   currentUsername: string | undefined
 ): Promise<UserProfile> => {
   console.log("Service: Saving profile for user:", user.id);
   
-  const dataToSave = {
+  const dataToSave: any = { // Use 'any' temporarily for flexibility or define a more specific type
     username: profileData.username,
     display_name: profileData.displayName,
     bio: profileData.bio,
@@ -80,6 +118,13 @@ export const saveUserProfileData = async (
     is_public: profileData.isPublic,
     updated_at: new Date().toISOString()
   };
+
+  // Only include profile_picture if avatarUrl is provided
+  if (profileData.avatarUrl !== undefined) {
+    // Ensure we remove cache buster before saving to DB if it exists
+    dataToSave.profile_picture = profileData.avatarUrl ? profileData.avatarUrl.split('?t=')[0] : null;
+  }
+  
   console.log("Service: Profile data to save:", dataToSave);
 
   if (profileData.username !== currentUsername) {
@@ -144,7 +189,7 @@ export const saveUserProfileData = async (
         twitter: (rawSocialLinksSaved as any).twitter || null,
         website: (rawSocialLinksSaved as any).website || null,
       }
-      : initialSocialLinksService; // Use service's initial for consistency
+      : initialSocialLinksService; 
 
   return {
     id: result.data.id,
@@ -152,7 +197,7 @@ export const saveUserProfileData = async (
     display_name: result.data.display_name || "",
     bio: result.data.bio || "",
     favorite_genres: result.data.favorite_genres || [],
-    avatar_url: result.data.profile_picture,
+    avatar_url: result.data.profile_picture, // Mapped from profile_picture
     role: (result.data.role as UserProfile['role']) || "user",
     social_links: processedSocialLinksSaved,
     theme: result.data.theme || 'default',
