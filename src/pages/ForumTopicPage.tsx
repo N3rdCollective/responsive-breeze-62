@@ -1,195 +1,41 @@
-import React, { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+
+import React, { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, LockIcon } from "lucide-react";
-import { toast } from '@/hooks/use-toast';
-import { formatDistanceToNow } from 'date-fns';
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
-import { useForum } from "@/hooks/useForum";
-import { ForumPost, ForumTopic } from "@/types/forum";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
+import ForumPagination from "@/components/forum/ForumPagination"; // Using the existing component
+import { useForumTopic } from "@/hooks/forum/useForumTopic";
+import TopicHeaderDisplay from "@/components/forum/TopicPage/TopicHeaderDisplay";
+import ForumPostCard from "@/components/forum/TopicPage/ForumPostCard";
+import ReplyFormCard from "@/components/forum/TopicPage/ReplyFormCard";
 
 const ForumTopicPage = () => {
-  const { categorySlug, topicId } = useParams<{ categorySlug: string, topicId: string }>();
-  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { createPost, submitting, incrementViewCount } = useForum();
+  const {
+    user,
+    authLoading,
+    topic,
+    posts,
+    loadingData,
+    replyContent,
+    setReplyContent,
+    page,
+    setPage,
+    totalPages,
+    isSubmittingReply,
+    handleSubmitReply,
+    categorySlug,
+  } = useForumTopic();
   
-  const [topic, setTopic] = useState<ForumTopic | null>(null);
-  const [posts, setPosts] = useState<ForumPost[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [replyContent, setReplyContent] = useState("");
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [viewCountIncremented, setViewCountIncremented] = useState(false); // New state variable
-  const ITEMS_PER_PAGE = 10;
-  
-  // Redirect to login if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth");
     }
   }, [user, authLoading, navigate]);
   
-  useEffect(() => {
-    // Reset viewCountIncremented when topicId changes
-    setViewCountIncremented(false);
-  }, [topicId]);
-
-  useEffect(() => {
-    const fetchTopic = async () => {
-      if (!topicId) return;
-      
-      try {
-        setLoading(true);
-        
-        const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(topicId);
-        
-        let query = supabase
-          .from('forum_topics')
-          .select(`
-            *,
-            profile:profiles!forum_topics_user_id_fkey(username, display_name, avatar_url:profile_picture),
-            category:forum_categories(name, slug)
-          `);
-
-        if (isUUID) {
-          query = query.eq('id', topicId);
-        } else {
-          query = query.eq('slug', topicId);
-        }
-        
-        const { data: topicRawData, error: topicError } = await query.single();
-          
-        if (topicError) throw topicError;
-        
-        if (!topicRawData) {
-          navigate('/members');
-          toast({
-            title: "Topic not found",
-            description: "The forum topic you're looking for doesn't exist.",
-            variant: "destructive"
-          });
-          return;
-        }
-        
-        const topicData = {
-          ...topicRawData,
-        };
-
-        if (topicData.category && topicData.category.slug !== categorySlug) {
-          navigate(`/members/forum/${topicData.category.slug}/${topicData.slug || topicData.id}`);
-          return;
-        }
-        
-        setTopic(topicData as ForumTopic);
-        
-        const { count, error: countError } = await supabase
-          .from('forum_posts')
-          .select('*', { count: 'exact', head: true })
-          .eq('topic_id', topicData.id); 
-          
-        if (countError) throw countError;
-        
-        const totalPageCount = Math.ceil((count || 0) / ITEMS_PER_PAGE);
-        setTotalPages(totalPageCount || 1);
-        
-        const { data: postsRawData, error: postsError } = await supabase
-          .from('forum_posts')
-          .select(`
-            *,
-            profile:profiles!forum_posts_user_id_fkey(username, display_name, avatar_url:profile_picture)
-          `)
-          .eq('topic_id', topicData.id)
-          .order('created_at', { ascending: true })
-          .range((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE - 1);
-          
-        if (postsError) throw postsError;
-
-        setPosts((postsRawData || []) as ForumPost[]);
-        
-        // Increment view count only on the first page and if not already incremented
-        if (page === 1 && topicData.id && !viewCountIncremented) {
-          try {
-            console.log(`Attempting to increment view count for topic ID: ${topicData.id}`);
-            await incrementViewCount(topicData.id); // Ensure this is the UUID
-            setViewCountIncremented(true); // Mark as incremented
-            console.log(`Successfully incremented view count for topic ID: ${topicData.id}`);
-          } catch (viewCountError: any) {
-            // Silently fail or log, this is not critical to page load but good to know if it fails
-            console.error('Error incrementing view count:', viewCountError.message);
-          }
-        }
-      } catch (error: any) {
-        console.error('Error fetching topic data:', error.message);
-        toast({
-          title: "Error loading topic",
-          description: "We couldn't load the topic data. Please try again.",
-          variant: "destructive"
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchTopic();
-  }, [topicId, categorySlug, navigate, page, viewCountIncremented, incrementViewCount]); // viewCountIncremented and incrementViewCount added back to ensure effect runs if these change, but logic inside controls the call
-  
-  const handleSubmitReply = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!replyContent.trim()) {
-      toast({
-        title: "Empty reply",
-        description: "Please enter a message for your reply.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (!topic || !topic.id) return;
-    
-    if (topic?.is_locked) {
-      toast({
-        title: "Topic is locked",
-        description: "This topic is locked and cannot be replied to.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    const result = await createPost({
-      topic_id: topic.id, // Use topic.id (UUID)
-      content: replyContent
-    });
-    
-    if (result) {
-      setReplyContent("");
-      // Add the new post to the list if we're on the last page
-      // The 'result' from createPost should already have avatar_url due to alias in useForum.ts
-      const newPost = result as ForumPost; // Assuming result matches ForumPost type
-      if (page === totalPages) {
-          setPosts(prev => [...prev, newPost]);
-      } else {
-        // Refresh current page or navigate to last page to see the new post
-        // For simplicity, let's refresh the topic data which re-fetches posts for the current page
-        // Or navigate to last page if it's a new page
-        const currentPostCount = (posts?.length || 0) + ((page -1) * ITEMS_PER_PAGE); // More robust count
-        const newTotalPosts = currentPostCount + 1; 
-        const newTotalPages = Math.ceil(newTotalPosts / ITEMS_PER_PAGE);
-        setTotalPages(newTotalPages);
-        setPage(newTotalPages); // Navigate to the new last page
-      }
-    }
-  };
-  
-  if (authLoading || loading) {
+  if (authLoading || (loadingData && !topic)) { // Show loader if auth is loading OR data is loading and no topic yet
     return (
       <div className="min-h-screen">
         <Navbar />
@@ -201,10 +47,15 @@ const ForumTopicPage = () => {
   }
   
   if (!user) {
-    return null; // Will redirect in the useEffect
+    // This case should ideally be handled by the redirect,
+    // but as a fallback or if redirect hasn't happened yet.
+    return null; 
   }
   
   if (!topic) {
+    // This implies loadingData is false and topic is still null, meaning topic not found or error.
+    // The hook useForumTopic handles navigation for "not found", so this state might be brief
+    // or indicate an unhandled error case not leading to navigation.
     return (
       <div className="min-h-screen">
         <Navbar />
@@ -213,10 +64,10 @@ const ForumTopicPage = () => {
             <CardContent className="py-12 text-center">
               <p className="text-lg font-medium mb-2">Topic not found</p>
               <p className="text-muted-foreground mb-4">
-                The forum topic you're looking for doesn't exist.
+                The forum topic you're looking for might not exist or there was an issue loading it.
               </p>
               <Button asChild>
-                <Link to="/members">Back to Forum</Link>
+                <Link to="/members/forum">Back to Forum</Link>
               </Button>
             </CardContent>
           </Card>
@@ -225,187 +76,41 @@ const ForumTopicPage = () => {
     );
   }
   
-  // Get category data from topic object
-  const categoryName = topic.category?.name || '';
-  const categorySlugPath = topic.category?.slug || categorySlug; 
-  
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
       <div className="pt-20 pb-20 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                {topic.title}
-                {topic.is_locked && (
-                  <LockIcon className="h-5 w-5 text-muted-foreground" />
-                )}
-              </h1>
-              <div className="text-sm text-muted-foreground mt-1">
-                Posted in <Link to={`/members/forum/${categorySlugPath}`} className="text-primary hover:underline">{categoryName}</Link>
-              </div>
-            </div>
-          </div>
+          <TopicHeaderDisplay topic={topic} categorySlug={categorySlug} />
           
-          <div className="mb-6">
-            <Link to={`/members/forum/${categorySlugPath}`} className="text-sm text-primary hover:underline">
-              &larr; Back to {categoryName}
-            </Link>
-          </div>
-          
+          {loadingData && posts.length === 0 && ( // Show loader specifically for posts if topic is loaded but posts are still fetching
+             <div className="py-10 flex justify-center items-center">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+             </div>
+          )}
+
           <div className="space-y-6">
             {posts.map((post, index) => (
-              <Card key={post.id} id={`post-${post.id}`} className={`${index === 0 ? "border-primary" : "border-primary/20"} overflow-hidden`}>
-                <CardHeader className="bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 py-3 px-4 flex flex-row items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8 ring-2 ring-primary/10">
-                      <AvatarImage src={post.profile?.avatar_url || ''} alt={post.profile?.display_name || 'User'} />
-                      <AvatarFallback className="bg-primary/20 text-primary-foreground">
-                        {(post.profile?.display_name?.[0] || post.profile?.username?.[0] || 'U').toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <span className="font-medium">
-                        {post.profile?.display_name || post.profile?.username || 'Anonymous'}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                    {post.is_edited && ' (edited)'}
-                  </div>
-                </CardHeader>
-                <CardContent className="p-4 pb-6">
-                  <div className="prose dark:prose-invert max-w-none">
-                    {post.content.split("\n").map((paragraph, i) => (
-                      <p key={i}>{paragraph}</p>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+              <ForumPostCard key={post.id} post={post} isFirstPost={index === 0 && page === 1} />
             ))}
 
             {totalPages > 1 && (
-              <div className="py-4">
-                <Pagination>
-                  <PaginationContent>
-                    {page > 1 && (
-                      <PaginationItem>
-                        <PaginationPrevious 
-                          href="#" 
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setPage(page - 1);
-                          }}
-                        />
-                      </PaginationItem>
-                    )}
-                    
-                    {Array.from({ length: totalPages }, (_, i) => i + 1)
-                      .filter(pageNum => 
-                        pageNum === 1 || 
-                        pageNum === totalPages || 
-                        (pageNum >= page - 1 && pageNum <= page + 1)
-                      )
-                      .map((pageNum, i, arr) => {
-                        // Add ellipsis
-                        if (i > 0 && pageNum > arr[i-1] + 1) {
-                          return (
-                            <React.Fragment key={`ellipsis-${pageNum}`}>
-                              <PaginationItem>
-                                <span className="flex h-9 w-9 items-center justify-center">...</span>
-                              </PaginationItem>
-                              <PaginationItem>
-                                <PaginationLink
-                                  href="#"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    setPage(pageNum);
-                                  }}
-                                  isActive={page === pageNum}
-                                  className={page === pageNum ? "bg-primary text-primary-foreground" : ""}
-                                >
-                                  {pageNum}
-                                </PaginationLink>
-                              </PaginationItem>
-                            </React.Fragment>
-                          );
-                        }
-                        
-                        return (
-                          <PaginationItem key={pageNum}>
-                            <PaginationLink
-                              href="#"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setPage(pageNum);
-                              }}
-                              isActive={page === pageNum}
-                              className={page === pageNum ? "bg-primary text-primary-foreground" : ""}
-                            >
-                              {pageNum}
-                            </PaginationLink>
-                          </PaginationItem>
-                        );
-                      })
-                    }
-                    
-                    {page < totalPages && (
-                      <PaginationItem>
-                        <PaginationNext 
-                          href="#" 
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setPage(page + 1);
-                          }}
-                        />
-                      </PaginationItem>
-                    )}
-                  </PaginationContent>
-                </Pagination>
-              </div>
+               <div className="py-4"> {/* Ensure pagination has some spacing */}
+                <ForumPagination
+                    page={page}
+                    totalPages={totalPages}
+                    setPage={setPage}
+                />
+               </div>
             )}
             
-            {!topic.is_locked ? (
-              <Card className="border-primary/20">
-                <CardHeader className="py-3 px-4 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80">
-                  <CardTitle className="text-lg">Post a Reply</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4">
-                  <form onSubmit={handleSubmitReply}>
-                    <Textarea
-                      className="min-h-[120px] mb-4 border-primary/20 focus-visible:ring-primary"
-                      placeholder="Write your reply here..."
-                      value={replyContent}
-                      onChange={(e) => setReplyContent(e.target.value)}
-                      disabled={submitting}
-                    />
-                    <Button 
-                      type="submit" 
-                      disabled={submitting || !replyContent.trim()}
-                      className="bg-primary hover:bg-primary/90"
-                    >
-                      {submitting ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Posting...
-                        </>
-                      ) : (
-                        'Post Reply'
-                      )}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent className="py-6 text-center">
-                  <LockIcon className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-muted-foreground">This topic is locked and cannot be replied to.</p>
-                </CardContent>
-              </Card>
-            )}
+            <ReplyFormCard
+              replyContent={replyContent}
+              onReplyContentChange={setReplyContent}
+              onSubmitReply={handleSubmitReply}
+              isSubmitting={isSubmittingReply}
+              isLocked={topic.is_locked}
+            />
           </div>
         </div>
       </div>
