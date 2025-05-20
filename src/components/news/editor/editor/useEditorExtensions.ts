@@ -8,7 +8,13 @@ import TextStyle from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import TextAlign from '@tiptap/extension-text-align';
 
-export const useEditorExtensions = () => {
+interface EditorExtensionsProps {
+  placeholder?: string;
+}
+
+export const useEditorExtensions = (props?: EditorExtensionsProps) => {
+  const placeholderText = props?.placeholder || 'Start writing...';
+
   return useCallback(() => [
     StarterKit.configure({
       heading: {
@@ -24,7 +30,7 @@ export const useEditorExtensions = () => {
       },
     }),
     Placeholder.configure({
-      placeholder: 'Start writing...',
+      placeholder: placeholderText,
       emptyEditorClass: 'is-editor-empty',
     }),
     Link.configure({
@@ -47,5 +53,5 @@ export const useEditorExtensions = () => {
     TextAlign.configure({
       types: ['heading', 'paragraph'],
     }),
-  ], []);
+  ], [placeholderText]);
 };

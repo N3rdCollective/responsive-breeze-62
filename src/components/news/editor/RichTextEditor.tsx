@@ -1,6 +1,5 @@
-
 import React, { useEffect, useState } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, Extensions } from '@tiptap/react';
 import { Label } from "@/components/ui/label";
 import { useEditorExtensions } from './editor/useEditorExtensions';
 import EditorToolbar from './editor/EditorToolbar';
@@ -25,12 +24,12 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   height = 500,
   placeholder
 }) => {
-  const extensions = useEditorExtensions();
+  const getEditorExtensionsArray = useEditorExtensions({ placeholder }); // Pass placeholder to the hook
   const [isHtmlMode, setIsHtmlMode] = useState(false);
   const [htmlContent, setHtmlContent] = useState(value || '');
   
   const editor = useEditor({
-    extensions,
+    extensions: getEditorExtensionsArray(), 
     content: value || '',
     editable: true,
     onUpdate: ({ editor }) => {
@@ -41,25 +40,33 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     },
     editorProps: {
       attributes: {
-        placeholder: placeholder || 'Start writing...',
+        // The placeholder is now handled by the Placeholder extension via useEditorExtensions
       },
     }
   });
 
   // Update editor content when value prop changes
   useEffect(() => {
-    if (editor && value !== undefined && value !== editor.getHTML()) {
-      editor.commands.setContent(value || '');
-      setHtmlContent(value || '');
+    if (editor && value !== undefined) {
+      const currentEditorHTML = editor.getHTML();
+      if (value !== currentEditorHTML) {
+        const newContentToSet = value || '';
+        editor.commands.setContent(newContentToSet);
+        setHtmlContent(newContentToSet); // Keep local HTML state in sync
+      }
     }
   }, [editor, value]);
+  
+  // No need for a separate useEffect to update placeholder via setOptions,
+  // as it's now part of the extensions re-creation if placeholder prop changes.
+  // Tiptap's editor should re-initialize if `extensions` array changes identity due to `placeholderText` dependency.
 
   // Toggle between visual and HTML modes
   const toggleHtmlMode = () => {
     if (isHtmlMode && editor) {
       // When switching back to visual mode, apply HTML changes to the editor
       editor.commands.setContent(htmlContent);
-      onChange(htmlContent);
+      onChange(htmlContent); // Ensure parent is notified
     } else if (editor) {
       // When switching to HTML mode, ensure we have the latest HTML
       setHtmlContent(editor.getHTML());
@@ -81,7 +88,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   return (
     <div className="space-y-2" data-testid={id}>
-      {label && <Label htmlFor={id}>{label}</Label>}
+      {label && <Label htmlFor={id} >{label}</Label>}
       
       <div className="border rounded-md bg-background">
         <div className="flex justify-between items-center border-b">
@@ -106,14 +113,14 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             onChange={handleHtmlChange}
             className="font-mono text-sm p-4 min-h-[500px] w-full border-0 rounded-none focus-visible:ring-0 bg-slate-800 text-slate-50 dark:bg-slate-900"
             style={{ minHeight: height, height: height }}
-            placeholder={placeholder}
+            placeholder={"Edit HTML source..."}
           />
         ) : (
           <div 
             style={{ minHeight: height }} 
             className="p-4 prose prose-sm sm:prose max-w-none focus:outline-none overflow-y-auto dark:prose-invert prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-em:text-foreground prose-li:text-foreground"
           >
-            <EditorContent editor={editor} />
+            <EditorContent editor={editor} id={id} />
           </div>
         )}
       </div>
