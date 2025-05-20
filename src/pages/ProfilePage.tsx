@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom"; // Added for navigation
 import { 
@@ -31,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/components/ui/use-toast'; // Using the one from user's code
+import { useToast } from '@/hooks/use-toast'; // Corrected path
 import { AlertCircle, Loader2, ChevronLeft, Camera, Music, Save, Eye, Paintbrush, UserCircle } from 'lucide-react'; // Added UserCircle for fallback
 import { Instagram, Twitter, Globe } from 'lucide-react';
 import Navbar from "@/components/Navbar"; // Added Navbar
@@ -39,6 +40,7 @@ import Navbar from "@/components/Navbar"; // Added Navbar
 // Actual project hooks
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import type { UserProfile } from "@/types/profile"; // Added this import
 
 // Genre data (expanded) - consider moving to a constants file if used elsewhere
 const genres = [
@@ -109,10 +111,11 @@ const EnhancedProfilePage = () => {
   const handleSave = async () => {
     try {
       await handleSaveProfile();
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been successfully saved.",
-      });
+      // Toast is already handled in useProfile on success
+      // toast({
+      //   title: "Profile updated",
+      //   description: "Your profile has been successfully saved.",
+      // });
       setActiveTab('view'); // Switch to view tab on successful save
     } catch (err) {
       // Error toast is already handled in useProfile hook, but can add specific one here if needed
@@ -133,7 +136,7 @@ const EnhancedProfilePage = () => {
   };
 
   const updateSocialLink = (platform: 'instagram' | 'twitter' | 'website', value: string) => {
-    setSocialLinks(prev => ({ ...prev, [platform]: value }));
+    setSocialLinks(prev => ({ ...(prev || { instagram: null, twitter: null, website: null }), [platform]: value }));
   };
 
   const getInitials = (name?: string | null) => {
@@ -511,7 +514,7 @@ const EnhancedProfilePage = () => {
                             </a>
                           )}
                           {socialLinks?.website && (
-                             <a href={socialLinks.website.startsWith('http') ? socialLinks.website : `https://${socialLinks.website}`} target="_blank" rel="noopener noreferrer" className="flex items-center text-sm hover:text-primary transition-colors">
+                             <a href={socialLinks.website && socialLinks.website.startsWith('http') ? socialLinks.website : `https://${socialLinks.website}`} target="_blank" rel="noopener noreferrer" className="flex items-center text-sm hover:text-primary transition-colors">
                               <Globe className="h-4 w-4 mr-2 text-green-500" />
                               {socialLinks.website}
                             </a>

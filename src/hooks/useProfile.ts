@@ -17,7 +17,8 @@ export const useProfile = (user: User | null) => {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [selectedRole, setSelectedRole] = useState<UserProfile['role']>("user");
   
-  const [socialLinks, setSocialLinks] = useState<UserProfile['social_links']>({ instagram: '', twitter: '', website: '' });
+  const initialSocialLinks: UserProfile['social_links'] = { instagram: null, twitter: null, website: null };
+  const [socialLinks, setSocialLinks] = useState<UserProfile['social_links']>(initialSocialLinks);
   const [theme, setTheme] = useState<string>('default');
   const [isPublic, setIsPublic] = useState<boolean>(true);
 
@@ -32,7 +33,7 @@ export const useProfile = (user: User | null) => {
       setBio("");
       setSelectedGenres([]);
       setSelectedRole("user");
-      setSocialLinks({ instagram: '', twitter: '', website: '' });
+      setSocialLinks(initialSocialLinks);
       setTheme('default');
       setIsPublic(true);
     }
@@ -55,6 +56,16 @@ export const useProfile = (user: User | null) => {
       console.log("Profile data returned:", data);
       
       if (data) {
+        const rawSocialLinks = data.social_links;
+        const processedSocialLinks: UserProfile['social_links'] = 
+          (typeof rawSocialLinks === 'object' && rawSocialLinks !== null && !Array.isArray(rawSocialLinks))
+          ? { 
+              instagram: (rawSocialLinks as any).instagram || null,
+              twitter: (rawSocialLinks as any).twitter || null,
+              website: (rawSocialLinks as any).website || null,
+            }
+          : initialSocialLinks;
+
         const userProfile: UserProfile = {
           id: data.id,
           username: data.username || "",
@@ -63,9 +74,9 @@ export const useProfile = (user: User | null) => {
           favorite_genres: data.favorite_genres || [],
           avatar_url: data.profile_picture, 
           role: (data.role as UserProfile['role']) || "user",
-          social_links: data.social_links || { instagram: '', twitter: '', website: '' },
+          social_links: processedSocialLinks,
           theme: data.theme || 'default',
-          is_public: data.is_public === null ? true : data.is_public,
+          is_public: data.is_public ?? true, // Use nullish coalescing
         };
         
         setProfile(userProfile);
@@ -74,15 +85,15 @@ export const useProfile = (user: User | null) => {
         setBio(userProfile.bio || "");
         setSelectedGenres(userProfile.favorite_genres || []);
         setSelectedRole(userProfile.role);
-        setSocialLinks(userProfile.social_links || { instagram: '', twitter: '', website: '' });
+        setSocialLinks(userProfile.social_links || initialSocialLinks);
         setTheme(userProfile.theme || 'default');
-        setIsPublic(userProfile.is_public === null ? true : userProfile.is_public);
+        setIsPublic(userProfile.is_public ?? true);
       } else {
         console.log("No profile found, will use default values or create one when saving");
         const defaultUsername = user.email?.split('@')[0]?.replace(/[^a-zA-Z0-9]/g, '') || "";
         setUsername(defaultUsername);
         setDisplayName("New User");
-        setSocialLinks({ instagram: '', twitter: '', website: '' });
+        setSocialLinks(initialSocialLinks);
         setTheme('default');
         setIsPublic(true);
       }
@@ -109,7 +120,7 @@ export const useProfile = (user: User | null) => {
         bio,
         favorite_genres: selectedGenres,
         role: selectedRole,
-        social_links: socialLinks,
+        social_links: socialLinks, // This should be fine as socialLinks state matches UserProfile['social_links']
         theme: theme,
         is_public: isPublic,
         updated_at: new Date().toISOString()
@@ -157,6 +168,8 @@ export const useProfile = (user: User | null) => {
           .insert({
             ...profileDataToSave,
             id: user.id,
+            // profile_picture field is not in profileDataToSave, Supabase might set it to null
+            // or keep existing if not specified. This is fine. Avatar upload is separate.
             created_at: new Date().toISOString()
           })
           .select()
@@ -170,6 +183,16 @@ export const useProfile = (user: User | null) => {
       
       console.log("Profile saved successfully", result.data);
       if (result.data) {
+         const rawSocialLinksSaved = result.data.social_links;
+         const processedSocialLinksSaved: UserProfile['social_links'] = 
+          (typeof rawSocialLinksSaved === 'object' && rawSocialLinksSaved !== null && !Array.isArray(rawSocialLinksSaved))
+          ? { 
+              instagram: (rawSocialLinksSaved as any).instagram || null,
+              twitter: (rawSocialLinksSaved as any).twitter || null,
+              website: (rawSocialLinksSaved as any).website || null,
+            }
+          : initialSocialLinks;
+
         const updatedProfile: UserProfile = {
           id: result.data.id,
           username: result.data.username || "",
@@ -178,9 +201,9 @@ export const useProfile = (user: User | null) => {
           favorite_genres: result.data.favorite_genres || [],
           avatar_url: result.data.profile_picture, 
           role: (result.data.role as UserProfile['role']) || "user",
-          social_links: result.data.social_links || { instagram: '', twitter: '', website: '' },
+          social_links: processedSocialLinksSaved,
           theme: result.data.theme || 'default',
-          is_public: result.data.is_public === null ? true : result.data.is_public,
+          is_public: result.data.is_public ?? true,
         };
         setProfile(updatedProfile);
       }
@@ -198,7 +221,7 @@ export const useProfile = (user: User | null) => {
         description: error.message,
         variant: "destructive"
       });
-      throw error;
+      throw error; // Re-throw to allow page component to catch if needed
     } finally {
       setIsSaving(false);
     }
