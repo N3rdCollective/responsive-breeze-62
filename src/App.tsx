@@ -33,6 +33,7 @@ import NewForumTopicPage from "@/pages/NewForumTopicPage";
 import StaffForumManagementPage from "@/pages/StaffForumManagementPage";
 import RequestPasswordResetPage from "@/pages/RequestPasswordResetPage";
 import UpdatePasswordPage from "@/pages/UpdatePasswordPage";
+import StaffModeratorDashboard from "@/pages/StaffModeratorDashboard";
 
 function App() {
   return (
@@ -70,6 +71,7 @@ function App() {
         <Route path="/staff/activity-logs" element={<StaffActivityLogs />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/featured-artists" element={<StaffFeaturedArtists />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/forum-management" element={<StaffForumManagementPage />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/moderator-dashboard" element={<StaffModeratorDashboard />} errorElement={<RouteErrorElement />} />
         
         <Route path="/auth" element={<AuthPage />} errorElement={<RouteErrorElement />} />
         <Route path="/request-password-reset" element={<RequestPasswordResetPage />} errorElement={<RouteErrorElement />} />
