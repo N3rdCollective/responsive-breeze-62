@@ -1,7 +1,7 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { Notification, NotificationUser } from '@/types/notifications';
 import { toast } from '@/hooks/use-toast';
+import { formatDistanceToNow } from 'date-fns';
 
 // Mock data - this would typically come from an API
 const initialNotifications: Notification[] = [
@@ -102,21 +102,9 @@ export const useNotifications = () => {
 
   const formatTimeAgo = (timestamp: string): string => {
     const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffSecs = Math.round(diffMs / 1000);
-    const diffMins = Math.round(diffSecs / 60);
-    const diffHours = Math.round(diffMins / 60);
-    const diffDays = Math.round(diffHours / 24);
-
-    if (diffDays > 0) return `${diffDays}d ago`;
-    if (diffHours > 0) return `${diffHours}h ago`;
-    if (diffMins > 0) return `${diffMins}m ago`;
-    return 'Just now';
+    return formatDistanceToNow(date, { addSuffix: true });
   };
   
-  // Example: Add a new notification (e.g., via WebSocket or on some event)
-  // This would be called from elsewhere in your app
   const addNotification = (notification: Omit<Notification, 'id' | 'read' | 'timestamp'>) => {
     const newNotification: Notification = {
       ...notification,
@@ -136,7 +124,6 @@ export const useNotifications = () => {
     markAsRead,
     markAllAsRead,
     formatTimeAgo,
-    addNotification, // Expose for potential external use
+    addNotification,
   };
 };
-
