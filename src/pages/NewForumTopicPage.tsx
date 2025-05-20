@@ -109,6 +109,13 @@ const NewForumTopicPage = () => {
     }
   };
   
+  const isContentEffectivelyEmpty = () => {
+    if (!content.trim()) return true;
+    const div = document.createElement('div');
+    div.innerHTML = content;
+    return !div.textContent?.trim();
+  };
+  
   if (authLoading || loadingCategory) {
     return (
       <div className="min-h-screen">
@@ -205,7 +212,7 @@ const NewForumTopicPage = () => {
                     </Button>
                     <Button 
                       type="submit" 
-                      disabled={submitting || !title.trim() || !tempDiv.textContent?.trim()}
+                      disabled={submitting || !title.trim() || isContentEffectivelyEmpty()}
                       className="bg-primary hover:bg-primary/90"
                     >
                       {submitting ? (
