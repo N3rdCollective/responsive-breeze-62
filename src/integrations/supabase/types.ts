@@ -985,6 +985,18 @@ export type Database = {
           device_breakdown: Json
         }[]
       }
+      get_post_page_and_index: {
+        Args: {
+          p_topic_id: string
+          p_post_id: string
+          p_items_per_page: number
+        }
+        Returns: {
+          page_number: number
+          post_index_on_page: number
+          total_topic_posts: number
+        }[]
+      }
       increment_topic_view_count: {
         Args: { topic_id_param: string }
         Returns: undefined

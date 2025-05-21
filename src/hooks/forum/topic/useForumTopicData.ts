@@ -1,19 +1,20 @@
 
-import { useState, useEffect, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from "@/hooks/useAuth";
 import { useToast } from '@/hooks/use-toast';
-import { useForumTopicViews } from "../actions/useForumTopicViews";
-import { ForumTopic, ForumPost } from "@/types/forum";
+import { useAuth } from '@/hooks/useAuth';
+import { ForumTopic, ForumPost } from '@/types/forum';
+import { useForumTopicViews } from '../actions/useForumTopicViews';
 
 const ITEMS_PER_PAGE = 10;
 
 export const useForumTopicData = (initialPage: number = 1) => {
   const { categorySlug, topicId: routeTopicId } = useParams<{ categorySlug: string, topicId: string }>();
-  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
   const { incrementViewCount } = useForumTopicViews();
 
   const [topic, setTopic] = useState<ForumTopic | null>(null);
@@ -22,129 +23,146 @@ export const useForumTopicData = (initialPage: number = 1) => {
   const [page, setPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(1);
   const [viewCountIncremented, setViewCountIncremented] = useState(false);
+  const [initialPostIdProcessed, setInitialPostIdProcessed] = useState(false);
 
-  useEffect(() => {
-    // Reset view count increment status and page when topicId changes
-    setViewCountIncremented(false);
-    setPage(1); // Reset to page 1 when topic changes
-  }, [routeTopicId]);
-
-  const fetchTopicData = useCallback(async (currentPageToFetch = page) => {
-    if (!routeTopicId) return false;
+  const fetchTopicData = useCallback(async (currentPageToFetch: number) => {
+    if (!routeTopicId || !categorySlug) {
+      setLoadingData(false);
+      return false;
+    }
+    setLoadingData(true);
 
     try {
-      setLoadingData(true);
       const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(routeTopicId);
       let topicQuery = supabase
         .from('forum_topics')
         .select(`
-          *,
+          *, 
           profile:profiles!forum_topics_user_id_fkey(username, display_name, profile_picture), 
           category:forum_categories(name, slug)
         `);
-
-      if (isUUID) {
-        topicQuery = topicQuery.eq('id', routeTopicId);
-      } else {
-        topicQuery = topicQuery.eq('slug', routeTopicId);
-      }
+      topicQuery = isUUID ? topicQuery.eq('id', routeTopicId) : topicQuery.eq('slug', routeTopicId);
       
       const { data: topicRawData, error: topicError } = await topicQuery.single();
-        
-      if (topicError || !topicRawData) {
-        if (topicError) console.error("Error fetching topic: ", topicError.message);
-        navigate('/members/forum', { replace: true });
-        toast({
-          title: "Topic not found",
-          description: "The forum topic you're looking for doesn't exist or could not be loaded.",
-          variant: "destructive"
-        });
-        setLoadingData(false);
-        return false;
-      }
-      
-      const fetchedTopic = { ...topicRawData } as ForumTopic;
 
-      if (fetchedTopic.category && fetchedTopic.category.slug !== categorySlug) {
-        navigate(`/members/forum/${fetchedTopic.category.slug}/${fetchedTopic.slug || fetchedTopic.id}`, { replace: true });
+      if (topicError || !topicRawData) {
+        toast({ title: 'Error', description: 'Topic not found or error fetching topic.', variant: 'destructive' });
+        navigate('/members/forum', { replace: true });
         setLoadingData(false);
         return false;
       }
-      
-      setTopic(fetchedTopic);
+
+      const fetchedTopicObj = { ...topicRawData } as ForumTopic;
+      if (fetchedTopicObj.category && (fetchedTopicObj.category as any).slug !== categorySlug) {
+        navigate(`/members/forum/${(fetchedTopicObj.category as any).slug}/${fetchedTopicObj.slug || fetchedTopicObj.id}`, { replace: true });
+        setLoadingData(false);
+        return false;
+      }
+      setTopic(fetchedTopicObj);
+
+      let finalPageToFetch = currentPageToFetch;
+      const searchParams = new URLSearchParams(location.search);
+      const postIdFromQuery = searchParams.get('postId');
+
+      if (postIdFromQuery && fetchedTopicObj.id && !initialPostIdProcessed) {
+        console.log(`[useForumTopicData] Found postId=${postIdFromQuery} in query. Attempting to calculate page.`);
+        try {
+          const { data: postPageInfo, error: rpcError } = await supabase.rpc('get_post_page_and_index', {
+            p_topic_id: fetchedTopicObj.id,
+            p_post_id: postIdFromQuery,
+            p_items_per_page: ITEMS_PER_PAGE
+          });
+
+          if (rpcError) {
+            console.error('[useForumTopicData] Error calling get_post_page_and_index RPC:', rpcError);
+          } else if (postPageInfo && postPageInfo.length > 0 && postPageInfo[0].page_number) {
+            finalPageToFetch = postPageInfo[0].page_number;
+            console.log(`[useForumTopicData] Calculated page ${finalPageToFetch} for postId ${postIdFromQuery}.`);
+          } else {
+            console.warn(`[useForumTopicData] Could not calculate page for postId ${postIdFromQuery}. Using page ${finalPageToFetch}. RPC response:`, postPageInfo);
+          }
+        } catch (e) {
+          console.error('[useForumTopicData] Exception calling RPC:', e);
+        }
+        setInitialPostIdProcessed(true); // Mark as processed for this topic load/postId
+      }
       
       const { count, error: countError } = await supabase
         .from('forum_posts')
         .select('*', { count: 'exact', head: true })
-        .eq('topic_id', fetchedTopic.id); 
-        
+        .eq('topic_id', fetchedTopicObj.id);
+
       if (countError) throw countError;
       
       const totalPostsCount = count || 0;
-      const totalPageCount = Math.ceil(totalPostsCount / ITEMS_PER_PAGE) || 1;
-      setTotalPages(totalPageCount);
-      
-      const validCurrentPage = Math.min(currentPageToFetch, totalPageCount);
-      if (currentPageToFetch !== validCurrentPage && totalPostsCount > 0) {
-        setPage(validCurrentPage); // Update internal page state if fetched page was out of bounds
-        currentPageToFetch = validCurrentPage; // Use valid page for fetching
-      } else if (currentPageToFetch !== page) {
-        setPage(currentPageToFetch); // Sync internal page state if different
+      const calculatedTotalPages = Math.ceil(totalPostsCount / ITEMS_PER_PAGE) || 1;
+      setTotalPages(calculatedTotalPages);
+
+      finalPageToFetch = Math.min(Math.max(1, finalPageToFetch), calculatedTotalPages);
+      // Update internal page state only if it's different, or if postId logic changed it
+      if (page !== finalPageToFetch) {
+          setPage(finalPageToFetch);
       }
       
       const { data: postsRawData, error: postsError } = await supabase
         .from('forum_posts')
-        .select(`
-          *,
-          profile:profiles!forum_posts_user_id_fkey(username, display_name, profile_picture),
-          forum_post_reactions (id, user_id, reaction_type)
-        `)
-        .eq('topic_id', fetchedTopic.id)
+        .select(`*, profile:profiles!forum_posts_user_id_fkey(username, display_name, profile_picture), forum_post_reactions (id, user_id, reaction_type)`)
+        .eq('topic_id', fetchedTopicObj.id)
         .order('created_at', { ascending: true })
-        .range((currentPageToFetch - 1) * ITEMS_PER_PAGE, currentPageToFetch * ITEMS_PER_PAGE - 1);
-        
-      if (postsError) throw postsError;
+        .range((finalPageToFetch - 1) * ITEMS_PER_PAGE, finalPageToFetch * ITEMS_PER_PAGE - 1);
 
+      if (postsError) throw postsError;
       setPosts((postsRawData || []) as ForumPost[]);
-      
-      if (currentPageToFetch === 1 && fetchedTopic.id && !viewCountIncremented) {
-        incrementViewCount(fetchedTopic.id);
+
+      if (finalPageToFetch === 1 && fetchedTopicObj.id && !viewCountIncremented) {
+        incrementViewCount(fetchedTopicObj.id);
         setViewCountIncremented(true);
       }
-      return true; // Successfully fetched data
-    } catch (error: any) {
-      console.error('Error fetching topic data:', error.message);
-      toast({
-        title: "Error loading topic data",
-        description: "We couldn't load the topic and post data. Please try again.",
-        variant: "destructive"
-      });
-      setTopic(null); // Clear topic on error
-      setPosts([]);   // Clear posts on error
-      return false; // Fetch failed
-    } finally {
       setLoadingData(false);
-    }
-  }, [routeTopicId, categorySlug, navigate, toast, incrementViewCount, viewCountIncremented, page]); // page is a dep for currentPageToFetch default
+      return true;
 
-  useEffect(() => {
-    if ((user || !authLoading) && routeTopicId) { // Ensure routeTopicId is present before fetching
-      fetchTopicData(page);
+    } catch (error: any) {
+      console.error("Error fetching topic data:", error);
+      toast({ title: 'Error', description: error.message || 'Could not load topic data.', variant: 'destructive' });
+      setLoadingData(false);
+      return false;
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, authLoading, routeTopicId, page]); // fetchTopicData is not added here to avoid re-runs due to its own definition changing, page is the trigger for data refresh on page change
+  }, [routeTopicId, categorySlug, navigate, toast, incrementViewCount, location.search, initialPostIdProcessed]); // Removed 'page' and 'viewCountIncremented' to let them be managed internally or by their own setters
+
+  useEffect(() => {
+    // Reset processing flag when topic changes
+    setInitialPostIdProcessed(false);
+    setViewCountIncremented(false); 
+    // Do not reset page to 1 here, let fetchTopicData determine based on postId or current page.
+  }, [routeTopicId]);
+
+  useEffect(() => {
+    if (!authLoading) { // Ensure auth state is resolved
+        // Page state is passed to fetchTopicData now
+        fetchTopicData(page);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, routeTopicId, categorySlug, page, fetchTopicData]); // `page` is a trigger for re-fetch (pagination)
+
+  // Function to allow external components (like pagination) to change the page
+  const updatePage = (newPage: number) => {
+    setInitialPostIdProcessed(true); // If paginating manually, assume postId processing is done/irrelevant for this action
+    setPage(newPage);
+  };
 
   return {
     topic,
     posts,
-    setPosts, // Expose setPosts for optimistic updates if needed by other hooks
     loadingData,
     page,
-    setPage, // Expose setPage for pagination component
     totalPages,
-    fetchTopicData, // Expose fetchTopicData for other hooks to trigger refresh
-    categorySlug, // Pass through for convenience
-    routeTopicId, // Pass through for convenience
-    ITEMS_PER_PAGE
+    setPage: updatePage, // Expose the controlled way to set page
+    refreshTopicData: () => {
+      setInitialPostIdProcessed(false); // Allow postId reprocessing on manual refresh if query params are still there
+      fetchTopicData(page);
+    },
+    user,
+    authLoading,
   };
 };
