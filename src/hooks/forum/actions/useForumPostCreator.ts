@@ -41,26 +41,41 @@ export const useForumPostCreator = () => {
         // Fetch topic details for mention and reply notifications
         const { data: topicData, error: topicError } = await supabase
           .from('forum_topics')
-          .select('title, user_id') // Fetch user_id of topic creator
+          .select('title, user_id, slug, category:forum_categories(slug)') // Fetch user_id of topic creator, slug, and category slug
           .eq('id', input.topic_id)
           .single();
 
         const topicTitle = topicError || !topicData ? 'a topic' : topicData.title;
         const topicAuthorId = topicData?.user_id;
+        const topicSlug = topicData?.slug;
+        const categorySlug = (topicData?.category as any)?.slug; // Type assertion for category slug
+
+        const actorDisplayName = user.user_metadata?.display_name || user.user_metadata?.username || 'Someone';
+        const actorUsername = user.user_metadata?.username;
+
+        const baseDetails = {
+          topic_id: input.topic_id,
+          topic_title: topicTitle,
+          topic_slug: topicSlug,
+          category_slug: categorySlug,
+          actor_id: user.id,
+          actor_display_name: actorDisplayName,
+          actor_username: actorUsername,
+        };
 
         // Handle mention notifications
         const mentionedUserIds = extractMentionedUserIds(input.content);
         if (mentionedUserIds.length > 0) {
-          const mentionContentPreview = `${user.user_metadata?.display_name || user.user_metadata?.username || 'Someone'} mentioned you in a reply on "${topicTitle}"`;
+          const mentionContentPreview = `${actorDisplayName} mentioned you in a reply on "${topicTitle}"`;
           for (const mentionedUserId of mentionedUserIds) {
-            // Self-mention check is handled by createForumNotification
             await createForumNotification(
               mentionedUserId,
               user.id,
               'mention_reply', 
               input.topic_id,
               postData.id,
-              mentionContentPreview
+              mentionContentPreview,
+              { ...baseDetails, true_type: 'mention_reply' } // Pass details
             );
           }
         }
@@ -68,14 +83,15 @@ export const useForumPostCreator = () => {
         // Handle reply notification to topic author
         if (topicAuthorId && topicAuthorId !== user.id) {
           console.log(`[useForumPostCreator] Attempting to send 'reply' notification to topic author ${topicAuthorId}`);
-          const replyContentPreview = `${user.user_metadata?.display_name || user.user_metadata?.username || 'Someone'} replied to your topic "${topicTitle}"`;
+          const replyContentPreview = `${actorDisplayName} replied to your topic "${topicTitle}"`;
           await createForumNotification(
             topicAuthorId,
             user.id,
-            'reply', // Notification type for a general reply
+            'reply', 
             input.topic_id,
             postData.id,
-            replyContentPreview
+            replyContentPreview,
+            { ...baseDetails, true_type: 'reply' } // Pass details
           );
         } else if (topicAuthorId && topicAuthorId === user.id) {
           console.log('[useForumPostCreator] User is replying to their own topic, no "reply" notification needed for topic author.');

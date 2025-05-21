@@ -8,9 +8,10 @@ export const createForumNotification = async (
   type: NotificationType, // Use the updated NotificationType
   topicId: string,
   postId?: string,
-  contentPreview?: string
+  contentPreview?: string,
+  details?: Record<string, any> // Added details parameter
 ) => {
-  console.log('[createForumNotification] Called with params:', { recipientId, actorId, type, topicId, postId, contentPreview });
+  console.log('[createForumNotification] Called with params:', { recipientId, actorId, type, topicId, postId, contentPreview, details });
 
   if (recipientId === actorId) {
     console.log('[createForumNotification] Recipient is the same as actor. Notification not created.');
@@ -18,7 +19,7 @@ export const createForumNotification = async (
   }
 
   try {
-    const notificationPayload = {
+    const notificationPayload: any = { // Use 'any' or define a more specific type if preferred
       recipient_id: recipientId,
       actor_id: actorId,
       type: type,
@@ -26,6 +27,11 @@ export const createForumNotification = async (
       post_id: postId,
       content_preview: contentPreview,
     };
+
+    if (details) {
+      notificationPayload.details = details; // Add details if provided
+    }
+
     console.log('[createForumNotification] Attempting to insert notification payload:', JSON.stringify(notificationPayload, null, 2));
     
     const { error } = await supabase.from('forum_notifications').insert(notificationPayload);
@@ -39,4 +45,3 @@ export const createForumNotification = async (
     console.error(`[createForumNotification] Exception while creating ${type} notification:`, err.message || err);
   }
 };
-
