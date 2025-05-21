@@ -1,9 +1,10 @@
+
 import { useState } from "react";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { CreatePostInput, ForumPost } from "@/types/forum";
 import { createForumNotification } from "../utils/forumNotificationUtils";
-import { extractMentionedUserIds } from "@/utils/mentionUtils"; // Import the new utility
+import { extractMentionedUserIds } from "@/utils/mentionUtils";
 
 export const useForumPostCreator = () => {
   const { toast } = useToast();
@@ -37,31 +38,51 @@ export const useForumPostCreator = () => {
       if (postData) {
         toast({ title: "Post Created!", description: "Your post has been successfully created.", variant: "default" });
 
+        // Fetch topic details for mention and reply notifications
+        const { data: topicData, error: topicError } = await supabase
+          .from('forum_topics')
+          .select('title, user_id') // Fetch user_id of topic creator
+          .eq('id', input.topic_id)
+          .single();
+
+        const topicTitle = topicError || !topicData ? 'a topic' : topicData.title;
+        const topicAuthorId = topicData?.user_id;
+
         // Handle mention notifications
         const mentionedUserIds = extractMentionedUserIds(input.content);
         if (mentionedUserIds.length > 0) {
-          const { data: topicData, error: topicError } = await supabase
-            .from('forum_topics')
-            .select('title')
-            .eq('id', input.topic_id)
-            .single();
-
-          const topicTitle = topicError || !topicData ? 'a topic' : topicData.title;
-          const contentPreview = `${user.user_metadata?.display_name || user.email || 'Someone'} mentioned you in a reply on "${topicTitle}"`;
-
+          const mentionContentPreview = `${user.user_metadata?.display_name || user.user_metadata?.username || 'Someone'} mentioned you in a reply on "${topicTitle}"`;
           for (const mentionedUserId of mentionedUserIds) {
-            if (mentionedUserId !== user.id) { // Don't notify self
-              await createForumNotification(
-                mentionedUserId,
-                user.id,
-                'mention_reply', 
-                input.topic_id,
-                postData.id,
-                contentPreview
-              );
-            }
+            // Self-mention check is handled by createForumNotification
+            await createForumNotification(
+              mentionedUserId,
+              user.id,
+              'mention_reply', 
+              input.topic_id,
+              postData.id,
+              mentionContentPreview
+            );
           }
         }
+
+        // Handle reply notification to topic author
+        if (topicAuthorId && topicAuthorId !== user.id) {
+          console.log(`[useForumPostCreator] Attempting to send 'reply' notification to topic author ${topicAuthorId}`);
+          const replyContentPreview = `${user.user_metadata?.display_name || user.user_metadata?.username || 'Someone'} replied to your topic "${topicTitle}"`;
+          await createForumNotification(
+            topicAuthorId,
+            user.id,
+            'reply', // Notification type for a general reply
+            input.topic_id,
+            postData.id,
+            replyContentPreview
+          );
+        } else if (topicAuthorId && topicAuthorId === user.id) {
+          console.log('[useForumPostCreator] User is replying to their own topic, no "reply" notification needed for topic author.');
+        } else if (!topicAuthorId) {
+          console.warn('[useForumPostCreator] Could not fetch topic author ID, cannot send reply notification.');
+        }
+
         return postData as ForumPost;
       }
       return null;
