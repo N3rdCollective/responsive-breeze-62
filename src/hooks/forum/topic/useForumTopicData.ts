@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,13 +17,29 @@ export const useForumTopicData = (initialPage: number = 1) => {
   const { user, loading: authLoading } = useAuth();
   const { incrementViewCount } = useForumTopicViews();
 
+  // Parse page from URL query parameters
+  const getPageFromUrl = useCallback(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const pageParam = searchParams.get('page');
+    if (pageParam) {
+      const parsedPage = parseInt(pageParam, 10);
+      return !isNaN(parsedPage) && parsedPage > 0 ? parsedPage : initialPage;
+    }
+    return initialPage;
+  }, [location.search, initialPage]);
+
   const [topic, setTopic] = useState<ForumTopic | null>(null);
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [page, setPage] = useState(initialPage);
+  const [page, setPage] = useState(getPageFromUrl());
   const [totalPages, setTotalPages] = useState(1);
   const [viewCountIncremented, setViewCountIncremented] = useState(false);
   const [initialPostIdProcessed, setInitialPostIdProcessed] = useState(false);
+
+  // Update page state when URL changes
+  useEffect(() => {
+    setPage(getPageFromUrl());
+  }, [getPageFromUrl]);
 
   const fetchTopicData = useCallback(async (currentPageToFetchOverride?: number) => {
     const currentTopicId = routeTopicIdParam; // Use the param directly for this fetch instance
@@ -70,8 +85,18 @@ export const useForumTopicData = (initialPage: number = 1) => {
 
       let finalPageToFetch = currentPageToFetchOverride ?? page;
       const searchParams = new URLSearchParams(location.search);
+      const pageFromUrl = searchParams.get('page');
+      
+      // If there's a page in the URL and we're not overriding, use that
+      if (pageFromUrl && !currentPageToFetchOverride) {
+        const parsedPage = parseInt(pageFromUrl, 10);
+        if (!isNaN(parsedPage) && parsedPage > 0) {
+          finalPageToFetch = parsedPage;
+        }
+      }
+      
       const postIdFromQuery = searchParams.get('postId');
-
+      
       if (postIdFromQuery && fetchedTopicObj.id && !initialPostIdProcessed) {
         console.log(`[useForumTopicData] Found postId=${postIdFromQuery} in query. Attempting to calculate page.`);
         try {
@@ -144,10 +169,10 @@ export const useForumTopicData = (initialPage: number = 1) => {
 
   useEffect(() => {
     if (!authLoading) {
-        fetchTopicData(page); // Use current page state; fetchTopicData itself will handle postId query if needed
+      fetchTopicData(); // Let fetchTopicData handle page from state or URL
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, routeTopicIdParam, routeCategorySlug, page, fetchTopicData]); // page is a trigger here for pagination
+  }, [authLoading, routeTopicIdParam, routeCategorySlug, location.search, fetchTopicData]);
 
   const updatePage = (newPage: number) => {
     setInitialPostIdProcessed(true); 
@@ -165,7 +190,7 @@ export const useForumTopicData = (initialPage: number = 1) => {
     fetchTopicData, // Added: the function itself
     refreshTopicData: () => { // This is a wrapper for specific refresh scenario
       setInitialPostIdProcessed(false);
-      fetchTopicData(page); // Call with current page state
+      fetchTopicData(); // Call with current page state or from URL
     },
     user,
     authLoading,
