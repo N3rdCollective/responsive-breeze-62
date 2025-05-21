@@ -1,3 +1,4 @@
+
 export interface NotificationUser {
   id: string;
   name: string;
@@ -9,6 +10,7 @@ export interface NotificationUser {
 // Also added 'tag', 'follow', 'new_post' back for compatibility with NotificationIcon,
 // though they might be phased out or mapped differently later.
 // Added 'quote' type
+// Added 'like_post', 'like_reply', 'new_topic_in_category' types
 export type NotificationType = 
   | 'reply' 
   | 'like' 
@@ -19,7 +21,10 @@ export type NotificationType =
   | 'tag'     // For NotificationIcon compatibility
   | 'follow'  // For NotificationIcon compatibility
   | 'new_post' // For NotificationIcon compatibility
-  | 'quote'; // New type for post quotes
+  | 'quote' // New type for post quotes
+  | 'like_post' // For when a post (not a reply) is liked
+  | 'like_reply' // For when a reply is liked
+  | 'new_topic_in_category'; // For notifications about new topics in followed categories
 
 
 export interface Notification {
