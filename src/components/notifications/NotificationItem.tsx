@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Notification, NotificationType } from '@/types/notifications';
-import CustomNotificationIcon from './CustomNotificationIcon'; // Updated import
+import { Notification } from '@/types/notifications';
+import NotificationIcon from './NotificationIcon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface NotificationItemProps {
@@ -19,11 +19,8 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onMar
     // Navigation will be handled by Link if present
   };
 
-  // The getIconTypeForDisplay helper and HandledIconType are no longer needed
-  // as CustomNotificationIcon handles all NotificationType variants directly.
-
   const content = (
-    <div
+    <div 
       className={`p-3 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer ${
         notification.read ? 'opacity-70' : 'bg-primary/5 dark:bg-primary/10'
       }`}
@@ -31,8 +28,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onMar
     >
       <div className="flex items-start space-x-3">
         <div className="mt-1 shrink-0">
-          {/* Use CustomNotificationIcon and pass notification.type directly */}
-          <CustomNotificationIcon type={notification.type} />
+          <NotificationIcon type={notification.type} />
         </div>
         <div className="flex-1 min-w-0">
           {notification.actor && (

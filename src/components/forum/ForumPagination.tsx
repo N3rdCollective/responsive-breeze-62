@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Pagination,
   PaginationContent,
@@ -18,34 +17,9 @@ interface ForumPaginationProps {
 }
 
 const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, setPage }) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  
   if (totalPages <= 1) {
     return null;
   }
-
-  const handlePageChange = (newPage: number) => {
-    // Update the page in state
-    setPage(newPage);
-    
-    // Update the URL query parameter without navigating away
-    const currentUrlWithoutQuery = location.pathname;
-    const searchParams = new URLSearchParams(location.search);
-    
-    if (newPage === 1) {
-      // Remove page parameter if it's page 1
-      searchParams.delete('page');
-    } else {
-      searchParams.set('page', newPage.toString());
-    }
-    
-    const queryString = searchParams.toString();
-    const newUrl = queryString ? `${currentUrlWithoutQuery}?${queryString}` : currentUrlWithoutQuery;
-    
-    // Use navigate to update URL without full page reload
-    navigate(newUrl, { replace: true });
-  };
 
   const renderPageNumbers = () => {
     const pageNumbers = [];
@@ -89,6 +63,7 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
     return pageNumbers;
   };
 
+
   return (
     <div className="py-4 px-4 border-t">
       <Pagination>
@@ -99,7 +74,7 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  handlePageChange(page - 1);
+                  setPage(page - 1);
                 }}
               />
             </PaginationItem>
@@ -119,7 +94,7 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    handlePageChange(pageNum);
+                    setPage(pageNum);
                   }}
                   isActive={page === pageNum}
                   className={page === pageNum ? "bg-primary text-primary-foreground" : ""}
@@ -136,7 +111,7 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  handlePageChange(page + 1);
+                  setPage(page + 1);
                 }}
               />
             </PaginationItem>
