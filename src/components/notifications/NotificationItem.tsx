@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Notification, NotificationType } from '@/types/notifications';
-import NotificationIcon from './NotificationIcon';
+import CustomNotificationIcon from './CustomNotificationIcon'; // Updated import
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface NotificationItemProps {
@@ -10,20 +10,6 @@ interface NotificationItemProps {
   onMarkAsRead: (id: string) => void;
   formatTimeAgo: (timestamp: string) => string;
 }
-
-// Define the types that NotificationIcon.tsx is known to handle directly
-// This must exactly match the values that NotificationIcon can handle
-type HandledIconType =
-  | 'reply'
-  | 'like'
-  | 'mention'
-  | 'mention_reply'
-  | 'mention_post'
-  | 'quote'
-  | 'tag'
-  | 'follow'
-  | 'new_post'
-  | 'system';
 
 const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onMarkAsRead, formatTimeAgo }) => {
   const handleItemClick = () => {
@@ -33,36 +19,8 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onMar
     // Navigation will be handled by Link if present
   };
 
-  // Helper function to map all NotificationType variants to a HandledIconType
-  const getIconTypeForDisplay = (originalType: NotificationType): HandledIconType => {
-    switch (originalType) {
-      // Mapped types
-      case 'like_post':
-      case 'like_reply':
-        return 'like';
-      case 'new_topic_in_category':
-        return 'new_post';
-
-      // Types directly handled by NotificationIcon
-      case 'reply':
-      case 'like': // also target for like_post, like_reply
-      case 'system':
-      case 'mention_reply':
-      case 'mention_post':
-      case 'mention':
-      case 'tag':
-      case 'follow':
-      case 'new_post': // also target for new_topic_in_category
-      case 'quote':
-        return originalType;
-
-      // Fallback for any NotificationType not explicitly listed above
-      default:
-        // This is a safer approach that avoids never type issues
-        console.warn(`[NotificationItem] Unhandled notification type in getIconTypeForDisplay: "${originalType}". Defaulting to 'system'.`);
-        return 'system';
-    }
-  };
+  // The getIconTypeForDisplay helper and HandledIconType are no longer needed
+  // as CustomNotificationIcon handles all NotificationType variants directly.
 
   const content = (
     <div
@@ -73,7 +31,8 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onMar
     >
       <div className="flex items-start space-x-3">
         <div className="mt-1 shrink-0">
-          <NotificationIcon type={getIconTypeForDisplay(notification.type)} />
+          {/* Use CustomNotificationIcon and pass notification.type directly */}
+          <CustomNotificationIcon type={notification.type} />
         </div>
         <div className="flex-1 min-w-0">
           {notification.actor && (
