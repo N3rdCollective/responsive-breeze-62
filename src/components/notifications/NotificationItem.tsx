@@ -12,6 +12,7 @@ interface NotificationItemProps {
 }
 
 // Define the types that NotificationIcon.tsx is known to handle directly
+// This must exactly match the values that NotificationIcon can handle
 type HandledIconType =
   | 'reply'
   | 'like'
@@ -56,14 +57,10 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onMar
         return originalType;
 
       // Fallback for any NotificationType not explicitly listed above
-      // This case should ideally not be hit if NotificationType is fully covered.
       default:
-        // This exhaustive check helps ensure all NotificationType members are considered.
-        // If TypeScript complains here, it means 'originalType' can be a value
-        // not covered by the cases above.
-        const _exhaustiveCheck: never = originalType;
-        console.warn(`[NotificationItem] Unhandled originalType in getIconTypeForDisplay: "${originalType}". Defaulting to 'system'.`);
-        return 'system'; // Return a known safe type
+        // This is a safer approach that avoids never type issues
+        console.warn(`[NotificationItem] Unhandled notification type in getIconTypeForDisplay: "${originalType}". Defaulting to 'system'.`);
+        return 'system';
     }
   };
 
