@@ -1,4 +1,3 @@
-
 export interface NotificationUser {
   id: string;
   name: string;
@@ -9,6 +8,7 @@ export interface NotificationUser {
 // but 'mention_reply' and 'mention_post' are primary for forum.
 // Also added 'tag', 'follow', 'new_post' back for compatibility with NotificationIcon,
 // though they might be phased out or mapped differently later.
+// Added 'quote' type
 export type NotificationType = 
   | 'reply' 
   | 'like' 
@@ -18,7 +18,8 @@ export type NotificationType =
   | 'mention' // Generic mention for other contexts if any
   | 'tag'     // For NotificationIcon compatibility
   | 'follow'  // For NotificationIcon compatibility
-  | 'new_post'; // For NotificationIcon compatibility
+  | 'new_post' // For NotificationIcon compatibility
+  | 'quote'; // New type for post quotes
 
 
 export interface Notification {
@@ -36,6 +37,7 @@ export interface Notification {
   topic_title?: string;
   topic_slug?: string | null;
   category_slug?: string | null;
+  details?: any; // Added to match DB and useQuoteHandler
 }
 
 export interface ForumCategory {

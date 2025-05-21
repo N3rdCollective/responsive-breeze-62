@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MessageSquare, Heart, AtSign, Tag, Star, UserPlus, Bell, Megaphone } from 'lucide-react';
+import { MessageSquare, Heart, AtSign, Tag, Star, UserPlus, Bell, Megaphone, MessageSquareQuote } from 'lucide-react'; // Added MessageSquareQuote
 import { NotificationType } from '@/types/notifications';
 
 interface NotificationIconProps {
@@ -19,6 +19,8 @@ const NotificationIcon: React.FC<NotificationIconProps> = ({ type, size = 18, cl
     case 'mention_reply':
     case 'mention_post':
       return <AtSign className={`text-purple-500 ${className}`} size={size} />;
+    case 'quote': // Added case for quote
+      return <MessageSquareQuote className={`text-teal-500 ${className}`} size={size} />;
     case 'tag':
       return <Tag className={`text-green-500 ${className}`} size={size} />;
     case 'follow':
@@ -29,6 +31,7 @@ const NotificationIcon: React.FC<NotificationIconProps> = ({ type, size = 18, cl
       return <Bell className={`text-gray-600 ${className}`} size={size} />;
     default:
       // Fallback for any unhandled or new types
+      const exhaustiveCheck: never = type; // Ensures all types are handled, will error if a type is missed
       console.warn(`NotificationIcon: Unknown notification type encountered - "${type}"`);
       return <Star className={`text-gray-400 ${className}`} size={size} />;
   }

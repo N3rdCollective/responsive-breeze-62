@@ -221,6 +221,7 @@ export type Database = {
           actor_id: string | null
           content_preview: string | null
           created_at: string
+          details: Json | null
           id: string
           post_id: string | null
           read: boolean
@@ -233,6 +234,7 @@ export type Database = {
           actor_id?: string | null
           content_preview?: string | null
           created_at?: string
+          details?: Json | null
           id?: string
           post_id?: string | null
           read?: boolean
@@ -245,6 +247,7 @@ export type Database = {
           actor_id?: string | null
           content_preview?: string | null
           created_at?: string
+          details?: Json | null
           id?: string
           post_id?: string | null
           read?: boolean

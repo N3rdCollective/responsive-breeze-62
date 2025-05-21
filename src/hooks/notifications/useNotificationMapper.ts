@@ -32,43 +32,46 @@ export const useNotificationMapper = () => {
       actorProfile = { id: actorId, name: actorName, avatar: actorAvatar };
     }
 
-    let content = dbNotif.content_preview || `Notification type: ${dbNotif.type}`;
+    let content = dbNotif.content_preview || dbNotif.details?.content_summary || `Notification type: ${dbNotif.type}`;
     let link = '/members/forum';
-    let topicTitle = '';
-    let topicSlugVal: string | undefined = undefined;
-    let categorySlugVal: string | undefined = undefined;
+    let topicTitle = dbNotif.details?.topic_title || '';
+    let topicSlugVal: string | undefined = dbNotif.details?.topic_slug;
+    let categorySlugVal: string | undefined = undefined; // Will be fetched if topic_id exists
 
-    if (dbNotif.topic_id) {
+    // Fetch topic details if not already in dbNotif.details (prefer details from notification itself if present)
+    if (dbNotif.topic_id && (!topicTitle || !topicSlugVal)) {
       const { data: topicDetails, error: topicError } = await supabase
         .from('forum_topics')
         .select('title, slug, category:forum_categories(slug)')
         .eq('id', dbNotif.topic_id)
         .single();
       if (!topicError && topicDetails) {
-        topicTitle = topicDetails.title;
+        topicTitle = topicDetails.title; // Overwrite if fetched is newer/better
         topicSlugVal = topicDetails.slug;
         if (topicDetails.category && typeof topicDetails.category === 'object' && topicDetails.category !== null && 'slug' in topicDetails.category) {
           categorySlugVal = (topicDetails.category as { slug: string }).slug;
-        } else if (typeof topicDetails.category === 'string') {
-            // This case should ideally not happen if the query is correct
-            // but as a fallback, if category is just a slug string (old structure?)
-            console.warn("Topic category data is not in expected object format, attempting to use as slug.");
-            categorySlugVal = topicDetails.category;
         }
       }
+    } else if (dbNotif.details?.topic_id && dbNotif.details?.category_slug) {
+      // If details has topic_id and category_slug, use them (less common scenario, but for completeness)
+      categorySlugVal = dbNotif.details.category_slug;
     }
     
-    const notificationType = dbNotif.type as NotificationType;
+    const notificationType = (dbNotif.details?.true_type || dbNotif.type) as NotificationType;
 
     switch (notificationType) {
       case 'reply':
         if (actorProfile && topicTitle) {
           content = `${actorProfile.name} replied to your topic: "${topicTitle}"`;
+        } else if (actorProfile) {
+          content = `${actorProfile.name} replied to a topic.`;
         }
         break;
       case 'like':
         if (actorProfile && topicTitle) {
           content = `${actorProfile.name} liked your post in: "${topicTitle}"`;
+        } else if (actorProfile) {
+          content = `${actorProfile.name} liked a post.`;
         }
         break;
       case 'mention_reply':
@@ -85,18 +88,53 @@ export const useNotificationMapper = () => {
           content = `${actorProfile.name} mentioned you in a post.`;
         }
         break;
+      case 'quote': // Handle new 'quote' type
+        if (actorProfile && topicTitle) {
+          content = `${actorProfile.name} quoted your post in: "${topicTitle}"`;
+        } else if (actorProfile) {
+          content = `${actorProfile.name} quoted your post.`;
+        } else {
+          content = `Someone quoted your post.`; // Fallback
+        }
+        break;
       case 'system':
-        content = dbNotif.content_preview || "System notification";
+        content = dbNotif.content_preview || dbNotif.details?.content_summary || "System notification";
         break;
       default:
         // For unknown types, use the content_preview or a generic message
-        content = dbNotif.content_preview || `Notification: ${dbNotif.type}`;
+        content = dbNotif.content_preview || dbNotif.details?.content_summary || `Notification: ${dbNotif.type}`;
     }
 
     // Construct link, ensuring topicSlugVal or dbNotif.topic_id is used
-    if (categorySlugVal && (topicSlugVal || dbNotif.topic_id)) {
-      link = `/members/forum/${categorySlugVal}/${topicSlugVal || dbNotif.topic_id}`;
-      if (dbNotif.post_id) link += `?post_id=${dbNotif.post_id}#post-${dbNotif.post_id}`;
+    // Use post_id from dbNotif (the ID of the *quoted* post, which is what we want to link to)
+    const targetPostId = dbNotif.details?.quoted_post_id || dbNotif.post_id; 
+    
+    // If categorySlugVal is not set yet and we have topic_id, try to fetch it
+    if (!categorySlugVal && dbNotif.topic_id) {
+        const { data: topicCatDetails, error: topicCatError } = await supabase
+            .from('forum_topics')
+            .select('category:forum_categories(slug)')
+            .eq('id', dbNotif.topic_id)
+            .single();
+        if (!topicCatError && topicCatDetails && topicCatDetails.category && typeof topicCatDetails.category === 'object' && 'slug' in topicCatDetails.category) {
+            categorySlugVal = (topicCatDetails.category as { slug: string }).slug;
+        }
+    }
+
+
+    if (categorySlugVal && topicSlugVal) {
+      link = `/members/forum/${categorySlugVal}/${topicSlugVal}`;
+      if (targetPostId) {
+        // Link to the quoted post, not the new reply post
+        link += `/${targetPostId}`; // Assuming URL structure for specific post
+      }
+    } else if (topicSlugVal) { // Fallback if category slug isn't available
+      link = `/members/forum/topic/${topicSlugVal}`;
+      if (targetPostId) {
+        link += `/${targetPostId}`;
+      }
+    } else if (dbNotif.link_url) { // Use provided link_url from details if available
+      link = dbNotif.link_url;
     }
 
 
@@ -109,11 +147,12 @@ export const useNotificationMapper = () => {
       link: link,
       timestamp: dbNotif.created_at,
       topic_id: dbNotif.topic_id,
-      post_id: dbNotif.post_id,
+      post_id: dbNotif.post_id, // This is the ID of the post that *contains* the quote
       content_preview: dbNotif.content_preview,
       topic_title: topicTitle,
       topic_slug: topicSlugVal,
       category_slug: categorySlugVal,
+      details: dbNotif.details,
     };
   }, []);
 
