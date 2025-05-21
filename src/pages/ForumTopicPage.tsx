@@ -12,10 +12,13 @@ import ReplyFormCard from "@/components/forum/TopicPage/ReplyFormCard";
 import EditPostDialog from "@/components/forum/TopicPage/EditPostDialog";
 import DeletePostConfirmDialog from "@/components/forum/TopicPage/DeletePostConfirmDialog";
 import { ForumPost } from "@/types/forum";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const ForumTopicPage = () => {
   const navigate = useNavigate();
   const replyFormRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
   const {
     user,
     authLoading,
@@ -50,10 +53,56 @@ const ForumTopicPage = () => {
     }
   }, [user, authLoading, navigate]);
   
-  const handleQuotePost = (postToQuote: ForumPost) => {
+  const handleQuotePost = async (postToQuote: ForumPost) => {
+    if (!user || !topic) return;
+
     const authorName = postToQuote.profile?.display_name || postToQuote.profile?.username || 'A user';
-    setReplyContent(`<blockquote><p><strong>${authorName} wrote:</strong></p>${postToQuote.content}</blockquote><p>&nbsp;</p>`);
+    const quotedAuthorDisplayName = postToQuote.profile?.display_name || postToQuote.profile?.username || 'User';
+    const currentUserDisplayName = user.user_metadata?.display_name || user.user_metadata?.username || 'Someone';
+
+    setReplyContent(prevContent => 
+      `${prevContent}<blockquote><p><strong>${authorName} wrote:</strong></p>${postToQuote.content}</blockquote><p>&nbsp;</p>`
+    );
     replyFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // Send notification if the quoter is not the author of the quoted post
+    if (postToQuote.user_id !== user.id) {
+      const notificationData = {
+        recipient_id: postToQuote.user_id,
+        actor_id: user.id,
+        type: 'generic' as const, // Using 'generic' due to read-only constraints
+        topic_id: topic.id,
+        post_id: postToQuote.id, // ID of the post being quoted
+        comment_id: null, // No new post ID available at this point
+        content_summary: `${currentUserDisplayName} quoted your post in "${topic.title}"`,
+        details: { 
+          true_type: "quote_post", // For potential future specific handling
+          quoted_post_id: postToQuote.id,
+          topic_slug: topic.slug,
+          topic_id: topic.id,
+          topic_title: topic.title,
+          actor_display_name: currentUserDisplayName,
+          actor_username: user.user_metadata?.username,
+          actor_id: user.id,
+          quoted_author_id: postToQuote.user_id,
+          quoted_author_display_name: quotedAuthorDisplayName,
+        },
+        // Link to the topic page, ideally it would link to the new post containing the quote once created
+        // For now, linking to the quoted post or the topic.
+        link_url: `/members/forum/topic/${topic.slug}/${postToQuote.id}` 
+      };
+
+      const { error } = await supabase.from('forum_notifications').insert(notificationData);
+
+      if (error) {
+        console.error("Error creating quote notification:", error);
+        toast({
+          title: "Error",
+          description: "Could not send quote notification.",
+          variant: "destructive",
+        });
+      }
+    }
   };
   
   if (authLoading || (loadingData && !topic)) {
