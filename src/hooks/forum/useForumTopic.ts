@@ -15,19 +15,21 @@ export const useForumTopic = () => {
   const { topicId: routeTopicIdFromParams } = useParams<{ topicId: string }>(); // Get topicId for auth check
 
   // Initialize the specialized hooks
+  const forumTopicData = useForumTopicData(); // Get the whole object first
+  
   const {
     topic,
     posts,
-    setPosts, // Pass setPosts for optimistic updates
+    setPosts, // Now available
     loadingData,
     page,
     setPage,
     totalPages,
-    fetchTopicData,
-    categorySlug,
-    routeTopicId, // Use this from useForumTopicData
-    ITEMS_PER_PAGE,
-  } = useForumTopicData(); // Uses initial page 1 by default
+    fetchTopicData, // Now available
+    categorySlug, // Now available
+    routeTopicId, // Now available (actual topic ID/slug from data hook)
+    ITEMS_PER_PAGE, // Now available
+  } = forumTopicData;
 
   const {
     replyContent,
@@ -37,7 +39,8 @@ export const useForumTopic = () => {
   } = useForumReplyHandler({
     topic,
     user,
-    fetchTopicData,
+    // Pass the fetchTopicData from useForumTopicData to allow reply handler to refresh data
+    fetchTopicData: () => fetchTopicData(page), // Or pass fetchTopicData directly if its signature matches
     currentPage: page,
     totalPages,
     postsOnCurrentPage: posts.length,
@@ -62,7 +65,7 @@ export const useForumTopic = () => {
     posts,
     setPosts,
     currentPage: page,
-    fetchTopicData,
+    fetchTopicData: () => fetchTopicData(page), // Similar to reply handler
   });
 
   const {
@@ -77,7 +80,8 @@ export const useForumTopic = () => {
 
   // Effect for redirecting if not authenticated
   useEffect(() => {
-    if (!authLoading && !user && routeTopicIdFromParams) { // Check if topicId is present to only run on topic page
+    // Use routeTopicIdFromParams for this initial auth check, as 'routeTopicId' from hook might not be set yet.
+    if (!authLoading && !user && routeTopicIdFromParams) {
       navigate("/auth", { replace: true });
     }
   }, [user, authLoading, navigate, routeTopicIdFromParams]);
@@ -98,8 +102,8 @@ export const useForumTopic = () => {
     totalPages,
     isSubmittingReply,
     handleSubmitReply,
-    categorySlug, // from useForumTopicData
-    topicId: routeTopicId, // from useForumTopicData
+    categorySlug, 
+    topicId: routeTopicId, // Use the consistent topicId from useForumTopicData
 
     editingPost,
     showEditDialog,
@@ -113,5 +117,7 @@ export const useForumTopic = () => {
     handleCloseDeleteDialog,
     handleConfirmDeletePost,
     handleToggleReaction,
+    // Expose refreshTopicData if TopicPage needs it directly
+    refreshTopicData: forumTopicData.refreshTopicData, 
   };
 };

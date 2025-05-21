@@ -1,23 +1,23 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { DbNotification, Notification, NotificationType } from '@/types/notifications';
-import { Profile } from '@/types/profile';
+import { DbNotification, Notification, NotificationType, NotificationUser } from '@/types/notifications'; // Added DbNotification, NotificationUser
+import { UserProfile } from '@/types/profile'; // Changed Profile to UserProfile
 
 // Helper to get actor display name
-const getActorDisplayName = (actorProfile: Partial<Profile> | null | undefined): string => {
+const getActorDisplayName = (actorProfile: Partial<UserProfile> | null | undefined): string => {
   return actorProfile?.display_name || actorProfile?.username || 'Someone';
 };
 
 export const useNotificationMapper = () => {
   const mapDbNotificationToType = async (dbNotif: DbNotification): Promise<Notification> => {
     console.log('[useNotificationMapper] Mapping notification:', JSON.stringify(dbNotif, null, 2));
-    const actorProfile = dbNotif.actor_profiles;
-    const actorName = getActorDisplayName(actorProfile);
-    const notificationType = dbNotif.type as NotificationType;
-    
+    const actorProfileData = dbNotif.actor_profiles;
+    const actorName = getActorDisplayName(actorProfileData);
+    const notificationType = dbNotif.type as NotificationType; // Cast raw string type
+
     let content = dbNotif.content_preview || 'New notification';
     let link = '/members/forum'; // Default link
-    let topicTitle = dbNotif.details?.topic_title as string || 'a topic';
+    let topicTitle = (dbNotif.details?.topic_title as string) || 'a topic';
     let topicSlugVal = dbNotif.details?.topic_slug as string | undefined;
     let categorySlugVal = dbNotif.details?.category_slug as string | undefined;
 
@@ -35,7 +35,7 @@ export const useNotificationMapper = () => {
           console.error(`[useNotificationMapper] Error fetching topic details for ${dbNotif.topic_id}:`, topicError);
         } else if (topicDetails) {
           console.log(`[useNotificationMapper] Fetched topic details for ${dbNotif.topic_id}:`, topicDetails);
-          if (!topicTitle || topicTitle === 'a topic') topicTitle = topicDetails.title; // Prioritize fetched title if generic
+          if (!topicTitle || topicTitle === 'a topic') topicTitle = topicDetails.title;
           if (!topicSlugVal) topicSlugVal = topicDetails.slug;
           if (!categorySlugVal && topicDetails.category && typeof topicDetails.category === 'object' && topicDetails.category !== null && 'slug' in topicDetails.category) {
             categorySlugVal = (topicDetails.category as { slug: string }).slug;
@@ -57,20 +57,22 @@ export const useNotificationMapper = () => {
       case 'reply':
         content = dbNotif.content_preview || `${actorName} replied to your topic "${topicTitle}"`;
         break;
-      case 'mention_post': // A user was mentioned in an initial topic post
+      case 'mention_post':
         content = dbNotif.content_preview || `${actorName} mentioned you in the new topic "${topicTitle}"`;
         break;
-      case 'mention_reply': // A user was mentioned in a reply to a topic
+      case 'mention_reply':
         content = dbNotif.content_preview || `${actorName} mentioned you in a reply on "${topicTitle}"`;
         break;
-      case 'like_post':
-      case 'like_reply': // Consolidate like notifications
+      case 'like_post': // Now valid
+      case 'like_reply': // Now valid
+        // The 'like' case can be a fallback if specific like_post/like_reply is not used from DB
+      case 'like':
         content = dbNotif.content_preview || `${actorName} liked your post in "${topicTitle}"`;
         break;
       case 'quote':
         content = dbNotif.content_preview || `${actorName} quoted your post in "${topicTitle}"`;
         break;
-      case 'new_topic_in_category': // This type might be for category subscriptions (if implemented)
+      case 'new_topic_in_category': // Now valid
         content = dbNotif.content_preview || `${actorName} created a new topic "${topicTitle}" in a category you follow.`;
         break;
       case 'system':
@@ -82,54 +84,44 @@ export const useNotificationMapper = () => {
         }
         break;
       default:
+        // const exhaustiveCheck: never = notificationType; // This might cause issues if DB sends unknown types
+        console.warn(`[useNotificationMapper] Unhandled notification type: ${notificationType}`);
         content = dbNotif.content_preview || `Notification from ${actorName}`;
     }
     
-    // Construct link for forum-related notifications
-    // targetPostId should point to the specific post of interest for the notification
-    // For 'reply' or 'mention_reply', it's the new reply itself (dbNotif.post_id)
-    // For 'quote', dbNotif.post_id is the original quoted post.
-    //    We want to link to the page containing the post where the quote action happened (the new reply).
-    //    This implies that for 'quote' notifications, the 'post_id' on 'forum_notifications' should ideally be the *new post containing the quote*.
-    //    If 'details.reply_post_id_containing_quote' is available, use that. Otherwise, use dbNotif.post_id.
-    //    For now, we'll assume dbNotif.post_id is what we need to find the page for.
-    //    `dbNotif.details?.quoted_post_id` is the ID of the post that was quoted.
-    //    `dbNotif.post_id` in the case of a quote notification (as currently implemented in useQuoteHandler) IS the original quoted post.
-    //    This is an area for future refinement if needed. For now, targetPostId will be dbNotif.post_id for most relevant actions.
-    const targetPostId = dbNotif.post_id; // Simplify for now: always use the post_id from the notification record.
+    const targetPostId = dbNotif.post_id;
 
-    const isForumContextNotification = ['reply', 'mention_post', 'mention_reply', 'like_post', 'like_reply', 'quote'].includes(notificationType);
+    const isForumContextNotification = ['reply', 'mention_post', 'mention_reply', 'like', 'like_post', 'like_reply', 'quote'].includes(notificationType);
 
     if (isForumContextNotification) {
       if (categorySlugVal && topicSlugVal) {
         link = `/members/forum/${categorySlugVal}/${topicSlugVal}`;
         if (targetPostId) {
-          link += `?postId=${targetPostId}`; // Use query parameter
+          link += `?postId=${targetPostId}`;
         }
       } else {
-        // Fallback if category or topic slug is missing. 'link' remains '/members/forum'.
         console.warn(`[useNotificationMapper] Could not determine specific topic link for forum notification ID ${dbNotif.id}. Defaulting to /members/forum. CategorySlug: '${categorySlugVal}', TopicSlug: '${topicSlugVal}'. Details:`, dbNotif.details);
       }
-    } else if (dbNotif.details?.link_url && notificationType !== 'system') { // Use explicit link_url if provided and not already handled by 'system'
+    } else if (dbNotif.details?.link_url && notificationType !== 'system') {
         link = dbNotif.details.link_url as string;
     }
 
+    const mappedActor: NotificationUser | undefined = actorProfileData ? {
+        id: actorProfileData.id || '', // This is user_id of actor
+        name: actorProfileData.display_name || actorProfileData.username || 'Unknown User',
+        avatar: actorProfileData.profile_picture || undefined,
+      } : undefined;
 
     const mapped: Notification = {
       id: dbNotif.id,
       type: notificationType,
-      actor: actorProfile ? {
-        id: actorProfile.id || '', // Ensure id is not undefined
-        username: actorProfile.username || 'Unknown',
-        display_name: actorProfile.display_name || actorProfile.username || 'Unknown User',
-        profile_picture: actorProfile.profile_picture || undefined,
-      } : undefined,
+      actor: mappedActor,
       content: content,
       timestamp: dbNotif.created_at,
       read: dbNotif.read,
       link: link,
-      topicId: dbNotif.topic_id,
-      postId: dbNotif.post_id, // This is the post_id from the notification record itself
+      topicId: dbNotif.topic_id || undefined,
+      postId: dbNotif.post_id || undefined,
       details: dbNotif.details || undefined,
     };
     console.log('[useNotificationMapper] Mapped notification result:', JSON.stringify(mapped, null, 2));

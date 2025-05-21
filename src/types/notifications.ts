@@ -30,14 +30,34 @@ export interface Notification {
   content: string; // The main notification text
   link?: string; // Link to navigate to
   timestamp: string; // ISO string
-  topic_id?: string;
-  post_id?: string;
-  content_preview?: string | null; // Raw preview from DB if available
-  // For mapper convenience
-  topic_title?: string;
-  topic_slug?: string | null;
-  category_slug?: string | null;
-  details?: any; // Added to match DB and useQuoteHandler
+  topicId?: string; // Renamed from topic_id for consistency
+  postId?: string;  // Renamed from post_id for consistency
+  // content_preview?: string | null; // Raw preview from DB if available (already on DbNotification)
+  // For mapper convenience, if enriched during mapping
+  // topic_title?: string;
+  // topic_slug?: string | null;
+  // category_slug?: string | null;
+  details?: any; // Keep details if needed by UI, matches DbNotification.details
+}
+
+export interface DbNotification {
+  id: string;
+  recipient_id: string;
+  actor_id: string | null;
+  type: string; // Raw type from DB, will be cast to NotificationType in mapper
+  topic_id: string | null;
+  post_id: string | null;
+  content_preview: string | null;
+  read: boolean;
+  details: any | null; // JSONB from DB
+  created_at: string;
+  updated_at: string;
+  actor_profiles?: { // This comes from the join: profiles!forum_notifications_actor_id_fkey
+    id: string; // user_id of the actor
+    display_name: string | null;
+    username: string | null;
+    profile_picture: string | null;
+  } | null;
 }
 
 export interface ForumCategory {
