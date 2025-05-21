@@ -73,7 +73,6 @@ const ForumTopicPage = () => {
         type: 'generic' as const, // Using 'generic' due to read-only constraints
         topic_id: topic.id,
         post_id: postToQuote.id, // ID of the post being quoted
-        comment_id: null, // No new post ID available at this point
         content_summary: `${currentUserDisplayName} quoted your post in "${topic.title}"`,
         details: { 
           true_type: "quote_post", // For potential future specific handling
