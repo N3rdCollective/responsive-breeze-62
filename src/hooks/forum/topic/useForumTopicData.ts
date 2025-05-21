@@ -6,7 +6,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { ForumTopic, ForumPost } from '@/types/forum';
 import { useForumTopicViews } from '../actions/useForumTopicViews';
-import type { User } from '@supabase/supabase-js'; // For user type from useAuth
 
 const ITEMS_PER_PAGE = 10;
 
@@ -14,7 +13,7 @@ export const useForumTopicData = (initialPage: number = 1) => {
   const { categorySlug: routeCategorySlug, topicId: routeTopicIdParam } = useParams<{ categorySlug: string, topicId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
   const { incrementViewCount } = useForumTopicViews();
@@ -69,7 +68,7 @@ export const useForumTopicData = (initialPage: number = 1) => {
 
       if (topicError || !topicRawData) {
         toast({ title: 'Error', description: 'Topic not found or error fetching topic.', variant: 'destructive' });
-        navigate('/members/forum', { replace: true });
+        navigate('/members'); // Changed from '/members/forum' to '/members' to match current route
         setLoadingData(false);
         return false;
       }
@@ -152,8 +151,7 @@ export const useForumTopicData = (initialPage: number = 1) => {
       setLoadingData(false);
       return false;
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [routeTopicIdParam, routeCategorySlug, navigate, toast, incrementViewCount, searchParams, page]); // Include searchParams for URL query params changes
+  }, [routeTopicIdParam, routeCategorySlug, navigate, toast, incrementViewCount, searchParams, page, pageFromUrl]);
 
   useEffect(() => {
     setInitialPostIdProcessed(false);
@@ -164,8 +162,7 @@ export const useForumTopicData = (initialPage: number = 1) => {
     if (!authLoading) {
         fetchTopicData(); // Will use page from URL or state
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, routeTopicIdParam, routeCategorySlug, page, fetchTopicData, searchParams]);
+  }, [authLoading, routeTopicIdParam, routeCategorySlug, page, fetchTopicData]);
 
   const updatePage = (newPage: number) => {
     setInitialPostIdProcessed(true); 
@@ -186,7 +183,7 @@ export const useForumTopicData = (initialPage: number = 1) => {
     loadingData,
     page,
     totalPages,
-    setPage: updatePage,
+    setPage: updatePage, // Use the custom updatePage function
     fetchTopicData,
     refreshTopicData: () => {
       setInitialPostIdProcessed(false);

@@ -1,14 +1,11 @@
 
 import React, { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
-// No longer needed: import { supabase } from '@/integrations/supabase/client';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-// No longer needed: import { toast } from '@/hooks/use-toast';
-// No longer needed: import { ForumCategory, ForumTopic } from "@/types/forum";
 import { useForumCategoryData } from "@/hooks/forum/useForumCategoryData";
 
 import ForumCategoryHeader from "@/components/forum/ForumCategoryHeader";
@@ -19,16 +16,32 @@ const ForumCategoryPage = () => {
   const { categorySlug } = useParams<{ categorySlug: string }>();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   
-  const [page, setPage] = useState(1);
+  // Get page from URL query params, default to 1 if not present
+  const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
+  const [page, setPage] = useState(isNaN(pageFromUrl) ? 1 : pageFromUrl);
   
   const { 
     category, 
     topics, 
     loadingData: categoryDataLoading, 
     totalPages, 
-    error: categoryDataError // You can use this error state if needed for UI
+    error: categoryDataError 
   } = useForumCategoryData({ categorySlug, page });
+
+  // Update page state when URL query param changes
+  useEffect(() => {
+    const pageParam = searchParams.get('page');
+    if (pageParam) {
+      const parsedPage = parseInt(pageParam, 10);
+      if (!isNaN(parsedPage) && parsedPage !== page) {
+        setPage(parsedPage);
+      }
+    } else if (page !== 1) {
+      setPage(1); // Reset to page 1 if no page param
+    }
+  }, [searchParams, page]);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -51,8 +64,6 @@ const ForumCategoryPage = () => {
   }
   
   if (!user) {
-    // This should ideally not be reached if the redirect in useEffect works correctly
-    // but as a fallback:
     return (
        <div className="min-h-screen">
         <Navbar />
@@ -91,7 +102,7 @@ const ForumCategoryPage = () => {
   // If category is still null after loading and no error, it implies it was handled by redirect in hook.
   // To prevent rendering with null category if redirect is slow:
   if (!category) {
-     return ( // Minimal loader/message while redirecting
+     return (
       <div className="min-h-screen">
         <Navbar />
         <div className="pt-24 pb-20 px-4 flex justify-center items-center">
@@ -131,4 +142,3 @@ const ForumCategoryPage = () => {
 };
 
 export default ForumCategoryPage;
-

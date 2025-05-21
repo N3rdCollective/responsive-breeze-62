@@ -25,9 +25,12 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
   }
 
   const handlePageChange = (newPage: number) => {
+    if (newPage === page) return; // Don't do anything if clicking the current page
+    
     // Update the URL with the new page
-    searchParams.set('page', newPage.toString());
-    setSearchParams(searchParams);
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('page', newPage.toString());
+    setSearchParams(newSearchParams, { replace: true }); // Use replace: true to avoid adding to browser history
     
     // Call the setPage function to update the state
     setPage(newPage);

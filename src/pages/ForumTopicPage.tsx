@@ -1,19 +1,17 @@
 
 import React, { useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { useForumTopic } from "@/hooks/forum/useForumTopic";
 import { useQuoteHandler } from "@/hooks/forum/topic/useQuoteHandler"; // New hook
 import TopicLoadingStates from "@/components/forum/TopicPage/TopicLoadingStates"; // New component
 import TopicView from "@/components/forum/TopicPage/TopicView"; // New component
 import TopicDialogs from "@/components/forum/TopicPage/TopicDialogs"; // New component
-// Removed unused imports like Link, Button, Card, CardContent, Loader2, ForumPagination,
-// TopicHeaderDisplay, ForumPostCard, ReplyFormCard, EditPostDialog, DeletePostConfirmDialog,
-// ForumPost type (if not needed elsewhere in this file), supabase, useToast.
 
 const ForumTopicPage = () => {
   const navigate = useNavigate();
   const replyFormRef = useRef<HTMLDivElement>(null);
+  const [searchParams] = useSearchParams();
   
   const forumTopicHookData = useForumTopic();
   const {
@@ -50,6 +48,17 @@ const ForumTopicPage = () => {
     setReplyContent,
     replyFormRef,
   });
+  
+  // Update page state when URL query param changes
+  useEffect(() => {
+    const pageParam = searchParams.get('page');
+    if (pageParam) {
+      const parsedPage = parseInt(pageParam, 10);
+      if (!isNaN(parsedPage)) {
+        setPage(parsedPage);
+      }
+    }
+  }, [searchParams, setPage]);
   
   useEffect(() => {
     if (!authLoading && !user) {
