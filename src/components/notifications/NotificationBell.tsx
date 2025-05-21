@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react'; // Added useEffect
 import { Bell as BellIcon } from 'lucide-react';
 import { useNotifications } from '@/hooks/useNotifications';
 import NotificationPanel from './NotificationPanel';
@@ -27,6 +27,16 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ isHomePage, isScrol
     formatTimeAgo,
   } = useNotifications();
   const [isOpen, setIsOpen] = React.useState(false);
+
+  // Diagnostic logs
+  useEffect(() => {
+    console.log('[NotificationBell] Notifications state updated. Count:', notifications.length, 'Unread:', unreadCount, 'Notifications:', notifications);
+  }, [notifications, unreadCount]);
+
+  useEffect(() => {
+    console.log('[NotificationBell] Unread count specifically changed to:', unreadCount);
+  }, [unreadCount]);
+
 
   const bellColorClass = mobile 
     ? 'text-[#333333] dark:text-white hover:text-primary dark:hover:text-primary'
@@ -74,4 +84,3 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ isHomePage, isScrol
 };
 
 export default NotificationBell;
-
