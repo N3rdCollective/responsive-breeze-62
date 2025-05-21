@@ -10,21 +10,33 @@ export const createForumNotification = async (
   postId?: string,
   contentPreview?: string
 ) => {
-  if (recipientId === actorId) return; // Don't notify users about their own actions
+  console.log('[createForumNotification] Called with params:', { recipientId, actorId, type, topicId, postId, contentPreview });
+
+  if (recipientId === actorId) {
+    console.log('[createForumNotification] Recipient is the same as actor. Notification not created.');
+    return; 
+  }
 
   try {
-    const { error } = await supabase.from('forum_notifications').insert({
+    const notificationPayload = {
       recipient_id: recipientId,
       actor_id: actorId,
       type: type,
       topic_id: topicId,
       post_id: postId,
-      content_preview: contentPreview, // This will be stored in the DB
-    });
+      content_preview: contentPreview,
+    };
+    console.log('[createForumNotification] Attempting to insert notification payload:', JSON.stringify(notificationPayload, null, 2));
+    
+    const { error } = await supabase.from('forum_notifications').insert(notificationPayload);
+    
     if (error) {
-      console.error(`Error creating ${type} notification:`, error);
+      console.error(`[createForumNotification] Error creating ${type} notification:`, error.message, 'Details:', error);
+    } else {
+      console.log(`[createForumNotification] ${type} notification created successfully for recipient ${recipientId}.`);
     }
-  } catch (err) {
-    console.error(`Exception while creating ${type} notification:`, err);
+  } catch (err: any) {
+    console.error(`[createForumNotification] Exception while creating ${type} notification:`, err.message || err);
   }
 };
+
