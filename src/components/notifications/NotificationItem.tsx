@@ -77,4 +77,3 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onMar
 };
 
 export default NotificationItem;
-
