@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useNavigate, useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -14,6 +14,7 @@ export const useForumTopicData = (initialPage: number = 1) => {
   const { categorySlug: routeCategorySlug, topicId: routeTopicIdParam } = useParams<{ categorySlug: string, topicId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
   const { incrementViewCount } = useForumTopicViews();
@@ -21,10 +22,27 @@ export const useForumTopicData = (initialPage: number = 1) => {
   const [topic, setTopic] = useState<ForumTopic | null>(null);
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [page, setPage] = useState(initialPage);
+  
+  // Get page from URL query params, fallback to initialPage
+  const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
+  const [page, setPage] = useState(isNaN(pageFromUrl) ? initialPage : pageFromUrl);
+  
   const [totalPages, setTotalPages] = useState(1);
   const [viewCountIncremented, setViewCountIncremented] = useState(false);
   const [initialPostIdProcessed, setInitialPostIdProcessed] = useState(false);
+
+  // Update page when URL query params change
+  useEffect(() => {
+    const pageParam = searchParams.get('page');
+    if (pageParam) {
+      const parsedPage = parseInt(pageParam, 10);
+      if (!isNaN(parsedPage) && parsedPage !== page) {
+        setPage(parsedPage);
+      }
+    } else if (page !== 1) {
+      setPage(1); // Reset to page 1 if no page param
+    }
+  }, [searchParams, page]);
 
   const fetchTopicData = useCallback(async (currentPageToFetchOverride?: number) => {
     const currentTopicId = routeTopicIdParam; // Use the param directly for this fetch instance
@@ -68,8 +86,8 @@ export const useForumTopicData = (initialPage: number = 1) => {
       }
       setTopic(fetchedTopicObj);
 
-      let finalPageToFetch = currentPageToFetchOverride ?? page;
-      const searchParams = new URLSearchParams(location.search);
+      // Prioritize explicit page override, then URL query param, then current state
+      let finalPageToFetch = currentPageToFetchOverride ?? pageFromUrl ?? page;
       const postIdFromQuery = searchParams.get('postId');
 
       if (postIdFromQuery && fetchedTopicObj.id && !initialPostIdProcessed) {
@@ -135,7 +153,7 @@ export const useForumTopicData = (initialPage: number = 1) => {
       return false;
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [routeTopicIdParam, routeCategorySlug, navigate, toast, incrementViewCount, location.search, initialPostIdProcessed, page]); // page dependency is for re-triggering on manual page set
+  }, [routeTopicIdParam, routeCategorySlug, navigate, toast, incrementViewCount, searchParams, page]); // Include searchParams for URL query params changes
 
   useEffect(() => {
     setInitialPostIdProcessed(false);
@@ -144,33 +162,40 @@ export const useForumTopicData = (initialPage: number = 1) => {
 
   useEffect(() => {
     if (!authLoading) {
-        fetchTopicData(page); // Use current page state; fetchTopicData itself will handle postId query if needed
+        fetchTopicData(); // Will use page from URL or state
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, routeTopicIdParam, routeCategorySlug, page, fetchTopicData]); // page is a trigger here for pagination
+  }, [authLoading, routeTopicIdParam, routeCategorySlug, page, fetchTopicData, searchParams]);
 
   const updatePage = (newPage: number) => {
     setInitialPostIdProcessed(true); 
-    setPage(newPage);
+    // Page state will be updated via the URL change effect
+    
+    // Update URL with the new page
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('page', newPage.toString());
+    
+    // Use navigate to update the URL without a full page refresh
+    navigate(`${location.pathname}?${newSearchParams.toString()}`, { replace: true });
   };
 
   return {
     topic,
     posts,
-    setPosts, // Added
+    setPosts,
     loadingData,
     page,
     totalPages,
     setPage: updatePage,
-    fetchTopicData, // Added: the function itself
-    refreshTopicData: () => { // This is a wrapper for specific refresh scenario
+    fetchTopicData,
+    refreshTopicData: () => {
       setInitialPostIdProcessed(false);
-      fetchTopicData(page); // Call with current page state
+      fetchTopicData();
     },
     user,
     authLoading,
-    categorySlug: routeCategorySlug, // Added
-    routeTopicId: routeTopicIdParam, // Added
-    ITEMS_PER_PAGE, // Added
+    categorySlug: routeCategorySlug,
+    routeTopicId: routeTopicIdParam,
+    ITEMS_PER_PAGE,
   };
 };

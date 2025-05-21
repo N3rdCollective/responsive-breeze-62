@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Pagination,
   PaginationContent,
@@ -17,9 +18,20 @@ interface ForumPaginationProps {
 }
 
 const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, setPage }) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  
   if (totalPages <= 1) {
     return null;
   }
+
+  const handlePageChange = (newPage: number) => {
+    // Update the URL with the new page
+    searchParams.set('page', newPage.toString());
+    setSearchParams(searchParams);
+    
+    // Call the setPage function to update the state
+    setPage(newPage);
+  };
 
   const renderPageNumbers = () => {
     const pageNumbers = [];
@@ -50,7 +62,6 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
         endPage = totalPages -1;
       }
 
-
       for (let i = startPage; i <= endPage; i++) {
         pageNumbers.push(i);
       }
@@ -74,7 +85,7 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  setPage(page - 1);
+                  handlePageChange(page - 1);
                 }}
               />
             </PaginationItem>
@@ -94,7 +105,7 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    setPage(pageNum);
+                    handlePageChange(pageNum);
                   }}
                   isActive={page === pageNum}
                   className={page === pageNum ? "bg-primary text-primary-foreground" : ""}
@@ -111,7 +122,7 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  setPage(page + 1);
+                  handlePageChange(page + 1);
                 }}
               />
             </PaginationItem>

@@ -25,7 +25,8 @@ import ArtistsPage from "@/pages/ArtistsPage";
 import ArtistsArchivePage from "@/pages/ArtistsArchivePage";
 import ArtistDetail from "@/pages/ArtistDetail";
 import MusicPlayer from "@/components/MusicPlayer";
-// AuthPage import removed
+// Re-add Auth import
+import Auth from "@/pages/Auth";
 import ProfilePage from "@/pages/ProfilePage";
 import MembersPage from "@/pages/MembersPage";
 import ForumCategoryPage from "@/pages/ForumCategoryPage";
@@ -74,7 +75,8 @@ function App() {
         <Route path="/staff/forum-management" element={<StaffForumManagementPage />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/moderator-dashboard" element={<StaffModeratorDashboard />} errorElement={<RouteErrorElement />} />
         
-        {/* AuthPage route removed */}
+        {/* Re-add Auth route */}
+        <Route path="/auth" element={<Auth />} errorElement={<RouteErrorElement />} />
         <Route path="/request-password-reset" element={<RequestPasswordResetPage />} errorElement={<RouteErrorElement />} />
         <Route path="/update-password" element={<UpdatePasswordPage />} errorElement={<RouteErrorElement />} />
         
