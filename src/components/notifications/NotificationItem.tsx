@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Notification } from '@/types/notifications';
+import { Notification, NotificationType } from '@/types/notifications'; // Ensured NotificationType is imported
 import NotificationIcon from './NotificationIcon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -19,8 +19,21 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onMar
     // Navigation will be handled by Link if present
   };
 
+  // Helper function to map specific types to more general types for icon display
+  const getIconTypeForDisplay = (originalType: NotificationType): NotificationType => {
+    switch (originalType) {
+      case 'like_post':
+      case 'like_reply':
+        return 'like';
+      case 'new_topic_in_category':
+        return 'new_post';
+      default:
+        return originalType;
+    }
+  };
+
   const content = (
-    <div 
+    <div
       className={`p-3 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer ${
         notification.read ? 'opacity-70' : 'bg-primary/5 dark:bg-primary/10'
       }`}
@@ -28,7 +41,8 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onMar
     >
       <div className="flex items-start space-x-3">
         <div className="mt-1 shrink-0">
-          <NotificationIcon type={notification.type} />
+          {/* Use the helper function to determine the icon type */}
+          <NotificationIcon type={getIconTypeForDisplay(notification.type)} />
         </div>
         <div className="flex-1 min-w-0">
           {notification.actor && (
@@ -63,3 +77,4 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onMar
 };
 
 export default NotificationItem;
+
