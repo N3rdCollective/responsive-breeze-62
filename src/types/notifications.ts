@@ -4,21 +4,25 @@ export interface NotificationUser {
   avatar?: string | null;
 }
 
-// Added 'mention' for broader use if needed by NotificationIcon, 
+// Added 'mention' for broader use if needed by NotificationIcon,
 // but 'mention_reply' and 'mention_post' are primary for forum.
 // Also added 'tag', 'follow', 'new_post' back for compatibility with NotificationIcon,
 // though they might be phased out or mapped differently later.
 // Added 'quote' type
-export type NotificationType = 
-  | 'reply' 
-  | 'like' 
-  | 'system' 
-  | 'mention_reply' 
+// Added 'like_post', 'like_reply', 'new_topic_in_category'
+export type NotificationType =
+  | 'reply'
+  | 'like'
+  | 'like_post' // Added
+  | 'like_reply' // Added
+  | 'system'
+  | 'mention_reply'
   | 'mention_post'
   | 'mention' // Generic mention for other contexts if any
   | 'tag'     // For NotificationIcon compatibility
   | 'follow'  // For NotificationIcon compatibility
-  | 'new_post' // For NotificationIcon compatibility
+  | 'new_post' // For NotificationIcon compatibility (generic new post)
+  | 'new_topic_in_category' // Added (specific to forum categories)
   | 'quote'; // New type for post quotes
 
 
