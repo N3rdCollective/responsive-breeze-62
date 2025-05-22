@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -202,7 +201,7 @@
 }
 
 .text-gradient {
-  @apply bg-gradient-to-br from-[var(--foreground-hot97)] via-[var(--foreground-hot97)]/90 to-[var(--foreground-hot97)]/70 bg-clip-text text-transparent;
+  @apply bg-gradient-to-br from-hot97-white via-hot97-white/90 to-hot97-white/70 bg-clip-text text-transparent;
 }
 
 .text-gradient-primary { /* This might need to become hot97-text-gradient for consistency */
@@ -250,4 +249,3 @@
 .hot97-splatter-magenta {
   color: var(--hot97-magenta);
 }
-
