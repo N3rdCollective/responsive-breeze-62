@@ -53,18 +53,6 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // HOT 97 Summer Jam Colors - using direct hex values
-        'hot97-purple': '#8B2A9B',
-        'hot97-magenta': '#E91E63',
-        'hot97-pink': '#FF1493', // Also used for neon-pink
-        'hot97-black': '#000000',
-        'hot97-white': '#FFFFFF',
-        'hot97-dark-purple': '#6A1B7A',
-        'hot97-light-pink': '#FF69B4',
-      },
-      backgroundImage: { // Added from user suggestion
-        'hot97-gradient-main': 'linear-gradient(135deg, #8B2A9B 0%, #E91E63 50%, #FF1493 100%)',
-        'hot97-gradient-dark': 'linear-gradient(135deg, #000000 0%, #8B2A9B 100%)',
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -115,4 +103,3 @@ export default {
     require('@tailwindcss/typography')
   ],
 } satisfies Config;
-

@@ -1,77 +1,91 @@
 
-import { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import SharedLayout from '@/components/SharedLayout';
+import { Routes, Route, Navigate } from "react-router-dom";
+import Index from "@/pages/Index";
+import About from "@/pages/About";
+import Contact from "@/pages/Contact";
+import Schedule from "@/pages/Schedule";
+import News from "@/pages/News";
+import NewsPost from "@/pages/NewsPost";
+import Personalities from "@/pages/Personalities";
+import NotFound from "@/pages/NotFound";
+import StaffLogin from "@/pages/StaffLogin";
+import StaffSignup from "@/pages/StaffSignup";
+import StaffRegistration from "@/pages/StaffRegistration";
+import NewsEditor from "@/pages/NewsEditor";
+import RouteErrorElement from "@/components/RouteErrorElement";
+import StaffNews from "@/pages/StaffNews";
+import StaffPanel from "@/pages/StaffPanel";
+import StaffSponsors from "@/pages/StaffSponsors";
+import StaffSystemSettings from "@/pages/StaffSystemSettings";
+import StaffHomePage from "@/pages/StaffHomePage";
+import StaffPersonalitiesPage from "@/pages/StaffPersonalitiesPage";
+import StaffActivityLogs from "@/pages/StaffActivityLogs";
+import StaffFeaturedArtists from "@/pages/StaffFeaturedArtists";
+import ArtistsPage from "@/pages/ArtistsPage";
+import ArtistsArchivePage from "@/pages/ArtistsArchivePage";
+import ArtistDetail from "@/pages/ArtistDetail";
+import MusicPlayer from "@/components/MusicPlayer";
+// Re-add Auth import
+import Auth from "@/pages/Auth";
+import ProfilePage from "@/pages/ProfilePage";
+import MembersPage from "@/pages/MembersPage";
+import ForumCategoryPage from "@/pages/ForumCategoryPage";
+import ForumTopicPage from "@/pages/ForumTopicPage";
+import NewForumTopicPage from "@/pages/NewForumTopicPage";
+import StaffForumManagementPage from "@/pages/StaffForumManagementPage";
+import RequestPasswordResetPage from "@/pages/RequestPasswordResetPage";
+import UpdatePasswordPage from "@/pages/UpdatePasswordPage";
+import StaffModeratorDashboard from "@/pages/StaffModeratorDashboard";
 
-// Direct imports (not lazy loaded)
-import HomePage from './pages/HomePage';
-import AuthPage from './pages/AuthPage';
-import PricingPage from './pages/PricingPage';
-import BlogPage from './pages/BlogPage';
-import BlogPostPage from './pages/BlogPostPage';
-import DashboardPage from './pages/DashboardPage';
-import AccountPage from './pages/AccountPage';
-import SettingsPage from './pages/SettingsPage';
-import AdminDashboardPage from './pages/AdminDashboardPage';
-import NotFoundPage from './pages/NotFoundPage';
-import StaffLoginPage from "./pages/StaffLoginPage";
-import StaffDashboardPage from "./pages/StaffDashboardPage";
-import StaffUsersPage from "./pages/StaffUsersPage";
-import StaffSettingsPage from "./pages/StaffSettingsPage";
-import StaffHelpPage from "./pages/StaffHelpPage";
-
-// Lazy loaded pages
-const RadioPage = lazy(() => import('./pages/RadioPage'));
-const EventsPage = lazy(() => import('./pages/EventsPage'));
-const StorePage = lazy(() => import('./pages/StorePage'));
-const NewsPage = lazy(() => import('./pages/NewsPage'));
-const NewsArticlePage = lazy(() => import('./pages/NewsArticlePage'));
-const ContactPage = lazy(() => import('./pages/ContactPage'));
-const ArtistProfilePage = lazy(() => import('./pages/ArtistProfilePage'));
-const SongSubmitPage = lazy(() => import('./pages/SongSubmitPage'));
-const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
-const TermsOfServicePage = lazy(() => import('./pages/TermsOfServicePage'));
-const UserProfilePage = lazy(() => import('./pages/UserProfilePage'));
-const PublicUserProfilePage = lazy(() => import('./pages/PublicUserProfilePage'));
-
-const App = () => {
+function App() {
   return (
-    <Router>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Routes>
-          <Route element={<SharedLayout />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/pricing" element={<PricingPage />} />
-            <Route path="/blog" element={<BlogPage />} />
-            <Route path="/blog/:slug" element={<BlogPostPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/account" element={<AccountPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/admin" element={<AdminDashboardPage />} />
-            <Route path="/staff/login" element={<StaffLoginPage />} />
-            <Route path="/staff/dashboard" element={<StaffDashboardPage />} />
-            <Route path="/staff/users" element={<StaffUsersPage />} />
-            <Route path="/staff/settings" element={<StaffSettingsPage />} />
-            <Route path="/staff/help" element={<StaffHelpPage />} />
-            <Route path="/radio" element={<RadioPage />} />
-            <Route path="/events" element={<EventsPage />} />
-            <Route path="/store" element={<StorePage />} />
-            <Route path="/news" element={<NewsPage />} />
-            <Route path="/news/:id" element={<NewsArticlePage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/artist/:id" element={<ArtistProfilePage />} />
-            <Route path="/submit-song" element={<SongSubmitPage />} />
-            <Route path="/privacy" element={<PrivacyPolicyPage />} />
-            <Route path="/terms" element={<TermsOfServicePage />} />
-            <Route path="/profile" element={<UserProfilePage />} />
-            <Route path="/user/:id" element={<PublicUserProfilePage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Route>
-        </Routes>
-      </Suspense>
-    </Router>
+    <>
+      <Routes>
+        <Route path="/" element={<Index />} errorElement={<RouteErrorElement />} />
+        <Route path="/about" element={<About />} errorElement={<RouteErrorElement />} />
+        <Route path="/contact" element={<Contact />} errorElement={<RouteErrorElement />} />
+        <Route path="/schedule" element={<Schedule />} errorElement={<RouteErrorElement />} />
+        <Route path="/news" element={<News />} errorElement={<RouteErrorElement />} />
+        <Route path="/news/:id" element={<NewsPost />} errorElement={<RouteErrorElement />} />
+        <Route path="/personalities" element={<Personalities />} errorElement={<RouteErrorElement />} />
+        <Route path="/artists" element={<ArtistsPage />} errorElement={<RouteErrorElement />} />
+        <Route path="/artists/archive" element={<ArtistsArchivePage />} errorElement={<RouteErrorElement />} />
+        <Route path="/artists/:id" element={<ArtistDetail />} errorElement={<RouteErrorElement />} />
+        <Route path="/profile" element={<ProfilePage />} errorElement={<RouteErrorElement />} />
+        <Route path="/members" element={<MembersPage />} errorElement={<RouteErrorElement />} />
+        <Route path="/members/forum/:categorySlug" element={<ForumCategoryPage />} errorElement={<RouteErrorElement />} />
+        <Route path="/members/forum/:categorySlug/new" element={<NewForumTopicPage />} errorElement={<RouteErrorElement />} />
+        <Route path="/members/forum/:categorySlug/:topicId" element={<ForumTopicPage />} errorElement={<RouteErrorElement />} />
+        
+        <Route path="/staff" element={<Navigate to="/staff/panel" replace />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/panel" element={<StaffPanel />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/news" element={<StaffNews />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/login" element={<StaffLogin />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/signup" element={<StaffSignup />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/registration" element={<StaffRegistration />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/news/editor" element={<NewsEditor />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/news/editor/:id" element={<NewsEditor />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/news/edit/:id" element={<NewsEditor />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/sponsors" element={<StaffSponsors />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/system-settings" element={<StaffSystemSettings />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/home" element={<StaffHomePage />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/personalities" element={<StaffPersonalitiesPage />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/activity-logs" element={<StaffActivityLogs />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/featured-artists" element={<StaffFeaturedArtists />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/forum-management" element={<StaffForumManagementPage />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/moderator-dashboard" element={<StaffModeratorDashboard />} errorElement={<RouteErrorElement />} />
+        
+        {/* Re-add Auth route */}
+        <Route path="/auth" element={<Auth />} errorElement={<RouteErrorElement />} />
+        <Route path="/request-password-reset" element={<RequestPasswordResetPage />} errorElement={<RouteErrorElement />} />
+        <Route path="/update-password" element={<UpdatePasswordPage />} errorElement={<RouteErrorElement />} />
+        
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      
+      <MusicPlayer />
+    </>
   );
-};
+}
 
 export default App;

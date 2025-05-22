@@ -5,8 +5,8 @@
 @layer base {
   :root {
     /* Base colors */
-    --background: 0 0% 100%; /* Will be overridden for Hot97 theme */
-    --foreground: 215 25% 20%; /* Will be overridden for Hot97 theme */
+    --background: 0 0% 100%;
+    --foreground: 215 25% 20%;
     
     /* Card & Container colors */
     --card: 0 0% 100%;
@@ -39,28 +39,6 @@
     
     /* Border radius - consistent with homepage */
     --radius: 0.75rem;
-
-    /* HOT 97 Summer Jam Color Scheme */
-    /* Primary Colors */
-    --hot97-purple: #8B2A9B;
-    --hot97-magenta: #E91E63;
-    --hot97-pink: #FF1493;
-    --hot97-black: #000000;
-    --hot97-white: #FFFFFF;
-    
-    /* Accent Colors */
-    --hot97-dark-purple: #6A1B7A;
-    --hot97-light-pink: #FF69B4;
-    --hot97-neon-pink: #FF1493; /* same as hot97-pink */
-    
-    /* Text Colors (can be used if needed, but primary text often white/black) */
-    --hot97-text-primary: var(--hot97-white); /* Default text to white */
-    --hot97-text-secondary: var(--hot97-pink);
-    --hot97-text-accent: var(--hot97-magenta);
-
-    /* Overriding base background and foreground for Hot97 theme */
-    --background-hot97: var(--hot97-black);
-    --foreground-hot97: var(--hot97-white);
   }
  
   .dark {
@@ -96,14 +74,6 @@
     --border: 0 0% 30%;
     --input: 0 0% 25%;
     --ring: 0 0% 83.9%;
-
-    /* HOT 97 specific variables for dark mode if needed, otherwise they inherit from :root */
-    /* For example, if text color needs to change for HOT97 elements in dark mode */
-    /* --hot97-text-primary-dark: var(--hot97-black); */ 
-
-    /* Overriding base background and foreground for Hot97 theme in dark mode */
-    --background-hot97: var(--hot97-black);
-    --foreground-hot97: var(--hot97-white);
   }
 }
  
@@ -117,7 +87,7 @@
   }
   
   body {
-    @apply bg-[var(--background-hot97)] text-[var(--foreground-hot97)]; /* Apply Hot97 base */
+    @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
     min-height: 100vh;
     display: flex;
@@ -193,59 +163,21 @@
 
 /* Layout utilities */
 .glass-morphism {
-  @apply backdrop-blur-xl bg-hot97-white/5 border-hot97-white/10; /* Adjusted for Hot97 */
+  @apply backdrop-blur-xl bg-white/5 border border-white/10;
 }
 
 .neo-blur {
-  @apply backdrop-blur-2xl bg-hot97-black/40 border-hot97-white/10; /* Adjusted for Hot97 */
+  @apply backdrop-blur-2xl bg-black/40 border border-white/10;
 }
 
 .text-gradient {
-  @apply bg-gradient-to-br from-hot97-white via-hot97-white/90 to-hot97-white/70 bg-clip-text text-transparent;
+  @apply bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent;
 }
 
-.text-gradient-primary { /* This might need to become hot97-text-gradient for consistency */
-  @apply bg-gradient-to-br from-hot97-pink via-hot97-magenta to-hot97-purple bg-clip-text text-transparent;
+.text-gradient-primary {
+  @apply bg-gradient-to-br from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent;
 }
 
 .overflow-hidden {
   overflow: hidden;
-}
-
-/* HOT 97 Summer Jam Utility Classes */
-.hot97-primary-bg { 
-  background: linear-gradient(135deg, var(--hot97-purple) 0%, var(--hot97-magenta) 50%, var(--hot97-pink) 100%);
-  color: var(--hot97-white);
-}
-
-.hot97-dark-bg { 
-  background: linear-gradient(135deg, var(--hot97-black) 0%, var(--hot97-dark-purple) 100%); /* using dark purple for a bit more color */
-  color: var(--hot97-white);
-}
-
-.hot97-accent-bg { 
-  background: var(--hot97-magenta);
-  color: var(--hot97-white);
-}
-
-.hot97-text-gradient {
-  background: linear-gradient(135deg, var(--hot97-purple) 0%, var(--hot97-magenta) 50%, var(--hot97-pink) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  /* Fallback color if gradient text is not supported */
-  color: var(--hot97-pink); 
-}
-
-/* Splatter Effect Colors */
-.hot97-splatter-purple {
-  color: var(--hot97-purple);
-}
-
-.hot97-splatter-pink {
-  color: var(--hot97-pink);
-}
-
-.hot97-splatter-magenta {
-  color: var(--hot97-magenta);
 }

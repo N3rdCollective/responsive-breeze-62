@@ -37,7 +37,7 @@ const SystemSettingsForm = () => {
   const form = useForm<SystemSettingsFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      site_title: "Rappinlounge", // Updated default site title
+      site_title: "",
       site_tagline: "",
       contact_email: "",
       contact_phone: "",
@@ -56,7 +56,7 @@ const SystemSettingsForm = () => {
   useEffect(() => {
     if (settings) {
       form.reset({
-        site_title: settings.site_title || "Rappinlounge", // Ensure Rappinlounge if not set
+        site_title: settings.site_title,
         site_tagline: settings.site_tagline,
         contact_email: settings.contact_email || "",
         contact_phone: settings.contact_phone || "",
@@ -66,27 +66,8 @@ const SystemSettingsForm = () => {
         time_zone: settings.time_zone
       });
       setIsFormReady(true);
-    } else if (!isLoading) {
-      // If no settings and not loading, initialize form with defaults
-      // This ensures "Rappinlounge" is set even if DB is empty initially.
-      form.reset({
-        site_title: "Rappinlounge",
-        site_tagline: "",
-        contact_email: "",
-        contact_phone: "",
-        social_media_links: {
-          facebook: "",
-          twitter: "",
-          instagram: "",
-          youtube: ""
-        },
-        copyright_text: "",
-        language: "en",
-        time_zone: "UTC"
-      });
-      setIsFormReady(true);
     }
-  }, [settings, form, isLoading]);
+  }, [settings, form]);
 
   const onSubmit = (values: SystemSettingsFormValues) => {
     updateSettings(values);
