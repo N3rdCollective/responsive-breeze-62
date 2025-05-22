@@ -40,6 +40,7 @@ const ForumTopicPage = () => {
     handleCloseDeleteDialog,
     handleConfirmDeletePost,
     handleToggleReaction,
+    refreshTopicData, // Use this to force refresh data when needed
   } = forumTopicHookData;
 
   const { handleQuotePost } = useQuoteHandler({
@@ -54,11 +55,15 @@ const ForumTopicPage = () => {
     const pageParam = searchParams.get('page');
     if (pageParam) {
       const parsedPage = parseInt(pageParam, 10);
-      if (!isNaN(parsedPage)) {
+      if (!isNaN(parsedPage) && parsedPage !== page) {
+        // This will update the page and trigger a data refresh
         setPage(parsedPage);
       }
+    } else if (page !== 1) {
+      // Reset to page 1 if no page param
+      setPage(1);
     }
-  }, [searchParams, setPage]);
+  }, [searchParams, setPage, page]);
   
   useEffect(() => {
     if (!authLoading && !user) {

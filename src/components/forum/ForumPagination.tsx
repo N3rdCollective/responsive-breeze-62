@@ -24,8 +24,12 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
     return null;
   }
 
-  const handlePageChange = (newPage: number) => {
+  const handlePageChange = (newPage: number, e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default link behavior
+    
     if (newPage === page) return; // Don't do anything if clicking the current page
+    
+    console.log(`[ForumPagination] Changing page from ${page} to ${newPage}`);
     
     // Update the URL with the new page
     const newSearchParams = new URLSearchParams(searchParams);
@@ -86,10 +90,7 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
             <PaginationItem>
               <PaginationPrevious
                 href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handlePageChange(page - 1);
-                }}
+                onClick={(e) => handlePageChange(page - 1, e)}
               />
             </PaginationItem>
           )}
@@ -106,10 +107,7 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
               <PaginationItem key={pageNum}>
                 <PaginationLink
                   href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handlePageChange(pageNum);
-                  }}
+                  onClick={(e) => handlePageChange(pageNum, e)}
                   isActive={page === pageNum}
                   className={page === pageNum ? "bg-primary text-primary-foreground" : ""}
                 >
@@ -123,10 +121,7 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
             <PaginationItem>
               <PaginationNext
                 href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handlePageChange(page + 1);
-                }}
+                onClick={(e) => handlePageChange(page + 1, e)}
               />
             </PaginationItem>
           )}
