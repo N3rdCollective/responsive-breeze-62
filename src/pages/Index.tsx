@@ -8,6 +8,7 @@ import HomeNewsSection from "@/components/home/HomeNewsSection";
 import PersonalitySlider from "@/components/home/PersonalitySlider";
 import VideoGallery from "@/components/VideoGallery";
 import FeaturedArtistSection from "@/components/home/FeaturedArtistSection";
+import FeaturedBlogPost from "@/components/home/FeaturedBlogPost"; // Import the new component
 import { supabase } from "@/integrations/supabase/client";
 import { HomeSettings, defaultSettings, VideoData } from "@/components/staff/home/context/HomeSettingsContext";
 
@@ -74,8 +75,12 @@ const Index = () => {
       
       {settings.show_hero && <Hero videoBackgrounds={featuredVideos} />}
       
-      {/* VideoGallery is always shown but uses dynamic video data */}
       <VideoGallery videos={featuredVideos} />
+      
+      {/* Add the FeaturedBlogPost component here */}
+      <div className="container mx-auto px-4">
+        <FeaturedBlogPost />
+      </div>
       
       <div className="container mx-auto px-4 py-8">
         {settings.show_live_banner && <LiveShowBanner />}
@@ -83,9 +88,7 @@ const Index = () => {
       
       <div className="container mx-auto px-4 py-8">
         <div className="space-y-16">
-          {/* Featured Artist Section */}
           {showFeaturedArtist && <FeaturedArtistSection />}
-          
           {settings.show_news_section && <HomeNewsSection />}
           {settings.show_personalities && <PersonalitySlider />}
         </div>
