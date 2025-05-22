@@ -1,263 +1,293 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { ForumTopic as GlobalForumTopic, ForumPost as GlobalForumPost } from '@/types/forum';
-import { useAuth } from '@/hooks/useAuth';
-import { useForumTopicViews } from '../actions/useForumTopicViews';
 
-interface ForumTopic extends GlobalForumTopic {}
-interface ForumPost extends GlobalForumPost {}
+// Types
+interface ForumTopic {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  author_id: string;
+  category_id: string;
+  is_locked: boolean;
+  is_pinned: boolean;
+  created_at: string;
+  updated_at: string;
+  view_count: number;
+  reply_count: number;
+  last_reply_at: string | null;
+}
+
+interface ForumPost {
+  id: string;
+  topic_id: string;
+  author_id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  is_topic_post: boolean;
+  profiles?: {
+    id: string;
+    username: string | null;
+    avatar_url: string | null;
+    display_name: string | null;
+  };
+}
+
+interface UseForumTopicDataReturn {
+  topic: ForumTopic | null;
+  posts: ForumPost[];
+  loadingData: boolean;
+  error: string | null;
+  page: number; // This will be the currentPageFromProp
+  // setPage is removed as it's handled by useForumPagination
+  totalPages: number;
+  totalPosts: number;
+  refreshData: () => Promise<void>;
+  categorySlug: string | null;
+}
 
 const POSTS_PER_PAGE = 10;
 
-// The hook now accepts the current page as a parameter
-export const useForumTopicData = (currentPage: number) => {
-  const { categorySlug, topicId: topicSlugFromParams } = useParams<{ categorySlug: string, topicId: string }>();
-  // Remove searchParams for page handling here, it's managed by useForumPagination
+// Accept currentPageFromProp as an argument
+export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDataReturn => {
+  const { categorySlug, topicSlug } = useParams<{ 
+    categorySlug: string; 
+    topicSlug: string; 
+  }>();
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
-  const { incrementViewCount } = useForumTopicViews();
-
+  
+  // State
   const [topic, setTopic] = useState<ForumTopic | null>(null);
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Remove internal page state and related useEffect that syncs from searchParams
-  // const [page, setPage] = useState(isNaN(pageFromUrl) ? 1 : pageFromUrl);
-  
+  // Remove internal page state: const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [viewCountIncremented, setViewCountIncremented] = useState(false);
+  const [totalPosts, setTotalPosts] = useState(0);
+  const [viewCountUpdatedForTopic, setViewCountUpdatedForTopic] = useState<string | null>(null);
 
-  const fetchTopicData = useCallback(async (pageToFetch: number = currentPage, forceRefreshTopicDetails: boolean = false): Promise<boolean> => {
-    if (!topicSlugFromParams || !categorySlug) {
-      setLoadingData(false);
-      return false;
-    }
-    
-    // Use pageToFetch (which defaults to currentPage prop)
-    console.log(`[useForumTopicData] Fetching data for topic: ${topicSlugFromParams}, page: ${pageToFetch}, forceRefreshTopic: ${forceRefreshTopicDetails}`);
-    
+
+  // Fetch topic data (only when topic changes)
+  const fetchTopic = useCallback(async (): Promise<ForumTopic | null> => {
+    if (!topicSlug) return null;
+
     try {
-      setLoadingData(true);
-      setError(null);
-
-      let topicDataToUse: ForumTopic | null = topic;
-
-      if (!topicDataToUse || forceRefreshTopicDetails) {
-        // ... keep existing code (topic fetching logic)
-        console.log(`[useForumTopicData] ${forceRefreshTopicDetails ? 'Force refreshing' : 'Fetching'} topic details for ${topicSlugFromParams}`);
-        const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(topicSlugFromParams);
-        let topicQuery = supabase
-          .from('forum_topics')
-          .select(`
-            *, 
-            profile:profiles!forum_topics_user_id_fkey(username, display_name, profile_picture), 
-            category:forum_categories(name, slug)
-          `);
-        topicQuery = isUUID ? topicQuery.eq('id', topicSlugFromParams) : topicQuery.eq('slug', topicSlugFromParams);
-        
-        const { data: fetchedTopicData, error: fetchedTopicError } = await topicQuery.single();
-
-        if (fetchedTopicError) {
-          console.error('[useForumTopicData] Error fetching topic:', fetchedTopicError.message);
-          throw new Error(fetchedTopicError.message);
-        }
-
-        if (!fetchedTopicData) {
-          console.error('[useForumTopicData] Topic not found');
-          throw new Error('Topic not found');
-        }
-        topicDataToUse = fetchedTopicData as ForumTopic;
-        setTopic(topicDataToUse);
-        if (forceRefreshTopicDetails) { 
-            setViewCountIncremented(false);
-        }
-      }
+      console.log('[useForumTopicData] Fetching topic:', topicSlug);
       
-      if (!topicDataToUse?.id) {
-        // ... keep existing code (error handling for missing topic ID)
-        console.error('[useForumTopicData] Topic ID missing for post fetch.');
-        setLoadingData(false);
-        if (!topic) { 
-            throw new Error('Topic data is unavailable.');
-        }
-        throw new Error('Critical error: Topic ID became unavailable during fetch operation.');
+      const { data: topicData, error: topicError } = await supabase
+        .from('forum_topics')
+        .select(`
+          *,
+          forum_categories!inner(slug)
+        `)
+        .eq('slug', topicSlug)
+        .single();
+
+      if (topicError) {
+        console.error('Topic fetch error:', topicError);
+        throw new Error(topicError.message);
       }
 
-      const fetchedCategory = topicDataToUse.category as { slug: string; name: string } | undefined;
-      if (fetchedCategory && fetchedCategory.slug !== categorySlug) {
-          // Use pageToFetch for redirect
-          console.log(`[useForumTopicData] Category mismatch, redirecting. Expected ${categorySlug}, got ${fetchedCategory.slug}`);
-          navigate(`/members/forum/${fetchedCategory.slug}/${topicDataToUse.slug || topicDataToUse.id}?page=${pageToFetch}`, { replace: true });
-          setLoadingData(false);
-          return false;
+      if (!topicData) {
+        throw new Error('Topic not found');
       }
 
-      if (pageToFetch === 1 && topicDataToUse.id && !viewCountIncremented) {
-        // ... keep existing code (increment view count logic)
-        console.log(`[useForumTopicData] Incrementing view count for topic ${topicDataToUse.id}`);
-        await incrementViewCount(topicDataToUse.id); 
-        setViewCountIncremented(true);
-      }
-      
-      const { count, error: countError } = await supabase
-        .from('forum_posts')
-        .select('*', { count: 'exact', head: true })
-        .eq('topic_id', topicDataToUse.id);
-
-      if (countError) {
-        // ... keep existing code (error handling for post count)
-        console.error('[useForumTopicData] Error counting posts:', countError.message);
-        throw new Error(countError.message);
-      }
-      
-      const totalPostCount = count || 0;
-      const calculatedTotalPages = Math.ceil(totalPostCount / POSTS_PER_PAGE) || 1;
-      setTotalPages(calculatedTotalPages);
-
-      let actualPageToFetch = pageToFetch;
-      if (pageToFetch > calculatedTotalPages && calculatedTotalPages > 0) {
-        console.log(`[useForumTopicData] Page ${pageToFetch} out of bounds. Setting to ${calculatedTotalPages}.`);
-        actualPageToFetch = calculatedTotalPages;
-        // Parent component (via useForumPagination) should handle URL update if this happens.
-        // This hook shouldn't directly manipulate URL for page correction anymore.
-        // It might be better to let parent redirect or handle this.
-        // For now, we fetch the last valid page. The URL will eventually sync via useForumPagination if parent calls its setPage.
+      // Verify category matches URL
+      const topicCategorySlug = (topicData.forum_categories as any)?.slug; // Type assertion for clarity
+      if (topicCategorySlug !== categorySlug) {
+        console.warn(`Category mismatch, redirecting from ${categorySlug} to ${topicCategorySlug} for topic ${topicSlug}`);
+        navigate(`/members/forum/${topicCategorySlug}/${topicSlug}?page=${currentPageFromProp}`, { replace: true });
+        return null;
       }
 
-      console.log(`[useForumTopicData] Fetching posts for topic ${topicDataToUse.id}, page ${actualPageToFetch}`);
-      const { data: postsRawData, error: postsError } = await supabase
-        .from('forum_posts')
-        .select('*, profile:profiles!forum_posts_user_id_fkey(username, display_name, profile_picture), forum_post_reactions (id, user_id, reaction_type)')
-        .eq('topic_id', topicDataToUse.id)
-        .order('created_at', { ascending: true })
-        .range((actualPageToFetch - 1) * POSTS_PER_PAGE, actualPageToFetch * POSTS_PER_PAGE - 1);
+      console.log('[useForumTopicData] Topic fetched successfully:', topicData.title);
+      return topicData as ForumTopic;
 
-      if (postsError) {
-        // ... keep existing code (error handling for post fetch)
-        console.error('[useForumTopicData] Error fetching posts:', postsError.message);
-        throw new Error(postsError.message);
-      }
-
-      setPosts((postsRawData as ForumPost[]) || []);
-      setLoadingData(false);
-      return true;
-      
     } catch (err: any) {
-      // ... keep existing code (general error handling)
-      console.error('[useForumTopicData] Error in fetchTopicData:', err);
+      console.error('Error fetching topic:', err);
       setError(err.message);
       toast({
         title: "Error loading topic",
         description: err.message,
         variant: "destructive"
       });
-      if (err.message === 'Topic not found' || err.message === 'Topic data is unavailable.') {
-        navigate('/members');
+      if (err.message === 'Topic not found') {
+        navigate('/members/forum', { replace: true });
       }
+      return null;
+    }
+  }, [topicSlug, categorySlug, navigate, currentPageFromProp]);
+
+  // Fetch posts for current page
+  const fetchPosts = useCallback(async (topicId: string, pageToFetch: number): Promise<{ posts: ForumPost[]; totalCount: number }> => {
+    try {
+      console.log(`[useForumTopicData] Fetching posts for topic ${topicId}, page ${pageToFetch}`);
+      
+      const startIndex = (pageToFetch - 1) * POSTS_PER_PAGE;
+      const endIndex = startIndex + POSTS_PER_PAGE - 1;
+
+      const { data: postsData, error: postsError, count } = await supabase
+        .from('forum_posts')
+        .select(`
+          *,
+          profiles(
+            id,
+            username,
+            avatar_url,
+            display_name
+          )
+        `, { count: 'exact' })
+        .eq('topic_id', topicId)
+        .order('created_at', { ascending: true })
+        .range(startIndex, endIndex);
+
+      if (postsError) {
+        console.error('Posts fetch error:', postsError);
+        throw new Error(postsError.message);
+      }
+
+      const totalCount = count || 0;
+      console.log(`[useForumTopicData] Fetched ${postsData?.length || 0} posts, total: ${totalCount}`);
+
+      return {
+        posts: postsData as ForumPost[] || [],
+        totalCount
+      };
+
+    } catch (err: any) {
+      console.error('Error fetching posts:', err);
+      throw err; // Re-throw to be caught by fetchData
+    }
+  }, []);
+
+  // Update view count (only once per topic visit)
+  const updateViewCount = useCallback(async (topicId: string) => {
+    // Add check to prevent multiple updates for the same topic ID during component lifecycle / fast re-renders
+    if (viewCountUpdatedForTopic === topicId) return;
+
+    try {
+      console.log(`[useForumTopicData] Updating view count for topic ${topicId}`);
+      await supabase
+        .from('forum_topics') // Ensure this matches your actual table name for topics
+        .update({ view_count: supabase.sql`view_count + 1` })
+        .eq('id', topicId);
+      setViewCountUpdatedForTopic(topicId); // Mark as updated for this topic
+    } catch (err) {
+      console.error('Error updating view count:', err);
+    }
+  }, [viewCountUpdatedForTopic]);
+
+  // Main data fetching function
+  // Uses currentPageFromProp (passed as pageToFetch)
+  const fetchData = useCallback(async (pageToFetch: number) => {
+    if (!topicSlug) {
       setLoadingData(false);
-      return false;
+      return;
     }
-  }, [
-    topicSlugFromParams, 
-    categorySlug, 
-    currentPage, // Use currentPage prop instead of internal page state
-    topic, 
-    viewCountIncremented, 
-    incrementViewCount, 
-    navigate, 
-    // Removed searchParams, setSearchParams
-  ]);
 
-  useEffect(() => {
-    if (!authLoading) {
-      const topicSlugChanged = topic && (topic.slug !== topicSlugFromParams && topic.id !== topicSlugFromParams);
+    console.log(`[useForumTopicData] fetchData called for topic: ${topicSlug}, page: ${pageToFetch}`);
+    setLoadingData(true);
+    setError(null);
 
-      if (topicSlugChanged) {
-        console.log("[useForumTopicData] Topic slug changed, resetting topic state and fetching.");
-        setTopic(null);
-        setPosts([]);
-        setViewCountIncremented(false);
-        // Fetch with currentPage prop and force refresh topic details
-        fetchTopicData(currentPage, true); 
-      } else {
-         fetchTopicData(currentPage); // Pass currentPage prop
+    try {
+      let currentTopic = topic;
+      // Fetch topic details if it's not loaded or if the slug has changed
+      if (!currentTopic || currentTopic.slug !== topicSlug) {
+        console.log(`[useForumTopicData] Topic changed or not loaded. Current topic: ${currentTopic?.slug}, New slug: ${topicSlug}`);
+        const fetchedTopicDetails = await fetchTopic();
+        if (!fetchedTopicDetails) {
+          // fetchTopic handles errors and navigation, setLoadingData(false) might be needed if it returns early.
+          setLoadingData(false);
+          return;
+        }
+        currentTopic = fetchedTopicDetails;
+        setTopic(currentTopic);
+        // Reset view count updated status for new topic
+        setViewCountUpdatedForTopic(null); 
+        // Update view count only when new topic details are fetched for the first time on page 1
+        if (pageToFetch === 1 && currentTopic.id !== viewCountUpdatedForTopic) {
+           updateViewCount(currentTopic.id);
+        }
+      } else if (pageToFetch === 1 && currentTopic.id !== viewCountUpdatedForTopic) {
+        // Case: Topic already loaded, but navigating to page 1 and view count not updated for this topic ID yet
+        updateViewCount(currentTopic.id);
       }
+
+
+      if (currentTopic) {
+        const { posts: newPosts, totalCount } = await fetchPosts(currentTopic.id, pageToFetch);
+        setPosts(newPosts);
+        setTotalPosts(totalCount);
+        const calculatedTotalPages = Math.max(1, Math.ceil(totalCount / POSTS_PER_PAGE));
+        setTotalPages(calculatedTotalPages);
+
+        // If pageToFetch is out of bounds, the parent (useForumPagination) should handle redirecting.
+        // This hook will just fetch for the requested page.
+        // The parent will see totalPages and can correct if currentPageFromProp > totalPages.
+        console.log(`[useForumTopicData] Data loaded - Page: ${pageToFetch}/${calculatedTotalPages}, Posts: ${newPosts.length}`);
+      }
+    } catch (err: any) {
+      console.error('Error in fetchData:', err);
+      setError(err.message);
+      // toast for critical errors already in fetchTopic/fetchPosts
+    } finally {
+      setLoadingData(false);
     }
-  }, [topicSlugFromParams, categorySlug, currentPage, authLoading, fetchTopicData, topic?.id, topic?.slug]);
-  // Removed topic from deps in previous version, re-added relevant parts (topic.id, topic.slug) for topicSlugChanged logic.
+  }, [topicSlug, topic, fetchTopic, fetchPosts, updateViewCount, viewCountUpdatedForTopic]);
 
-  // Removed useEffect that synced internal page state from searchParams.
-  // This is now handled by useForumPagination.
 
-  // Real-time subscription for new posts
+  // Effect to fetch data when topicSlug or currentPageFromProp changes.
   useEffect(() => {
-    // ... keep existing code (real-time subscription logic)
-    if (!topic?.id) return;
-
-    console.log(`[useForumTopicData] Subscribing to real-time posts for topic: ${topic.id}`);
-
-    const channel = supabase
-      .channel(`forum-topic-${topic.id}`)
-      .on<GlobalForumPost>(
-        'postgres_changes',
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'forum_posts',
-          filter: `topic_id=eq.${topic.id}` 
-        },
-        (payload) => {
-          console.log('[useForumTopicData] Real-time: New post received!', payload.new);
-          toast({
-            title: "New Post Added",
-            description: "The topic has been updated with a new post.",
-          });
-          // Use currentPage prop for re-fetch
-          fetchTopicData(currentPage, true); 
-        }
-      )
-      .subscribe((status, err) => {
-        if (status === 'SUBSCRIBED') {
-          console.log(`[useForumTopicData] Successfully subscribed to topic ${topic.id}`);
-        }
-        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || err) {
-          console.error(`[useForumTopicData] Subscription error for topic ${topic.id}:`, status, err);
-        }
-      });
-
-    return () => {
-      console.log(`[useForumTopicData] Unsubscribing from real-time posts for topic: ${topic.id}`);
-      supabase.removeChannel(channel).catch(err => console.error("Error removing channel", err));
-    };
-  }, [topic?.id, fetchTopicData, currentPage]); // Use currentPage prop
+    console.log(`[useForumTopicData] Effect triggered - TopicSlug: ${topicSlug}, CurrentPageFromProp: ${currentPageFromProp}`);
+    // Reset topic state if topicSlug changes, to force re-fetch of topic details
+    if (topic && topicSlug !== topic.slug) {
+        console.log(`[useForumTopicData] Topic slug changed from ${topic.slug} to ${topicSlug}. Resetting topic state.`);
+        setTopic(null); 
+        // This will cause fetchData in the next render cycle (due to topicSlug change)
+        // to go into the `!currentTopic || currentTopic.slug !== topicSlug` block.
+    }
+    fetchData(currentPageFromProp);
+  }, [topicSlug, currentPageFromProp, fetchData]); // fetchData is stable if its deps are stable or it's memoized correctly
 
 
-  // Removed updatePage function. Page updates are handled by useForumPagination.
-  
-  const refreshTopicData = useCallback(async (): Promise<boolean> => {
-    console.log(`[useForumTopicData] refreshTopicData called for page ${currentPage}, topic: ${topicSlugFromParams}`);
-    // Use currentPage prop for re-fetch
-    return fetchTopicData(currentPage, true);
-  }, [fetchTopicData, currentPage, topicSlugFromParams]);
+  // Remove the second useEffect that was also fetching posts on page change.
+  // The main useEffect above, reacting to currentPageFromProp, now handles all data fetching.
+
+  // Refresh data function
+  const refreshData = useCallback(async () => {
+    console.log('[useForumTopicData] Refreshing data...');
+    // When refreshing, ensure we force fetch topic details too, and re-update view count if on page 1
+    setTopic(null); // This will make fetchData re-fetch topic details
+    setViewCountUpdatedForTopic(null); // Allow view count to be updated again
+    await fetchData(currentPageFromProp);
+  }, [fetchData, currentPageFromProp]);
+
+  // This useEffect was for resetting internal page to 1 on topicSlug change.
+  // Since page is now a prop, this specific logic is removed from here.
+  // If a topic change should reset the pagination to page 1,
+  // that should be handled by the component orchestrating useForumPagination and useForumTopic,
+  // typically by calling setPage(1) from useForumPagination.
+  // useEffect(() => {
+  //   if (topicSlug) {
+  //     console.log('[useForumTopicData] Topic changed, resetting to page 1');
+  //     setPage(1); // This was for internal page state
+  //   }
+  // }, [topicSlug]);
+
 
   return {
     topic,
     posts,
-    setPosts,
     loadingData,
     error,
-    // page is no longer returned by this hook, it comes from useForumPagination
-    // setPage is no longer returned by this hook
+    page: currentPageFromProp, // Return the prop as 'page'
+    // setPage: updatePage, // Removed, setPage is handled by useForumPagination
     totalPages,
-    fetchTopicData, 
-    refreshTopicData,
-    user, 
-    authLoading, 
-    categorySlug,
-    routeTopicId: topicSlugFromParams,
-    ITEMS_PER_PAGE: POSTS_PER_PAGE,
+    totalPosts,
+    refreshData,
+    categorySlug: categorySlug || null,
   };
 };
