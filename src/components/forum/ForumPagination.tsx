@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { useSearchParams } from 'react-router-dom'; // Keep for potential direct use, though setPage handles it
+import { useSearchParams } from 'react-router-dom';
 import {
   Pagination,
   PaginationContent,
@@ -14,13 +13,11 @@ import {
 interface ForumPaginationProps {
   page: number;
   totalPages: number;
-  setPage: (page: number) => void; // This setPage will now come from useForumPagination via parent
+  setPage: (page: number) => void;
 }
 
 const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, setPage }) => {
-  // useSearchParams can be removed if not directly used for other params here.
-  // The parent component will handle URL updates via the passed setPage.
-  // const [searchParams, setSearchParams] = useSearchParams(); 
+  const [searchParams, setSearchParams] = useSearchParams();
   
   if (totalPages <= 1) {
     return null;
@@ -35,125 +32,158 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
     
     console.log(`[ForumPagination] Changing page from ${page} to ${newPage}`);
     
-    // Call the setPage function (from useForumPagination) to update the URL and state
+    // Update the URL with the new page
+    const newSearchParams = new URLSearchParams(searchParams);
+    if (newPage === 1) {
+      // Remove page param for page 1 to keep URLs clean
+      newSearchParams.delete('page');
+    } else {
+      newSearchParams.set('page', newPage.toString());
+    }
+    
+    setSearchParams(newSearchParams, { replace: true });
+    
+    // Call the setPage function to update the state
     setPage(newPage);
   };
 
   const renderPageNumbers = () => {
-    const pageNumbers: (number | string)[] = [];
+    const pageNumbers: Array<{ type: 'page' | 'dots'; value: number }> = [];
     const maxPagesToShow = 7; // Show more pages for better UX
     
     if (totalPages <= maxPagesToShow) {
       // Show all pages if total is small
       for (let i = 1; i <= totalPages; i++) {
-        pageNumbers.push(i);
+        pageNumbers.push({ type: 'page', value: i });
       }
     } else {
       // Complex pagination logic for many pages
-      // Determine the sibling indices ensuring they are within bounds [1, totalPages]
-      const leftSibling = Math.max(page - 1, 1);
-      const rightSibling = Math.min(page + 1, totalPages);
-
-      // Determine if dots are needed
-      const shouldShowLeftDots = leftSibling > 2; // More than 1 page between '1' and leftSibling
-      const shouldShowRightDots = rightSibling < totalPages - 1; // More than 1 page between rightSibling and 'totalPages'
-
+      const leftSiblingIndex = Math.max(page - 1, 1);
+      const rightSiblingIndex = Math.min(page + 1, totalPages);
+      
+      const shouldShowLeftDots = leftSiblingIndex > 2;
+      const shouldShowRightDots = rightSiblingIndex < totalPages - 2;
+      
       const firstPageIndex = 1;
       const lastPageIndex = totalPages;
       
-      // Case 1: No left dots, but right dots needed
-      // Example: 1 2 3 4 5 ... 20 (current page is 1, 2, 3 or 4)
       if (!shouldShowLeftDots && shouldShowRightDots) {
-        let leftItemCount = 5; // Show 1, 2, 3, 4, 5
-        if (totalPages < leftItemCount) leftItemCount = totalPages;
-        const leftRange = Array.from({ length: leftItemCount }, (_, i) => i + 1);
-        pageNumbers.push(...leftRange, 'dots', lastPageIndex);
-      } 
-      // Case 2: Left dots needed, but no right dots
-      // Example: 1 ... 16 17 18 19 20 (current page is 17, 18, 19 or 20)
-      else if (shouldShowLeftDots && !shouldShowRightDots) {
-        let rightItemCount = 5; // Show 16, 17, 18, 19, 20
-        if (totalPages < rightItemCount) rightItemCount = totalPages;
+        // Show: 1 2 3 4 5 ... N
+        // Calculate how many numbers to show on the left. It should be a fixed number.
+        // Let's aim for 1, 2, 3, 4, 5, ..., N. (5 items then dots)
+        const leftItemCount = 5; 
+        for (let i = 1; i <= Math.min(leftItemCount, totalPages -1) ; i++) { // Ensure we don't exceed totalPages-1 if N is close
+          pageNumbers.push({ type: 'page', value: i });
+        }
+        if (totalPages > leftItemCount) { // Only show dots if there are more pages than what's shown
+            pageNumbers.push({ type: 'dots', value: -1 }); // -1 or any other placeholder for dots
+        }
+        pageNumbers.push({ type: 'page', value: lastPageIndex });
 
-        const rightRange = Array.from(
-          { length: rightItemCount },
-          (_, i) => totalPages - rightItemCount + i + 1
+      } else if (shouldShowLeftDots && !shouldShowRightDots) {
+        // Show: 1 ... N-4 N-3 N-2 N-1 N
+        // Calculate how many numbers to show on the right.
+        const rightItemCount = 5;
+        pageNumbers.push({ type: 'page', value: firstPageIndex });
+        if (totalPages > rightItemCount) { // Only show dots if there are more pages than what's shown
+            pageNumbers.push({ type: 'dots', value: -1 });
+        }
+        for (let i = Math.max(2, totalPages - rightItemCount + 1); i <= totalPages; i++) { // Ensure we start from at least page 2 if N is small
+          pageNumbers.push({ type: 'page', value: i });
+        }
+      } else if (shouldShowLeftDots && shouldShowRightDots) {
+        // Show: 1 ... P-1 P P+1 ... N
+        pageNumbers.push({ type: 'page', value: firstPageIndex });
+        pageNumbers.push({ type: 'dots', value: -1 });
+        
+        // Middle pages: current page and its direct siblings
+        for (let i = leftSiblingIndex; i <= rightSiblingIndex; i++) {
+          pageNumbers.push({ type: 'page', value: i });
+        }
+        
+        pageNumbers.push({ type: 'dots', value: -1 });
+        pageNumbers.push({ type: 'page', value: lastPageIndex });
+      } else {
+        // Fallback for very few pages or other edge cases (e.g. totalPages slightly > maxPagesToShow but not caught)
+        // This usually means totalPages is small enough that dots logic isn't triggered,
+        // or page is at one of the ends making one of the dot conditions false.
+        // This case should ideally be covered by `totalPages <= maxPagesToShow` or specific conditions above.
+        // For safety, let's build a sequence like 1, 2, current, ..., N or 1, ..., current, N-1, N
+        // or 1, ..., current-1, current, current+1, ..., N
+
+        // Default to showing first, last, and a few around current page if not perfectly covered.
+        // This is a simplified version. A more robust one would be:
+        // 1, (dots if page > 3), page-1, page, page+1, (dots if page < N-2), N
+        pageNumbers.push({ type: 'page', value: firstPageIndex }); // Always show first page
+
+        if (page > 2 && page-1 > firstPageIndex +1) { // Check if dots are needed after first page
+            pageNumbers.push({ type: 'dots', value: -1 });
+        }
+
+        // Add page-1, page, page+1 if they are not first or last page
+        const middlePages = [page - 1, page, page + 1].filter(
+            p => p > firstPageIndex && p < lastPageIndex
         );
-        pageNumbers.push(firstPageIndex, 'dots', ...rightRange);
-      } 
-      // Case 3: Both left and right dots needed
-      // Example: 1 ... 8 9 10 ... 20 (current page is 9, 10 or 11)
-      else if (shouldShowLeftDots && shouldShowRightDots) {
-        // Show page, page-1, page+1
-        const middleRange = [leftSibling, page, rightSibling].filter(p => p >= firstPageIndex && p <= lastPageIndex);
-        // Deduplicate in case page is 1 or totalPages and siblings are same
-        const uniqueMiddleRange = [...new Set(middleRange)].sort((a,b) => a-b);
+        // Remove duplicates just in case, though logic should prevent it
+        const uniqueMiddlePages = [...new Set(middlePages)].sort((a,b) => a-b);
 
-
-        pageNumbers.push(firstPageIndex, 'dots');
-        if (uniqueMiddleRange[0] > firstPageIndex + 1 && uniqueMiddleRange[0] !== firstPageIndex && uniqueMiddleRange[0] !== 'dots') {
-           // pageNumbers.push('dots');
+        for (const pVal of uniqueMiddlePages) {
+            if (pVal > 0) pageNumbers.push({ type: 'page', value: pVal });
         }
-        pageNumbers.push(...uniqueMiddleRange);
 
-        if (uniqueMiddleRange[uniqueMiddleRange.length -1] < lastPageIndex -1 && uniqueMiddleRange[uniqueMiddleRange.length -1] !== lastPageIndex && uniqueMiddleRange[uniqueMiddleRange.length -1] !== 'dots' ) {
-            pageNumbers.push('dots');
+        if (page < totalPages - 1 && page + 1 < lastPageIndex -1) { // Check if dots are needed before last page
+             pageNumbers.push({ type: 'dots', value: -1 });
         }
-        pageNumbers.push(lastPageIndex);
-        
-        // Refined logic for middle range to ensure it's distinct and doesn't produce double dots
-        const tempPageNumbers = [firstPageIndex];
-        if (page > 3) tempPageNumbers.push('dots');
-
-        const startPage = Math.max(2, page - 1);
-        const endPage = Math.min(totalPages - 1, page + 1);
-
-        for (let i = startPage; i <= endPage; i++) {
-            if (i === firstPageIndex || i === lastPageIndex) continue;
-            tempPageNumbers.push(i);
+        if (totalPages > 1) { // Always show last page if more than 1 page
+            pageNumbers.push({ type: 'page', value: lastPageIndex });
         }
-        
-        if (page < totalPages - 2) tempPageNumbers.push('dots');
-        if (totalPages > 1) tempPageNumbers.push(lastPageIndex); // Avoid duplicate if totalPages=1
 
-        // Remove duplicate 'dots' or redundant page numbers
-        const finalPages: (number | string)[] = [];
-        let lastPushed: (number | string | null) = null;
-        for (const p of tempPageNumbers) {
-            if (p === 'dots' && lastPushed === 'dots') continue;
-            if (typeof p === 'number' && typeof lastPushed === 'number' && p <= lastPushed) continue; // ensure increasing numbers
-            finalPages.push(p);
-            lastPushed = p;
+        // Remove duplicate page numbers and consecutive dots
+        const finalPageNumbers: Array<{ type: 'page' | 'dots'; value: number }> = [];
+        let lastPushedItem: { type: string, value: number } | null = null;
+        for(const item of pageNumbers) {
+            if (item.type === 'dots' && lastPushedItem?.type === 'dots') continue;
+            if (item.type === 'page' && lastPushedItem?.type === 'page' && item.value === lastPushedItem.value) continue;
+            finalPageNumbers.push(item);
+            lastPushedItem = item;
         }
-        // If first item is 'dots' because page is 1, remove it if page 1 is already there
-        if (finalPages[0] === 1 && finalPages[1] === 'dots' && finalPages[2] === 1) finalPages.splice(1,1);
-        // If last item is 'dots' because page is totalPages, remove it if totalPages is already there
-        if (finalPages[finalPages.length-1] === totalPages && finalPages[finalPages.length-2] === 'dots' && finalPages[finalPages.length-3] === totalPages) finalPages.splice(finalPages.length-2,1);
-
-
-        return finalPages.filter((item, idx, arr) => { // Remove duplicate numbers/dots
-          if (item === 'dots' && arr[idx-1] === 'dots') return false;
-          if (typeof item === 'number' && item === arr[idx-1]) return false;
-          return true;
-        });
-
-      } else { // Default for very few pages or other edge cases not caught by above (e.g. totalPages slightly > maxPagesToShow)
-          const allPages = Array.from({ length: totalPages }, (_, i) => i + 1);
-          pageNumbers.push(...allPages);
+        return finalPageNumbers;
       }
     }
     
-    return pageNumbers.filter((item, idx, arr) => { // Final cleanup for duplicates
-        if (item === 'dots' && arr[idx-1] === 'dots') return false;
-        if (typeof item === 'number' && item === arr[idx-1]) return false;
-        return true;
-    });
+    // Deduplicate and ensure logical order for pageNumbers if necessary
+    // This step might be important if the logic above creates duplicates (e.g., page 1 pushed multiple times)
+    const uniquePageNumbers: Array<{ type: 'page' | 'dots'; value: number }> = [];
+    const seenValues = new Set<number>();
+    let lastType: string | null = null;
+
+    for (const item of pageNumbers) {
+        if (item.type === 'page') {
+            if (!seenValues.has(item.value)) {
+                uniquePageNumbers.push(item);
+                seenValues.add(item.value);
+                lastType = 'page';
+            }
+        } else if (item.type === 'dots') {
+            // Only add dots if the last item wasn't also dots
+            if (lastType !== 'dots') {
+                uniquePageNumbers.push(item);
+                lastType = 'dots';
+            }
+        }
+    }
+    // Sort page type items by value, keep dots in place (this is complex, simplify by ensuring construction order is correct)
+    // For now, the construction logic order should mostly handle this.
+    // A simple sort on 'page' items could mess up 'dots' placement.
+    // The easiest fix is to ensure the `if/else if` blocks construct them in display order.
+
+    return uniquePageNumbers;
   };
 
-  const pageNumbersToRender = renderPageNumbers();
+  const pageItemsToRender = renderPageNumbers();
 
   return (
-    <div className="flex justify-center py-4 px-4 border-t">
+    <div className="flex justify-center py-4">
       <Pagination>
         <PaginationContent>
           {/* Previous button */}
@@ -168,16 +198,16 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
           )}
 
           {/* Page numbers */}
-          {pageNumbersToRender.map((pageNum, index) => {
-            if (pageNum === 'dots') {
+          {pageItemsToRender.map((item, index) => {
+            if (item.type === 'dots') {
               return (
-                <PaginationItem key={`ellipsis-${index}`}>
+                <PaginationItem key={`ellipsis-${index}-${item.value}`}>
                   <PaginationEllipsis />
                 </PaginationItem>
               );
             }
             
-            const pageNumber = pageNum as number;
+            const pageNumber = item.value;
             const isActive = page === pageNumber;
             
             return (
