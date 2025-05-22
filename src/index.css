@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,8 +6,8 @@
 @layer base {
   :root {
     /* Base colors */
-    --background: 0 0% 100%;
-    --foreground: 215 25% 20%;
+    --background: 0 0% 100%; /* Will be overridden for Hot97 theme */
+    --foreground: 215 25% 20%; /* Will be overridden for Hot97 theme */
     
     /* Card & Container colors */
     --card: 0 0% 100%;
@@ -54,9 +55,13 @@
     --hot97-neon-pink: #FF1493; /* same as hot97-pink */
     
     /* Text Colors (can be used if needed, but primary text often white/black) */
-    --hot97-text-primary: #FFFFFF;
-    --hot97-text-secondary: #FF1493;
-    --hot97-text-accent: #E91E63;
+    --hot97-text-primary: var(--hot97-white); /* Default text to white */
+    --hot97-text-secondary: var(--hot97-pink);
+    --hot97-text-accent: var(--hot97-magenta);
+
+    /* Overriding base background and foreground for Hot97 theme */
+    --background-hot97: var(--hot97-black);
+    --foreground-hot97: var(--hot97-white);
   }
  
   .dark {
@@ -96,6 +101,10 @@
     /* HOT 97 specific variables for dark mode if needed, otherwise they inherit from :root */
     /* For example, if text color needs to change for HOT97 elements in dark mode */
     /* --hot97-text-primary-dark: var(--hot97-black); */ 
+
+    /* Overriding base background and foreground for Hot97 theme in dark mode */
+    --background-hot97: var(--hot97-black);
+    --foreground-hot97: var(--hot97-white);
   }
 }
  
@@ -109,7 +118,7 @@
   }
   
   body {
-    @apply bg-background text-foreground;
+    @apply bg-[var(--background-hot97)] text-[var(--foreground-hot97)]; /* Apply Hot97 base */
     font-feature-settings: "rlig" 1, "calt" 1;
     min-height: 100vh;
     display: flex;
@@ -185,19 +194,19 @@
 
 /* Layout utilities */
 .glass-morphism {
-  @apply backdrop-blur-xl bg-white/5 border border-white/10;
+  @apply backdrop-blur-xl bg-hot97-white/5 border-hot97-white/10; /* Adjusted for Hot97 */
 }
 
 .neo-blur {
-  @apply backdrop-blur-2xl bg-black/40 border border-white/10;
+  @apply backdrop-blur-2xl bg-hot97-black/40 border-hot97-white/10; /* Adjusted for Hot97 */
 }
 
 .text-gradient {
-  @apply bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent;
+  @apply bg-gradient-to-br from-[var(--foreground-hot97)] via-[var(--foreground-hot97)]/90 to-[var(--foreground-hot97)]/70 bg-clip-text text-transparent;
 }
 
-.text-gradient-primary {
-  @apply bg-gradient-to-br from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent;
+.text-gradient-primary { /* This might need to become hot97-text-gradient for consistency */
+  @apply bg-gradient-to-br from-hot97-pink via-hot97-magenta to-hot97-purple bg-clip-text text-transparent;
 }
 
 .overflow-hidden {
@@ -205,17 +214,17 @@
 }
 
 /* HOT 97 Summer Jam Utility Classes */
-.hot97-primary-bg { /* Renamed to avoid conflict if 'primary' is a common name */
+.hot97-primary-bg { 
   background: linear-gradient(135deg, var(--hot97-purple) 0%, var(--hot97-magenta) 50%, var(--hot97-pink) 100%);
   color: var(--hot97-white);
 }
 
-.hot97-dark-bg { /* Renamed */
-  background: linear-gradient(135deg, var(--hot97-black) 0%, var(--hot97-purple) 100%);
+.hot97-dark-bg { 
+  background: linear-gradient(135deg, var(--hot97-black) 0%, var(--hot97-dark-purple) 100%); /* using dark purple for a bit more color */
   color: var(--hot97-white);
 }
 
-.hot97-accent-bg { /* Renamed */
+.hot97-accent-bg { 
   background: var(--hot97-magenta);
   color: var(--hot97-white);
 }
@@ -241,3 +250,4 @@
 .hot97-splatter-magenta {
   color: var(--hot97-magenta);
 }
+

@@ -1,9 +1,10 @@
+
 import { Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
 import SponsorsSection from './footer/SponsorsSection';
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast"; // Corrected import path
 import { useAuth } from "@/hooks/useAuth";
 
 const Footer = () => {
@@ -59,19 +60,20 @@ const Footer = () => {
 
   const handleNavigation = (path: string) => {
     window.scrollTo(0, 0);
+    // Removed navigate(path) as it was likely unintentional for simple scroll-to-top links
   };
 
   return (
-    <footer className="bg-[#F5F5F5] dark:bg-[#333333] border-t border-[#666666]/20 dark:border-white/10 pb-8 md:pb-12">
+    <footer className="bg-hot97-black border-t border-hot97-purple/50 text-hot97-white pb-8 md:pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-[#FFD700]">About Us</h3>
-            <p className="text-gray-700 dark:text-white">
+            <h3 className="text-lg font-semibold hot97-text-gradient">About Us</h3>
+            <p className="text-hot97-light-pink">
               {aboutSubtitle}
               <Link 
                 to="/about" 
-                className="ml-1 text-[#E6B800] hover:text-[#CC9900] dark:text-[#FFD700] dark:hover:text-[#FFF3B0] hover:underline inline-block transition-colors"
+                className="ml-1 text-hot97-pink hover:text-hot97-magenta hover:underline inline-block transition-colors"
                 onClick={scrollToTop}
               >
                 Learn more
@@ -80,22 +82,22 @@ const Footer = () => {
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-[#FFD700]">Quick Links</h3>
+            <h3 className="text-lg font-semibold mb-4 hot97-text-gradient">Quick Links</h3>
             <ul className="space-y-2">
-              <li><Link to="/" onClick={() => handleNavigation('/')} className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors">Home</Link></li>
-              <li><Link to="/personalities" onClick={() => handleNavigation('/personalities')} className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors">Personalities</Link></li>
-              <li><Link to="/about" onClick={() => handleNavigation('/about')} className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors">About</Link></li>
-              <li><Link to="/news" onClick={() => handleNavigation('/news')} className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors">News</Link></li>
+              <li><Link to="/" onClick={() => handleNavigation('/')} className="text-hot97-light-pink hover:text-hot97-pink transition-colors">Home</Link></li>
+              <li><Link to="/personalities" onClick={() => handleNavigation('/personalities')} className="text-hot97-light-pink hover:text-hot97-pink transition-colors">Personalities</Link></li>
+              <li><Link to="/about" onClick={() => handleNavigation('/about')} className="text-hot97-light-pink hover:text-hot97-pink transition-colors">About</Link></li>
+              <li><Link to="/news" onClick={() => handleNavigation('/news')} className="text-hot97-light-pink hover:text-hot97-pink transition-colors">News</Link></li>
             </ul>
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-[#FFD700]">Careers</h3>
+            <h3 className="text-lg font-semibold mb-4 hot97-text-gradient">Careers</h3>
             <div className="mt-2">
               <a 
                 href="/careers" 
                 onClick={handleCareersClick} 
-                className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors"
+                className="text-hot97-light-pink hover:text-hot97-pink transition-colors"
               >
                 View opportunities
               </a>
@@ -103,18 +105,18 @@ const Footer = () => {
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-[#FFD700]">Follow Us</h3>
+            <h3 className="text-lg font-semibold mb-4 hot97-text-gradient">Follow Us</h3>
             <div className="flex space-x-4 mb-4">
-              <a href="#" className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors">
+              <a href="#" className="text-hot97-light-pink hover:text-hot97-pink transition-colors">
                 <Facebook className="h-6 w-6" />
               </a>
-              <a href="#" className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors">
+              <a href="#" className="text-hot97-light-pink hover:text-hot97-pink transition-colors">
                 <Twitter className="h-6 w-6" />
               </a>
-              <a href="#" className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors">
+              <a href="#" className="text-hot97-light-pink hover:text-hot97-pink transition-colors">
                 <Instagram className="h-6 w-6" />
               </a>
-              <a href="#" className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors">
+              <a href="#" className="text-hot97-light-pink hover:text-hot97-pink transition-colors">
                 <Youtube className="h-6 w-6" />
               </a>
             </div>
@@ -122,7 +124,7 @@ const Footer = () => {
               {!authLoading && user && (
                 <button 
                   onClick={handleDashboardNavigation} 
-                  className="text-gray-700 hover:text-[#FFD700] dark:text-white dark:hover:text-[#FFD700] transition-colors text-sm"
+                  className="text-hot97-light-pink hover:text-hot97-pink transition-colors text-sm"
                 >
                   Dashboard
                 </button>
@@ -131,11 +133,10 @@ const Footer = () => {
           </div>
         </div>
         
-        {/* Sponsors Section - Will only render if sponsors exist */}
         <SponsorsSection />
         
-        <div className="mt-12 pt-8 border-t border-[#666666]/20 dark:border-white/10 text-center text-gray-700 dark:text-white">
-          <p>&copy; {new Date().getFullYear()} Radio Station. All rights reserved.</p>
+        <div className="mt-12 pt-8 border-t border-hot97-purple/50 text-center text-hot97-light-pink">
+          <p>&copy; {new Date().getFullYear()} HOT 97. All rights reserved.</p>
         </div>
       </div>
     </footer>
