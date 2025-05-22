@@ -1,12 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, X, LogOut, UserCircle, Radio, CalendarDays, ShoppingCart, Newspaper, Mic2, Users, Settings, Sun, Moon, LayoutDashboard } from 'lucide-react';
+import { Menu, X, LogOut, UserCircle, LayoutDashboard, Settings } from 'lucide-react'; // Removed icons for missing navLinks
 import { useAuth } from '@/hooks/useAuth';
-import { useTheme } from '@/components/theme-provider'; // Corrected import path
+// Removed: import { useTheme } from '@/components/theme-provider'; // This was causing an error
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,21 +14,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Logo from '@/components/Logo'; // Assuming Logo component is in components folder
+// Removed: import Logo from '@/components/Logo'; // This was causing an error
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme(); // Corrected usage of useTheme
+  // Removed theme state and setTheme function from the missing useTheme hook
+  // const { theme, setTheme } = useTheme(); // From missing theme-provider
 
-  const navLinks = [
-    { href: '/radio', label: 'Radio', icon: Radio },
-    { href: '/events', label: 'Events', icon: CalendarDays },
-    { href: '/store', label: 'Store', icon: ShoppingCart },
-    { href: '/news', label: 'News', icon: Newspaper },
-    // { href: '/members', label: 'Forum', icon: Users }, // Removed Forum link
-    { href: '/submit-song', label: 'Submit Song', icon: Mic2 },
+  // Nav links are emptied because target pages are missing
+  const navLinks: { href: string, label: string, icon: React.ElementType }[] = [
+    // { href: '/radio', label: 'Radio', icon: Radio },
+    // { href: '/events', label: 'Events', icon: CalendarDays },
+    // { href: '/store', label: 'Store', icon: ShoppingCart },
+    // { href: '/news', label: 'News', icon: Newspaper },
+    // { href: '/submit-song', label: 'Submit Song', icon: Mic2 },
   ];
 
   const handleLogout = async () => {
@@ -41,18 +41,20 @@ const Navbar: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    const htmlElement = document.documentElement;
-    if (theme === 'dark') {
-      htmlElement.classList.add('dark');
-    } else {
-      htmlElement.classList.remove('dark');
-    }
-  }, [theme]);
+  // Removed useEffect for theme handling as useTheme is missing
+  // useEffect(() => {
+  //   const htmlElement = document.documentElement;
+  //   if (theme === 'dark') {
+  //     htmlElement.classList.add('dark');
+  //   } else {
+  //     htmlElement.classList.remove('dark');
+  //   }
+  // }, [theme]);
 
-  const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
-  };
+  // Removed toggleTheme function as useTheme is missing
+  // const toggleTheme = () => {
+  //   setTheme(theme === 'light' ? 'dark' : 'light');
+  // };
 
   const UserAvatar = () => {
     if (loading) return <div className="h-8 w-8 rounded-full bg-gray-300 animate-pulse"></div>;
@@ -132,16 +134,18 @@ const Navbar: React.FC = () => {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0">
-              <Logo className="h-8 w-auto" />
+              {/* <Logo className="h-8 w-auto" /> Replaced with text */}
+              <span className="font-bold text-xl text-primary">Site Name</span>
             </Link>
             <div className="hidden md:ml-6 md:flex md:space-x-2">
               {renderNavLinks(false)}
             </div>
           </div>
           <div className="flex items-center space-x-3">
-            <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
+            {/* Removed theme toggle button as useTheme and toggleTheme are missing */}
+            {/* <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
               {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-            </Button>
+            </Button> */}
             {user ? (
               <UserAvatar />
             ) : (
