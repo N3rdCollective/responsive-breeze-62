@@ -1,7 +1,7 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast'; // Added this import
 import { useToast } from '@/hooks/use-toast';
 import { ForumTopic, ForumPost } from '@/types/forum';
 
@@ -27,6 +27,7 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
     topicId: string; 
   }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   // State
   const [topic, setTopic] = useState<ForumTopic | null>(null);
@@ -88,7 +89,7 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
       }
       return null;
     }
-  }, [topicId, categorySlug, navigate, currentPageFromProp]);
+  }, [topicId, categorySlug, navigate, currentPageFromProp, toast]);
 
   // Fetch posts for current page
   const fetchPosts = useCallback(async (topicId: string, pageToFetch: number): Promise<{ posts: ForumPost[]; totalCount: number }> => {
@@ -217,7 +218,7 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
         // to go into the `!currentTopic || currentTopic.slug !== topicId` block.
     }
     fetchData(currentPageFromProp);
-  }, [topicId, currentPageFromProp, fetchData]); // fetchData is stable if its deps are stable or it's memoized correctly
+  }, [topicId, currentPageFromProp, fetchData, topic]); // fetchData is stable if its deps are stable or it's memoized correctly
 
 
   // Remove the second useEffect that was also fetching posts on page change.
