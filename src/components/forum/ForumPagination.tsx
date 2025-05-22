@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -15,6 +16,13 @@ interface ForumPaginationProps {
   totalPages: number;
   setPage: (page: number) => void;
 }
+
+// Changed to a type alias as it's used locally for the items array structure
+type PaginationDisplayItem = {
+  type: 'page' | 'ellipsis';
+  value: number; // value is -1 for ellipsis, page number for 'page'
+  key: string;
+};
 
 const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, setPage }) => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -47,140 +55,195 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
     setPage(newPage);
   };
 
-  const renderPageNumbers = () => {
-    const pageNumbers: Array<{ type: 'page' | 'dots'; value: number }> = [];
-    const maxPagesToShow = 7; // Show more pages for better UX
-    
-    if (totalPages <= maxPagesToShow) {
-      // Show all pages if total is small
+  const generatePaginationItems = (): PaginationDisplayItem[] => {
+    const items: PaginationDisplayItem[] = [];
+    const MAX_PAGES_DISPLAYED = 7; // Maximum items to show including ellipsis
+
+    // Simple case: if total pages are few, show all
+    if (totalPages <= MAX_PAGES_DISPLAYED) {
       for (let i = 1; i <= totalPages; i++) {
-        pageNumbers.push({ type: 'page', value: i });
+        items.push({
+          type: 'page',
+          value: i,
+          key: `page-${i}`
+        });
       }
-    } else {
-      // Complex pagination logic for many pages
-      const leftSiblingIndex = Math.max(page - 1, 1);
-      const rightSiblingIndex = Math.min(page + 1, totalPages);
-      
-      const shouldShowLeftDots = leftSiblingIndex > 2;
-      const shouldShowRightDots = rightSiblingIndex < totalPages - 2;
-      
-      const firstPageIndex = 1;
-      const lastPageIndex = totalPages;
-      
-      if (!shouldShowLeftDots && shouldShowRightDots) {
-        // Show: 1 2 3 4 5 ... N
-        // Calculate how many numbers to show on the left. It should be a fixed number.
-        // Let's aim for 1, 2, 3, 4, 5, ..., N. (5 items then dots)
-        const leftItemCount = 5; 
-        for (let i = 1; i <= Math.min(leftItemCount, totalPages -1) ; i++) { // Ensure we don't exceed totalPages-1 if N is close
-          pageNumbers.push({ type: 'page', value: i });
-        }
-        if (totalPages > leftItemCount) { // Only show dots if there are more pages than what's shown
-            pageNumbers.push({ type: 'dots', value: -1 }); // -1 or any other placeholder for dots
-        }
-        pageNumbers.push({ type: 'page', value: lastPageIndex });
+      return items;
+    }
 
-      } else if (shouldShowLeftDots && !shouldShowRightDots) {
-        // Show: 1 ... N-4 N-3 N-2 N-1 N
-        // Calculate how many numbers to show on the right.
-        const rightItemCount = 5;
-        pageNumbers.push({ type: 'page', value: firstPageIndex });
-        if (totalPages > rightItemCount) { // Only show dots if there are more pages than what's shown
-            pageNumbers.push({ type: 'dots', value: -1 });
-        }
-        for (let i = Math.max(2, totalPages - rightItemCount + 1); i <= totalPages; i++) { // Ensure we start from at least page 2 if N is small
-          pageNumbers.push({ type: 'page', value: i });
-        }
-      } else if (shouldShowLeftDots && shouldShowRightDots) {
-        // Show: 1 ... P-1 P P+1 ... N
-        pageNumbers.push({ type: 'page', value: firstPageIndex });
-        pageNumbers.push({ type: 'dots', value: -1 });
-        
-        // Middle pages: current page and its direct siblings
-        for (let i = leftSiblingIndex; i <= rightSiblingIndex; i++) {
-          pageNumbers.push({ type: 'page', value: i });
-        }
-        
-        pageNumbers.push({ type: 'dots', value: -1 });
-        pageNumbers.push({ type: 'page', value: lastPageIndex });
-      } else {
-        // Fallback for very few pages or other edge cases (e.g. totalPages slightly > maxPagesToShow but not caught)
-        // This usually means totalPages is small enough that dots logic isn't triggered,
-        // or page is at one of the ends making one of the dot conditions false.
-        // This case should ideally be covered by `totalPages <= maxPagesToShow` or specific conditions above.
-        // For safety, let's build a sequence like 1, 2, current, ..., N or 1, ..., current, N-1, N
-        // or 1, ..., current-1, current, current+1, ..., N
+    // Complex case: more pages than can be shown directly
+    // Always show first page
+    items.push({
+      type: 'page',
+      value: 1,
+      key: 'page-1'
+    });
 
-        // Default to showing first, last, and a few around current page if not perfectly covered.
-        // This is a simplified version. A more robust one would be:
-        // 1, (dots if page > 3), page-1, page, page+1, (dots if page < N-2), N
-        pageNumbers.push({ type: 'page', value: firstPageIndex }); // Always show first page
+    // Determine the range of pages to show around the current page
+    // Sibling count on each side of the current page
+    const SIBLING_COUNT = 1; 
+    
+    // Pages to show: first, ellipsis, prevSibling, current, nextSibling, ellipsis, last
+    // Left side
+    const leftSiblingStart = Math.max(2, page - SIBLING_COUNT);
+    const leftSiblingEnd = Math.max(1, page - 1); // Will be capped by right side logic later
+    
+    // Right side
+    const rightSiblingStart = Math.min(totalPages -1, page + 1);
+    const rightSiblingEnd = Math.min(totalPages -1, page + SIBLING_COUNT);
 
-        if (page > 2 && page-1 > firstPageIndex +1) { // Check if dots are needed after first page
-            pageNumbers.push({ type: 'dots', value: -1 });
-        }
-
-        // Add page-1, page, page+1 if they are not first or last page
-        const middlePages = [page - 1, page, page + 1].filter(
-            p => p > firstPageIndex && p < lastPageIndex
-        );
-        // Remove duplicates just in case, though logic should prevent it
-        const uniqueMiddlePages = [...new Set(middlePages)].sort((a,b) => a-b);
-
-        for (const pVal of uniqueMiddlePages) {
-            if (pVal > 0) pageNumbers.push({ type: 'page', value: pVal });
-        }
-
-        if (page < totalPages - 1 && page + 1 < lastPageIndex -1) { // Check if dots are needed before last page
-             pageNumbers.push({ type: 'dots', value: -1 });
-        }
-        if (totalPages > 1) { // Always show last page if more than 1 page
-            pageNumbers.push({ type: 'page', value: lastPageIndex });
-        }
-
-        // Remove duplicate page numbers and consecutive dots
-        const finalPageNumbers: Array<{ type: 'page' | 'dots'; value: number }> = [];
-        let lastPushedItem: { type: string, value: number } | null = null;
-        for(const item of pageNumbers) {
-            if (item.type === 'dots' && lastPushedItem?.type === 'dots') continue;
-            if (item.type === 'page' && lastPushedItem?.type === 'page' && item.value === lastPushedItem.value) continue;
-            finalPageNumbers.push(item);
-            lastPushedItem = item;
-        }
-        return finalPageNumbers;
-      }
+    // Show left ellipsis if needed
+    if (page > SIBLING_COUNT + 2) { // (1 + SIBLING_COUNT + 1 for ellipsis + 1 for first page)
+        items.push({ type: 'ellipsis', value: -1, key: 'ellipsis-start'});
     }
     
-    // Deduplicate and ensure logical order for pageNumbers if necessary
-    // This step might be important if the logic above creates duplicates (e.g., page 1 pushed multiple times)
-    const uniquePageNumbers: Array<{ type: 'page' | 'dots'; value: number }> = [];
-    const seenValues = new Set<number>();
-    let lastType: string | null = null;
+    // Determine actual range to display:
+    // This logic is tricky. We want to show a certain number of items.
+    // Let's simplify: Show 1, ..., current-1, current, current+1, ..., N
+    // Number of pages to show around current:
+    const pagesAroundCurrent: number[] = [];
+    if (page > 1 && page < totalPages) { // Current page is not first or last
+        if (page - 1 > 1) pagesAroundCurrent.push(page -1);
+        pagesAroundCurrent.push(page);
+        if (page + 1 < totalPages) pagesAroundCurrent.push(page + 1);
+    } else if (page === 1 && totalPages > 1) { // Current is first
+        pagesAroundCurrent.push(page);
+        if (page + 1 < totalPages) pagesAroundCurrent.push(page + 1);
+        if (page + 2 < totalPages && SIBLING_COUNT > 0) pagesAroundCurrent.push(page+2);
 
-    for (const item of pageNumbers) {
-        if (item.type === 'page') {
-            if (!seenValues.has(item.value)) {
-                uniquePageNumbers.push(item);
-                seenValues.add(item.value);
-                lastType = 'page';
-            }
-        } else if (item.type === 'dots') {
-            // Only add dots if the last item wasn't also dots
-            if (lastType !== 'dots') {
-                uniquePageNumbers.push(item);
-                lastType = 'dots';
+    } else if (page === totalPages && totalPages > 1) { // Current is last
+        if (page - 2 > 1 && SIBLING_COUNT > 0) pagesAroundCurrent.push(page - 2);
+        if (page - 1 > 1) pagesAroundCurrent.push(page - 1);
+        pagesAroundCurrent.push(page);
+    }
+
+
+    // Refined logic for middle pages:
+    let showLeftEllipsis = true;
+    let showRightEllipsis = true;
+
+    // If page is close to the start
+    if (page <= SIBLING_COUNT + 2) { // e.g. 1,2,3,4 (page 1,2,3,4 for SC=1)
+        for(let i = 2; i <= Math.min(totalPages -1, SIBLING_COUNT * 2 + 2); i++) {
+             items.push({ type: 'page', value: i, key: `page-${i}`});
+        }
+        showLeftEllipsis = false;
+    } else {
+        // Handled by initial left ellipsis push already if page > SIBLING_COUNT + 2
+    }
+
+    // If page is close to the end
+    if (page >= totalPages - (SIBLING_COUNT + 1)) { // e.g. N, N-1, N-2, N-3 (page N, N-1, N-2, N-3 for SC=1)
+        for(let i = Math.max(2, totalPages - (SIBLING_COUNT * 2 + 1) ); i <= totalPages -1 ; i++) {
+             // Avoid duplicates if already added by start-logic
+             if (!items.find(it => it.type === 'page' && it.value === i)) {
+                items.push({ type: 'page', value: i, key: `page-${i}`});
+             }
+        }
+        showRightEllipsis = false;
+    } else {
+        // Handled by later right ellipsis push if needed
+    }
+    
+    // If page is in the middle (not close to start or end)
+    if (showLeftEllipsis && showRightEllipsis) {
+        // items already has 'page-1' and 'ellipsis-start'
+        for (let i = page - SIBLING_COUNT; i <= page + SIBLING_COUNT; i++) {
+            if (i > 1 && i < totalPages) { // Ensure it's not first or last, and not already added
+                 if (!items.find(it => it.type === 'page' && it.value === i)) {
+                    items.push({ type: 'page', value: i, key: `page-${i}`});
+                 }
             }
         }
     }
-    // Sort page type items by value, keep dots in place (this is complex, simplify by ensuring construction order is correct)
-    // For now, the construction logic order should mostly handle this.
-    // A simple sort on 'page' items could mess up 'dots' placement.
-    // The easiest fix is to ensure the `if/else if` blocks construct them in display order.
 
-    return uniquePageNumbers;
+
+    // Add right ellipsis if needed
+    // Condition: last page added is not (totalPages - 1)
+    const lastPushedPageItem = items.slice().reverse().find(it => it.type === 'page');
+    if (lastPushedPageItem && lastPushedPageItem.value < totalPages -1) {
+         items.push({ type: 'ellipsis', value: -1, key: 'ellipsis-end'});
+    }
+    
+
+    // Always show last page (if not already included and totalPages > 1)
+    if (totalPages > 1 && !items.find(item => item.type === 'page' && item.value === totalPages)) {
+      items.push({
+        type: 'page',
+        value: totalPages,
+        key: `page-${totalPages}`
+      });
+    }
+    
+    // Deduplicate and sort 'page' items, ensuring ellipsis are not duplicated consecutively
+    const finalItems: PaginationDisplayItem[] = [];
+    let lastPushedType: 'page' | 'ellipsis' | null = null;
+    const seenPageValues = new Set<number>();
+
+    // Sort page items first to handle out-of-order additions from complex logic
+    const pageItemsOnly = items.filter(item => item.type === 'page').sort((a,b) => a.value - b.value);
+    const sortedItems: PaginationDisplayItem[] = [];
+    
+    let pageIdx = 0;
+    for (const item of items) { // Iterate through original structure to try and keep ellipsis positions
+        if (item.type === 'page') {
+            // Find the corresponding sorted page item to insert
+            // This is tricky. A simpler rebuild might be better.
+            // Let's rebuild based on the simplified rules you provided:
+        }
+    }
+
+    // Rebuild based on your "How the New Logic Works" description:
+    // 1. Simple case (<=7 pages): Shows all page numbers (handled at the start)
+    // 2. Complex case (>7 pages): Shows first page, ellipsis if needed, pages around current page, ellipsis if needed, last page
+    const rebuiltItems: PaginationDisplayItem[] = [];
+    rebuiltItems.push({ type: 'page', value: 1, key: 'page-1' });
+
+    const rangeStart = Math.max(2, page - SIBLING_COUNT);
+    const rangeEnd = Math.min(totalPages - 1, page + SIBLING_COUNT);
+
+    if (rangeStart > 2) { // Ellipsis after first page
+        rebuiltItems.push({ type: 'ellipsis', value: -1, key: 'ellipsis-start' });
+    }
+
+    for (let i = rangeStart; i <= rangeEnd; i++) {
+        if (i > 1 && i < totalPages) { // Ensure it's not first or last
+            rebuiltItems.push({ type: 'page', value: i, key: `page-${i}` });
+        }
+    }
+    
+    if (rangeEnd < totalPages - 1) { // Ellipsis before last page
+        // Check if last added page is not totalPages -1 already
+        const lastPageInRebuilt = rebuiltItems[rebuiltItems.length-1];
+        if (lastPageInRebuilt.type !== 'page' || lastPageInRebuilt.value < totalPages -1) {
+            rebuiltItems.push({ type: 'ellipsis', value: -1, key: 'ellipsis-end' });
+        }
+    }
+
+    if (totalPages > 1) { // Add last page if not already there
+        if(!rebuiltItems.find(it => it.type === 'page' && it.value === totalPages)) {
+            rebuiltItems.push({ type: 'page', value: totalPages, key: `page-${totalPages}` });
+        }
+    }
+    
+    // Final cleanup for consecutive ellipsis or duplicate pages (should be less likely now)
+    const cleanedItems: PaginationDisplayItem[] = [];
+    let prevItem: PaginationDisplayItem | null = null;
+    for (const item of rebuiltItems) {
+        if (item.type === 'ellipsis' && prevItem?.type === 'ellipsis') {
+            continue;
+        }
+        if (item.type === 'page' && prevItem?.type === 'page' && item.value === prevItem.value) {
+            continue;
+        }
+        cleanedItems.push(item);
+        prevItem = item;
+    }
+
+    return cleanedItems;
   };
 
-  const pageItemsToRender = renderPageNumbers();
+  const paginationItemsToRender = generatePaginationItems();
 
   return (
     <div className="flex justify-center py-4">
@@ -188,7 +251,7 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
         <PaginationContent>
           {/* Previous button */}
           {page > 1 && (
-            <PaginationItem>
+            <PaginationItem key="prev"> {/* Added key */}
               <PaginationPrevious
                 href="#"
                 onClick={(e) => handlePageChange(page - 1, e)}
@@ -197,21 +260,22 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
             </PaginationItem>
           )}
 
-          {/* Page numbers */}
-          {pageItemsToRender.map((item, index) => {
-            if (item.type === 'dots') {
+          {/* Page numbers and ellipsis */}
+          {paginationItemsToRender.map((item) => {
+            if (item.type === 'ellipsis') {
               return (
-                <PaginationItem key={`ellipsis-${index}-${item.value}`}>
+                <PaginationItem key={item.key}> {/* Using item.key */}
                   <PaginationEllipsis />
                 </PaginationItem>
               );
             }
-            
+
+            // item.type === 'page'
             const pageNumber = item.value;
             const isActive = page === pageNumber;
             
             return (
-              <PaginationItem key={pageNumber}>
+              <PaginationItem key={item.key}> {/* Using item.key */}
                 <PaginationLink
                   href="#"
                   onClick={(e) => handlePageChange(pageNumber, e)}
@@ -230,7 +294,7 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
 
           {/* Next button */}
           {page < totalPages && (
-            <PaginationItem>
+            <PaginationItem key="next"> {/* Added key */}
               <PaginationNext
                 href="#"
                 onClick={(e) => handlePageChange(page + 1, e)}
