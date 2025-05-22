@@ -53,6 +53,18 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // HOT 97 Summer Jam Colors
+        'hot97-purple': 'var(--hot97-purple)',
+        'hot97-magenta': 'var(--hot97-magenta)',
+        'hot97-pink': 'var(--hot97-pink)',
+        'hot97-black': 'var(--hot97-black)',
+        'hot97-white': 'var(--hot97-white)',
+        'hot97-dark-purple': 'var(--hot97-dark-purple)',
+        'hot97-light-pink': 'var(--hot97-light-pink)',
+        // Text colors (if needed as Tailwind classes directly)
+        'hot97-text-primary': 'var(--hot97-text-primary)',
+        'hot97-text-secondary': 'var(--hot97-text-secondary)',
+        'hot97-text-accent': 'var(--hot97-text-accent)',
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -103,3 +115,4 @@ export default {
     require('@tailwindcss/typography')
   ],
 } satisfies Config;
+

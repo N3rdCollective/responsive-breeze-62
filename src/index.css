@@ -39,6 +39,24 @@
     
     /* Border radius - consistent with homepage */
     --radius: 0.75rem;
+
+    /* HOT 97 Summer Jam Color Scheme */
+    /* Primary Colors */
+    --hot97-purple: #8B2A9B;
+    --hot97-magenta: #E91E63;
+    --hot97-pink: #FF1493;
+    --hot97-black: #000000;
+    --hot97-white: #FFFFFF;
+    
+    /* Accent Colors */
+    --hot97-dark-purple: #6A1B7A;
+    --hot97-light-pink: #FF69B4;
+    --hot97-neon-pink: #FF1493; /* same as hot97-pink */
+    
+    /* Text Colors (can be used if needed, but primary text often white/black) */
+    --hot97-text-primary: #FFFFFF;
+    --hot97-text-secondary: #FF1493;
+    --hot97-text-accent: #E91E63;
   }
  
   .dark {
@@ -74,6 +92,10 @@
     --border: 0 0% 30%;
     --input: 0 0% 25%;
     --ring: 0 0% 83.9%;
+
+    /* HOT 97 specific variables for dark mode if needed, otherwise they inherit from :root */
+    /* For example, if text color needs to change for HOT97 elements in dark mode */
+    /* --hot97-text-primary-dark: var(--hot97-black); */ 
   }
 }
  
@@ -180,4 +202,42 @@
 
 .overflow-hidden {
   overflow: hidden;
+}
+
+/* HOT 97 Summer Jam Utility Classes */
+.hot97-primary-bg { /* Renamed to avoid conflict if 'primary' is a common name */
+  background: linear-gradient(135deg, var(--hot97-purple) 0%, var(--hot97-magenta) 50%, var(--hot97-pink) 100%);
+  color: var(--hot97-white);
+}
+
+.hot97-dark-bg { /* Renamed */
+  background: linear-gradient(135deg, var(--hot97-black) 0%, var(--hot97-purple) 100%);
+  color: var(--hot97-white);
+}
+
+.hot97-accent-bg { /* Renamed */
+  background: var(--hot97-magenta);
+  color: var(--hot97-white);
+}
+
+.hot97-text-gradient {
+  background: linear-gradient(135deg, var(--hot97-purple) 0%, var(--hot97-magenta) 50%, var(--hot97-pink) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  /* Fallback color if gradient text is not supported */
+  color: var(--hot97-pink); 
+}
+
+/* Splatter Effect Colors */
+.hot97-splatter-purple {
+  color: var(--hot97-purple);
+}
+
+.hot97-splatter-pink {
+  color: var(--hot97-pink);
+}
+
+.hot97-splatter-magenta {
+  color: var(--hot97-magenta);
 }
