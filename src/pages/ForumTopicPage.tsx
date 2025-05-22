@@ -1,19 +1,20 @@
-
 import React, { useEffect, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { useForumTopic } from "@/hooks/forum/useForumTopic";
-import { useQuoteHandler } from "@/hooks/forum/topic/useQuoteHandler"; // New hook
-import TopicLoadingStates from "@/components/forum/TopicPage/TopicLoadingStates"; // New component
-import TopicView from "@/components/forum/TopicPage/TopicView"; // New component
-import TopicDialogs from "@/components/forum/TopicPage/TopicDialogs"; // New component
+import { useQuoteHandler } from "@/hooks/forum/topic/useQuoteHandler";
+import TopicLoadingStates from "@/components/forum/TopicPage/TopicLoadingStates";
+import TopicView from "@/components/forum/TopicPage/TopicView";
+import TopicDialogs from "@/components/forum/TopicPage/TopicDialogs";
+import { useForumPagination } from "@/hooks/forum/useForumPagination";
 
 const ForumTopicPage = () => {
   const navigate = useNavigate();
   const replyFormRef = useRef<HTMLDivElement>(null);
-  const [searchParams] = useSearchParams();
   
-  const forumTopicHookData = useForumTopic();
+  const { page, setPage: setPageViaPaginationHook } = useForumPagination();
+  
+  const forumTopicHookData = useForumTopic({ page, setPage: setPageViaPaginationHook });
   const {
     user,
     authLoading,
@@ -22,8 +23,6 @@ const ForumTopicPage = () => {
     loadingData,
     replyContent,
     setReplyContent,
-    page,
-    setPage,
     totalPages,
     isSubmittingReply,
     handleSubmitReply,
@@ -40,7 +39,7 @@ const ForumTopicPage = () => {
     handleCloseDeleteDialog,
     handleConfirmDeletePost,
     handleToggleReaction,
-    refreshTopicData, // Use this to force refresh data when needed
+    refreshTopicData,
   } = forumTopicHookData;
 
   const { handleQuotePost } = useQuoteHandler({
@@ -50,29 +49,12 @@ const ForumTopicPage = () => {
     replyFormRef,
   });
   
-  // Update page state when URL query param changes
-  useEffect(() => {
-    const pageParam = searchParams.get('page');
-    if (pageParam) {
-      const parsedPage = parseInt(pageParam, 10);
-      if (!isNaN(parsedPage) && parsedPage !== page) {
-        // This will update the page and trigger a data refresh
-        setPage(parsedPage);
-      }
-    } else if (page !== 1) {
-      // Reset to page 1 if no page param
-      setPage(1);
-    }
-  }, [searchParams, setPage, page]);
-  
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth");
     }
   }, [user, authLoading, navigate]);
   
-  // This guard is important: if user is null and not authLoading, useEffect will redirect.
-  // We don't want to render TopicLoadingStates if redirection is about to happen.
   if (!user && !authLoading) {
     return null;
   }
@@ -87,8 +69,7 @@ const ForumTopicPage = () => {
         topic={topic}
       />
       
-      {/* Render main content and dialogs only if user and topic exist and data is not in initial full load state */}
-      {user && topic && ( // loadingData check removed here, TopicView handles its own internal post loading state
+      {user && topic && (
         <>
           <TopicView
             topic={topic}
@@ -96,9 +77,9 @@ const ForumTopicPage = () => {
             user={user}
             page={page}
             totalPages={totalPages}
-            setPage={setPage}
+            setPage={setPageViaPaginationHook}
             categorySlug={categorySlug}
-            loadingData={loadingData} // Pass loadingData for initial post loading indicator
+            loadingData={loadingData} 
             replyContent={replyContent}
             setReplyContent={setReplyContent}
             handleSubmitReply={handleSubmitReply}

@@ -1,12 +1,12 @@
-
-import React, { useState, useEffect } from "react";
-import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { useForumCategoryData } from "@/hooks/forum/useForumCategoryData";
+import { useForumPagination } from "@/hooks/forum/useForumPagination";
 
 import ForumCategoryHeader from "@/components/forum/ForumCategoryHeader";
 import TopicList from "@/components/forum/TopicList";
@@ -16,11 +16,9 @@ const ForumCategoryPage = () => {
   const { categorySlug } = useParams<{ categorySlug: string }>();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   
-  // Get page from URL query params, default to 1 if not present
-  const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
-  const [page, setPage] = useState(isNaN(pageFromUrl) ? 1 : pageFromUrl);
+  // Use the new pagination hook
+  const { page, setPage } = useForumPagination();
   
   const { 
     category, 
@@ -30,20 +28,7 @@ const ForumCategoryPage = () => {
     error: categoryDataError 
   } = useForumCategoryData({ categorySlug, page });
 
-  // Update page state when URL query param changes
-  useEffect(() => {
-    const pageParam = searchParams.get('page');
-    if (pageParam) {
-      const parsedPage = parseInt(pageParam, 10);
-      if (!isNaN(parsedPage) && parsedPage !== page) {
-        setPage(parsedPage);
-      }
-    } else if (page !== 1) {
-      setPage(1); // Reset to page 1 if no page param
-    }
-  }, [searchParams, page]);
-
-  // Redirect to login if not authenticated
+  // useEffect for auth redirection remains the same
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth");
