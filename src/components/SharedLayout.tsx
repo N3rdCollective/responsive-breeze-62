@@ -7,7 +7,7 @@ const SharedLayout: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-hot97-black text-hot97-white">
       <header className="hot97-primary-bg text-hot97-white p-4 shadow-lg">
         <nav className="container mx-auto flex justify-between items-center">
-          <Link to="/" className="text-2xl font-bold hot97-text-gradient">HOT 97 App</Link>
+          <Link to="/" className="text-2xl font-bold hot97-text-gradient">Rappinlounge</Link>
           <div className="space-x-4">
             <Link to="/" className="hover:text-hot97-pink transition-colors">Home</Link>
             <Link to="/auth" className="hover:text-hot97-pink transition-colors">Auth</Link>
@@ -28,7 +28,7 @@ const SharedLayout: React.FC = () => {
       </main>
       
       <footer className="bg-hot97-dark-purple text-hot97-light-pink p-4 text-center">
-        <p>&copy; {new Date().getFullYear()} HOT 97 App. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} Rappinlounge. All rights reserved.</p>
       </footer>
     </div>
   );
