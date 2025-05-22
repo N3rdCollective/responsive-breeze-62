@@ -1,42 +1,73 @@
 
-import { Suspense } from "react";
+import { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-// Removed import for SharedLayout as it's missing
-// Removed imports for all specific page components as they are missing (HomePage, AuthPage, etc.)
-// Removed NotFoundPage import
+import SharedLayout from '@/components/SharedLayout';
 
-// Lazy load pages - these will also likely fail if the target files are missing
-// For now, to make App.tsx build, we'll remove routes using them.
-// If some lazy loaded pages are still present, their routes could be re-added later.
+// Direct imports (not lazy loaded)
+import HomePage from './pages/HomePage';
+import AuthPage from './pages/AuthPage';
+import PricingPage from './pages/PricingPage';
+import BlogPage from './pages/BlogPage';
+import BlogPostPage from './pages/BlogPostPage';
+import DashboardPage from './pages/DashboardPage';
+import AccountPage from './pages/AccountPage';
+import SettingsPage from './pages/SettingsPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
+import NotFoundPage from './pages/NotFoundPage';
+import StaffLoginPage from "./pages/StaffLoginPage";
+import StaffDashboardPage from "./pages/StaffDashboardPage";
+import StaffUsersPage from "./pages/StaffUsersPage";
+import StaffSettingsPage from "./pages/StaffSettingsPage";
+import StaffHelpPage from "./pages/StaffHelpPage";
+
+// Lazy loaded pages
+const RadioPage = lazy(() => import('./pages/RadioPage'));
+const EventsPage = lazy(() => import('./pages/EventsPage'));
+const StorePage = lazy(() => import('./pages/StorePage'));
+const NewsPage = lazy(() => import('./pages/NewsPage'));
+const NewsArticlePage = lazy(() => import('./pages/NewsArticlePage'));
+const ContactPage = lazy(() => import('./pages/ContactPage'));
+const ArtistProfilePage = lazy(() => import('./pages/ArtistProfilePage'));
+const SongSubmitPage = lazy(() => import('./pages/SongSubmitPage'));
+const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
+const TermsOfServicePage = lazy(() => import('./pages/TermsOfServicePage'));
+const UserProfilePage = lazy(() => import('./pages/UserProfilePage'));
+const PublicUserProfilePage = lazy(() => import('./pages/PublicUserProfilePage'));
 
 const App = () => {
   return (
     <Router>
       <Suspense fallback={<div>Loading...</div>}>
         <Routes>
-          {/* 
-            The SharedLayout route and all specific page routes have been removed 
-            because their corresponding component files appear to be missing.
-            This will result in a very minimal application.
-            You can add a simple root route here if needed, for example:
-            <Route path="/" element={<div>Welcome! Core pages are currently unavailable.</div>} />
-            For now, it will be empty, likely showing nothing or a router error.
-          */}
-          <Route path="/" element={
-            <div className="flex flex-col items-center justify-center min-h-screen">
-              <h1 className="text-2xl font-bold mb-4">Application Core Files Missing</h1>
-              <p className="text-center mb-2">Many essential pages and components could not be found.</p>
-              <p className="text-center">The application will build, but most functionality is unavailable.</p>
-              <p className="text-center mt-4">Consider reverting to a previous version if this was unintended.</p>
-            </div>
-          } />
-          {/* Fallback for any other path, as NotFoundPage is also missing */}
-          <Route path="*" element={
-            <div className="flex flex-col items-center justify-center min-h-screen">
-              <h1 className="text-2xl font-bold mb-4">Page Not Found (Fallback)</h1>
-              <p className="text-center">The requested page or the standard Not Found page component is missing.</p>
-            </div>
-          } />
+          <Route element={<SharedLayout />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/blog/:slug" element={<BlogPostPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/account" element={<AccountPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route path="/staff/login" element={<StaffLoginPage />} />
+            <Route path="/staff/dashboard" element={<StaffDashboardPage />} />
+            <Route path="/staff/users" element={<StaffUsersPage />} />
+            <Route path="/staff/settings" element={<StaffSettingsPage />} />
+            <Route path="/staff/help" element={<StaffHelpPage />} />
+            <Route path="/radio" element={<RadioPage />} />
+            <Route path="/events" element={<EventsPage />} />
+            <Route path="/store" element={<StorePage />} />
+            <Route path="/news" element={<NewsPage />} />
+            <Route path="/news/:id" element={<NewsArticlePage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/artist/:id" element={<ArtistProfilePage />} />
+            <Route path="/submit-song" element={<SongSubmitPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/terms" element={<TermsOfServicePage />} />
+            <Route path="/profile" element={<UserProfilePage />} />
+            <Route path="/user/:id" element={<PublicUserProfilePage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
         </Routes>
       </Suspense>
     </Router>
