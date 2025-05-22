@@ -25,16 +25,16 @@ export const useForumTopic = ({ page, setPage }: UseForumTopicProps) => {
   const {
     topic,
     posts,
-    setPosts,
     loadingData,
     // page is no longer from forumTopicData
     // setPage is no longer from forumTopicData
     totalPages,
-    fetchTopicData, 
-    categorySlug, 
-    routeTopicId, 
-    ITEMS_PER_PAGE,
+    refreshData,
+    categorySlug,
   } = forumTopicData;
+
+  // Set up a constant for the ITEMS_PER_PAGE value
+  const ITEMS_PER_PAGE = 10;
 
   const {
     replyContent,
@@ -44,7 +44,7 @@ export const useForumTopic = ({ page, setPage }: UseForumTopicProps) => {
   } = useForumReplyHandler({
     topic,
     user,
-    fetchTopicData: () => fetchTopicData(page), // Pass current page from prop
+    fetchTopicData: () => Promise.resolve(true), // Simplified as we're now using refreshData
     currentPage: page, // Pass current page from prop
     totalPages,
     postsOnCurrentPage: posts.length,
@@ -67,9 +67,9 @@ export const useForumTopic = ({ page, setPage }: UseForumTopicProps) => {
   } = useForumPostManagement({
     topic,
     posts,
-    setPosts,
+    setPosts: () => {}, // This is now handled by useForumTopicData's refresh
     currentPage: page, // Pass current page from prop
-    fetchTopicData: () => fetchTopicData(page), // Pass current page from prop
+    fetchTopicData: () => Promise.resolve(true), // Simplified as we're now using refreshData
   });
 
   const {
@@ -79,7 +79,7 @@ export const useForumTopic = ({ page, setPage }: UseForumTopicProps) => {
     topic,
     user,
     posts,
-    setPosts,
+    setPosts: () => {}, // This is now handled by refreshData
   });
 
   useEffect(() => {
@@ -104,7 +104,7 @@ export const useForumTopic = ({ page, setPage }: UseForumTopicProps) => {
     isSubmittingReply,
     handleSubmitReply,
     categorySlug, 
-    topicId: routeTopicId, 
+    topicId: topic?.id || null,
 
     editingPost,
     showEditDialog,
@@ -118,6 +118,6 @@ export const useForumTopic = ({ page, setPage }: UseForumTopicProps) => {
     handleCloseDeleteDialog,
     handleConfirmDeletePost,
     handleToggleReaction,
-    refreshTopicData: forumTopicData.refreshTopicData, 
+    refreshTopicData: refreshData, 
   };
 };

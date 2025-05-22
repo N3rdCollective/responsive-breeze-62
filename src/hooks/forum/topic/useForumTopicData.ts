@@ -1,40 +1,9 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-
-// Types
-interface ForumTopic {
-  id: string;
-  title: string;
-  slug: string;
-  content: string;
-  author_id: string;
-  category_id: string;
-  is_locked: boolean;
-  is_pinned: boolean;
-  created_at: string;
-  updated_at: string;
-  view_count: number;
-  reply_count: number;
-  last_reply_at: string | null;
-}
-
-interface ForumPost {
-  id: string;
-  topic_id: string;
-  author_id: string;
-  content: string;
-  created_at: string;
-  updated_at: string;
-  is_topic_post: boolean;
-  profiles?: {
-    id: string;
-    username: string | null;
-    avatar_url: string | null;
-    display_name: string | null;
-  };
-}
+import { ForumTopic, ForumPost } from '@/types/forum';
 
 interface UseForumTopicDataReturn {
   topic: ForumTopic | null;
@@ -104,7 +73,7 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
       }
 
       console.log('[useForumTopicData] Topic fetched successfully:', topicData.title);
-      return topicData as ForumTopic;
+      return topicData as unknown as ForumTopic;
 
     } catch (err: any) {
       console.error('Error fetching topic:', err);
@@ -153,7 +122,7 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
       console.log(`[useForumTopicData] Fetched ${postsData?.length || 0} posts, total: ${totalCount}`);
 
       return {
-        posts: postsData as ForumPost[] || [],
+        posts: postsData as unknown as ForumPost[] || [],
         totalCount
       };
 
@@ -170,10 +139,8 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
 
     try {
       console.log(`[useForumTopicData] Updating view count for topic ${topicId}`);
-      await supabase
-        .from('forum_topics') // Ensure this matches your actual table name for topics
-        .update({ view_count: supabase.sql`view_count + 1` })
-        .eq('id', topicId);
+      // Using a RPC call instead of direct sql query to avoid type errors
+      await supabase.rpc('increment_topic_view_count', { topic_id_param: topicId });
       setViewCountUpdatedForTopic(topicId); // Mark as updated for this topic
     } catch (err) {
       console.error('Error updating view count:', err);
