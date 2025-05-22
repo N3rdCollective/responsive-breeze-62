@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { useSearchParams } from 'react-router-dom';
+// Remove useSearchParams import, as it's no longer needed here
+// import { useSearchParams } from 'react-router-dom'; 
 import {
   Pagination,
   PaginationContent,
@@ -10,7 +11,7 @@ import {
   PaginationPrevious,
   PaginationEllipsis
 } from "@/components/ui/pagination";
-import { useForumPaginationItems, PaginationDisplayItem } from '@/hooks/forum/useForumPaginationItems'; // Updated import
+import { useForumPaginationItems, PaginationDisplayItem } from '@/hooks/forum/useForumPaginationItems';
 
 interface ForumPaginationProps {
   page: number;
@@ -18,12 +19,10 @@ interface ForumPaginationProps {
   setPage: (page: number) => void;
 }
 
-// Removed local PaginationItem interface, it's now PaginationDisplayItem from the hook
-
 const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, setPage }) => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  // Remove useSearchParams hook call
+  // const [searchParams, setSearchParams] = useSearchParams();
   
-  // Use the new hook to get pagination items
   const paginationItemsToRender = useForumPaginationItems(page, totalPages);
 
   if (totalPages <= 1) {
@@ -34,20 +33,22 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
     e.preventDefault();
     
     if (newPage === page || newPage < 1 || newPage > totalPages) {
-      return; // Don't do anything for invalid page changes
+      return; 
     }
     
-    console.log(`[ForumPagination] Changing page from ${page} to ${newPage}`);
+    console.log(`[ForumPagination] Calling setPage to change from ${page} to ${newPage}`);
     
-    const newSearchParams = new URLSearchParams(searchParams);
-    if (newPage === 1) {
-      newSearchParams.delete('page');
-    } else {
-      newSearchParams.set('page', newPage.toString());
-    }
+    // Remove direct URL manipulation. 
+    // The setPage prop (from useForumPagination) will handle updating the URL.
+    // const newSearchParams = new URLSearchParams(searchParams);
+    // if (newPage === 1) {
+    //   newSearchParams.delete('page');
+    // } else {
+    //   newSearchParams.set('page', newPage.toString());
+    // }
+    // setSearchParams(newSearchParams, { replace: true });
     
-    setSearchParams(newSearchParams, { replace: true });
-    setPage(newPage);
+    setPage(newPage); // This call will now be the sole trigger for page change logic and URL update.
   };
 
   // Removed generatePaginationItems function, logic is now in useForumPaginationItems hook
@@ -58,7 +59,7 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
         <PaginationContent>
           {/* Previous button */}
           {page > 1 && (
-            <PaginationItem key="prev"> {/* Added key for consistency */}
+            <PaginationItem key="prev">
               <PaginationPrevious
                 href="#"
                 onClick={(e) => handlePageChange(page - 1, e)}
@@ -68,7 +69,7 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
           )}
 
           {/* Page numbers and ellipsis */}
-          {paginationItemsToRender.map((item: PaginationDisplayItem) => { // Explicitly type item
+          {paginationItemsToRender.map((item: PaginationDisplayItem) => {
             if (item.type === 'ellipsis') {
               return (
                 <PaginationItem key={item.key}>
@@ -77,7 +78,6 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
               );
             }
 
-            // item.type === 'page'
             const pageNumber = item.value;
             const isActive = page === pageNumber;
             
@@ -101,7 +101,7 @@ const ForumPagination: React.FC<ForumPaginationProps> = ({ page, totalPages, set
 
           {/* Next button */}
           {page < totalPages && (
-            <PaginationItem key="next"> {/* Added key for consistency */}
+            <PaginationItem key="next">
               <PaginationNext
                 href="#"
                 onClick={(e) => handlePageChange(page + 1, e)}
