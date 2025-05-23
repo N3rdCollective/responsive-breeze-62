@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,15 +25,25 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
     setError("");
     setIsLoading(true);
     
-    console.log(`Attempting to ${isSignUp ? 'sign up' : 'sign in'} user with email: ${email}`);
+    console.log(`AuthForm: Attempting to ${isSignUp ? 'sign up' : 'sign in'} user with email: ${email}`);
 
     try {
       if (isSignUp) {
+        // For AuthForm (simple modal), we don't collect first/last name directly.
+        // We'll derive username and display_name from email for the profile.
+        const defaultUsername = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').substring(0, 20);
+        const defaultDisplayName = email.split('@')[0];
+
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
             data: {
+              username: defaultUsername,
+              display_name: defaultDisplayName,
+              // first_name and last_name will be null, user can update later in profile
+              first_name: null, 
+              last_name: null,
               user_role: "user"
             }
           }
@@ -42,34 +51,27 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
 
         if (signUpError) throw signUpError;
         
-        console.log("Sign up response:", data);
+        console.log("AuthForm: Sign up response:", data);
 
         if (data?.user) {
           toast({
             title: "Account created successfully",
-            description: "You have been successfully registered and logged in.",
+            description: "Please check your email for verification. You're now logged in.",
           });
-          
-          try {
-            const defaultUsername = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
-            const { error: profileError } = await supabase
-              .from('profiles')
-              .insert({
-                id: data.user.id,
-                username: defaultUsername,
-                display_name: "New User",
-                role: "user",
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              });
-            if (profileError) console.error("Failed to create initial profile:", profileError);
-            else console.log("Initial profile created successfully");
-          } catch (profileCreationError) {
-            console.error("Error creating initial profile:", profileCreationError);
-          }
-          
+          // The handle_new_user trigger will create the profile.
+          // No need to manually insert profile here anymore.
           if (onSuccess) onSuccess();
-          navigate("/profile");
+          // Redirect to profile so user can complete it if they wish
+          navigate("/profile"); 
+        } else {
+          // Handle cases where user might be null but no error (e.g. email confirmation required)
+           toast({
+            title: "Registration submitted",
+            description: "Please check your email for verification instructions to complete your signup.",
+            duration: 7000,
+          });
+          if (onSuccess) onSuccess();
+          navigate("/"); // Stay or navigate to a generic page
         }
       } else {
         const { data, error: signInError } = await supabase.auth.signInWithPassword({
@@ -90,7 +92,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         }
       }
     } catch (authError: any) {
-      console.error("Auth error:", authError);
+      console.error("AuthForm: Auth error:", authError);
       setError(authError.message || "An unexpected error occurred");
       toast({
         title: "Authentication failed",
