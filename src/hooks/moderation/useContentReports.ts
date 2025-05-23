@@ -41,7 +41,13 @@ export const useContentReports = () => {
         return;
       }
 
-      setReports(data || []);
+      // Cast and validate the status field to ensure it matches our expected types
+      const typedReports = (data || []).map(report => ({
+        ...report,
+        status: validateReportStatus(report.status)
+      })) as ContentReport[];
+
+      setReports(typedReports);
       setError(null);
     } catch (err: any) {
       console.error('Error fetching reports:', err);
@@ -49,6 +55,16 @@ export const useContentReports = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Helper function to validate and convert status to the correct type
+  const validateReportStatus = (status: string): 'pending' | 'resolved' | 'rejected' => {
+    if (status === 'pending' || status === 'resolved' || status === 'rejected') {
+      return status;
+    }
+    // Default to pending if an unexpected status is encountered
+    console.warn(`Unexpected report status: ${status}, defaulting to 'pending'`);
+    return 'pending';
   };
 
   const updateReportStatus = async (reportId: string, status: 'resolved' | 'rejected') => {
