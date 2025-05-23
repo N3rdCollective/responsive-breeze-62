@@ -72,12 +72,8 @@ export const useAuthState = ({
         
         console.log("Staff data retrieved:", staffData);
         
-        // Check if this is DJEpidemik user - they should be Super Admin
-        const isDJEpidemik = staffData.email.toLowerCase().includes("djepide") || 
-                           staffData.email.toLowerCase().includes("dj_epide");
-        
-        // Set the userRole based on whether this is DJEpidemik
-        const userRole = isDJEpidemik ? "super_admin" : staffData.role;
+        // Use the role directly from the database
+        const userRole = staffData.role;
         
         console.log("Setting user role:", userRole);
         
@@ -88,11 +84,6 @@ export const useAuthState = ({
           userRole: userRole,
           isAuthenticated: true
         });
-
-        // Check if DJEpidemik and ensure they are a super_admin in the database
-        if (isDJEpidemik && staffData.role !== "super_admin") {
-          await makeUserSuperAdmin(staffData.id);
-        }
       } catch (error) {
         console.error("Auth check error:", error);
         if (redirectUnauthorized && !window.location.pathname.includes(redirectPath)) {
@@ -129,30 +120,6 @@ export const useAuthState = ({
       }
     };
   }, [navigate, toast, redirectUnauthorized, redirectPath]);
-
-  const makeUserSuperAdmin = async (userId: string) => {
-    try {
-      console.log("Making user super admin:", userId);
-      const { error } = await supabase
-        .from("staff")
-        .update({ role: "super_admin" })
-        .eq("id", userId);
-
-      if (error) {
-        console.error("Error making user super admin:", error);
-        throw error;
-      }
-      
-      console.log("User successfully made super admin");
-      setState(prev => ({ ...prev, isAdmin: true, userRole: "super_admin" }));
-      toast({
-        title: "Super Admin Access Granted",
-        description: "You have been granted Super Admin access.",
-      });
-    } catch (error) {
-      console.error("Error making user super admin:", error);
-    }
-  };
 
   return state;
 };

@@ -10,9 +10,7 @@ export const useStaffMemberPermissions = (staff: StaffMember | undefined, curren
     };
   }
 
-  const isTargetSuperAdmin = staff.role === "super_admin" ||
-                           staff.email.toLowerCase().includes("djepide") || // Legacy check
-                           staff.email.toLowerCase().includes("dj_epide");  // Legacy check
+  const isTargetSuperAdmin = staff.role === "super_admin";
 
   // Can current user modify this staff member's role or remove them?
   const canModifyDetails =
