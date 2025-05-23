@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import DesktopNav from "./navbar/DesktopNav";
 import MobileNav from "./navbar/MobileNav";
-import AuthModal from "@/components/auth/AuthModal"; // Import AuthModal
+import AuthModal from "@/components/auth/AuthModal"; // AuthModal import remains for now, might be unused by this link
 import { useAuth } from "@/hooks/useAuth";
 import { NavigationItem } from "@/types/profile";
 import { toast } from "@/hooks/use-toast";
@@ -14,7 +13,9 @@ const Navbar = () => {
   const [mounted, setMounted] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false); // State for modal
+  // isAuthModalOpen state and handleSignInClick are no longer used by the main "Sign In / Sign Up" nav item
+  // but we'll keep them for now in case AuthModal is used elsewhere.
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false); 
 
   useEffect(() => {
     setMounted(true);
@@ -44,7 +45,9 @@ const Navbar = () => {
     }
   };
   
-  const handleSignInClick = () => {
+  // This function is no longer directly tied to the main "Sign In / Sign Up" nav item's primary action
+  // but kept in case AuthModal needs to be triggered by other means.
+  const handleAuthModalOpen = () => {
     setIsAuthModalOpen(true);
   };
 
@@ -63,11 +66,11 @@ const Navbar = () => {
   }
   
   if (!user) {
-    // Updated to open modal
+    // Updated to navigate to /auth page
     navigationItems.push({ 
-      path: "#auth", // Path is not a route, just an identifier
-      label: "Sign In / Sign Up", 
-      onClick: handleSignInClick 
+      path: "/auth", // Changed from "#auth" to "/auth"
+      label: "Sign In / Sign Up"
+      // onClick handler removed, will navigate via path
     });
   } else {
     navigationItems.push({ 
@@ -118,6 +121,8 @@ const Navbar = () => {
           </div>
         </div>
       </nav>
+      {/* AuthModal remains in the DOM but won't be opened by the primary "Sign In / Sign Up" navbar link anymore.
+          It could be triggered by `handleAuthModalOpen` if called from elsewhere. */}
       <AuthModal open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen} />
     </>
   );
