@@ -51,7 +51,12 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
         .from('forum_topics')
         .select(`
           *,
-          forum_categories!inner(slug)
+          forum_categories!inner(slug),
+          profile:profiles!forum_topics_user_id_fkey( 
+            username,
+            display_name,
+            profile_picture
+          )
         `)
         .eq('slug', topicId)
         .single();
@@ -74,6 +79,7 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
       }
 
       console.log('[useForumTopicData] Topic fetched successfully:', topicData.title);
+      // The profile data is now directly on topicData.profile, matching ForumTopic type
       return topicData as unknown as ForumTopic;
 
     } catch (err: any) {
