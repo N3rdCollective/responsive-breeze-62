@@ -7,8 +7,8 @@ import { useForumTopicData } from "./topic/useForumTopicData";
 import { useForumReplyHandler } from "./topic/useForumReplyHandler";
 import { useForumPostManagement } from "./topic/useForumPostManagement";
 import { useForumReactionHandler } from "./topic/useForumReactionHandler";
+import { ForumPost } from "@/types/forum"; // Import ForumPost for setPosts type
 
-// The hook now accepts page and setPage from its consumer (ForumTopicPage)
 interface UseForumTopicProps {
   page: number;
   setPage: (page: number) => void;
@@ -19,21 +19,18 @@ export const useForumTopic = ({ page, setPage }: UseForumTopicProps) => {
   const navigate = useNavigate();
   const { topicId: routeTopicIdFromParams } = useParams<{ topicId: string }>();
 
-  // Pass the current page to useForumTopicData
   const forumTopicData = useForumTopicData(page); 
   
   const {
     topic,
     posts,
+    setPosts, // Destructure setPosts
     loadingData,
-    // page is no longer from forumTopicData
-    // setPage is no longer from forumTopicData
     totalPages,
     refreshData,
     categorySlug,
   } = forumTopicData;
 
-  // Set up a constant for the ITEMS_PER_PAGE value
   const ITEMS_PER_PAGE = 10;
 
   const {
@@ -44,8 +41,8 @@ export const useForumTopic = ({ page, setPage }: UseForumTopicProps) => {
   } = useForumReplyHandler({
     topic,
     user,
-    fetchTopicData: () => Promise.resolve(true), // Simplified as we're now using refreshData
-    currentPage: page, // Pass current page from prop
+    fetchTopicData: refreshData, // Use refreshData directly
+    currentPage: page, 
     totalPages,
     postsOnCurrentPage: posts.length,
     itemsPerPage: ITEMS_PER_PAGE,
@@ -67,9 +64,9 @@ export const useForumTopic = ({ page, setPage }: UseForumTopicProps) => {
   } = useForumPostManagement({
     topic,
     posts,
-    setPosts: () => {}, // This is now handled by useForumTopicData's refresh
-    currentPage: page, // Pass current page from prop
-    fetchTopicData: () => Promise.resolve(true), // Simplified as we're now using refreshData
+    setPosts: setPosts as React.Dispatch<React.SetStateAction<ForumPost[]>>, // Pass the actual setPosts
+    currentPage: page, 
+    fetchTopicData: refreshData, // Use refreshData directly
   });
 
   const {
@@ -79,7 +76,7 @@ export const useForumTopic = ({ page, setPage }: UseForumTopicProps) => {
     topic,
     user,
     posts,
-    setPosts: () => {}, // This is now handled by refreshData
+    setPosts: setPosts as React.Dispatch<React.SetStateAction<ForumPost[]>>, // Pass the actual setPosts
   });
 
   useEffect(() => {
@@ -90,16 +87,18 @@ export const useForumTopic = ({ page, setPage }: UseForumTopicProps) => {
 
   const isProcessingPostAction = submittingUpdatePost || submittingDeletePost || submittingReaction;
 
+  // Make sure all returned values are correct
   return {
     user,
     authLoading,
     topic,
     posts,
+    // setPosts, // No need to return setPosts from here unless ForumTopicPage needs it directly
     loadingData,
     replyContent,
     setReplyContent,
-    page, // Return page prop
-    setPage, // Return setPage prop
+    page, 
+    setPage, 
     totalPages,
     isSubmittingReply,
     handleSubmitReply,
@@ -121,3 +120,4 @@ export const useForumTopic = ({ page, setPage }: UseForumTopicProps) => {
     refreshTopicData: refreshData, 
   };
 };
+
