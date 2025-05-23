@@ -14,7 +14,7 @@ import StaffRegistration from "@/pages/StaffRegistration";
 import NewsEditor from "@/pages/NewsEditor";
 import RouteErrorElement from "@/components/RouteErrorElement";
 import StaffNews from "@/pages/StaffNews";
-import StaffPanel from "@/pages/StaffPanel";
+import UnifiedStaffDashboard from "@/pages/UnifiedStaffDashboard";
 import StaffSponsors from "@/pages/StaffSponsors";
 import StaffSystemSettings from "@/pages/StaffSystemSettings";
 import StaffHomePage from "@/pages/StaffHomePage";
@@ -58,7 +58,7 @@ function App() {
         <Route path="/members/forum/:categorySlug/:topicId" element={<ForumTopicPage />} errorElement={<RouteErrorElement />} />
         
         <Route path="/staff" element={<Navigate to="/staff/panel" replace />} errorElement={<RouteErrorElement />} />
-        <Route path="/staff/panel" element={<StaffPanel />} errorElement={<RouteErrorElement />} />
+        <Route path="/staff/panel" element={<UnifiedStaffDashboard />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/news" element={<StaffNews />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/login" element={<StaffLogin />} errorElement={<RouteErrorElement />} />
         <Route path="/staff/signup" element={<StaffSignup />} errorElement={<RouteErrorElement />} />
