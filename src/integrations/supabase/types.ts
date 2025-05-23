@@ -87,6 +87,48 @@ export type Database = {
         }
         Relationships: []
       }
+      content_reports: {
+        Row: {
+          content_id: string
+          content_preview: string | null
+          content_type: string
+          created_at: string
+          id: string
+          report_reason: string
+          reported_user_id: string
+          reporter_id: string
+          status: string
+          topic_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          content_id: string
+          content_preview?: string | null
+          content_type: string
+          created_at?: string
+          id?: string
+          report_reason: string
+          reported_user_id: string
+          reporter_id: string
+          status?: string
+          topic_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          content_id?: string
+          content_preview?: string | null
+          content_type?: string
+          created_at?: string
+          id?: string
+          report_reason?: string
+          reported_user_id?: string
+          reporter_id?: string
+          status?: string
+          topic_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           created_at: string
@@ -542,6 +584,41 @@ export type Database = {
         }
         Relationships: []
       }
+      moderation_actions: {
+        Row: {
+          action_note: string | null
+          action_type: string
+          created_at: string
+          id: string
+          moderator_id: string
+          report_id: string
+        }
+        Insert: {
+          action_note?: string | null
+          action_type: string
+          created_at?: string
+          id?: string
+          moderator_id: string
+          report_id: string
+        }
+        Update: {
+          action_note?: string | null
+          action_type?: string
+          created_at?: string
+          id?: string
+          moderator_id?: string
+          report_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moderation_actions_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "content_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pending_staff: {
         Row: {
           approved_at: string | null
@@ -983,6 +1060,29 @@ export type Database = {
           page_path: string
           visit_count: number
           device_breakdown: Json
+        }[]
+      }
+      get_content_reports_with_details: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          content_type: string
+          content_id: string
+          content_preview: string
+          report_reason: string
+          status: string
+          created_at: string
+          updated_at: string
+          reporter_name: string
+          reporter_avatar: string
+          reported_user_name: string
+          reported_user_avatar: string
+          topic_id: string
+          topic_title: string
+          moderator_name: string
+          action_type: string
+          action_note: string
+          action_created_at: string
         }[]
       }
       get_post_page_and_index: {

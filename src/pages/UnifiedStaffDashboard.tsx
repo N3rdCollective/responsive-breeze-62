@@ -28,11 +28,13 @@ import ShowManagementCard from "@/components/staff/ShowManagementCard";
 import AdminCard from "@/components/staff/AdminCard";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 
-// Import moderator components
+// Import moderation components
 import ReportedContentSection from '@/components/staff/moderator-dashboard/ReportedContentSection';
 import ReportDetails from '@/components/staff/moderator-dashboard/ReportDetails';
-import { reportedContent as allReports, dashboardStats as initialDashboardStats } from '@/data/mockModeratorData';
-import { Report } from '@/components/staff/moderator-dashboard/types';
+
+// Import database hooks
+import { useContentReports, ContentReport } from '@/hooks/moderation/useContentReports';
+import { useModerationStats } from '@/hooks/moderation/useModerationStats';
 
 const UnifiedStaffDashboard = () => {
   const { toast } = useToast();
@@ -40,80 +42,69 @@ const UnifiedStaffDashboard = () => {
   const [isProfileEditorOpen, setIsProfileEditorOpen] = useState(false);
   const { staffName, isAdmin, isLoading, handleLogout, userRole } = useStaffAuth();
   
-  // Moderator dashboard state
+  // Moderation dashboard state
   const [selectedFlagId, setSelectedFlagId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [moderationNote, setModerationNote] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
   
-  const [reportsData, setReportsData] = useState<Report[]>(allReports);
-  const [dashboardStats, setDashboardStats] = useState(initialDashboardStats);
+  // Use database hooks
+  const { reports, loading: reportsLoading, updateReportStatus, createModerationAction } = useContentReports();
+  const { stats: dashboardStats, loading: statsLoading } = useModerationStats();
 
-  // Update dashboard stats when reports change
-  useEffect(() => {
-    setDashboardStats(prevStats => ({
-      ...prevStats,
-      pendingReports: reportsData.filter(r => r.status === 'pending').length,
-    }));
-  }, [reportsData]);
-
-  const filteredReports = reportsData.filter(report => {
+  const filteredReports = reports.filter(report => {
     const statusMatch = filterStatus === 'all' || report.status === filterStatus;
     const searchLower = searchTerm.toLowerCase();
     const termMatch = searchTerm === '' || 
-                      report.content.toLowerCase().includes(searchLower) ||
-                      report.reportReason.toLowerCase().includes(searchLower) ||
-                      report.reporter.name.toLowerCase().includes(searchLower) ||
-                      report.author.name.toLowerCase().includes(searchLower) ||
-                      report.topic.title.toLowerCase().includes(searchLower);
+                      (report.content_preview?.toLowerCase().includes(searchLower)) ||
+                      report.report_reason.toLowerCase().includes(searchLower) ||
+                      report.reporter_name.toLowerCase().includes(searchLower) ||
+                      report.reported_user_name.toLowerCase().includes(searchLower) ||
+                      (report.topic_title?.toLowerCase().includes(searchLower));
     return statusMatch && termMatch;
   });
 
-  const handleModerationAction = (action: string, reportId: string) => {
+  const handleModerationAction = async (action: string, reportId: string) => {
     console.log(`Taking action "${action}" on report ${reportId}`);
     
-    if (action === 'dismiss') {
-      setReportsData(prevReports => 
-        prevReports.map(r => r.id === reportId ? {
-          ...r, 
-          status: 'rejected', 
-          resolution: { 
-            action: 'dismiss', 
-            moderator: staffName || 'Admin User', 
-            timestamp: new Date().toISOString(), 
-            note: moderationNote || 'Dismissed without note' 
-          }
-        } : r)
-      );
-    } else if (action === 'remove_content') {
-      setReportsData(prevReports => 
-        prevReports.map(r => r.id === reportId ? {
-          ...r, 
-          status: 'resolved', 
-          resolution: { 
-            action: 'remove_content', 
-            moderator: staffName || 'Admin User', 
-            timestamp: new Date().toISOString(), 
-            note: moderationNote || 'Content removed' 
-          }
-        } : r)
-      );
+    try {
+      // Create moderation action record
+      const actionSuccess = await createModerationAction(reportId, action, moderationNote);
+      
+      if (actionSuccess) {
+        // Update report status
+        let newStatus: 'resolved' | 'rejected' = 'resolved';
+        if (action === 'dismiss') {
+          newStatus = 'rejected';
+        }
+        
+        const updateSuccess = await updateReportStatus(reportId, newStatus);
+        
+        if (updateSuccess) {
+          setSelectedFlagId(null);
+          setModerationNote('');
+          toast({
+            title: "Action completed",
+            description: `Report has been ${action === 'dismiss' ? 'dismissed' : 'resolved'}.`,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error handling moderation action:', error);
+      toast({
+        title: "Error",
+        description: "Failed to complete moderation action",
+        variant: "destructive"
+      });
     }
-
-    setSelectedFlagId(null);
-    setModerationNote('');
-    toast({
-      title: "Action completed",
-      description: `Report has been ${action === 'dismiss' ? 'dismissed' : 'resolved'}.`,
-    });
   };
 
   const handleManageUsers = () => {
     setIsManageStaffOpen(true);
   };
 
-  const selectedReportData = selectedFlagId ? reportsData.find(r => r.id === selectedFlagId) : null;
+  const selectedReportData = selectedFlagId ? reports.find(r => r.id === selectedFlagId) : null;
 
   if (isLoading) {
     return (
@@ -146,8 +137,8 @@ const UnifiedStaffDashboard = () => {
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Active Shows</p>
-              <p className="text-2xl font-bold">45</p>
+              <p className="text-sm font-medium text-muted-foreground">Active Topics</p>
+              <p className="text-2xl font-bold">{statsLoading ? '...' : dashboardStats.activeTopics}</p>
             </div>
             <Radio className="h-8 w-8 text-green-500" />
           </div>
@@ -159,7 +150,7 @@ const UnifiedStaffDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Pending Reports</p>
-              <p className="text-2xl font-bold text-red-500">{dashboardStats.pendingReports}</p>
+              <p className="text-2xl font-bold text-red-500">{statsLoading ? '...' : dashboardStats.pendingReports}</p>
             </div>
             <Flag className="h-8 w-8 text-red-500" />
           </div>
@@ -170,8 +161,8 @@ const UnifiedStaffDashboard = () => {
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Staff Members</p>
-              <p className="text-2xl font-bold">12</p>
+              <p className="text-sm font-medium text-muted-foreground">New Members</p>
+              <p className="text-2xl font-bold">{statsLoading ? '...' : dashboardStats.newMembers}</p>
             </div>
             <Users className="h-8 w-8 text-purple-500" />
           </div>
@@ -233,7 +224,7 @@ const UnifiedStaffDashboard = () => {
               <TabsTrigger value="moderation" className="flex items-center gap-2">
                 <Shield className="h-4 w-4" />
                 Moderation
-                {dashboardStats.pendingReports > 0 && (
+                {!statsLoading && dashboardStats.pendingReports > 0 && (
                   <Badge variant="destructive" className="ml-1 px-1 min-w-[20px] h-5">
                     {dashboardStats.pendingReports}
                   </Badge>
@@ -291,15 +282,53 @@ const UnifiedStaffDashboard = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <ReportedContentSection
-                      filteredReports={filteredReports}
-                      selectedFlag={selectedFlagId}
-                      setSelectedFlag={setSelectedFlagId}
-                      filterStatus={filterStatus}
-                      setFilterStatus={setFilterStatus}
-                      searchTerm={searchTerm}
-                      setSearchTerm={setSearchTerm}
-                    />
+                    {reportsLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <LoadingSpinner />
+                      </div>
+                    ) : (
+                      <ReportedContentSection
+                        filteredReports={filteredReports.map(report => ({
+                          id: report.id,
+                          contentType: report.content_type as 'post' | 'topic',
+                          contentId: report.content_id,
+                          content: report.content_preview || '',
+                          reportReason: report.report_reason,
+                          reporter: {
+                            id: 'reporter-id',
+                            name: report.reporter_name,
+                            avatar: report.reporter_avatar || '/placeholder.svg'
+                          },
+                          author: {
+                            id: 'author-id',
+                            name: report.reported_user_name,
+                            avatar: report.reported_user_avatar || '/placeholder.svg',
+                            joinDate: new Date().toISOString(),
+                            postCount: 0,
+                            previousFlags: 0
+                          },
+                          timestamp: report.created_at,
+                          topic: {
+                            id: report.topic_id || '',
+                            title: report.topic_title || 'Unknown Topic',
+                            category: 'General'
+                          },
+                          status: report.status,
+                          resolution: report.action_type ? {
+                            action: report.action_type,
+                            moderator: report.moderator_name || 'Unknown',
+                            timestamp: report.action_created_at || new Date().toISOString(),
+                            note: report.action_note || ''
+                          } : undefined
+                        }))}
+                        selectedFlag={selectedFlagId}
+                        setSelectedFlag={setSelectedFlagId}
+                        filterStatus={filterStatus}
+                        setFilterStatus={setFilterStatus}
+                        searchTerm={searchTerm}
+                        setSearchTerm={setSearchTerm}
+                      />
+                    )}
                   </CardContent>
                 </Card>
               </div>
@@ -340,7 +369,39 @@ const UnifiedStaffDashboard = () => {
       {/* Report Details Modal */}
       {selectedReportData && (
         <ReportDetails
-          reportData={selectedReportData}
+          reportData={{
+            id: selectedReportData.id,
+            contentType: selectedReportData.content_type as 'post' | 'topic',
+            contentId: selectedReportData.content_id,
+            content: selectedReportData.content_preview || '',
+            reportReason: selectedReportData.report_reason,
+            reporter: {
+              id: 'reporter-id',
+              name: selectedReportData.reporter_name,
+              avatar: selectedReportData.reporter_avatar || '/placeholder.svg'
+            },
+            author: {
+              id: 'author-id',
+              name: selectedReportData.reported_user_name,
+              avatar: selectedReportData.reported_user_avatar || '/placeholder.svg',
+              joinDate: new Date().toISOString(),
+              postCount: 0,
+              previousFlags: 0
+            },
+            timestamp: selectedReportData.created_at,
+            topic: {
+              id: selectedReportData.topic_id || '',
+              title: selectedReportData.topic_title || 'Unknown Topic',
+              category: 'General'
+            },
+            status: selectedReportData.status,
+            resolution: selectedReportData.action_type ? {
+              action: selectedReportData.action_type,
+              moderator: selectedReportData.moderator_name || 'Unknown',
+              timestamp: selectedReportData.action_created_at || new Date().toISOString(),
+              note: selectedReportData.action_note || ''
+            } : undefined
+          }}
           onClose={() => setSelectedFlagId(null)}
           onAction={handleModerationAction}
           moderationNote={moderationNote}
