@@ -34,7 +34,6 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // Remove internal page state: const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalPosts, setTotalPosts] = useState(0);
   const [viewCountUpdatedForTopic, setViewCountUpdatedForTopic] = useState<string | null>(null);
@@ -109,8 +108,7 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
         .from('forum_posts')
         .select(`
           *,
-          profiles(
-            id,
+          profile:profiles(
             username,
             display_name,
             profile_picture
@@ -126,7 +124,7 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
       }
 
       const totalCount = count || 0;
-      console.log(`[useForumTopicData] Fetched ${postsData?.length || 0} posts, total: ${totalCount}`);
+      console.log(`[useForumTopicData] Fetched ${postsData?.length || 0} posts, total: ${totalCount}. Posts data:`, postsData);
 
       return {
         posts: postsData as unknown as ForumPost[] || [],
@@ -198,9 +196,6 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
         const calculatedTotalPages = Math.max(1, Math.ceil(totalCount / POSTS_PER_PAGE));
         setTotalPages(calculatedTotalPages);
 
-        // If pageToFetch is out of bounds, the parent (useForumPagination) should handle redirecting.
-        // This hook will just fetch for the requested page.
-        // The parent will see totalPages and can correct if currentPageFromProp > totalPages.
         console.log(`[useForumTopicData] Data loaded - Page: ${pageToFetch}/${calculatedTotalPages}, Posts: ${newPosts.length}`);
       }
     } catch (err: any) {
@@ -216,49 +211,28 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
   // Effect to fetch data when topicSlug or currentPageFromProp changes.
   useEffect(() => {
     console.log(`[useForumTopicData] Effect triggered - TopicId: ${topicId}, CurrentPageFromProp: ${currentPageFromProp}`);
-    // Reset topic state if topicId changes, to force re-fetch of topic details
     if (topic && topicId !== topic.slug) {
         console.log(`[useForumTopicData] Topic slug changed from ${topic.slug} to ${topicId}. Resetting topic state.`);
         setTopic(null); 
-        // This will cause fetchData in the next render cycle (due to topicId change)
-        // to go into the `!currentTopic || currentTopic.slug !== topicId` block.
     }
     fetchData(currentPageFromProp);
-  }, [topicId, currentPageFromProp, fetchData, topic]); // fetchData is stable if its deps are stable or it's memoized correctly
+  }, [topicId, currentPageFromProp, fetchData, topic]); 
 
-
-  // Remove the second useEffect that was also fetching posts on page change.
-  // The main useEffect above, reacting to currentPageFromProp, now handles all data fetching.
 
   // Refresh data function
   const refreshData = useCallback(async () => {
     console.log('[useForumTopicData] Refreshing data...');
-    // When refreshing, ensure we force fetch topic details too, and re-update view count if on page 1
-    setTopic(null); // This will make fetchData re-fetch topic details
-    setViewCountUpdatedForTopic(null); // Allow view count to be updated again
+    setTopic(null); 
+    setViewCountUpdatedForTopic(null); 
     await fetchData(currentPageFromProp);
   }, [fetchData, currentPageFromProp]);
-
-  // This useEffect was for resetting internal page to 1 on topicId change.
-  // Since page is now a prop, this specific logic is removed from here.
-  // If a topic change should reset the pagination to page 1,
-  // that should be handled by the component orchestrating useForumPagination and useForumTopic,
-  // typically by calling setPage(1) from useForumPagination.
-  // useEffect(() => {
-  //   if (topicId) {
-  //     console.log('[useForumTopicData] Topic changed, resetting to page 1');
-  //     setPage(1); // This was for internal page state
-  //   }
-  // }, [topicId]);
-
 
   return {
     topic,
     posts,
     loadingData,
     error,
-    page: currentPageFromProp, // Return the prop as 'page'
-    // setPage: updatePage, // Removed, setPage is handled by useForumPagination
+    page: currentPageFromProp, 
     totalPages,
     totalPosts,
     refreshData,
