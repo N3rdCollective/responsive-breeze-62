@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -422,7 +421,9 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
                 </div>
               </div>
               {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
-              {/* Removed specific available/unavailable messages here as they are incorporated in general error or green border */}
+              {usernameAvailable === true && !errors.username && (
+                <p className="text-green-500 text-xs mt-1">Username is available</p>
+              )}
             </div>
 
             <div>
