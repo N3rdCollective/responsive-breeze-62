@@ -4,12 +4,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useForumPostCreator } from "../actions/useForumPostCreator";
 import { ForumTopic } from "@/types/forum";
-import type { User } from "@supabase/supabase-js"; // Corrected User import
+import type { User } from "@supabase/supabase-js";
 
 interface UseForumReplyHandlerProps {
   topic: ForumTopic | null;
-  user: User | null; 
-  fetchTopicData: (pageToFetch?: number) => Promise<boolean>;
+  user: User | null;
+  fetchTopicData: (pageToFetch?: number) => Promise<void>; // Changed Promise<boolean> to Promise<void>
   currentPage: number;
   totalPages: number;
   postsOnCurrentPage: number;
@@ -31,7 +31,7 @@ export const useForumReplyHandler = ({
 
   const handleSubmitReply = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = replyContent;
     if (!replyContent.trim() || !tempDiv.textContent?.trim()) {
@@ -39,14 +39,14 @@ export const useForumReplyHandler = ({
       return;
     }
 
-    if (!topic || !topic.id || !user) return; 
+    if (!topic || !topic.id || !user) return;
     if (topic.is_locked) {
       toast({ title: "Topic is locked", description: "This topic is locked and cannot be replied to.", variant: "destructive" });
       return;
     }
-    
+
     const result = await createPost({ topic_id: topic.id, content: replyContent });
-    
+
     if (result) {
       setReplyContent("");
       const { count, error: countError } = await supabase
@@ -56,17 +56,17 @@ export const useForumReplyHandler = ({
 
       if (countError) {
         console.error("Error fetching post count after reply:", countError);
-        fetchTopicData(currentPage); 
+        await fetchTopicData(currentPage); // Await the promise
         return;
       }
 
       const newTotalPosts = count || 0;
       const newTotalPages = Math.ceil(newTotalPosts / itemsPerPage);
-      
+
       if (currentPage === totalPages && postsOnCurrentPage < itemsPerPage && newTotalPages === totalPages ) {
-         await fetchTopicData(currentPage); 
+         await fetchTopicData(currentPage); // Await the promise
       } else {
-         await fetchTopicData(newTotalPages); 
+         await fetchTopicData(newTotalPages); // Await the promise
       }
     }
   };
@@ -78,3 +78,4 @@ export const useForumReplyHandler = ({
     isSubmittingReply: submittingCreatePost,
   };
 };
+

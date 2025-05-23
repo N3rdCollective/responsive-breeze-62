@@ -10,23 +10,24 @@ interface UseForumTopicDataReturn {
   setPosts: React.Dispatch<React.SetStateAction<ForumPost[]>>;
   loadingData: boolean;
   error: string | null;
-  page: number; 
+  page: number;
   totalPages: number;
   totalPosts: number;
-  refreshData: () => Promise<void>;
+  refreshData: () => Promise<void>; // For full refresh, resets topic
+  fetchData: (pageToFetch?: number) => Promise<void>; // For fetching specific page data
   categorySlug: string | null;
 }
 
 const POSTS_PER_PAGE = 10;
 
 export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDataReturn => {
-  const { categorySlug, topicId } = useParams<{ 
-    categorySlug: string; 
-    topicId: string; 
+  const { categorySlug, topicId } = useParams<{
+    categorySlug: string;
+    topicId: string;
   }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   const [topic, setTopic] = useState<ForumTopic | null>(null);
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -106,6 +107,11 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
             username,
             display_name,
             profile_picture
+          ),
+          forum_post_reactions (
+            id,
+            user_id,
+            reaction_type
           )
         `, { count: 'exact' })
         .eq('topic_id', topicId)
@@ -119,6 +125,13 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
 
       const totalCount = count || 0;
       console.log(`[useForumTopicData] Fetched ${postsData?.length || 0} posts, total: ${totalCount}. Posts data:`, postsData);
+      
+      // Log profile data for each post
+      if (postsData) {
+        postsData.forEach((post: any, index: number) => {
+          console.log(`[useForumTopicData] Post ${index} profile:`, post.profile);
+        });
+      }
 
       return {
         posts: postsData as unknown as ForumPost[] || [],
@@ -201,15 +214,14 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
         setTopic(null); 
     }
     fetchData(currentPageFromProp);
-  }, [topicId, currentPageFromProp, fetchData, topic]); 
+  }, [topicId, currentPageFromProp, fetchData, topic]);
 
-
-  // Refresh data function
+  // Refresh data function (full refresh, resets topic)
   const refreshData = useCallback(async () => {
-    console.log('[useForumTopicData] Refreshing data...');
-    setTopic(null); 
-    setViewCountUpdatedForTopic(null); 
-    await fetchData(currentPageFromProp);
+    console.log('[useForumTopicData] Refreshing data (full)...');
+    setTopic(null);
+    setViewCountUpdatedForTopic(null);
+    await fetchData(currentPageFromProp); // Fetches current page after reset
   }, [fetchData, currentPageFromProp]);
 
   return {
@@ -218,10 +230,11 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
     setPosts,
     loadingData,
     error,
-    page: currentPageFromProp, 
+    page: currentPageFromProp,
     totalPages,
     totalPosts,
-    refreshData,
+    refreshData, // For full refresh
+    fetchData,    // For fetching specific page data
     categorySlug: categorySlug || null,
   };
 };

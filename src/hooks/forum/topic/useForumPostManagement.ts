@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { supabase } from '@/integrations/supabase/client'; // Added import
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useForumPostEditor } from "../actions/useForumPostEditor";
 import { ForumTopic, ForumPost } from "@/types/forum";
@@ -10,7 +9,7 @@ interface UseForumPostManagementProps {
   posts: ForumPost[];
   setPosts: React.Dispatch<React.SetStateAction<ForumPost[]>>;
   currentPage: number;
-  fetchTopicData: (pageToFetch?: number) => Promise<boolean>;
+  fetchTopicData: (pageToFetch?: number) => Promise<void>;
 }
 
 export const useForumPostManagement = ({
@@ -21,12 +20,11 @@ export const useForumPostManagement = ({
   fetchTopicData,
 }: UseForumPostManagementProps) => {
   const { toast } = useToast();
-  // Correctly destructure from useForumPostEditor
-  const { 
-    editPost, 
-    editing: submittingUpdatePost, 
-    deletePost, 
-    deleting: submittingDeletePost 
+  const {
+    editPost,
+    editing: submittingUpdatePost,
+    deletePost,
+    deleting: submittingDeletePost
   } = useForumPostEditor();
 
   const [editingPost, setEditingPost] = useState<ForumPost | null>(null);
@@ -88,10 +86,9 @@ export const useForumPostManagement = ({
 
     const postToDelete = posts.find(p => p.id === deletingPostId);
     const isFirstPost = postToDelete ? posts.indexOf(postToDelete) === 0 && currentPage === 1 : false;
-    
-    let totalPostsInTopic = posts.length; 
+
+    let totalPostsInTopic = posts.length;
     if (topic && topic.id) {
-        // Ensure supabase is imported and used correctly here
         const { count, error } = await supabase
             .from('forum_posts')
             .select('*', { count: 'exact', head: true })
@@ -108,7 +105,7 @@ export const useForumPostManagement = ({
          return;
     }
 
-    const success = await deletePost(deletingPostId); 
+    const success = await deletePost(deletingPostId);
 
     if (success) {
       if (isFirstPost && totalPostsInTopic === 1 && topic?.category?.slug) {
@@ -132,7 +129,7 @@ export const useForumPostManagement = ({
     handleOpenDeleteDialog,
     handleCloseDeleteDialog,
     handleConfirmDeletePost,
-    submittingUpdatePost, 
-    submittingDeletePost, 
+    submittingUpdatePost,
+    submittingDeletePost,
   };
 };
