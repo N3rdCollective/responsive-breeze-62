@@ -122,6 +122,8 @@ export const useModerationStats = () => {
   return {
     stats,
     loading,
-    fetchStats
+    fetchStats,
+    refreshStats: fetchStats // Added refreshStats
   };
 };
+
