@@ -1,33 +1,47 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast'; // Ensure this path is correct, usually it's `@/components/ui/use-toast` for shadcn
 
 export interface User {
   id: string;
-  username: string;
-  display_name: string;
-  email: string;
+  username: string; // Expecting non-null, provide fallback if DB is null
+  display_name: string; // Expecting non-null, provide fallback if DB is null
+  email: string; // Expecting non-null, provide fallback if DB is null
   profile_picture?: string;
   created_at: string;
   last_active: string;
-  // Calculated fields from view or aggregated queries
-  forum_post_count?: number; // Renamed from post_count to be specific
-  timeline_post_count?: number; // Added for timeline posts
-  pending_report_count?: number; // Renamed from report_count to be specific
+  forum_post_count?: number;
+  timeline_post_count?: number;
+  pending_report_count?: number;
   status: 'active' | 'suspended' | 'banned';
   role: 'user' | 'moderator' | 'admin';
+}
+
+// Interface representing the structure of data from user_stats_view
+interface UserStatData {
+  id: string;
+  username: string | null;
+  display_name: string | null;
+  email: string | null; // The view might return null if profiles.email doesn't exist or is null
+  profile_picture: string | null;
+  profile_created_at: string; // Alias from the view
+  last_active: string | null;
+  status: 'active' | 'suspended' | 'banned' | null;
+  role: 'user' | 'moderator' | 'admin' | null;
+  forum_post_count: number | null;
+  timeline_post_count: number | null;
+  pending_report_count: number | null;
 }
 
 export interface UserAction {
   id: string;
   user_id: string;
-  action_type: 'suspend' | 'ban' | 'unban' | 'warn' | 'note'; // Added 'note'
+  action_type: 'suspend' | 'ban' | 'unban' | 'warn' | 'note';
   reason: string;
   moderator_id: string;
   created_at: string;
   expires_at?: string;
-  // Optional: include moderator display name if joined
   moderator?: {
     username?: string;
     display_name?: string;
@@ -45,31 +59,30 @@ export const useUserManagement = () => {
       setLoading(true);
       setError(null);
 
+      // Fetch from user_stats_view, casting to handle unknown type by TS client
       const { data: usersData, error: usersError } = await supabase
-        .from('user_stats_view') // Use the new view
+        .from('user_stats_view' as any) // Cast to any because TS doesn't know this view
         .select('*')
-        .order('profile_created_at', { ascending: false });
+        .order('profile_created_at', { ascending: false }) as { data: UserStatData[] | null; error: any };
 
       if (usersError) throw usersError;
 
-      // The view already contains counts, so map directly
-      const mappedUsers = usersData?.map(user => ({
-        ...user,
-        id: user.id, // ensure id is correctly mapped if view names differ
-        username: user.username,
-        display_name: user.display_name,
-        email: user.email,
-        profile_picture: user.profile_picture,
-        created_at: user.profile_created_at, // use aliased column
-        last_active: user.last_active || user.profile_created_at,
-        forum_post_count: user.forum_post_count || 0,
-        timeline_post_count: user.timeline_post_count || 0,
-        pending_report_count: user.pending_report_count || 0,
-        status: user.status as User['status'],
-        role: user.role as User['role'],
+      const mappedUsers = usersData?.map((userViewData): User => ({
+        id: userViewData.id,
+        username: userViewData.username || 'N/A',
+        display_name: userViewData.display_name || userViewData.username || 'Anonymous',
+        email: userViewData.email || 'N/A', // Provide fallback if email is null
+        profile_picture: userViewData.profile_picture || undefined,
+        created_at: userViewData.profile_created_at,
+        last_active: userViewData.last_active || userViewData.profile_created_at,
+        forum_post_count: userViewData.forum_post_count || 0,
+        timeline_post_count: userViewData.timeline_post_count || 0,
+        pending_report_count: userViewData.pending_report_count || 0,
+        status: (userViewData.status || 'active') as User['status'], // Default to 'active' if null
+        role: (userViewData.role || 'user') as User['role'], // Default to 'user' if null
       })) || [];
       
-      setUsers(mappedUsers as User[]);
+      setUsers(mappedUsers);
     } catch (err: any) {
       console.error('Error fetching users:', err);
       setError(err.message);
@@ -85,9 +98,10 @@ export const useUserManagement = () => {
 
   const updateUserStatus = async (userId: string, status: 'active' | 'suspended' | 'banned', reason: string, actionType: 'suspend' | 'ban' | 'unban') => {
     try {
+      // Cast update object to any to bypass strict type checking for 'status' column
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ status })
+        .update({ status } as any) // Cast update object
         .eq('id', userId);
 
       if (updateError) throw updateError;
@@ -126,8 +140,9 @@ export const useUserManagement = () => {
         throw new Error('No authenticated user found');
       }
 
+      // Cast table name to any
       const { error: insertError } = await supabase
-        .from('user_actions')
+        .from('user_actions' as any) // Cast to any
         .insert({
           user_id: userId,
           action_type: actionType,
@@ -154,8 +169,9 @@ export const useUserManagement = () => {
         throw new Error('No authenticated user found');
       }
 
+      // Cast table name to any
       const { error: insertError } = await supabase
-        .from('user_messages')
+        .from('user_messages' as any) // Cast to any
         .insert({
           recipient_id: userId,
           sender_id: currentUser.id, 
@@ -171,7 +187,8 @@ export const useUserManagement = () => {
         description: "Your message has been sent to the user.",
       });
       return true;
-    } catch (err: any) {
+    } catch (err: any)
+    {
       console.error('Error sending message:', err);
       toast({
         title: "Error sending message",
@@ -184,17 +201,24 @@ export const useUserManagement = () => {
   
   const getUserActions = async (userId: string): Promise<UserAction[]> => {
     try {
+      // Cast table name to any and result data
       const { data, error: fetchError } = await supabase
-        .from('user_actions')
+        .from('user_actions' as any) // Cast to any
         .select(`
-          *,
+          id,
+          user_id,
+          action_type,
+          reason,
+          moderator_id,
+          created_at,
+          expires_at,
           moderator:profiles!user_actions_moderator_id_fkey(username, display_name)
         `)
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
       if (fetchError) throw fetchError;
-      return data as UserAction[] || [];
+      return (data as UserAction[] | null) || []; // Cast data and handle null
     } catch (err: any) {
       console.error('Error fetching user actions:', err);
       return [];
@@ -209,7 +233,7 @@ export const useUserManagement = () => {
       const termMatch = searchTermLocal === '' || 
                         (user.username?.toLowerCase().includes(searchLower)) ||
                         (user.display_name?.toLowerCase().includes(searchLower)) ||
-                        (user.email?.toLowerCase().includes(searchLower));
+                        (user.email?.toLowerCase().includes(searchLower)); // email might be 'N/A'
       return statusMatch && roleMatch && termMatch;
     });
   }, []);
@@ -230,8 +254,8 @@ export const useUserManagement = () => {
     createUserAction,
     sendUserMessage,
     getUserActions,
-    searchUsers: searchUsersLocal, // Expose the local search function
+    searchUsers: searchUsersLocal,
     refreshUsers,
-    fetchUsers
+    fetchUsers // Exposing fetchUsers directly if needed
   };
 };
