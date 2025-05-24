@@ -95,22 +95,27 @@ const UnifiedStaffDashboard = () => {
     return urlParams.get('tab') || 'overview';
   });
   
+  // Moderation dashboard state
   const [selectedFlagId, setSelectedFlagId] = useState<string | null>(null);
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all'); // For content reports
+  const [searchTerm, setSearchTerm] = useState(''); // For content reports
   const [moderationNote, setModerationNote] = useState('');
   
   const { reports, loading: reportsLoading, updateReportStatus, createModerationAction } = useContentReports();
   const { stats: dashboardStats, loading: statsLoading, refreshStats } = useModerationStats();
+  
+  // User management from live hook
   const { 
-    users: allUsers, // Renamed to allUsers to avoid conflict with Lucide icon
+    users: allUsers, 
     loading: usersLoading, 
-    updateUserStatus: liveUpdateUserStatus, // Renamed to avoid conflict
-    sendUserMessage: liveSendUserMessage, // Renamed
+    error: usersError, // Added error state from hook
+    updateUserStatus: liveUpdateUserStatus, 
+    sendUserMessage: liveSendUserMessage, 
     searchUsers: searchUsersHook,
     refreshUsers 
   } = useUserManagement();
   
+  // User management UI state
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [userFilterStatus, setUserFilterStatus] = useState<'all' | 'active' | 'suspended' | 'banned'>('all');
   const [userFilterRole, setUserFilterRole] = useState<'all' | 'user' | 'moderator' | 'admin'>('all');
@@ -218,12 +223,13 @@ const UnifiedStaffDashboard = () => {
     setActionReason(''); 
   };
 
-  const handleUserAction = async (action: 'suspend' | 'ban' | 'unban', userId: string) => {
-    if (!userActionDialog.user || !actionReason.trim()) {
+  const handleUserAction = async () => { // Removed parameters, will use state
+    if (!userActionDialog.user || !userActionDialog.action || !actionReason.trim()) {
       toast({ title: "Missing Information", description: "A reason is required for this action.", variant: "destructive"});
       return;
     }
     
+    const { user, action } = userActionDialog;
     let targetStatus: User['status'];
     let actionTypeForHook: 'suspend' | 'ban' | 'unban';
 
@@ -245,12 +251,12 @@ const UnifiedStaffDashboard = () => {
         return;
     }
 
-    const success = await liveUpdateUserStatus(userId, targetStatus, actionReason, actionTypeForHook);
+    const success = await liveUpdateUserStatus(user.id, targetStatus, actionReason, actionTypeForHook);
 
     if (success) {
       let toastTitle = '';
       let toastDescription = '';
-      const userName = userActionDialog.user?.display_name || 'User';
+      const userName = user.display_name || 'User';
 
       switch (action) {
           case 'suspend':
@@ -266,11 +272,13 @@ const UnifiedStaffDashboard = () => {
               toastDescription = `${userName}'s access has been restored.`;
               break;
       }
-      toast({ title: toastTitle, description: toastDescription });
+      // Toast is already handled in the hook for success/error of updateUserStatus
+      // toast({ title: toastTitle, description: toastDescription }); 
       setUserActionDialog({ open: false, action: null, user: null });
       setActionReason('');
-      // refreshUsers(); // The hook's updateUserStatus should handle refetching or optimistic update
+      // refreshUsers(); // The hook's updateUserStatus already calls fetchUsers()
     }
+    // Error toast is handled within liveUpdateUserStatus hook
   };
 
   const handleSendMessage = async () => {
@@ -280,15 +288,19 @@ const UnifiedStaffDashboard = () => {
     }
     const success = await liveSendUserMessage(messageDialog.user.id, messageSubject, messageContent);
     if (success) {
+      // Toast is handled in the hook
       setMessageDialog({ open: false, user: null });
       setMessageSubject('');
       setMessageContent('');
     }
+    // Error toast is handled in the hook
   };
   
-  const filteredUsers = useCallback(() => {
+  const filteredUsersResult = useCallback(() => {
+    if (!allUsers || usersLoading) return [];
     return searchUsersHook(allUsers, userSearchTerm, userFilterStatus, userFilterRole);
-  }, [allUsers, userSearchTerm, userFilterStatus, userFilterRole, searchUsersHook]);
+  }, [allUsers, userSearchTerm, userFilterStatus, userFilterRole, searchUsersHook, usersLoading]);
+
 
   if (authLoading) {
     return (
@@ -446,7 +458,7 @@ const UnifiedStaffDashboard = () => {
                 size="sm"
                 onClick={() => {
                   if(refreshStats) refreshStats();
-                  if(refreshUsers) refreshUsers(); // Refresh users data
+                  if(refreshUsers) refreshUsers(); 
                   toast({ title: "Data refreshed", description: "Dashboard data has been updated." });
                 }}
                 className="flex items-center gap-2"
@@ -638,7 +650,11 @@ const UnifiedStaffDashboard = () => {
                       </div>
                   </div>
                   <Separator />
-
+                  {usersError && (
+                    <div className="text-red-500 p-4 border border-red-500 bg-red-50 rounded-md">
+                      Error loading users: {usersError}
+                    </div>
+                  )}
                   {usersLoading ? (
                      <div className="flex items-center justify-center py-8">
                        <LoadingSpinner />
@@ -653,14 +669,15 @@ const UnifiedStaffDashboard = () => {
                             <TableHead className="hidden md:table-cell">Role</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead className="hidden sm:table-cell">Joined</TableHead>
-                            <TableHead className="hidden lg:table-cell text-center">Posts</TableHead>
+                            <TableHead className="hidden lg:table-cell text-center">Forum Posts</TableHead>
+                            <TableHead className="hidden lg:table-cell text-center">Timeline Posts</TableHead>
                             <TableHead className="hidden lg:table-cell text-center">Reports</TableHead>
                             <TableHead className="hidden md:table-cell">Last Active</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {filteredUsers().map((user) => (
+                          {filteredUsersResult().map((user) => (
                             <TableRow key={user.id}>
                               <TableCell>
                                 <div className="flex items-center gap-3">
@@ -689,7 +706,8 @@ const UnifiedStaffDashboard = () => {
                               <TableCell className="text-sm text-muted-foreground hidden sm:table-cell">
                                 {new Date(user.created_at).toLocaleDateString()}
                               </TableCell>
-                              <TableCell className="text-center hidden lg:table-cell">{user.forum_post_count}</TableCell>
+                              <TableCell className="text-center hidden lg:table-cell">{user.forum_post_count ?? 0}</TableCell>
+                              <TableCell className="text-center hidden lg:table-cell">{user.timeline_post_count ?? 0}</TableCell>
                               <TableCell className="text-center hidden lg:table-cell">
                                 {user.pending_report_count && user.pending_report_count > 0 ? (
                                   <Badge variant="destructive" className="text-xs">
@@ -754,7 +772,7 @@ const UnifiedStaffDashboard = () => {
                       </Table>
                     </div>
                   )}
-                  {filteredUsers().length === 0 && !usersLoading && (
+                  {filteredUsersResult().length === 0 && !usersLoading && !usersError && (
                     <div className="text-center py-8 text-muted-foreground">
                       <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
                       <p>No users found matching your filters.</p>
@@ -869,6 +887,7 @@ const UnifiedStaffDashboard = () => {
         onOpenChange={setIsProfileEditorOpen}
       />
 
+      {/* User Action Dialog */}
       <Dialog open={userActionDialog.open} onOpenChange={(open) => { if (!open) setUserActionDialog({ open: false, action: null, user: null }); }}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -926,7 +945,7 @@ const UnifiedStaffDashboard = () => {
             </Button>
             <Button 
               variant={userActionDialog.action === 'unban' ? 'default' : 'destructive'}
-              onClick={() => userActionDialog.user && handleUserAction(userActionDialog.action!, userActionDialog.user.id)}
+              onClick={handleUserAction} // Updated to call without params
               disabled={!actionReason.trim()}
             >
               {userActionDialog.action === 'suspend' && 'Confirm Suspension'}
@@ -997,6 +1016,7 @@ const UnifiedStaffDashboard = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Report Details Modal */}
       {selectedReportData && (
         <ReportDetails
           reportData={{

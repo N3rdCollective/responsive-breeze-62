@@ -85,21 +85,15 @@ export const useUserManagement = () => {
 
   const updateUserStatus = async (userId: string, status: 'active' | 'suspended' | 'banned', reason: string, actionType: 'suspend' | 'ban' | 'unban') => {
     try {
-      const { error }ika_profiles_update } = await supabase
+      const { error: updateError } = await supabase
         .from('profiles')
         .update({ status })
         .eq('id', userId);
 
-      if (errorika_profiles_update) throw errorika_profiles_update;
+      if (updateError) throw updateError;
 
       await createUserAction(userId, actionType, reason);
       
-      // Optimistic update or refetch
-      // setUsers(prevUsers =>
-      //   prevUsers.map(user =>
-      //     user.id === userId ? { ...user, status } : user
-      //   )
-      // );
       fetchUsers(); // Refetch to ensure data consistency
 
       toast({
@@ -132,17 +126,17 @@ export const useUserManagement = () => {
         throw new Error('No authenticated user found');
       }
 
-      const { error } = await supabase
+      const { error: insertError } = await supabase
         .from('user_actions')
         .insert({
           user_id: userId,
           action_type: actionType,
           reason,
-          moderator_id: currentUser.id, // This should be the staff/moderator's profile ID from your staff table, not auth.uid() directly if they are different. Assuming current user is staff and their ID in profiles is auth.uid().
+          moderator_id: currentUser.id, 
           expires_at: expiresAt
         });
 
-      if (error) throw error;
+      if (insertError) throw insertError;
       return true;
     } catch (err: any) {
       console.error('Error creating user action:', err);
@@ -160,17 +154,17 @@ export const useUserManagement = () => {
         throw new Error('No authenticated user found');
       }
 
-      const { error } = await supabase
+      const { error: insertError } = await supabase
         .from('user_messages')
         .insert({
           recipient_id: userId,
-          sender_id: currentUser.id, // Similar to createUserAction, ensure this ID matches your profiles table for staff.
+          sender_id: currentUser.id, 
           subject,
           message,
           message_type: 'admin' 
         });
 
-      if (error) throw error;
+      if (insertError) throw insertError;
 
       toast({
         title: "Message sent",
@@ -190,7 +184,7 @@ export const useUserManagement = () => {
   
   const getUserActions = async (userId: string): Promise<UserAction[]> => {
     try {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('user_actions')
         .select(`
           *,
@@ -199,7 +193,7 @@ export const useUserManagement = () => {
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (fetchError) throw fetchError;
       return data as UserAction[] || [];
     } catch (err: any) {
       console.error('Error fetching user actions:', err);
