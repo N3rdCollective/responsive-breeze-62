@@ -10,8 +10,43 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-// import { Separator } from "@/components/ui/separator"; // Not used in the provided code
-// import { AlertCircle, CheckCircle, Clock } from "lucide-react"; // Not used in the provided code
+import { Separator } from "@/components/ui/separator"; // Keep if used, though not explicitly in new code by user. Original file had it commented out.
+import { Input } from "@/components/ui/input";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  // DialogTrigger, // Not used in the provided code
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+// import { AlertCircle, CheckCircle, Clock } from "lucide-react"; // These were in user's paste but not used in the new logic
 import { 
   UserCog, 
   BarChart3, 
@@ -23,8 +58,16 @@ import {
   Settings,
   TrendingUp,
   Plus,
-  // Eye, // Not used in the provided code
-  RefreshCw
+  Eye,
+  RefreshCw,
+  Search,
+  MoreHorizontal,
+  Ban,
+  UserCheck,
+  UserX,
+  Calendar, // This was in user's paste but not used in the new logic for icons
+  Mail,
+  MessageSquare
 } from "lucide-react";
 
 // Import existing components
@@ -38,8 +81,24 @@ import ReportedContentSection from '@/components/staff/moderator-dashboard/Repor
 import ReportDetails from '@/components/staff/moderator-dashboard/ReportDetails';
 
 // Import database hooks
-import { useContentReports } from '@/hooks/moderation/useContentReports'; // ContentReport type is implicitly imported here
+import { useContentReports, ContentReport } from '@/hooks/moderation/useContentReports'; // ContentReport explicit import
 import { useModerationStats } from '@/hooks/moderation/useModerationStats';
+// import { useUserManagement } from '@/hooks/admin/useUserManagement'; // This hook needs to be created
+
+// Mock user data structure (replace with real data hook)
+interface User {
+  id: string;
+  username: string;
+  display_name: string;
+  email: string;
+  profile_picture?: string;
+  created_at: string;
+  last_active: string;
+  post_count: number;
+  status: 'active' | 'suspended' | 'banned';
+  role: 'user' | 'moderator' | 'admin';
+  report_count: number;
+}
 
 const UnifiedStaffDashboard = () => {
   const { toast } = useToast();
@@ -47,23 +106,85 @@ const UnifiedStaffDashboard = () => {
   const [isProfileEditorOpen, setIsProfileEditorOpen] = useState(false);
   const { staffName, isAdmin, isLoading, handleLogout, userRole } = useStaffAuth();
   
-  // Tab state with URL persistence
   const [activeTab, setActiveTab] = useState(() => {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('tab') || 'overview';
   });
   
-  // Moderation dashboard state
   const [selectedFlagId, setSelectedFlagId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [moderationNote, setModerationNote] = useState('');
   
-  // Use database hooks for real data
   const { reports, loading: reportsLoading, updateReportStatus, createModerationAction } = useContentReports();
   const { stats: dashboardStats, loading: statsLoading, refreshStats } = useModerationStats();
+  
+  const [userSearchTerm, setUserSearchTerm] = useState('');
+  const [userFilterStatus, setUserFilterStatus] = useState<'all' | 'active' | 'suspended' | 'banned'>('all');
+  const [userFilterRole, setUserFilterRole] = useState<'all' | 'user' | 'moderator' | 'admin'>('all');
+  // const [selectedUserId, setSelectedUserId] = useState<string | null>(null); // Not used in provided code
+  const [userActionDialog, setUserActionDialog] = useState<{
+    open: boolean;
+    action: 'suspend' | 'ban' | 'unban' | null;
+    user: User | null;
+  }>({ open: false, action: null, user: null });
+  const [actionReason, setActionReason] = useState('');
+  
+  // Mock users data - replace with real hook
+  const [usersData, setUsersData] = useState<User[]>([ // Renamed to usersData to avoid conflict with Lucide Users icon
+    {
+      id: '1',
+      username: 'johndoe',
+      display_name: 'John Doe',
+      email: 'john@example.com',
+      profile_picture: 'https://randomuser.me/api/portraits/men/32.jpg',
+      created_at: '2024-01-15T10:00:00Z',
+      last_active: '2024-05-24T14:30:00Z',
+      post_count: 45,
+      status: 'active',
+      role: 'user',
+      report_count: 0
+    },
+    {
+      id: '2',
+      username: 'moderator1',
+      display_name: 'Sarah Wilson',
+      email: 'sarah@radiostation.com',
+      profile_picture: 'https://randomuser.me/api/portraits/women/44.jpg',
+      created_at: '2023-06-10T09:00:00Z',
+      last_active: '2024-05-24T16:00:00Z',
+      post_count: 128,
+      status: 'active',
+      role: 'moderator',
+      report_count: 1
+    },
+    {
+      id: '3',
+      username: 'troubleuser',
+      display_name: 'Problem User',
+      email: 'problem@example.com',
+      // profile_picture: undefined, // Example of no profile picture
+      created_at: '2024-03-01T12:00:00Z',
+      last_active: '2024-05-20T10:00:00Z',
+      post_count: 12,
+      status: 'suspended',
+      role: 'user',
+      report_count: 5
+    },
+     {
+      id: '4',
+      username: 'banneduser99',
+      display_name: 'Banned User',
+      email: 'banned@example.com',
+      created_at: '2024-02-01T18:00:00Z',
+      last_active: '2024-04-10T11:00:00Z',
+      post_count: 3,
+      status: 'banned',
+      role: 'user',
+      report_count: 12
+    }
+  ]);
 
-  // Update URL when tab changes
   useEffect(() => {
     const url = new URL(window.location.href);
     if (activeTab === 'overview') {
@@ -90,11 +211,9 @@ const UnifiedStaffDashboard = () => {
     console.log(`Taking action "${action}" on report ${reportId}`);
     
     try {
-      // Create moderation action record
       const actionSuccess = await createModerationAction(reportId, action, moderationNote);
       
       if (actionSuccess) {
-        // Update report status
         let newStatus: 'resolved' | 'rejected' = 'resolved';
         if (action === 'dismiss') {
           newStatus = 'rejected';
@@ -105,7 +224,7 @@ const UnifiedStaffDashboard = () => {
         if (updateSuccess) {
           setSelectedFlagId(null);
           setModerationNote('');
-          if (refreshStats) refreshStats(); // Refresh stats after action
+          if (refreshStats) refreshStats();
           toast({
             title: "Action completed",
             description: `Report has been ${action === 'dismiss' ? 'dismissed' : 'resolved'}.`,
@@ -129,9 +248,7 @@ const UnifiedStaffDashboard = () => {
   const handleQuickAction = (action: string) => {
     switch (action) {
       case 'new-post':
-        // Navigate to new post creation
-        // Consider using useNavigate from react-router-dom for internal navigation
-        window.location.href = '/staff/news/editor'; // Updated path
+        window.location.href = '/staff/news/editor'; // Path updated from user's original code to match existing app structure
         break;
       case 'manage-shows':
         setActiveTab('shows');
@@ -142,12 +259,54 @@ const UnifiedStaffDashboard = () => {
       case 'manage-staff':
         handleManageUsers();
         break;
+      case 'manage-users': // New quick action for users tab
+        setActiveTab('users');
+        break;
       default:
         break;
     }
   };
-
+  
   const selectedReportData = selectedFlagId ? reports.find(r => r.id === selectedFlagId) : null;
+
+  // User management functions
+  const openUserActionDialog = (action: 'suspend' | 'ban' | 'unban', user: User) => {
+    setUserActionDialog({ open: true, action, user });
+    setActionReason(''); // Reset reason
+  };
+
+  const handleUserAction = (action: 'suspend' | 'ban' | 'unban', userId: string) => {
+    // This is where you'd integrate with your useUserManagement hook
+    console.log(`Performing action: ${action} on user ${userId} with reason: ${actionReason}`);
+    // Example:
+    // await updateUserStatus(userId, actionToStatus(action), actionReason);
+
+    // Update mock data for now
+    setUsersData(prevUsers => 
+      prevUsers.map(u => 
+        u.id === userId ? { ...u, status: action === 'unban' ? 'active' : action } : u
+      )
+    );
+
+    toast({
+      title: `User ${action === 'unban' ? 'Restored' : action === 'suspend' ? 'Suspended' : 'Banned'}`,
+      description: `${userActionDialog.user?.display_name} has been ${action === 'unban' ? 'restored' : action}.`,
+    });
+    setUserActionDialog({ open: false, action: null, user: null });
+    setActionReason('');
+  };
+
+  const filteredUsers = usersData.filter(user => {
+    const statusMatch = userFilterStatus === 'all' || user.status === userFilterStatus;
+    const roleMatch = userFilterRole === 'all' || user.role === userFilterRole;
+    const searchLower = userSearchTerm.toLowerCase();
+    const termMatch = userSearchTerm === '' ||
+                      user.username.toLowerCase().includes(searchLower) ||
+                      user.display_name.toLowerCase().includes(searchLower) ||
+                      user.email.toLowerCase().includes(searchLower);
+    return statusMatch && roleMatch && termMatch;
+  });
+
 
   if (isLoading) {
     return (
@@ -161,7 +320,6 @@ const UnifiedStaffDashboard = () => {
     );
   }
 
-  // Enhanced stats overview with better visual hierarchy
   const StatsOverview = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -170,10 +328,10 @@ const UnifiedStaffDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Monthly Listeners</p>
-                <p className="text-2xl font-bold">1.2M</p> {/* This is static, consider making it dynamic */}
+                <p className="text-2xl font-bold">1.2M</p>
                 <p className="text-xs text-green-600 flex items-center mt-1">
                   <TrendingUp className="h-3 w-3 mr-1" />
-                  +12% from last month {/* This is static */}
+                  +12% from last month
                 </p>
               </div>
               <TrendingUp className="h-8 w-8 text-blue-500" />
@@ -194,19 +352,19 @@ const UnifiedStaffDashboard = () => {
           </CardContent>
         </Card>
         
-        <Card className={`border-l-4 ${dashboardStats.pendingReports > 0 ? 'border-l-red-500' : 'border-l-gray-300 dark:border-l-gray-600'}`}>
+        <Card className={`border-l-4 ${!statsLoading && dashboardStats.pendingReports > 0 ? 'border-l-red-500' : 'border-l-gray-300 dark:border-l-gray-600'}`}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Pending Reports</p>
-                <p className={`text-2xl font-bold ${dashboardStats.pendingReports > 0 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}>
+                <p className={`text-2xl font-bold ${!statsLoading && dashboardStats.pendingReports > 0 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}>
                   {statsLoading ? '...' : dashboardStats.pendingReports}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {dashboardStats.pendingReports > 0 ? 'Needs attention' : 'All clear'}
+                  {!statsLoading && dashboardStats.pendingReports > 0 ? 'Needs attention' : 'All clear'}
                 </p>
               </div>
-              <Flag className={`h-8 w-8 ${dashboardStats.pendingReports > 0 ? 'text-red-500' : 'text-gray-400 dark:text-gray-500'}`} />
+              <Flag className={`h-8 w-8 ${!statsLoading && dashboardStats.pendingReports > 0 ? 'text-red-500' : 'text-gray-400 dark:text-gray-500'}`} />
             </div>
           </CardContent>
         </Card>
@@ -219,13 +377,12 @@ const UnifiedStaffDashboard = () => {
                 <p className="text-2xl font-bold">{statsLoading ? '...' : dashboardStats.newMembers}</p>
                 <p className="text-xs text-muted-foreground mt-1">This week</p>
               </div>
-              <Users className="h-8 w-8 text-purple-500" />
+              <Users className="h-8 w-8 text-purple-500" /> {/* Lucide Users icon */}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Quick Actions for Overview Tab */}
       {activeTab === 'overview' && (
         <Card>
           <CardHeader>
@@ -235,7 +392,7 @@ const UnifiedStaffDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               <Button variant="outline" onClick={() => handleQuickAction('new-post')} className="h-20 flex-col gap-2">
                 <FileText className="h-6 w-6" />
                 <span className="text-sm">New Post</span>
@@ -254,9 +411,13 @@ const UnifiedStaffDashboard = () => {
                   {!statsLoading && dashboardStats.pendingReports > 0 ? `${dashboardStats.pendingReports} Reports` : 'View Reports'}
                 </span>
               </Button>
+               <Button variant="outline" onClick={() => handleQuickAction('manage-users')} className="h-20 flex-col gap-2">
+                <Users className="h-6 w-6" /> {/* Lucide Users icon */}
+                <span className="text-sm">Manage Users</span>
+              </Button>
               {isAdmin && (
                 <Button variant="outline" onClick={() => handleQuickAction('manage-staff')} className="h-20 flex-col gap-2">
-                  <Users className="h-6 w-6" />
+                  <Users className="h-6 w-6" /> {/* Lucide Users icon */}
                   <span className="text-sm">Manage Staff</span>
                 </Button>
               )}
@@ -272,7 +433,6 @@ const UnifiedStaffDashboard = () => {
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 pt-24 pb-16">
         <div className="space-y-8">
-          {/* Enhanced Header Section */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
             <div className="space-y-1">
               <h1 className="text-3xl font-bold">Staff Dashboard</h1>
@@ -289,6 +449,7 @@ const UnifiedStaffDashboard = () => {
                 size="sm"
                 onClick={() => {
                   if(refreshStats) refreshStats();
+                  // Consider also refreshing user list if useUserManagement is implemented
                   toast({ title: "Data refreshed", description: "Dashboard data has been updated." });
                 }}
                 className="flex items-center gap-2"
@@ -313,13 +474,11 @@ const UnifiedStaffDashboard = () => {
             </div>
           </div>
 
-          {/* Stats Overview */}
           <StatsOverview />
 
-          {/* Main Tabbed Interface with improved styling */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <div className="border-b dark:border-gray-700">
-              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 h-auto p-1 bg-muted dark:bg-gray-800 rounded-md">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 h-auto p-1 bg-muted dark:bg-gray-800 rounded-md">
                 <TabsTrigger value="overview" className="flex items-center gap-2 py-2.5 sm:py-3 data-[state=active]:bg-background dark:data-[state=active]:bg-gray-950 data-[state=active]:shadow-sm">
                   <BarChart3 className="h-4 w-4" />
                   <span className="hidden sm:inline">Overview</span>
@@ -334,6 +493,11 @@ const UnifiedStaffDashboard = () => {
                   <Radio className="h-4 w-4" />
                   <span className="hidden sm:inline">Shows</span>
                   <span className="sm:hidden">Shows</span>
+                </TabsTrigger>
+                <TabsTrigger value="users" className="flex items-center gap-2 py-2.5 sm:py-3 data-[state=active]:bg-background dark:data-[state=active]:bg-gray-950 data-[state=active]:shadow-sm">
+                  <Users className="h-4 w-4" /> {/* Lucide Users icon */}
+                  <span className="hidden sm:inline">Users</span>
+                  <span className="sm:hidden">Users</span>
                 </TabsTrigger>
                 <TabsTrigger value="moderation" className="flex items-center gap-2 py-2.5 sm:py-3 relative data-[state=active]:bg-background dark:data-[state=active]:bg-gray-950 data-[state=active]:shadow-sm">
                   <Shield className="h-4 w-4" />
@@ -400,6 +564,215 @@ const UnifiedStaffDashboard = () => {
                 </CardContent>
               </Card>
             </TabsContent>
+            
+            <TabsContent value="users" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" /> {/* Lucide Users icon */}
+                    User Management
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    View, manage, and moderate community members.
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Filters */}
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="relative sm:flex-grow">
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="search"
+                        placeholder="Search users (name, email)..."
+                        value={userSearchTerm}
+                        onChange={(e) => setUserSearchTerm(e.target.value)}
+                        className="pl-8 w-full"
+                      />
+                    </div>
+                    <Select value={userFilterStatus} onValueChange={(value) => setUserFilterStatus(value as 'all' | 'active' | 'suspended' | 'banned')}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filter by status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Statuses</SelectItem>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="suspended">Suspended</SelectItem>
+                        <SelectItem value="banned">Banned</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={userFilterRole} onValueChange={(value) => setUserFilterRole(value as 'all' | 'user' | 'moderator' | 'admin')}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filter by role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Roles</SelectItem>
+                        <SelectItem value="user">User</SelectItem>
+                        <SelectItem value="moderator">Moderator</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* User Stats Summary - Could be another Card or section */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                      <div>
+                          <p className="text-sm text-muted-foreground">Total Users</p>
+                          <p className="text-2xl font-bold">{usersData.length}</p>
+                      </div>
+                      <div>
+                          <p className="text-sm text-muted-foreground">Active</p>
+                          <p className="text-2xl font-bold text-green-600">{usersData.filter(u=>u.status === 'active').length}</p>
+                      </div>
+                      <div>
+                          <p className="text-sm text-muted-foreground">Suspended</p>
+                          <p className="text-2xl font-bold text-yellow-600">{usersData.filter(u=>u.status === 'suspended').length}</p>
+                      </div>
+                      <div>
+                          <p className="text-sm text-muted-foreground">Banned</p>
+                          <p className="text-2xl font-bold text-red-600">{usersData.filter(u=>u.status === 'banned').length}</p>
+                      </div>
+                  </div>
+                  <Separator />
+
+
+                  {/* Users Table */}
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[250px]">User</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead className="hidden md:table-cell">Role</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="hidden sm:table-cell">Joined</TableHead>
+                          <TableHead className="hidden lg:table-cell text-center">Posts</TableHead>
+                          <TableHead className="hidden lg:table-cell text-center">Reports</TableHead>
+                          <TableHead className="hidden md:table-cell">Last Active</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredUsers.map((user) => (
+                          <TableRow key={user.id}>
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
+                                  {user.profile_picture ? (
+                                    <img 
+                                      src={user.profile_picture} 
+                                      alt={user.display_name}
+                                      className="w-10 h-10 rounded-full object-cover"
+                                    />
+                                  ) : (
+                                    <span className="text-sm font-medium text-muted-foreground">
+                                      {user.display_name.charAt(0).toUpperCase()}
+                                    </span>
+                                  )}
+                                </div>
+                                <div>
+                                  <p className="font-medium">{user.display_name}</p>
+                                  <p className="text-xs text-muted-foreground">@{user.username}</p>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-sm">{user.email}</TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              <Badge variant={user.role === 'admin' ? 'default' : user.role === 'moderator' ? 'secondary' : 'outline'} className="capitalize">
+                                {user.role}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant={user.status === 'active' ? 'default' : user.status === 'suspended' ? 'secondary' : 'destructive'}
+                                className={`capitalize ${user.status === 'active' ? 'bg-green-500 hover:bg-green-600' : user.status === 'suspended' ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-red-500 hover:bg-red-600'} text-white`}
+                              >
+                                {user.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground hidden sm:table-cell">
+                              {new Date(user.created_at).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell className="text-center hidden lg:table-cell">{user.post_count}</TableCell>
+                            <TableCell className="text-center hidden lg:table-cell">
+                              {user.report_count > 0 ? (
+                                <Badge variant="destructive" className="text-xs">
+                                  {user.report_count}
+                                </Badge>
+                              ) : (
+                                <span className="text-muted-foreground">0</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground hidden md:table-cell">
+                              {new Date(user.last_active).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                  <DropdownMenuItem onClick={() => console.log(`View profile: ${user.id}`)}>
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    View Profile
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => console.log(`View posts: ${user.id}`)}>
+                                    <FileText className="mr-2 h-4 w-4" /> {/* Changed icon to FileText */}
+                                    View Posts
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => console.log(`Send message: ${user.id}`)}>
+                                    <Mail className="mr-2 h-4 w-4" />
+                                    Send Message
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  {user.status === 'active' && (
+                                    <>
+                                      <DropdownMenuItem 
+                                        className="text-yellow-600 focus:text-yellow-700 focus:bg-yellow-100"
+                                        onClick={() => openUserActionDialog('suspend', user)}
+                                      >
+                                        <UserX className="mr-2 h-4 w-4" />
+                                        Suspend User
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem 
+                                        className="text-red-600 focus:text-red-700 focus:bg-red-100"
+                                        onClick={() => openUserActionDialog('ban', user)}
+                                      >
+                                        <Ban className="mr-2 h-4 w-4" />
+                                        Ban User
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                  {(user.status === 'suspended' || user.status === 'banned') && (
+                                    <DropdownMenuItem 
+                                      className="text-green-600 focus:text-green-700 focus:bg-green-100"
+                                      onClick={() => openUserActionDialog('unban', user)}
+                                    >
+                                      <UserCheck className="mr-2 h-4 w-4" />
+                                      Restore User
+                                    </DropdownMenuItem>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {filteredUsers.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Users className="h-12 w-12 mx-auto mb-4 opacity-50" /> {/* Lucide Users icon */}
+                      <p>No users found matching your filters.</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
 
             <TabsContent value="moderation" className="space-y-6">
               <Card>
@@ -431,23 +804,23 @@ const UnifiedStaffDashboard = () => {
                         content: report.content_preview || '',
                         reportReason: report.report_reason,
                         reporter: {
-                          id: `reporter-${report.reporter_name}-${report.id}`, // more unique id
+                          id: `reporter-${report.reporter_name}-${report.id}`, 
                           name: report.reporter_name,
                           avatar: report.reporter_avatar || '/placeholder.svg'
                         },
                         author: {
-                          id: `author-${report.reported_user_name}-${report.id}`, // more unique id
+                          id: `author-${report.reported_user_name}-${report.id}`, 
                           name: report.reported_user_name,
                           avatar: report.reported_user_avatar || '/placeholder.svg',
-                          joinDate: new Date().toISOString(), // Placeholder, consider fetching real join date
-                          postCount: 0, // Placeholder
-                          previousFlags: 0 // Placeholder
+                          joinDate: new Date().toISOString(), 
+                          postCount: 0, 
+                          previousFlags: 0 
                         },
                         timestamp: report.created_at,
                         topic: {
-                          id: report.topic_id || `topic-${report.id}`, // Ensure topic always has an id
+                          id: report.topic_id || `topic-${report.id}`, 
                           title: report.topic_title || 'Unknown Topic',
-                          category: 'General' // Placeholder
+                          category: 'General' 
                         },
                         status: report.status,
                         resolution: report.action_type ? {
@@ -495,11 +868,10 @@ const UnifiedStaffDashboard = () => {
         </div>
       </div>
       
-      {/* Modals */}
       <ManageStaffModal 
         open={isManageStaffOpen}
         onOpenChange={setIsManageStaffOpen}
-        currentUserRole={userRole || ''} // Ensure currentUserRole is always a string
+        currentUserRole={userRole || ''}
       />
       
       <StaffProfileEditor
@@ -507,7 +879,74 @@ const UnifiedStaffDashboard = () => {
         onOpenChange={setIsProfileEditorOpen}
       />
 
-      {/* Report Details Modal */}
+      <Dialog open={userActionDialog.open} onOpenChange={(open) => { if (!open) setUserActionDialog({ open: false, action: null, user: null }); }}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>
+              {userActionDialog.action === 'suspend' && 'Suspend User'}
+              {userActionDialog.action === 'ban' && 'Ban User'}
+              {userActionDialog.action === 'unban' && 'Restore User Access'}
+            </DialogTitle>
+            <DialogDescription>
+              {userActionDialog.action === 'suspend' && `Temporarily suspend ${userActionDialog.user?.display_name} from the community.`}
+              {userActionDialog.action === 'ban' && `Permanently ban ${userActionDialog.user?.display_name} from the community.`}
+              {userActionDialog.action === 'unban' && `Restore ${userActionDialog.user?.display_name}'s access to the community.`}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {userActionDialog.user && (
+            <div className="space-y-4 py-4">
+              <div className="flex items-center gap-3 p-3 bg-muted/50 dark:bg-muted/20 rounded-lg border">
+                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
+                  {userActionDialog.user.profile_picture ? (
+                    <img 
+                      src={userActionDialog.user.profile_picture} 
+                      alt={userActionDialog.user.display_name}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-lg font-medium text-muted-foreground">
+                      {userActionDialog.user.display_name.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <p className="font-semibold">{userActionDialog.user.display_name}</p>
+                  <p className="text-sm text-muted-foreground">@{userActionDialog.user.username}</p>
+                </div>
+              </div>
+              
+              <div className="space-y-1.5">
+                <Label htmlFor="reason" className="text-sm">Reason for action</Label>
+                <Textarea
+                  id="reason"
+                  placeholder={`Enter reason for ${userActionDialog.action === 'unban' ? 'restoring' : userActionDialog.action}...`}
+                  value={actionReason}
+                  onChange={(e) => setActionReason(e.target.value)}
+                  className="min-h-[80px]"
+                />
+                {actionReason.trim().length === 0 && <p className="text-xs text-red-500">A reason is required.</p>}
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setUserActionDialog({ open: false, action: null, user: null })}>
+              Cancel
+            </Button>
+            <Button 
+              variant={userActionDialog.action === 'unban' ? 'default' : 'destructive'}
+              onClick={() => userActionDialog.user && handleUserAction(userActionDialog.action!, userActionDialog.user.id)}
+              disabled={!actionReason.trim()}
+            >
+              {userActionDialog.action === 'suspend' && 'Confirm Suspension'}
+              {userActionDialog.action === 'ban' && 'Confirm Ban'}
+              {userActionDialog.action === 'unban' && 'Confirm Restoration'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {selectedReportData && (
         <ReportDetails
           reportData={{
@@ -556,4 +995,3 @@ const UnifiedStaffDashboard = () => {
 };
 
 export default UnifiedStaffDashboard;
-
