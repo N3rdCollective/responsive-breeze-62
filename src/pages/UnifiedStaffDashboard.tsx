@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -276,21 +275,53 @@ const UnifiedStaffDashboard = () => {
   };
 
   const handleUserAction = (action: 'suspend' | 'ban' | 'unban', userId: string) => {
-    // This is where you'd integrate with your useUserManagement hook
     console.log(`Performing action: ${action} on user ${userId} with reason: ${actionReason}`);
-    // Example:
-    // await updateUserStatus(userId, actionToStatus(action), actionReason);
+    
+    let newStatus: User['status'];
+    switch (action) {
+      case 'suspend':
+        newStatus = 'suspended';
+        break;
+      case 'ban':
+        newStatus = 'banned';
+        break;
+      case 'unban':
+        newStatus = 'active';
+        break;
+      default:
+        // Should not happen with current typings, but as a fallback:
+        toast({ title: "Error", description: "Unknown user action.", variant: "destructive" });
+        return;
+    }
 
-    // Update mock data for now
     setUsersData(prevUsers => 
       prevUsers.map(u => 
-        u.id === userId ? { ...u, status: action === 'unban' ? 'active' : action } : u
+        u.id === userId ? { ...u, status: newStatus } : u
       )
     );
 
+    let toastTitle = '';
+    let toastDescription = '';
+    const userName = userActionDialog.user?.display_name || 'User';
+
+    switch (action) {
+        case 'suspend':
+            toastTitle = 'User Suspended';
+            toastDescription = `${userName} has been suspended.`;
+            break;
+        case 'ban':
+            toastTitle = 'User Banned';
+            toastDescription = `${userName} has been banned.`;
+            break;
+        case 'unban':
+            toastTitle = 'User Restored';
+            toastDescription = `${userName}'s access has been restored.`;
+            break;
+    }
+
     toast({
-      title: `User ${action === 'unban' ? 'Restored' : action === 'suspend' ? 'Suspended' : 'Banned'}`,
-      description: `${userActionDialog.user?.display_name} has been ${action === 'unban' ? 'restored' : action}.`,
+      title: toastTitle,
+      description: toastDescription,
     });
     setUserActionDialog({ open: false, action: null, user: null });
     setActionReason('');
