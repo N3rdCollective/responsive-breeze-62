@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import DesktopNav from "./navbar/DesktopNav";
@@ -9,6 +8,7 @@ import { useStaffAuth } from "@/hooks/useStaffAuth"; // Import useStaffAuth
 import { NavigationItem } from "@/types/profile";
 import { toast } from "@/hooks/use-toast";
 import { Mail } from "lucide-react"; // Import Mail icon for Messages
+import { useConversations } from "@/hooks/useConversations"; // Import useConversations
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -17,6 +17,7 @@ const Navbar = () => {
   
   const { user, logout: userLogout } = useAuth();
   const { staffName, handleLogout: staffLogout, userRole: staffUserRole } = useStaffAuth(); // Get staff auth state
+  const { totalUnreadCount } = useConversations(); // Get totalUnreadCount
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false); 
 
@@ -53,7 +54,13 @@ const Navbar = () => {
   if (user && !staffName) {
     navigationItems.push({ path: "/members", label: "Members" });
     navigationItems.push({ path: "/profile", label: "Profile" });
-    navigationItems.push({ path: "/messages", label: "Messages", icon: Mail, iconOnly: true }); // Add Messages link with iconOnly
+    navigationItems.push({ 
+      path: "/messages", 
+      label: "Messages", 
+      icon: Mail, 
+      iconOnly: true,
+      badgeCount: totalUnreadCount > 0 ? totalUnreadCount : undefined, // Add badgeCount
+    });
   }
   
   // Auth links (Sign In / Logout)
@@ -133,4 +140,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-

@@ -64,6 +64,8 @@ export const useConversations = () => {
     enabled: !!user?.id,
   });
 
+  const totalUnreadCount = conversations?.reduce((sum, conv) => sum + (conv.unread_count || 0), 0) || 0;
+
   const markAsReadMutation = useMutation<void, Error, string>({
     mutationFn: async (conversationId: string) => {
       if (!user?.id || !conversationId) {
@@ -153,6 +155,7 @@ export const useConversations = () => {
     error,
     refetchConversations: refetch,
     startOrCreateConversation,
-    markConversationAsRead: markAsReadMutation.mutate, // Expose the new function
+    markConversationAsRead: markAsReadMutation.mutate,
+    totalUnreadCount, // Expose totalUnreadCount
   };
 };

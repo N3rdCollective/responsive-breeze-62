@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, Shield, type LucideIcon } from "lucide-react"; // Import Shield icon
@@ -8,6 +7,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import ThemeToggle from "./ThemeToggle";
 import ListenButton from "./ListenButton";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import { Badge } from "@/components/ui/badge"; // Import Badge
+import { cn } from "@/lib/utils"; // Import cn
 
 // This local NavigationItem type is fine as it's only used for the props
 interface NavigationItem {
@@ -15,7 +16,8 @@ interface NavigationItem {
   label: string;
   onClick?: () => void;
   icon?: React.ElementType; 
-  iconOnly?: boolean; // Add iconOnly here
+  iconOnly?: boolean;
+  badgeCount?: number; // Add badgeCount here
 }
 
 interface MobileNavProps {
@@ -54,12 +56,12 @@ const MobileNav = ({
       ? 'text-primary dark:text-primary'
       : 'text-foreground hover:text-primary dark:hover:text-primary'
     }
-    text-lg font-medium transition-colors duration-200 flex items-center gap-2
+    text-lg font-medium transition-colors duration-200 flex items-center gap-2 relative
   `;
 
   const buttonClasses = `
     text-foreground hover:text-primary dark:hover:text-primary
-    text-lg font-medium transition-colors duration-200 text-left w-full flex items-center gap-2
+    text-lg font-medium transition-colors duration-200 text-left w-full flex items-center gap-2 relative
   `;
 
   return (
@@ -98,9 +100,28 @@ const MobileNav = ({
               </Link>
             )}
             {navigationItems.map((item) => {
-              const ItemIcon = item.icon as LucideIcon | undefined; // Cast to LucideIcon or undefined
+              const ItemIcon = item.icon as LucideIcon | undefined;
               const accessibilityProps = item.iconOnly && item.label ? { 'aria-label': item.label, title: item.label } : {};
               
+              const content = (
+                <>
+                  {ItemIcon && <ItemIcon className="h-5 w-5" />}
+                  {item.iconOnly ? null : <span className="flex-1">{item.label}</span>}
+                  {item.badgeCount && item.badgeCount > 0 && (
+                    <Badge
+                      variant="destructive"
+                      className={cn(
+                        "h-5 min-w-[1.25rem] p-0.5 flex items-center justify-center text-xs rounded-full",
+                         item.iconOnly ? "absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2" : "ml-auto" 
+                      )}
+                       style={{ lineHeight: '1' }}
+                    >
+                      {item.badgeCount > 9 ? '9+' : item.badgeCount}
+                    </Badge>
+                  )}
+                </>
+              );
+
               return item.onClick && item.path.startsWith("#") ? ( 
                 <button
                   key={item.path + item.label}
@@ -108,8 +129,7 @@ const MobileNav = ({
                   className={buttonClasses}
                   {...accessibilityProps}
                 >
-                  {ItemIcon && <ItemIcon className="h-5 w-5" />}
-                  {item.iconOnly ? null : item.label}
+                  {content}
                 </button>
               ) : (
                 <Link
@@ -119,8 +139,7 @@ const MobileNav = ({
                   className={linkClasses(item.path)}
                   {...accessibilityProps}
                 >
-                  {ItemIcon && <ItemIcon className="h-5 w-5" />}
-                  {item.iconOnly ? null : item.label}
+                  {content}
                 </Link>
               )
             })}
@@ -137,4 +156,3 @@ const MobileNav = ({
 };
 
 export default MobileNav;
-
