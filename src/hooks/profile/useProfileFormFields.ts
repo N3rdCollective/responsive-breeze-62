@@ -8,7 +8,7 @@ interface UseProfileFormFieldsProps {
   profileData: UserProfile | null;
   defaultUsernameForNewUser?: string;
   isNewUserMode: boolean;
-  userEmail?: string | null; 
+  userEmail?: string | null;
 }
 
 export const useProfileFormFields = ({
@@ -25,7 +25,8 @@ export const useProfileFormFields = ({
   const [socialLinks, setSocialLinks] = useState<UserProfile['social_links']>(initialSocialLinksState);
   const [theme, setTheme] = useState<string>('default');
   const [isPublic, setIsPublic] = useState<boolean>(true);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null); // Added avatarUrl
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [forumSignature, setForumSignature] = useState<string>(""); // Added forumSignature
 
   const populateFormFields = useCallback(() => {
     if (profileData) {
@@ -37,7 +38,8 @@ export const useProfileFormFields = ({
       setSocialLinks(profileData.social_links || initialSocialLinksState);
       setTheme(profileData.theme || 'default');
       setIsPublic(profileData.is_public ?? true);
-      setAvatarUrl(profileData.avatar_url || null); // Populate avatarUrl
+      setAvatarUrl(profileData.avatar_url || null);
+      setForumSignature(profileData.forum_signature || ""); // Populate forumSignature
     } else if (isNewUserMode) {
       setUsername(defaultUsernameForNewUser || "");
       setDisplayName(userEmail?.split('@')[0] || "New User");
@@ -47,7 +49,8 @@ export const useProfileFormFields = ({
       setSocialLinks(initialSocialLinksState);
       setTheme('default');
       setIsPublic(true);
-      setAvatarUrl(null); // Initialize avatarUrl for new user
+      setAvatarUrl(null);
+      setForumSignature(""); // Initialize forumSignature for new user
     } else {
       // Reset all fields if no profile and not new user mode
       setDisplayName("");
@@ -59,6 +62,7 @@ export const useProfileFormFields = ({
       setTheme('default');
       setIsPublic(true);
       setAvatarUrl(null);
+      setForumSignature(""); // Reset forumSignature
     }
   }, [profileData, isNewUserMode, defaultUsernameForNewUser, userEmail]);
 
@@ -75,7 +79,8 @@ export const useProfileFormFields = ({
     socialLinks, setSocialLinks,
     theme, setTheme,
     isPublic, setIsPublic,
-    avatarUrl, setAvatarUrl, // Expose avatarUrl and its setter
+    avatarUrl, setAvatarUrl,
+    forumSignature, setForumSignature, // Expose forumSignature and its setter
     getProfileFormData: useCallback(() => ({
       username,
       displayName,
@@ -85,8 +90,9 @@ export const useProfileFormFields = ({
       socialLinks,
       theme,
       isPublic,
-      avatarUrl, // Include avatarUrl in form data
-    }), [username, displayName, bio, selectedGenres, selectedRole, socialLinks, theme, isPublic, avatarUrl]),
+      avatarUrl,
+      forumSignature, // Include forumSignature in form data
+    }), [username, displayName, bio, selectedGenres, selectedRole, socialLinks, theme, isPublic, avatarUrl, forumSignature]),
   };
 };
 
