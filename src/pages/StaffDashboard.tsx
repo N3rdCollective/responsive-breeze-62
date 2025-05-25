@@ -1,95 +1,148 @@
-import { useState } from "react";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
-import StaffHeader from "@/components/staff/StaffHeader";
-import ContentManagementCard from "@/components/staff/ContentManagementCard";
-import ShowManagementCard from "@/components/staff/ShowManagementCard";
-import AdminCard from "@/components/staff/AdminCard";
-import StatsPanel from "@/components/staff/StatsPanel";
-import LoadingSpinner from "@/components/staff/LoadingSpinner";
-import ManageStaffModal from "@/components/ManageStaffModal";
-import StaffProfileEditor from "@/components/staff/StaffProfileEditor";
+
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useStaffAuth } from "@/hooks/useStaffAuth";
 import { Button } from "@/components/ui/button";
-import { UserCog } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { 
+  FileText, 
+  Radio, 
+  Users, 
+  BarChart3,
+  ArrowRight
+} from "lucide-react";
+import TitleUpdater from "@/components/TitleUpdater";
 
 const StaffDashboard = () => {
-  const { userRole, isLoading, staffName, isAdmin, handleLogout } = useStaffAuth();
-  const [isManageStaffOpen, setIsManageStaffOpen] = useState(false);
-  const [isProfileEditorOpen, setIsProfileEditorOpen] = useState(false);
-  
-  const handleManageUsers = () => {
-    setIsManageStaffOpen(true);
-  };
-  
+  const navigate = useNavigate();
+  const { staffName, isLoading } = useStaffAuth(); // Removed userRole as it's not used in this new version
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background text-foreground">
         <Navbar />
-        <div className="flex items-center justify-center h-screen">
-          <LoadingSpinner />
+        <div className="flex items-center justify-center h-[calc(100vh-128px)]"> {/* Adjusted height */}
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-lg text-muted-foreground">Loading Dashboard...</p>
+          </div>
         </div>
         <Footer />
       </div>
     );
   }
-  
+
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="container mx-auto px-4 pt-24 pb-16 max-w-5xl">
-        <div className="flex flex-col sm:flex-row justify-between mb-4">
-          <StaffHeader 
-            staffName={staffName}
-            isAdmin={isAdmin}
-            showLogoutButton={true}
-            onLogout={handleLogout}
-          />
-          
-          <Button 
-            variant="outline" 
-            onClick={() => setIsProfileEditorOpen(true)}
-            className="mt-4 sm:mt-0 flex items-center gap-2"
-          >
-            <UserCog className="h-4 w-4" />
-            Edit Profile
-          </Button>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-          <ContentManagementCard userRole={userRole} />
-          
-          <div className="space-y-6">
-            <ShowManagementCard />
-            
-            {isAdmin && (
-              <AdminCard 
-                onManageStaff={handleManageUsers} 
-                onLogout={handleLogout}
-                userRole={userRole} // Pass userRole here
-              />
-            )}
+    <>
+      <TitleUpdater title="Staff Dashboard" />
+      <div className="min-h-screen bg-background text-foreground">
+        <Navbar />
+        <main className="max-w-5xl mx-auto px-4 pt-20 pb-16"> {/* Changed to main and adjusted padding/width */}
+          {/* Header */}
+          <div className="mb-10 text-center sm:text-left"> {/* Centered on mobile, left on sm+ */}
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2">Staff Dashboard</h1>
+            <p className="text-lg text-muted-foreground">
+              Welcome back, {staffName || "Staff Member"}! Streamline your workflow below.
+            </p>
           </div>
-        </div>
-        
-        <div className="mt-8">
-          <StatsPanel />
-        </div>
-        
-        <ManageStaffModal 
-          open={isManageStaffOpen}
-          onOpenChange={setIsManageStaffOpen}
-          currentUserRole={userRole}
-        />
-        
-        <StaffProfileEditor
-          open={isProfileEditorOpen}
-          onOpenChange={setIsProfileEditorOpen}
-        />
+
+          {/* Notice Card for Unified Dashboard */}
+          <Card className="mb-8 border-primary/50 bg-primary/5 dark:bg-primary/10">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-primary">
+                <BarChart3 className="h-5 w-5" />
+                Enhanced Unified Dashboard Available
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-foreground/80 mb-4">
+                Explore our new Unified Staff Dashboard for improved functionality, 
+                better user management, and integrated moderation tools.
+              </p>
+              <Button 
+                onClick={() => navigate('/staff/unified-dashboard')}
+                // className="bg-primary hover:bg-primary/90" // uses default variant
+              >
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Go to Unified Dashboard
+                <ArrowRight className="h-4 w-4 ml-1.5" />
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Quick Access Cards Section Title */}
+          <h2 className="text-2xl font-semibold mb-4 mt-10">Quick Access Tools</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+            <Card 
+              className="hover:shadow-lg transition-shadow duration-200 ease-in-out cursor-pointer group" 
+              onClick={() => navigate('/staff/news')} // Corrected navigation to /staff/news list page
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between text-lg">
+                  <span className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-primary group-hover:text-primary-dark" />
+                    News Management
+                  </span>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Create, edit, and manage news articles and blog posts.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="hover:shadow-lg transition-shadow duration-200 ease-in-out cursor-pointer group" 
+              onClick={() => navigate('/staff/shows-manager')}
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between text-lg">
+                  <span className="flex items-center gap-2">
+                    <Radio className="h-5 w-5 text-primary group-hover:text-primary-dark" />
+                    Show Schedule
+                  </span>
+                   <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Manage radio shows, schedules, and programming.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="hover:shadow-lg transition-shadow duration-200 ease-in-out cursor-pointer group" 
+              onClick={() => navigate('/staff/user-manager')}
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between text-lg">
+                  <span className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-primary group-hover:text-primary-dark" />
+                    User Management
+                  </span>
+                   <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Oversee community members and manage accounts.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Legacy Notice is removed as this page itself is simplified. If this *is* the legacy one, the message is already present */}
+        </main>
+        <Footer />
       </div>
-      <Footer />
-    </div>
+    </>
   );
 };
 
 export default StaffDashboard;
+

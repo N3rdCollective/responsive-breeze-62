@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -189,9 +188,10 @@ const StaffUserManager = () => {
     const config = {
       active: { variant: 'default' as const, icon: CheckCircle, text: 'Active', className: 'bg-green-500 hover:bg-green-600' },
       suspended: { variant: 'secondary' as const, icon: Clock, text: 'Suspended', className: 'bg-yellow-500 hover:bg-yellow-600 text-black' },
-      banned: { variant: 'destructive' as const, icon: Ban, text: 'Banned' } // Changed icon to Ban
+      banned: { variant: 'destructive' as const, icon: Ban, text: 'Banned', className: '' } // Added className here
     };
-    const { variant, icon: Icon, text, className } = config[status] || config.active;
+    const selectedConfig = config[status] || config.active; // Get the specific config or fallback to active
+    const { variant, icon: Icon, text, className } = selectedConfig; // Destructure, className will now always be present
     return (
       <Badge variant={variant} className={`flex items-center gap-1 ${className || ''}`}>
         <Icon className="h-3 w-3" />
