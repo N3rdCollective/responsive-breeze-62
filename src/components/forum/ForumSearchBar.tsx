@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 const fetchCategories = async (): Promise<ForumCategory[]> => {
   const { data, error } = await supabase
     .from('forum_categories')
-    .select('id, name, description, slug, display_order, created_at, updated_at') // Fetched all fields for ForumCategory
+    .select('id, name, description, slug, display_order, created_at, updated_at')
     .order('display_order', { ascending: true });
   if (error) {
     console.error('Error fetching categories:', error);
@@ -25,13 +25,16 @@ const fetchCategories = async (): Promise<ForumCategory[]> => {
   return data || [];
 };
 
+const ALL_CATEGORIES_VALUE = "all-categories"; // Define a constant for "All Categories"
+
 const ForumSearchBar: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '');
   const [searchByUser, setSearchByUser] = useState(searchParams.get('byUser') || '');
-  const [selectedCategoryId, setSelectedCategoryId] = useState(searchParams.get('category') || '');
+  // Use ALL_CATEGORIES_VALUE as the default/initial "all" state
+  const [selectedCategoryId, setSelectedCategoryId] = useState(searchParams.get('category') || ALL_CATEGORIES_VALUE);
   const [startDate, setStartDate] = useState<Date | undefined>(
     searchParams.get('startDate') && isValid(new Date(searchParams.get('startDate')!)) ? new Date(searchParams.get('startDate')!) : undefined
   );
@@ -49,7 +52,10 @@ const ForumSearchBar: React.FC = () => {
     const params = new URLSearchParams();
     if (searchTerm.trim()) params.set('q', searchTerm.trim());
     if (searchByUser.trim()) params.set('byUser', searchByUser.trim());
-    if (selectedCategoryId) params.set('category', selectedCategoryId);
+    // Adjust logic for selectedCategoryId: only set param if it's not "all-categories"
+    if (selectedCategoryId && selectedCategoryId !== ALL_CATEGORIES_VALUE) {
+      params.set('category', selectedCategoryId);
+    }
     if (startDate && isValid(startDate)) params.set('startDate', format(startDate, 'yyyy-MM-dd'));
     if (endDate && isValid(endDate)) params.set('endDate', format(endDate, 'yyyy-MM-dd'));
     
@@ -60,7 +66,8 @@ const ForumSearchBar: React.FC = () => {
   useEffect(() => {
     setSearchTerm(searchParams.get('q') || '');
     setSearchByUser(searchParams.get('byUser') || '');
-    setSelectedCategoryId(searchParams.get('category') || '');
+    // Sync selectedCategoryId with URL, defaulting to ALL_CATEGORIES_VALUE
+    setSelectedCategoryId(searchParams.get('category') || ALL_CATEGORIES_VALUE);
     const sd = searchParams.get('startDate');
     const ed = searchParams.get('endDate');
     setStartDate(sd && isValid(new Date(sd)) ? new Date(sd) : undefined);
@@ -102,7 +109,8 @@ const ForumSearchBar: React.FC = () => {
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Categories</SelectItem>
+              {/* Use ALL_CATEGORIES_VALUE for the "All Categories" item */}
+              <SelectItem value={ALL_CATEGORIES_VALUE}>All Categories</SelectItem>
               {!isLoadingCategories && categories?.map(category => (
                 <SelectItem key={category.id} value={category.id}>
                   {category.name}
