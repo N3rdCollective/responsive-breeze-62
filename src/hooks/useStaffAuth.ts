@@ -13,7 +13,7 @@ const StaffAuthProvider = ({ children }: { children: ReactNode }) => {
   const authState = useStaffAuthStateHook({}); 
   const handleLogout = useStaffLogoutHook(authState.staffName);
 
-  const value: StaffAuthContextType = { // Added explicit type for value
+  const value: StaffAuthContextType = {
     ...authState,
     handleLogout,
   };
