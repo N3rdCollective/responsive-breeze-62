@@ -1,4 +1,3 @@
-
 import { UserProfile } from './profile'; // Assuming UserProfile is correctly defined
 
 export interface DirectMessage {
@@ -6,10 +5,10 @@ export interface DirectMessage {
   conversation_id: string;
   sender_id: string;
   content: string;
-  created_at: string; // Supabase typically uses 'timestamp with time zone' which becomes string
+  created_at: string; 
   is_deleted?: boolean;
   media_url?: string | null;
-  profile?: Pick<UserProfile, 'id' | 'username' | 'display_name' | 'avatar_url'>; // Sender's profile - Changed profile_picture to avatar_url
+  profile?: Pick<UserProfile, 'id' | 'username' | 'display_name' | 'avatar_url'> | null; // Make profile explicitly nullable
 }
 
 export interface Conversation {
