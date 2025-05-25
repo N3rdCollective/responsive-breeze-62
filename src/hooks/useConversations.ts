@@ -1,5 +1,6 @@
+
 import { useState, useEffect, useCallback } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query'; // Added useQueryClient
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Conversation, DirectMessage, FetchedConversation } from '@/types/messaging';
@@ -61,6 +62,7 @@ const fetchConversationsForUser = async (userId: string): Promise<Conversation[]
 
 export const useConversations = () => {
   const { user } = useAuth();
+  const queryClient = useQueryClient(); // Initialize queryClient
 
   const {
     data: conversations,
@@ -77,11 +79,60 @@ export const useConversations = () => {
     enabled: !!user?.id,
   });
 
+  const startOrCreateConversation = useCallback(async (targetUserId: string): Promise<string | null> => {
+    if (!user?.id || !targetUserId || user.id === targetUserId) {
+      console.error("Cannot start conversation: Invalid user IDs or trying to chat with self.");
+      return null;
+    }
+
+    // 1. Check for existing conversation
+    const { data: existingConv, error: existingConvError } = await supabase
+      .from('conversations')
+      .select('id')
+      .or(
+        `and(participant1_id.eq.${user.id},participant2_id.eq.${targetUserId}),` +
+        `and(participant1_id.eq.${targetUserId},participant2_id.eq.${user.id})`
+      )
+      .maybeSingle();
+
+    if (existingConvError) {
+      console.error("Error checking for existing conversation:", existingConvError);
+      throw existingConvError;
+    }
+
+    if (existingConv) {
+      return existingConv.id;
+    }
+
+    // 2. Create new conversation if none exists
+    const { data: newConv, error: newConvError } = await supabase
+      .from('conversations')
+      .insert({ 
+        participant1_id: user.id, 
+        participant2_id: targetUserId,
+        last_message_timestamp: new Date().toISOString() // Initialize with current time
+      })
+      .select('id')
+      .single();
+
+    if (newConvError || !newConv) {
+      console.error("Error creating new conversation:", newConvError);
+      throw newConvError || new Error("Failed to create conversation and get ID.");
+    }
+
+    // Invalidate and refetch conversations list to include the new one
+    await queryClient.invalidateQueries({ queryKey: ['conversations', user.id] });
+    // Optionally await refetch();
+
+    return newConv.id;
+  }, [user, queryClient]);
+
   return {
     conversations: conversations || [],
     isLoading,
     isError,
     error,
     refetchConversations: refetch,
+    startOrCreateConversation, // Expose the new function
   };
 };
