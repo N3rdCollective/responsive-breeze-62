@@ -503,6 +503,72 @@ export type Database = {
         }
         Relationships: []
       }
+      homepage_content: {
+        Row: {
+          created_at: string
+          cta_button_text: string
+          cta_section_subtitle: string
+          cta_section_title: string
+          current_show_description: string
+          current_show_enabled: boolean
+          current_show_host: string
+          current_show_time: string
+          current_show_title: string
+          hero_background_image: string | null
+          hero_cta_text: string
+          hero_subtitle: string
+          hero_title: string
+          id: number
+          stats_broadcasts: string
+          stats_listeners: string
+          stats_members: string
+          stats_shows: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cta_button_text?: string
+          cta_section_subtitle?: string
+          cta_section_title?: string
+          current_show_description?: string
+          current_show_enabled?: boolean
+          current_show_host?: string
+          current_show_time?: string
+          current_show_title?: string
+          hero_background_image?: string | null
+          hero_cta_text?: string
+          hero_subtitle?: string
+          hero_title?: string
+          id?: number
+          stats_broadcasts?: string
+          stats_listeners?: string
+          stats_members?: string
+          stats_shows?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cta_button_text?: string
+          cta_section_subtitle?: string
+          cta_section_title?: string
+          current_show_description?: string
+          current_show_enabled?: boolean
+          current_show_host?: string
+          current_show_time?: string
+          current_show_title?: string
+          hero_background_image?: string | null
+          hero_cta_text?: string
+          hero_subtitle?: string
+          hero_title?: string
+          id?: number
+          stats_broadcasts?: string
+          stats_listeners?: string
+          stats_members?: string
+          stats_shows?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       log_edits: {
         Row: {
           created_at: string

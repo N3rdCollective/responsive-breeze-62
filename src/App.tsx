@@ -1,8 +1,6 @@
-
 import { Route, Routes, Outlet } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AuthProvider from "@/hooks/useAuth"; 
-// Removed StaffAuthProvider from here, it will be in StaffLayout
 
 import HomePage from "@/pages/Index"; 
 import PersonalitiesPage from "@/pages/Personalities"; 
@@ -29,15 +27,16 @@ import StaffForumManager from "@/pages/StaffForumManagementPage";
 import StaffUserManager from "@/pages/StaffUserManager"; 
 import StaffModerationDashboard from "@/pages/StaffModeratorDashboard";
 import UnifiedStaffDashboard from "@/pages/UnifiedStaffDashboard";
+import StaffHomepageManager from "@/pages/StaffHomepageManager"; // Added import
 import NotFoundPage from "@/pages/NotFound"; 
 
 // New StaffLayout component
 import StaffLayout from "@/components/layouts/StaffLayout";
-import MusicPlayer from "@/components/MusicPlayer"; // Added MusicPlayer import
+import MusicPlayer from "@/components/MusicPlayer";
 
 function App() {
   return (
-    <AuthProvider> {/* General AuthProvider for all users */}
+    <AuthProvider>
       <TooltipProvider>
         <Routes>
           {/* Public and General User Routes */}
@@ -58,10 +57,11 @@ function App() {
           <Route path="/forum/topic/:topicId" element={<ForumTopicPage />} />
           <Route path="/forum/new-topic/:categoryId" element={<ForumNewTopicPage />} />
           
-          {/* Staff Routes - Wrapped with StaffLayout which includes StaffAuthProvider */}
+          {/* Staff Routes - Wrapped with StaffLayout */}
           <Route element={<StaffLayout />}>
             <Route path="/staff/login" element={<StaffLogin />} />
             <Route path="/staff/panel" element={<UnifiedStaffDashboard />} />
+            <Route path="/staff/home" element={<StaffHomepageManager />} /> {/* Added route */}
             <Route path="/staff/news/editor" element={<StaffNewsEditor />} />
             <Route path="/staff/news/editor/:postId" element={<StaffNewsEditor />} />
             <Route path="/staff/shows" element={<StaffShowsManager />} />
@@ -76,7 +76,7 @@ function App() {
           {/* 404 Route */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
-        <MusicPlayer /> {/* Added MusicPlayer component here */}
+        <MusicPlayer />
       </TooltipProvider>
     </AuthProvider>
   );
