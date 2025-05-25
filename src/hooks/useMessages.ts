@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -105,12 +104,8 @@ export const useMessages = (conversationId: string | null) => {
     onSuccess: (newMessage) => {
       // Optimistically update the messages list
       queryClient.setQueryData<DirectMessage[]>(queryKey, (oldMessages = []) => {
-        // Add the new message, ensuring profile data is included for immediate display
         const fullNewMessage = {
           ...newMessage,
-          // If profile isn't returned directly by sendMessage (it should be with the select),
-          // we might need to fetch it or use a placeholder.
-          // However, our sendMessage select statement includes profile.
         };
         return [...oldMessages, fullNewMessage];
       });
@@ -127,47 +122,21 @@ export const useMessages = (conversationId: string | null) => {
     if (!conversationId || !user?.id) return;
 
     const channel = supabase
-      .channel(\`conversation-${conversationId}\`)
+      .channel(`conversation-${conversationId}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
-          filter: \`conversation_id=eq.${conversationId}\`,
+          filter: `conversation_id=eq.${conversationId}`,
         },
         (payload) => {
           const newMessage = payload.new as DirectMessage;
-          // Ensure the message is not from the current user to avoid duplicates from optimistic update
-          // And ensure profile data is correctly structured
           if (newMessage.sender_id !== user.id) {
              queryClient.setQueryData<DirectMessage[]>(queryKey, (oldMessages = []) => {
-                // We need to fetch the profile for the sender of the new message
-                // For now, let's just add it. A better approach would be to fetch profile if missing.
-                // Or ensure the payload includes it. For simplicity, we'll add as is.
-                // Let's assume the sender's profile is not available in payload.new for now.
-                // We can enhance this later. The select in fetchMessages gets it.
-                // The 'profile' in payload.new might not be populated with the JOIN.
-                // Let's try to add it and see.
-                 
-                // We need to fetch the sender's profile manually if not in payload.
-                // Simplified: add and then refetch for full profile, or structure payload to include it.
-                // For now, let's add the message and rely on a future fetch or a full refresh if profile is critical.
-                // A more robust way is to ensure the realtime event also sends joined profile data.
-                // Or, trigger a refetch of the specific message if profile is missing.
-
-                // For now, just add the message. The profile might be missing for new real-time messages.
-                // This will be an improvement point.
                 const existingMessage = oldMessages.find(msg => msg.id === newMessage.id);
                 if (!existingMessage) {
-                    // Refetch sender profile if not available for new real-time messages
-                    // This part is tricky with realtime as payload.new might not have joined data
-                    // A simple solution is to refetch all messages on new realtime event, but that's inefficient.
-                    // Let's try to use the existing profile fetching logic or just display what's available.
-
-                    // Best effort: check if profile is somehow in payload, otherwise it will be blank for sender's name/avatar for incoming RT msgs
-                    // This is a common challenge with simple realtime setups.
-                    // Let's assume for now the profile might not be there for RT messages.
                     return [...oldMessages, { ...newMessage, profile: newMessage.profile || undefined }];
                 }
                 return oldMessages;
@@ -177,10 +146,10 @@ export const useMessages = (conversationId: string | null) => {
       )
       .subscribe((status, err) => {
         if (status === 'SUBSCRIBED') {
-          console.log(\`Subscribed to conversation: ${conversationId}\`);
+          console.log(`Subscribed to conversation: ${conversationId}`);
         }
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-            console.error(\`Subscription error for conversation ${conversationId}: ${status}\`, err);
+            console.error(`Subscription error for conversation ${conversationId}: ${status}`, err);
             toast({ title: "Realtime Connection Error", description: "Could not connect to messaging service. Please refresh.", variant: "destructive" });
         }
       });
