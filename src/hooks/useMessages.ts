@@ -19,40 +19,41 @@ const fetchMessages = async (conversationId: string): Promise<DirectMessage[]> =
       timestamp, 
       is_deleted,
       media_url,
-      profile:profiles!messages_sender_id_fkey (id, username, display_name, avatar_url)
+      profile:profiles!messages_sender_id_fkey (id, username, display_name, profile_picture)
     `)
     .eq('conversation_id', conversationId)
-    .order('timestamp', { ascending: true }); // Changed from created_at
+    .order('timestamp', { ascending: true });
 
   if (error) {
     console.error('Error fetching messages:', error);
-    // Check if data is null and error exists, which can happen if RLS fails or table is empty
-    // The error object itself should be thrown if it's a PostgrestError
     if (error instanceof Error) throw error;
-    // If it's not an Error instance but error is truthy, wrap it
     throw new Error(typeof error === 'string' ? error : 'Failed to fetch messages');
   }
-  // Ensure data is an array before mapping
   if (!Array.isArray(data)) {
     console.warn('fetchMessages: data is not an array', data);
     return [];
   }
   return data.map(msg => ({
     ...msg,
-    profile: msg.profile || undefined
+    profile: msg.profile ? {
+      id: msg.profile.id,
+      username: msg.profile.username,
+      display_name: msg.profile.display_name,
+      avatar_url: msg.profile.profile_picture // Map profile_picture to avatar_url
+    } : null
   })) as DirectMessage[];
 };
 
 const sendMessage = async (newMessage: {
   conversation_id: string;
   sender_id: string;
-  recipient_id: string; // Added recipient_id
+  recipient_id: string;
   content: string;
   media_url?: string | null;
 }): Promise<DirectMessage> => {
   const { data, error } = await supabase
     .from('messages')
-    .insert({ ...newMessage, timestamp: new Date().toISOString() }) // Add timestamp on insert
+    .insert({ ...newMessage, timestamp: new Date().toISOString() })
     .select(`
       id,
       conversation_id,
@@ -62,7 +63,7 @@ const sendMessage = async (newMessage: {
       timestamp,
       is_deleted,
       media_url,
-      profile:profiles!messages_sender_id_fkey (id, username, display_name, avatar_url)
+      profile:profiles!messages_sender_id_fkey (id, username, display_name, profile_picture)
     `)
     .single();
 
@@ -77,13 +78,21 @@ const sendMessage = async (newMessage: {
     toast({ title: "Error Sending Message", description: "Could not confirm message sent.", variant: "destructive" });
     throw new Error('No data returned after sending message');
   }
-  // Update last_message_timestamp for the conversation
+  
   await supabase
     .from('conversations')
-    .update({ last_message_timestamp: new Date().toISOString() }) // ensure this column name is correct in conversations table
+    .update({ last_message_timestamp: new Date().toISOString() })
     .eq('id', newMessage.conversation_id);
     
-  return { ...data, profile: data.profile || undefined } as DirectMessage;
+  return { 
+    ...data, 
+    profile: data.profile ? {
+      id: data.profile.id,
+      username: data.profile.username,
+      display_name: data.profile.display_name,
+      avatar_url: data.profile.profile_picture // Map profile_picture to avatar_url
+    } : null 
+  } as DirectMessage;
 };
 
 export const useMessages = (conversationId: string | null) => {
@@ -118,7 +127,7 @@ export const useMessages = (conversationId: string | null) => {
       return sendMessage({
         conversation_id: conversationId,
         sender_id: user.id,
-        recipient_id: newMessageData.otherParticipantId, // Use otherParticipantId as recipient_id
+        recipient_id: newMessageData.otherParticipantId,
         content: newMessageData.content,
         media_url: newMessageData.media_url,
       });
@@ -151,13 +160,33 @@ export const useMessages = (conversationId: string | null) => {
           filter: `conversation_id=eq.${conversationId}`,
         },
         (payload) => {
-          const newMessage = payload.new as DirectMessage;
+          const rawNewMessage = payload.new as any; // Treat as any initially for mapping
+          
+          // Map profile_picture to avatar_url for incoming real-time messages
+          const newMessage: DirectMessage = {
+            ...rawNewMessage,
+            profile: rawNewMessage.profile ? {
+              id: rawNewMessage.profile.id,
+              username: rawNewMessage.profile.username,
+              display_name: rawNewMessage.profile.display_name,
+              avatar_url: rawNewMessage.profile.profile_picture // Map here too for consistency
+            } : null,
+            // Ensure all other fields of DirectMessage are present or defaulted
+            id: rawNewMessage.id,
+            conversation_id: rawNewMessage.conversation_id,
+            sender_id: rawNewMessage.sender_id,
+            recipient_id: rawNewMessage.recipient_id,
+            content: rawNewMessage.content,
+            timestamp: rawNewMessage.timestamp,
+            is_deleted: rawNewMessage.is_deleted || false,
+            media_url: rawNewMessage.media_url || null,
+          };
+
           if (newMessage.sender_id !== user.id) {
              queryClient.setQueryData<DirectMessage[]>(queryKey, (oldMessages = []) => {
                 const existingMessage = oldMessages.find(msg => msg.id === newMessage.id);
                 if (!existingMessage) {
-                    // Ensure profile is handled correctly, it might be null from payload.new
-                    return [...oldMessages, { ...newMessage, profile: newMessage.profile || undefined }];
+                    return [...oldMessages, newMessage];
                 }
                 return oldMessages;
              });

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -19,14 +18,15 @@ const ConversationListItem: React.FC<ConversationListItemProps> = ({ conversatio
   const avatarFallback = displayName.charAt(0).toUpperCase();
 
   let lastMessagePreview = 'No messages yet.';
-  let lastMessageTimestamp = conversation.last_message_timestamp;
+  let lastMessageTimestamp = conversation.last_message_timestamp; // Default to conversation's last update
 
   if (conversation.lastMessage) {
     const prefix = conversation.lastMessage.sender_id === currentUserId ? 'You: ' : '';
     // Ensure content is a string before calling substring
     const messageContent = typeof conversation.lastMessage.content === 'string' ? conversation.lastMessage.content : '';
     lastMessagePreview = `${prefix}${messageContent.substring(0, 30)}${messageContent.length > 30 ? '...' : ''}`;
-    lastMessageTimestamp = conversation.lastMessage.created_at;
+    // Corrected: Use timestamp from the lastMessage object
+    lastMessageTimestamp = conversation.lastMessage.timestamp; 
   }
 
 
@@ -46,6 +46,7 @@ const ConversationListItem: React.FC<ConversationListItemProps> = ({ conversatio
           <p className="text-xs text-muted-foreground truncate">{lastMessagePreview}</p>
         </div>
         <div className="text-xs text-muted-foreground whitespace-nowrap">
+          {/* Ensure lastMessageTimestamp is valid before formatting */}
           {lastMessageTimestamp && formatDistanceToNow(new Date(lastMessageTimestamp), { addSuffix: true })}
         </div>
       </div>
