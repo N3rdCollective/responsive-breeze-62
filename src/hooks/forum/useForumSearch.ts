@@ -41,7 +41,33 @@ const fetchForumSearchResults = async ({ query, byUser, categoryId, startDate, e
 
   if (byUser && byUser.trim() !== '') {
     const byUserTrimmed = byUser.trim();
-    queryBuilder = queryBuilder.filter('user_id', 'in', supabase.from('profiles').select('id').or(`username.ilike.%${byUserTrimmed}%,display_name.ilike.%${byUserTrimmed}%`));
+    
+    // Step 1: Fetch matching profile IDs
+    const { data: profileIdsData, error: profileIdsError } = await supabase
+      .from('profiles')
+      .select('id')
+      .or(`username.ilike.%${byUserTrimmed}%,display_name.ilike.%${byUserTrimmed}%`);
+
+    if (profileIdsError) {
+      console.error('Error fetching profile IDs for byUser filter:', {
+        message: profileIdsError.message,
+        details: profileIdsError.details,
+        hint: profileIdsError.hint,
+        code: profileIdsError.code,
+      });
+      throw new Error('Failed to fetch user IDs for filter.');
+    }
+
+    if (profileIdsData && profileIdsData.length > 0) {
+      const ids = profileIdsData.map(p => p.id);
+      // Step 2: Construct the string for the 'in' filter, e.g., "(id1,id2,id3)"
+      const idsString = `(${ids.join(',')})`;
+      queryBuilder = queryBuilder.filter('user_id', 'in', idsString);
+    } else {
+      // No users match the byUser criteria.
+      // The 'in' filter with an empty list '()' will correctly result in no topics matching this user_id condition.
+      queryBuilder = queryBuilder.filter('user_id', 'in', '()');
+    }
   }
 
   if (categoryId && categoryId.trim() !== '') {
