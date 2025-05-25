@@ -15,7 +15,7 @@ interface UseForumTopicDataReturn {
   totalPosts: number;
   refreshData: () => Promise<void>; 
   fetchData: (pageToFetch?: number) => Promise<void>; 
-  categorySlug: string | null; // This will be derived from the fetched topic
+  categorySlug: string | null;
 }
 
 const POSTS_PER_PAGE = 10;
@@ -46,12 +46,8 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
         .from('forum_topics')
         .select(`
           *,
-          forum_categories!inner(slug, name), // Ensure category name is also fetched for display
-          profile:profiles!forum_topics_user_id_fkey( 
-            username,
-            display_name,
-            profile_picture
-          )
+          category:forum_categories!inner (slug, name),
+          profile:profiles (username, display_name, profile_picture)
         `)
         .eq('slug', paramTopicSlug) // Query by slug using paramTopicSlug
         .single();
@@ -65,18 +61,17 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
         throw new Error('Topic not found');
       }
       
-      // Set the internal category slug from the fetched topic data
-      const fetchedCategorySlug = (topicData.forum_categories as any)?.slug;
+      // Access category slug via topicData.category which matches the ForumTopic type
+      const fetchedCategorySlug = topicData.category?.slug;
       if (fetchedCategorySlug) {
         setInternalCategorySlug(fetchedCategorySlug);
       } else {
-        console.warn('Topic fetched but category slug is missing:', topicData);
-        // Potentially handle this case, e.g., by setting a default or error state
+        console.warn('Topic fetched but category slug is missing from topicData.category:', topicData);
         setInternalCategorySlug(null);
       }
 
       console.log('[useForumTopicData] Topic fetched successfully:', topicData.title);
-      return topicData as unknown as ForumTopic;
+      return topicData as ForumTopic; // Direct cast, as query shape now matches ForumTopic
 
     } catch (err: any) {
       console.error('Error fetching topic:', err);
