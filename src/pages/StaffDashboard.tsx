@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -62,7 +61,7 @@ const StaffDashboard = () => {
                 better user management, and integrated moderation tools.
               </p>
               <Button 
-                onClick={() => navigate('/staff/unified-dashboard')}
+                onClick={() => navigate('/staff/panel')} // UPDATED: Navigate to /staff/panel
                 // className="bg-primary hover:bg-primary/90" // uses default variant
               >
                 <BarChart3 className="h-4 w-4 mr-2" />
@@ -145,4 +144,3 @@ const StaffDashboard = () => {
 };
 
 export default StaffDashboard;
-
