@@ -5,7 +5,7 @@ import ThemeToggle from "./ThemeToggle";
 import ListenButton from "./ListenButton";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import { NavigationItem } from "@/types/profile";
-import { Shield } from "lucide-react"; // Import Shield icon
+import { Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface DesktopNavProps {
@@ -36,9 +36,14 @@ const DesktopNav = ({
   
   const navItemCommonClasses = 'font-medium transition-colors duration-200 px-3 py-2 flex items-center';
 
+  // Extract the Messages NavItem if it's iconOnly
+  const messagesNavItem = navigationItems.find(item => item.path === "/messages" && item.iconOnly === true);
+  // Filter out the Messages NavItem from the main list to prevent duplicate rendering
+  const otherNavItems = navigationItems.filter(item => !(item.path === "/messages" && item.iconOnly === true));
+
   return (
     <div className="hidden md:flex items-center space-x-1">
-      {navigationItems.map((item) => (
+      {otherNavItems.map((item) => (
         <NavItem 
           key={item.path + item.label}
           path={item.path}
@@ -49,7 +54,7 @@ const DesktopNav = ({
           onClick={item.onClick}
           icon={item.icon}
           iconOnly={item.iconOnly}
-          badgeCount={item.badgeCount} // Added this line to pass badgeCount
+          badgeCount={item.badgeCount}
           className={item.iconOnly ? "p-2" : "px-3 py-2"}
         />
       ))}
@@ -65,6 +70,21 @@ const DesktopNav = ({
       )}
       <div className="flex items-center space-x-1 ml-4">
         <ListenButton isScrolled={isScrolled} isHomePage={isHomePage} />
+        {isUserLoggedIn && messagesNavItem && (
+          <NavItem
+            key={messagesNavItem.path + messagesNavItem.label}
+            path={messagesNavItem.path}
+            label={messagesNavItem.label}
+            isActive={isActive(messagesNavItem.path)}
+            isHomePage={isHomePage}
+            isScrolled={isScrolled}
+            onClick={messagesNavItem.onClick}
+            icon={messagesNavItem.icon}
+            iconOnly={messagesNavItem.iconOnly}
+            badgeCount={messagesNavItem.badgeCount}
+            className={messagesNavItem.iconOnly ? "p-2" : "px-3 py-2"} // Consistent className application
+          />
+        )}
         {isUserLoggedIn && <NotificationBell isHomePage={isHomePage} isScrolled={isScrolled} />} 
         {mounted && (
           <ThemeToggle isHomePage={isHomePage} isScrolled={isScrolled} />

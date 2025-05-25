@@ -1,33 +1,33 @@
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, Shield, type LucideIcon } from "lucide-react"; // Import Shield icon
+import { Menu, Shield, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-// NavItem is not used here for rendering items, direct Links are used.
+import NavItem from "./NavItem"; // Import NavItem
 import ThemeToggle from "./ThemeToggle";
 import ListenButton from "./ListenButton";
 import NotificationBell from "@/components/notifications/NotificationBell";
-import { Badge } from "@/components/ui/badge"; // Import Badge
-import { cn } from "@/lib/utils"; // Import cn
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
-// This local NavigationItem type is fine as it's only used for the props
-interface NavigationItem {
+interface MobileNavigationItem { // Renamed to avoid conflict if NavigationItem from types/profile is imported
   path: string;
   label: string;
   onClick?: () => void;
   icon?: React.ElementType; 
   iconOnly?: boolean;
-  badgeCount?: number; // Add badgeCount here
+  badgeCount?: number;
 }
 
 interface MobileNavProps {
-  navigationItems: NavigationItem[];
+  navigationItems: MobileNavigationItem[];
   isActive: (path: string) => boolean;
   isHomePage: boolean;
   isScrolled: boolean;
   mounted: boolean;
   isUserLoggedIn: boolean;
-  staffName?: string | null; // Add staffName prop
+  staffName?: string | null;
 }
 
 const MobileNav = ({ 
@@ -37,7 +37,7 @@ const MobileNav = ({
   isScrolled,
   mounted,
   isUserLoggedIn,
-  staffName // Destructure staffName
+  staffName
 }: MobileNavProps) => {
   const [isOpen, setIsOpen] = useState(false);
   
@@ -45,7 +45,7 @@ const MobileNav = ({
     if (onClick) {
       onClick();
     }
-    if (isLink && path) { // only scroll if it's a link navigation
+    if (isLink && path) {
         window.scrollTo(0, 0);
     }
     setIsOpen(false);
@@ -64,9 +64,29 @@ const MobileNav = ({
     text-lg font-medium transition-colors duration-200 text-left w-full flex items-center gap-2 relative
   `;
 
+  // Extract the Messages NavItem if it's iconOnly
+  const messagesNavItem = navigationItems.find(item => item.path === "/messages" && item.iconOnly === true);
+  // Filter out the Messages NavItem from the list used in the SheetContent
+  const sheetNavigationItems = navigationItems.filter(item => !(item.path === "/messages" && item.iconOnly === true));
+
   return (
     <div className="md:hidden flex items-center space-x-2">
       <ListenButton isScrolled={isScrolled} isHomePage={isHomePage} />
+      {isUserLoggedIn && messagesNavItem && (
+         <NavItem
+            key={messagesNavItem.path + messagesNavItem.label}
+            path={messagesNavItem.path}
+            label={messagesNavItem.label}
+            isActive={isActive(messagesNavItem.path)}
+            isHomePage={isHomePage}
+            isScrolled={isScrolled}
+            onClick={messagesNavItem.onClick}
+            icon={messagesNavItem.icon}
+            iconOnly={messagesNavItem.iconOnly}
+            badgeCount={messagesNavItem.badgeCount}
+            className="p-2" // Style as an icon button for the top bar
+          />
+      )}
       {isUserLoggedIn && <NotificationBell isHomePage={isHomePage} isScrolled={isScrolled} mobile />}
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
@@ -99,7 +119,7 @@ const MobileNav = ({
                 <Shield className="h-5 w-5" /> Staff Panel
               </Link>
             )}
-            {navigationItems.map((item) => {
+            {sheetNavigationItems.map((item) => { // Use the filtered list here
               const ItemIcon = item.icon as LucideIcon | undefined;
               const accessibilityProps = item.iconOnly && item.label ? { 'aria-label': item.label, title: item.label } : {};
               
