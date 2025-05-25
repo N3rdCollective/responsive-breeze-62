@@ -1,9 +1,10 @@
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, Shield, type LucideIcon } from "lucide-react"; // Import Shield icon
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import NavItem from "./NavItem"; // NavItem is not used here for rendering items, direct Links are used.
+// NavItem is not used here for rendering items, direct Links are used.
 import ThemeToggle from "./ThemeToggle";
 import ListenButton from "./ListenButton";
 import NotificationBell from "@/components/notifications/NotificationBell";
@@ -13,7 +14,8 @@ interface NavigationItem {
   path: string;
   label: string;
   onClick?: () => void;
-  icon?: React.ElementType; // Add icon here as well
+  icon?: React.ElementType; 
+  iconOnly?: boolean; // Add iconOnly here
 }
 
 interface MobileNavProps {
@@ -97,14 +99,17 @@ const MobileNav = ({
             )}
             {navigationItems.map((item) => {
               const ItemIcon = item.icon as LucideIcon | undefined; // Cast to LucideIcon or undefined
+              const accessibilityProps = item.iconOnly && item.label ? { 'aria-label': item.label, title: item.label } : {};
+              
               return item.onClick && item.path.startsWith("#") ? ( 
                 <button
                   key={item.path + item.label}
                   onClick={() => handleNavigation(false, undefined, item.onClick)}
                   className={buttonClasses}
+                  {...accessibilityProps}
                 >
                   {ItemIcon && <ItemIcon className="h-5 w-5" />}
-                  {item.label}
+                  {item.iconOnly ? null : item.label}
                 </button>
               ) : (
                 <Link
@@ -112,9 +117,10 @@ const MobileNav = ({
                   to={item.path}
                   onClick={() => handleNavigation(true, item.path, item.onClick)}
                   className={linkClasses(item.path)}
+                  {...accessibilityProps}
                 >
                   {ItemIcon && <ItemIcon className="h-5 w-5" />}
-                  {item.label}
+                  {item.iconOnly ? null : item.label}
                 </Link>
               )
             })}
@@ -131,3 +137,4 @@ const MobileNav = ({
 };
 
 export default MobileNav;
+

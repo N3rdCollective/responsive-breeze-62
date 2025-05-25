@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import DesktopNav from "./navbar/DesktopNav";
@@ -35,15 +36,6 @@ const Navbar = () => {
   const isActive = (path: string) => location.pathname === path;
   const isHomePage = location.pathname === "/";
   
-  // This handleLogout is for the general user, staff logout is separate
-  // const handleLogout = async () => { // This specific name is shadowed by staffLogout if not careful
-  //   try {
-  //     await userLogout();
-  //   } catch (error) {
-  //     console.error("Logout error from Navbar:", error);
-  //   }
-  // };
-  
   const handleAuthModalOpen = () => {
     setIsAuthModalOpen(true);
   };
@@ -61,7 +53,7 @@ const Navbar = () => {
   if (user && !staffName) {
     navigationItems.push({ path: "/members", label: "Members" });
     navigationItems.push({ path: "/profile", label: "Profile" });
-    navigationItems.push({ path: "/messages", label: "Messages", icon: Mail }); // Add Messages link
+    navigationItems.push({ path: "/messages", label: "Messages", icon: Mail, iconOnly: true }); // Add Messages link with iconOnly
   }
   
   // Auth links (Sign In / Logout)
@@ -141,3 +133,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+

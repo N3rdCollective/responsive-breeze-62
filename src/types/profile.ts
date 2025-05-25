@@ -23,4 +23,5 @@ export type NavigationItem = {
   label: string;
   onClick?: () => void;
   icon?: React.ElementType; // Add optional icon
+  iconOnly?: boolean; // Added for icon-only display
 }

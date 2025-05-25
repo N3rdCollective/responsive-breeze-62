@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import NavItem from "./NavItem";
 import ThemeToggle from "./ThemeToggle";
@@ -33,7 +34,7 @@ const DesktopNav = ({
       ? 'text-white hover:text-[#FFD700]'
       : 'text-[#333333] dark:text-white hover:text-[#FFD700] dark:hover:text-[#FFD700]';
   
-  const navItemCommonClasses = 'font-medium transition-colors duration-200 px-3 py-2 flex items-center';
+  const navItemCommonClasses = 'font-medium transition-colors duration-200 px-3 py-2 flex items-center'; // Base for Staff Panel link
 
   return (
     <div className="hidden md:flex items-center space-x-1">
@@ -47,13 +48,14 @@ const DesktopNav = ({
           isScrolled={isScrolled}
           onClick={item.onClick}
           icon={item.icon} // Pass icon to NavItem
-          className="px-3 py-2"
+          iconOnly={item.iconOnly} // Pass iconOnly prop
+          className={item.iconOnly ? "p-2" : "px-3 py-2"} // Conditional padding
         />
       ))}
       {staffName && (
         <Link
           to="/staff/panel"
-          className={cn(navItemBaseStyling(isActive("/staff/panel")), navItemCommonClasses)}
+          className={cn(navItemBaseStyling(isActive("/staff/panel")), navItemCommonClasses)} // Using commonClasses here
           onClick={() => window.scrollTo(0,0)}
         >
           <Shield className="h-4 w-4 mr-1.5" />
@@ -72,3 +74,4 @@ const DesktopNav = ({
 };
 
 export default DesktopNav;
+
