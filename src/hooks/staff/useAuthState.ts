@@ -10,12 +10,13 @@ interface AuthStateProps {
 }
 
 export interface StaffAuthState {
-  staffName: string;
+  staffName: string | null; // Allow null for default state
   isAdmin: boolean;
   isLoading: boolean;
-  userRole: string;
+  userRole: string | null; // Allow null for default state
   isAuthenticated: boolean;
-  staffId: string | null; // Added staffId
+  staffId: string | null;
+  permissions: Record<string, boolean>; // Added permissions
 }
 
 export const useAuthState = ({ 
@@ -25,12 +26,13 @@ export const useAuthState = ({
   const navigate = useNavigate();
   const { toast } = useToast();
   const [state, setState] = useState<StaffAuthState>({
-    staffName: "",
+    staffName: null,
     isAdmin: false,
     isLoading: true,
-    userRole: "",
+    userRole: null,
     isAuthenticated: false,
-    staffId: null, // Initialize staffId
+    staffId: null,
+    permissions: {}, // Initialize permissions
   });
 
   useEffect(() => {
@@ -50,14 +52,15 @@ export const useAuthState = ({
             console.log(`Redirecting to ${redirectPath}`);
             navigate(redirectPath);
           }
-          setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false, staffId: null })); // Reset staffId
+          setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false, staffId: null, staffName: null, userRole: null, permissions: {} })); // Reset state
           return;
         }
         
         console.log("Session found, fetching staff data for user ID:", session.user.id);
+        // Ensure 'permissions' column is selected if it exists in the 'staff' table
         const { data: staffData, error: staffError } = await supabase
           .from("staff")
-          .select("*")
+          .select("*, permissions") // Attempt to select permissions
           .eq("id", session.user.id)
           .single();
           
@@ -67,15 +70,18 @@ export const useAuthState = ({
           if (redirectUnauthorized && !window.location.pathname.includes(redirectPath)) {
             navigate(redirectPath);
           }
-          setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false, staffId: null })); // Reset staffId
+          setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false, staffId: null, staffName: null, userRole: null, permissions: {} })); // Reset state
           return;
         }
         
         console.log("Staff data retrieved:", staffData);
         
         const userRole = staffData.role;
+        // Assuming permissions are stored in a column named 'permissions' of type JSONB or similar
+        // and structured as Record<string, boolean>. If not, adjust accordingly.
+        const permissions = staffData.permissions || {}; 
         
-        console.log("Setting user role:", userRole, "and staff ID:", staffData.id);
+        console.log("Setting user role:", userRole, "and staff ID:", staffData.id, "and permissions:", permissions);
         
         setState({
           staffName: staffData.first_name || staffData.email || "Staff Member",
@@ -83,14 +89,15 @@ export const useAuthState = ({
           isLoading: false,
           userRole: userRole,
           isAuthenticated: true,
-          staffId: staffData.id, // Set staffId from staffData.id
+          staffId: staffData.id,
+          permissions: permissions, // Set permissions
         });
       } catch (error) {
         console.error("Auth check error:", error);
         if (redirectUnauthorized && !window.location.pathname.includes(redirectPath)) {
           navigate(redirectPath);
         }
-        setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false, staffId: null })); // Reset staffId
+        setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false, staffId: null, staffName: null, userRole: null, permissions: {} })); // Reset state
       }
     };
     
@@ -103,18 +110,17 @@ export const useAuthState = ({
           navigate(redirectPath);
         }
         setState({
-          staffName: "",
+          staffName: null,
           isAdmin: false,
           isLoading: false,
-          userRole: "",
+          userRole: null,
           isAuthenticated: false,
-          staffId: null, // Reset staffId
+          staffId: null,
+          permissions: {}, // Reset permissions
         });
       } else if (event === "SIGNED_IN" && session) {
-        // Call checkAuth which now includes fetching staffId
         checkAuth();
       } else if (event === "USER_UPDATED" && session) {
-        // Potentially re-check auth if user details important for auth state might change
         checkAuth();
       }
     });
@@ -128,4 +134,3 @@ export const useAuthState = ({
 
   return state;
 };
-
