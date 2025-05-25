@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'; // Added useMutation
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Conversation } from '@/types/messaging'; // UserProfile is not directly used here anymore for mapping
-import { toast } from '@/hooks/use-toast'; // Import toast
+import { Conversation } from '@/types/messaging'; 
+import { toast } from '@/hooks/use-toast'; 
 
 // This function now calls the RPC 'get_conversations_with_unread_status'
 const fetchConversationsWithUnreadStatus = async (userId: string): Promise<Conversation[]> => {
@@ -59,10 +59,49 @@ export const useConversations = () => {
     queryKey: ['conversations', user?.id],
     queryFn: () => {
       if (!user?.id) return Promise.resolve([]);
-      return fetchConversationsWithUnreadStatus(user.id); // Use the new RPC-based fetcher
+      return fetchConversationsWithUnreadStatus(user.id); 
     },
     enabled: !!user?.id,
   });
+
+  // Real-time subscription for new messages to invalidate conversations query
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const newMessagesChannel = supabase
+      .channel(`user-new-messages-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `recipient_id=eq.${user.id}`, // Only for messages where the current user is the recipient
+        },
+        (payload) => {
+          console.log('useConversations: New message received for user, invalidating conversations list:', payload);
+          // Invalidate the conversations query to refetch and update unread counts
+          queryClient.invalidateQueries({ queryKey: ['conversations', user?.id] });
+        }
+      )
+      .subscribe((status, err) => {
+        if (status === 'SUBSCRIBED') {
+          console.log(`useConversations: Subscribed to new messages channel for user ${user.id}`);
+        } else if (err) {
+          console.error(`useConversations: Subscription error on new messages channel for user ${user.id}`, err);
+          toast({
+            title: "Realtime Issue",
+            description: "Could not reliably update message counts. Please refresh if counts seem off.",
+            variant: "default"
+          });
+        }
+      });
+
+    return () => {
+      console.log(`useConversations: Unsubscribing from new messages channel for user ${user.id}`);
+      supabase.removeChannel(newMessagesChannel);
+    };
+  }, [user?.id, queryClient]);
 
   const totalUnreadCount = conversations?.reduce((sum, conv) => sum + (conv.unread_count || 0), 0) || 0;
 
@@ -96,7 +135,6 @@ export const useConversations = () => {
     },
     onError: (err) => {
         console.error("Failed to mark conversation as read (mutation.onError):", err);
-        // Toast is handled in mutationFn for specific supabase error
     }
   });
 
@@ -156,6 +194,6 @@ export const useConversations = () => {
     refetchConversations: refetch,
     startOrCreateConversation,
     markConversationAsRead: markAsReadMutation.mutate,
-    totalUnreadCount, // Expose totalUnreadCount
+    totalUnreadCount, 
   };
 };
