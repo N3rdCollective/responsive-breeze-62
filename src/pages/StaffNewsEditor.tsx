@@ -18,7 +18,7 @@ import {
   FileText, 
   Eye, 
   User,
-  Tag // Ensured Tag is imported
+  Tag
 } from "lucide-react";
 import TitleUpdater from "@/components/TitleUpdater";
 
@@ -31,8 +31,9 @@ interface NewsPost {
   category: string;
   status: 'draft' | 'published' | 'archived';
   post_date: string;
-  author_id?: string | null;
+  author_id?: string | null; // This will store the staffId (UUID)
   updated_at?: string;
+  // author_name is not part of this interface as it's fetched or known via staffName
 }
 
 const StaffNewsEditor = () => {
@@ -53,7 +54,8 @@ const StaffNewsEditor = () => {
     featured_image: null,
     category: 'general',
     status: 'draft',
-    post_date: new Date().toISOString().split('T')[0]
+    post_date: new Date().toISOString().split('T')[0],
+    author_id: null, // Initialize author_id
   });
   
   const [isLoading, setIsLoading] = useState(false);
@@ -62,15 +64,18 @@ const StaffNewsEditor = () => {
   useEffect(() => {
     if (isEditing && postId) {
       loadPost(postId);
+    } else if (!isEditing && staffId) {
+      // For new posts, pre-fill author_id if staffId is available
+      setPost(prev => ({ ...prev, author_id: staffId }));
     }
-  }, [isEditing, postId]);
+  }, [isEditing, postId, staffId]); // Added staffId dependency
 
   const loadPost = async (id: string) => {
     try {
       setIsLoading(true);
       const { data, error } = await supabase
         .from('posts')
-        .select('*')
+        .select('*, author_profile:staff!author(display_name, first_name)') // Fetch author name if 'author' is FK to 'staff.id'
         .eq('id', id)
         .single();
 
@@ -86,10 +91,13 @@ const StaffNewsEditor = () => {
           category: data.category,
           status: data.status as NewsPost['status'],
           post_date: data.post_date ? new Date(data.post_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-          author_id: data.author_id || null,
+          author_id: data.author || null, // Corrected: map `data.author` to `author_id`
           updated_at: data.updated_at,
         };
         setPost(loadedPostData);
+        // If author_name is needed for display and not available through staffName,
+        // you might need to fetch it separately or adjust useStaffAuth if it provides author details by ID.
+        // For now, we rely on `staffName` from `useStaffAuth` for the current editor.
       }
     } catch (error) {
       console.error('Error loading post:', error);
@@ -98,13 +106,13 @@ const StaffNewsEditor = () => {
         description: "Failed to load post. It might not exist or there was a network issue.",
         variant: "destructive"
       });
-      navigate('/staff/panel');
+      navigate('/staff/news'); // Changed from /staff/panel to /staff/news for consistency
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSave = async (newStatus: 'draft' | 'published') => {
+  const handleSave = async (newStatus: NewsPost['status']) => {
     if (!post.title.trim()) {
       toast({
         title: "Validation Error",
@@ -121,36 +129,48 @@ const StaffNewsEditor = () => {
       });
       return;
     }
+    if (!staffId) {
+      toast({
+        title: "Authentication Error",
+        description: "Cannot save post, staff member ID is missing. Please re-login.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
       setIsSaving(true);
       
-      const postData: Omit<NewsPost, 'id'> & { author_id?: string | null, updated_at: string, id?:string } = {
-        ...post,
+      // Data to be sent to Supabase. Ensure field names match table columns.
+      const supabasePostData = {
+        title: post.title,
+        content: post.content,
+        excerpt: post.excerpt,
+        featured_image: post.featured_image,
+        category: post.category,
         status: newStatus,
-        author_id: staffId || null,
+        author: staffId, // Corrected: use 'author' for Supabase table column, assign staffId
+        author_name: staffName, // Store current staffName as author_name
         post_date: new Date(post.post_date).toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        // `id` is not included here; it's used in `.eq()` for updates or handled by DB for inserts.
       };
       
-      if (isEditing && postId) {
-        postData.id = postId;
-      }
-
       let result;
       if (isEditing && postId) {
-        const { id, ...updateData } = postData;
         result = await supabase
           .from('posts')
-          .update(updateData)
+          .update(supabasePostData)
           .eq('id', postId)
           .select()
           .single();
       } else {
-        const { id, ...insertData } = postData;
+        // For new posts, Supabase will generate the ID.
+        // We can also add `created_at` here if it's not set by default in DB.
+        // supabasePostData.created_at = new Date().toISOString(); // If needed
         result = await supabase
           .from('posts')
-          .insert([insertData])
+          .insert([supabasePostData])
           .select()
           .single();
       }
@@ -176,7 +196,7 @@ const StaffNewsEditor = () => {
     }
   };
 
-  const updatePostField = (field: keyof NewsPost, value: string | null) => {
+  const updatePostField = (field: keyof NewsPost, value: string | null | NewsPost['status']) => {
     setPost(prev => ({ ...prev, [field]: value }));
   };
 
@@ -229,7 +249,7 @@ const StaffNewsEditor = () => {
                   {isEditing ? 'Edit Post' : 'New Post'}
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  {isEditing ? `Editing "${post.title}"` : 'Craft a new article for the site.'}
+                  {isEditing ? `Editing "${post.title || 'Untitled'}"` : 'Craft a new article for the site.'}
                 </p>
               </div>
             </div>
@@ -237,7 +257,7 @@ const StaffNewsEditor = () => {
               <Button 
                 variant="outline" 
                 onClick={() => handleSave('draft')}
-                disabled={isSaving}
+                disabled={isSaving || !staffId} // Disable if no staffId
                 size="sm"
               >
                 <Save className="h-4 w-4 mr-1.5" />
@@ -245,7 +265,7 @@ const StaffNewsEditor = () => {
               </Button>
               <Button 
                 onClick={() => handleSave('published')}
-                disabled={isSaving}
+                disabled={isSaving || !staffId} // Disable if no staffId
                 size="sm"
               >
                 <Eye className="h-4 w-4 mr-1.5" />
@@ -291,7 +311,7 @@ const StaffNewsEditor = () => {
                       value={post.content}
                       onChange={(e) => updatePostField('content', e.target.value)}
                       placeholder="Write your post content here. Markdown is supported."
-                      rows={18} // Increased rows
+                      rows={18} 
                       className="mt-1"
                     />
                      <p className="text-xs text-muted-foreground mt-1">Markdown is supported for formatting.</p>
@@ -313,7 +333,7 @@ const StaffNewsEditor = () => {
                     <Label htmlFor="status" className="font-semibold">Status</Label>
                     <Select 
                       value={post.status} 
-                      onValueChange={(value: 'draft' | 'published' | 'archived') => updatePostField('status', value)}
+                      onValueChange={(value: NewsPost['status']) => updatePostField('status', value)}
                     >
                       <SelectTrigger className="mt-1 w-full">
                         <SelectValue placeholder="Select status" />
@@ -384,8 +404,14 @@ const StaffNewsEditor = () => {
                 <CardContent>
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="capitalize">{userRole || 'N/A'}</Badge>
+                    {/* Display staffName (current editor) or fetched author name for existing posts */}
                     <span className="text-sm font-medium">{staffName || 'Not Logged In'}</span>
                   </div>
+                   {isEditing && post.author_id && post.author_id !== staffId && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Original author ID: {post.author_id.substring(0,8)}... (You are editing as {staffName || 'current user'})
+                    </p>
+                  )}
                   <p className="text-xs text-muted-foreground mt-1">
                     Current Date: {new Date().toLocaleDateString()}
                   </p>
