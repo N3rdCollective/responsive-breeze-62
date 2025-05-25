@@ -1,5 +1,5 @@
 
-import { Route, Routes } from "react-router-dom"; // Removed BrowserRouter as Router
+import { Route, Routes } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AuthProvider from "@/hooks/useAuth"; 
 import { StaffAuthProvider } from "@/hooks/useStaffAuth"; 
@@ -21,7 +21,8 @@ import ForumTopicPage from "@/pages/ForumTopicPage";
 import ForumNewTopicPage from "@/pages/NewForumTopicPage";
 
 {/* Staff Pages */}
-import StaffDashboard from "@/pages/StaffDashboard";
+import StaffLogin from "@/pages/StaffLogin"; // Import the StaffLogin page
+import StaffDashboard from "@/pages/StaffDashboard"; // Legacy, might be UnifiedStaffDashboard
 import StaffNewsEditor from "@/pages/StaffNewsEditor"; 
 import StaffShowsManager from "@/pages/StaffShowsManager"; 
 import StaffForumManager from "@/pages/StaffForumManagementPage";
@@ -32,7 +33,6 @@ import NotFoundPage from "@/pages/NotFound";
 
 function App() {
   return (
-    // <Router> wrapper removed
     <AuthProvider>
       <StaffAuthProvider>
         <TooltipProvider>
@@ -49,12 +49,13 @@ function App() {
             <Route path="/u/:username" element={<PublicProfilePage />} />
             
             {/* Forum Routes */}
-            <Route path="/forum" element={<MembersPage />} />
+            <Route path="/forum" element={<MembersPage />} /> {/* Assuming MembersPage is the entry for forum */}
             <Route path="/forum/category/:categorySlug" element={<ForumCategoryPage />} />
             <Route path="/forum/topic/:topicId" element={<ForumTopicPage />} />
             <Route path="/forum/new-topic/:categoryId" element={<ForumNewTopicPage />} />
             
             {/* Staff Routes */}
+            <Route path="/staff/login" element={<StaffLogin />} /> {/* Added staff login route */}
             <Route path="/staff/panel" element={<UnifiedStaffDashboard />} />
             <Route path="/staff/news/editor" element={<StaffNewsEditor />} />
             <Route path="/staff/news/editor/:postId" element={<StaffNewsEditor />} />
@@ -69,11 +70,9 @@ function App() {
             {/* 404 Route */}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
-          {/* <Toaster /> removed as it's already in main.tsx */}
         </TooltipProvider>
       </StaffAuthProvider>
     </AuthProvider>
-    // </Router> wrapper removed
   );
 }
 

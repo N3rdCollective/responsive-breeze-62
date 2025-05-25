@@ -22,59 +22,57 @@ const NotFound = () => {
       return;
     }
     
-    // Handle specific route cases
+    // Handle specific route cases for news creation/editing
     if (location.pathname === "/staff/news/edit") {
-      // Redirect to the news editor
-      console.log("Redirecting from /staff/news/edit to /staff/news/create");
-      navigate("/staff/news/create");
+      console.log("Redirecting from /staff/news/edit to /staff/news/editor");
+      navigate("/staff/news/editor"); // Corrected to /staff/news/editor
       return;
     }
     
-    // Handle the /staff/news/new route
     if (location.pathname === "/staff/news/new") {
-      console.log("Redirecting from /staff/news/new to /staff/news/create");
-      navigate("/staff/news/create");
+      console.log("Redirecting from /staff/news/new to /staff/news/editor");
+      navigate("/staff/news/editor"); // Corrected to /staff/news/editor
       return;
     }
     
-    // Redirect /staff/panel to /staff
-    if (location.pathname === "/staff/panel") {
-      console.log("Redirecting from /staff/panel to /staff");
-      navigate("/staff");
-      return;
-    }
+    // Removed problematic redirect from /staff/panel to /staff
+    // if (location.pathname === "/staff/panel") {
+    //   console.log("Redirecting from /staff/panel to /staff");
+    //   navigate("/staff"); 
+    //   return;
+    // }
 
     // Handle legacy routes for sponsors or system settings if needed
     if (location.pathname === "/staff/sponsor") {
       console.log("Redirecting from /staff/sponsor to /staff/sponsors");
-      navigate("/staff/sponsors");
+      navigate("/staff/sponsors"); // Ensure /staff/sponsors exists or remove
       return;
     }
 
     if (location.pathname === "/staff/settings") {
       console.log("Redirecting from /staff/settings to /staff/system-settings");
-      navigate("/staff/system-settings");
+      navigate("/staff/system-settings"); // Ensure /staff/system-settings exists or remove
       return;
     }
     
     // Handle old personalities route
     if (location.pathname === "/staff/personality") {
       console.log("Redirecting from /staff/personality to /staff/personalities");
-      navigate("/staff/personalities");
+      navigate("/staff/personalities"); // Ensure /staff/personalities exists or remove
       return;
     }
     
     // Handle old homepage content route
     if (location.pathname === "/staff/homepage") {
       console.log("Redirecting from /staff/homepage to /staff/home");
-      navigate("/staff/home");
+      navigate("/staff/home"); // Ensure /staff/home exists or remove
       return;
     }
     
     // Handle old activity logs route
     if (location.pathname === "/staff/activity") {
       console.log("Redirecting from /staff/activity to /staff/activity-logs");
-      navigate("/staff/activity-logs");
+      navigate("/staff/activity-logs"); // Ensure /staff/activity-logs exists or remove
       return;
     }
   }, [location.pathname, navigate]);
