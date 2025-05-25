@@ -344,6 +344,48 @@ export type Database = {
           },
         ]
       }
+      forum_post_edit_history: {
+        Row: {
+          edited_at: string
+          id: string
+          old_content: string
+          post_id: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          edited_at?: string
+          id?: string
+          old_content: string
+          post_id: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          edited_at?: string
+          id?: string
+          old_content?: string
+          post_id?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_post_edit_history_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "forum_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_post_edit_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forum_post_reactions: {
         Row: {
           created_at: string

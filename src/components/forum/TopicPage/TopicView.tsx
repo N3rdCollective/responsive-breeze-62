@@ -1,34 +1,31 @@
-
 import React from 'react';
-import { Loader2 } from "lucide-react";
-import TopicHeaderDisplay from "@/components/forum/TopicPage/TopicHeaderDisplay";
-import ForumPostCard from "@/components/forum/TopicPage/ForumPostCard";
-import ForumPagination from "@/components/forum/ForumPagination";
-import ReplyFormCard from "@/components/forum/TopicPage/ReplyFormCard";
 import { ForumPost, ForumTopic } from '@/types/forum';
 import type { User } from '@supabase/supabase-js';
+import ForumPagination from '../ForumPagination';
+import ForumPostCard from './ForumPostCard';
+import ReplyFormCard from './ReplyFormCard';
+import TopicHeaderDisplay from './TopicHeaderDisplay';
 
 interface TopicViewProps {
   topic: ForumTopic;
   posts: ForumPost[];
-  user: User | null; // currentUser for ForumPostCard
+  user: User | null;
   page: number;
   totalPages: number;
   setPage: (page: number) => void;
-  categorySlug?: string;
-  loadingData: boolean; // To show loader when posts are empty but still loading
-  
+  categorySlug: string | undefined;
   replyContent: string;
   setReplyContent: (content: string) => void;
-  handleSubmitReply: (e: React.FormEvent) => Promise<void>;
+  handleSubmitReply: () => Promise<void>;
   isSubmittingReply: boolean;
-  
   handleOpenEditDialog: (post: ForumPost) => void;
   handleOpenDeleteDialog: (postId: string) => void;
-  handleQuotePost: (post: ForumPost) => Promise<void>;
+  handleQuotePost: (post: ForumPost) => void;
   handleToggleReaction: (postId: string, reactionType: 'like') => void;
+  handleOpenPostHistoryDialog: (postId: string, postTitle?: string) => void;
   isProcessingPostAction: boolean;
   replyFormRef: React.RefObject<HTMLDivElement>;
+  loadingData: boolean;
 }
 
 const TopicView: React.FC<TopicViewProps> = ({
@@ -39,7 +36,6 @@ const TopicView: React.FC<TopicViewProps> = ({
   totalPages,
   setPage,
   categorySlug,
-  loadingData,
   replyContent,
   setReplyContent,
   handleSubmitReply,
@@ -48,57 +44,70 @@ const TopicView: React.FC<TopicViewProps> = ({
   handleOpenDeleteDialog,
   handleQuotePost,
   handleToggleReaction,
+  handleOpenPostHistoryDialog,
   isProcessingPostAction,
   replyFormRef,
+  loadingData,
 }) => {
+
   return (
-    <div className="pt-20 pb-20 px-4">
-      <div className="max-w-6xl mx-auto">
-        <TopicHeaderDisplay topic={topic} categorySlug={categorySlug} />
-        
-        {loadingData && posts.length === 0 && (
-           <div className="py-10 flex justify-center items-center">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-           </div>
-        )}
+    <div className="max-w-5xl mx-auto px-2 sm:px-4 lg:px-6 py-8">
+      <TopicHeaderDisplay
+        topic={topic}
+        categorySlug={categorySlug}
+        onReplyClick={() => replyFormRef.current?.scrollIntoView({ behavior: 'smooth' })}
+      />
 
-        <div className="space-y-6">
-          {posts.map((post, index) => (
-            <ForumPostCard 
-              key={post.id} 
-              post={post} 
-              isFirstPost={index === 0 && page === 1}
-              currentUser={user}
-              onEdit={handleOpenEditDialog}
-              onDelete={handleOpenDeleteDialog}
-              onQuote={handleQuotePost}
-              onToggleReaction={handleToggleReaction}
-              isTopicLocked={topic.is_locked}
-              isProcessingAction={isProcessingPostAction || (isSubmittingReply && post.id === 'temp-replying-post-id')} // Example temp ID logic
-            />
-          ))}
-
-          {totalPages > 1 && (
-             <div className="py-4">
-              <ForumPagination
-                  page={page}
-                  totalPages={totalPages}
-                  setPage={setPage}
-              />
-             </div>
-          )}
-          
-          <div ref={replyFormRef}>
-            <ReplyFormCard
-              replyContent={replyContent}
-              onReplyContentChange={setReplyContent}
-              onSubmitReply={handleSubmitReply}
-              isSubmitting={isSubmittingReply}
-              isLocked={topic.is_locked}
-            />
-          </div>
-        </div>
+      {/* Posts List */}
+      <div className="space-y-6 mt-6">
+        {posts.map((post, index) => (
+          <ForumPostCard
+            key={post.id}
+            post={post}
+            isFirstPost={index === 0 && page === 1}
+            currentUser={user}
+            onEdit={handleOpenEditDialog}
+            onDelete={handleOpenDeleteDialog}
+            onQuote={handleQuotePost}
+            onToggleReaction={handleToggleReaction}
+            onViewHistory={handleOpenPostHistoryDialog}
+            isTopicLocked={topic.is_locked}
+            isProcessingAction={isProcessingPostAction || loadingData}
+            topicTitle={topic.title}
+          />
+        ))}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-8">
+          <ForumPagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+        </div>
+      )}
+
+      {/* Reply Form */}
+      {!topic.is_locked && (
+        <div ref={replyFormRef} className="mt-8 scroll-m-20">
+          <ReplyFormCard
+            user={user}
+            replyContent={replyContent}
+            setReplyContent={setReplyContent}
+            handleSubmitReply={handleSubmitReply}
+            isSubmittingReply={isSubmittingReply}
+            topicIsLocked={topic.is_locked}
+          />
+        </div>
+      )}
+       {topic.is_locked && (
+        <div className="mt-8 p-4 text-center bg-yellow-100 dark:bg-yellow-700/30 border border-yellow-300 dark:border-yellow-600 rounded-md">
+            <p className="font-semibold text-yellow-700 dark:text-yellow-300">This topic is locked.</p>
+            <p className="text-sm text-yellow-600 dark:text-yellow-400">Replies are not allowed.</p>
+        </div>
+      )}
     </div>
   );
 };

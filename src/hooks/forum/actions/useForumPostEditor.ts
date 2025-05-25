@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -9,11 +8,14 @@ import { extractMentionedUserIds } from "@/utils/mentionUtils";
 export const useForumPostEditor = () => {
   const { toast } = useToast();
   const [editing, setEditing] = useState(false);
-  const [deleting, setDeleting] = useState(false); // New state for delete operation
+  const [deleting, setDeleting] = useState(false);
 
   const editPost = async (postId: string, newContent: string): Promise<ForumPost | null> => {
     setEditing(true);
     let originalContent = "";
+    let originalTopicId = "";
+    let originalAuthorId = ""; // To store the author of the post being edited
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -21,10 +23,10 @@ export const useForumPostEditor = () => {
         return null;
       }
 
-      // Fetch original content to compare for mentions
+      // Fetch original content and author ID to compare for mentions and save history
       const { data: originalPostData, error: fetchError } = await supabase
         .from('forum_posts')
-        .select('content, topic_id, user_id')
+        .select('content, topic_id, user_id') // Added user_id here
         .eq('id', postId)
         .single();
 
@@ -32,6 +34,8 @@ export const useForumPostEditor = () => {
         throw fetchError || new Error("Original post not found.");
       }
       originalContent = originalPostData.content;
+      originalTopicId = originalPostData.topic_id;
+      originalAuthorId = originalPostData.user_id; // Store the original author's ID
 
       if (originalPostData.user_id !== user.id) {
           // Add role check here if moderators/admins should be able to edit
@@ -39,6 +43,21 @@ export const useForumPostEditor = () => {
           return null;
       }
 
+      // Save edit history BEFORE updating the post
+      const { error: historyError } = await supabase
+        .from('forum_post_edit_history')
+        .insert({
+          post_id: postId,
+          user_id: user.id, // The user performing the edit
+          old_content: originalContent,
+          edited_at: new Date().toISOString(),
+        });
+
+      if (historyError) {
+        console.error("Error saving post edit history:", historyError);
+        // Decide if this should be a critical failure or just a warning
+        toast({ title: "Warning", description: "Could not save edit history, but post update will proceed.", variant: "default" });
+      }
 
       const { data: updatedPostData, error: updateError } = await supabase
         .from('forum_posts')
@@ -70,7 +89,6 @@ export const useForumPostEditor = () => {
             .single();
 
           const topicTitle = topicError || !topicData ? 'a topic' : topicData.title;
-          // Corrected user display name source
           const actorDisplayName = (await supabase.auth.getUser()).data.user?.user_metadata?.display_name || (await supabase.auth.getUser()).data.user?.email || 'Someone';
           const contentPreview = `${actorDisplayName} mentioned you in an updated reply on "${topicTitle}"`;
 
@@ -87,7 +105,10 @@ export const useForumPostEditor = () => {
             }
           }
         }
-        return updatedPostData as ForumPost;
+        // Ensure the profile within updatedPostData refers to the original post author, not the editor.
+        // This might require re-fetching the profile if the select statement above doesn't already do this correctly.
+        // For now, we assume the `profile` on `updatedPostData` is correct for the original post author.
+        return { ...updatedPostData, profile: originalPostData.user_id === user.id ? updatedPostData.profile : (await supabase.from('profiles').select('*').eq('id', originalAuthorId).single()).data } as ForumPost;
       }
       return null;
     } catch (error: any) {
@@ -126,9 +147,17 @@ export const useForumPostEditor = () => {
           return false;
       }
       
-      // Before deleting the post, delete related reactions to avoid foreign key constraint issues if they exist.
-      // This depends on your DB schema (ON DELETE CASCADE for reactions would simplify this).
-      // Assuming no ON DELETE CASCADE or a need for more complex cleanup:
+      // Delete related edit history entries first
+      const { error: historyDeleteError } = await supabase
+        .from('forum_post_edit_history')
+        .delete()
+        .eq('post_id', postId);
+
+      if (historyDeleteError) {
+        console.error("Error deleting post edit history:", historyDeleteError);
+        // Log and potentially inform user, but might proceed with post deletion
+      }
+      
       const { error: reactionDeleteError } = await supabase
         .from('forum_post_reactions')
         .delete()
@@ -137,11 +166,8 @@ export const useForumPostEditor = () => {
       if (reactionDeleteError) {
         console.error("Error deleting post reactions:", reactionDeleteError);
         toast({ title: "Error deleting post", description: "Could not clean up post reactions.", variant: "destructive" });
-        // Decide if you want to stop the post deletion here or proceed.
-        // For now, we'll proceed but log the error.
       }
       
-      // Also delete related notifications
        const { error: notificationDeleteError } = await supabase
         .from('forum_notifications')
         .delete()
@@ -149,7 +175,6 @@ export const useForumPostEditor = () => {
 
       if (notificationDeleteError) {
         console.error("Error deleting post notifications:", notificationDeleteError);
-        // Log and potentially inform user, but might proceed with post deletion
       }
 
 

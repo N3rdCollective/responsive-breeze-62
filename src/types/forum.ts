@@ -65,6 +65,20 @@ export interface ForumPost {
   forum_post_reactions?: ForumPostReaction[];
 }
 
+export interface ForumPostEditHistoryEntry {
+  id: string;
+  post_id: string;
+  user_id: string;
+  old_content: string;
+  edited_at: string;
+  reason?: string | null;
+  profile?: { // For displaying editor's info
+    username?: string | null;
+    display_name?: string | null;
+    profile_picture?: string | null;
+  };
+}
+
 export interface CreateTopicInput {
   category_id: string;
   title: string;

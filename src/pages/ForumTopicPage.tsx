@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from "react";
+
+import React, { useEffect, useRef, useState } from "react"; // Added useState
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { useForumTopic } from "@/hooks/forum/useForumTopic";
@@ -48,6 +49,23 @@ const ForumTopicPage = () => {
     setReplyContent,
     replyFormRef,
   });
+
+  // State for Post Edit History Dialog
+  const [showPostHistoryDialog, setShowPostHistoryDialog] = useState(false);
+  const [postHistoryPostId, setPostHistoryPostId] = useState<string | null>(null);
+  const [postHistoryTitle, setPostHistoryTitle] = useState<string | undefined>(undefined);
+
+  const handleOpenPostHistoryDialog = (postId: string, postTitle?: string) => {
+    setPostHistoryPostId(postId);
+    setPostHistoryTitle(postTitle);
+    setShowPostHistoryDialog(true);
+  };
+
+  const handleClosePostHistoryDialog = () => {
+    setShowPostHistoryDialog(false);
+    setPostHistoryPostId(null);
+    setPostHistoryTitle(undefined);
+  };
   
   useEffect(() => {
     if (!authLoading && !user) {
@@ -88,6 +106,7 @@ const ForumTopicPage = () => {
             handleOpenDeleteDialog={handleOpenDeleteDialog}
             handleQuotePost={handleQuotePost}
             handleToggleReaction={handleToggleReaction}
+            handleOpenPostHistoryDialog={handleOpenPostHistoryDialog} // Pass new handler
             isProcessingPostAction={isProcessingPostAction}
             replyFormRef={replyFormRef}
           />
@@ -102,6 +121,11 @@ const ForumTopicPage = () => {
             handleSaveEditedPost={handleSaveEditedPost}
             handleCloseDeleteDialog={handleCloseDeleteDialog}
             handleConfirmDeletePost={handleConfirmDeletePost}
+            // Pass props for PostEditHistoryDialog
+            showPostHistoryDialog={showPostHistoryDialog}
+            postHistoryPostId={postHistoryPostId}
+            postHistoryTitle={postHistoryTitle}
+            handleClosePostHistoryDialog={handleClosePostHistoryDialog}
           />
         </>
       )}
