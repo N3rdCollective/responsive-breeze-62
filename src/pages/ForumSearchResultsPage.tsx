@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -8,7 +7,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ForumTopic } from '@/types/forum';
 import ForumSearchResultItem from '@/components/forum/ForumSearchResultItem';
-import ForumSearchBar from '@/components/forum/ForumSearchBar'; // Import the search bar
+import ForumSearchBar from '@/components/forum/ForumSearchBar';
+import { format } from 'date-fns';
 
 interface FetchResultsParams {
   query: string | null;

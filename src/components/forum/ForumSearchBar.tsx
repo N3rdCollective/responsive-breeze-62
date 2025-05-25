@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
@@ -17,7 +16,7 @@ import { cn } from '@/lib/utils';
 const fetchCategories = async (): Promise<ForumCategory[]> => {
   const { data, error } = await supabase
     .from('forum_categories')
-    .select('id, name, slug')
+    .select('id, name, description, slug, display_order, created_at, updated_at') // Fetched all fields for ForumCategory
     .order('display_order', { ascending: true });
   if (error) {
     console.error('Error fetching categories:', error);
