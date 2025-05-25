@@ -1,6 +1,5 @@
-
-import React, { useEffect, useRef, useState } from "react"; // Added useState
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { useForumTopic } from "@/hooks/forum/useForumTopic";
 import { useQuoteHandler } from "@/hooks/forum/topic/useQuoteHandler";
@@ -8,10 +7,13 @@ import TopicLoadingStates from "@/components/forum/TopicPage/TopicLoadingStates"
 import TopicView from "@/components/forum/TopicPage/TopicView";
 import TopicDialogs from "@/components/forum/TopicPage/TopicDialogs";
 import { useForumPagination } from "@/hooks/forum/useForumPagination";
+import { useConversations } from "@/hooks/useConversations";
+import { useToast } from "@/hooks/use-toast";
 
 const ForumTopicPage = () => {
   const navigate = useNavigate();
   const replyFormRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
   
   const { page, setPage: setPageViaPaginationHook } = useForumPagination();
   
@@ -50,6 +52,8 @@ const ForumTopicPage = () => {
     replyFormRef,
   });
 
+  const { startOrCreateConversation } = useConversations();
+
   // State for Post Edit History Dialog
   const [showPostHistoryDialog, setShowPostHistoryDialog] = useState(false);
   const [postHistoryPostId, setPostHistoryPostId] = useState<string | null>(null);
@@ -65,6 +69,29 @@ const ForumTopicPage = () => {
     setShowPostHistoryDialog(false);
     setPostHistoryPostId(null);
     setPostHistoryTitle(undefined);
+  };
+
+  const handleStartDirectMessage = async (targetUserId: string) => {
+    if (!user) {
+      toast({ title: "Authentication required", description: "Please log in to send messages.", variant: "destructive" });
+      navigate('/auth');
+      return;
+    }
+    if (user.id === targetUserId) {
+      toast({ title: "Info", description: "You cannot start a conversation with yourself.", variant: "default" });
+      return;
+    }
+    try {
+      const conversationId = await startOrCreateConversation(targetUserId);
+      if (conversationId) {
+        navigate('/messages', { state: { selectConversationWithUser: targetUserId, conversationId: conversationId } });
+      } else {
+        toast({ title: "Error", description: "Could not start or find conversation.", variant: "destructive" });
+      }
+    } catch (error: any) {
+      console.error("Failed to start direct message:", error);
+      toast({ title: "Error", description: error.message || "Failed to start conversation.", variant: "destructive" });
+    }
   };
   
   useEffect(() => {
@@ -106,7 +133,8 @@ const ForumTopicPage = () => {
             handleOpenDeleteDialog={handleOpenDeleteDialog}
             handleQuotePost={handleQuotePost}
             handleToggleReaction={handleToggleReaction}
-            handleOpenPostHistoryDialog={handleOpenPostHistoryDialog} // Pass new handler
+            handleOpenPostHistoryDialog={handleOpenPostHistoryDialog}
+            handleStartDirectMessage={handleStartDirectMessage}
             isProcessingPostAction={isProcessingPostAction}
             replyFormRef={replyFormRef}
           />
@@ -121,7 +149,6 @@ const ForumTopicPage = () => {
             handleSaveEditedPost={handleSaveEditedPost}
             handleCloseDeleteDialog={handleCloseDeleteDialog}
             handleConfirmDeletePost={handleConfirmDeletePost}
-            // Pass props for PostEditHistoryDialog
             showPostHistoryDialog={showPostHistoryDialog}
             postHistoryPostId={postHistoryPostId}
             postHistoryTitle={postHistoryTitle}

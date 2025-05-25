@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ForumPost, ForumTopic } from '@/types/forum';
 import type { User } from '@supabase/supabase-js';
@@ -23,6 +24,7 @@ interface TopicViewProps {
   handleQuotePost: (post: ForumPost) => void;
   handleToggleReaction: (postId: string, reactionType: 'like') => void;
   handleOpenPostHistoryDialog: (postId: string, postTitle?: string) => void;
+  handleStartDirectMessage: (targetUserId: string) => void; // Added prop
   isProcessingPostAction: boolean;
   replyFormRef: React.RefObject<HTMLDivElement>;
   loadingData: boolean;
@@ -45,6 +47,7 @@ const TopicView: React.FC<TopicViewProps> = ({
   handleQuotePost,
   handleToggleReaction,
   handleOpenPostHistoryDialog,
+  handleStartDirectMessage, // Destructure new prop
   isProcessingPostAction,
   replyFormRef,
   loadingData,
@@ -71,6 +74,7 @@ const TopicView: React.FC<TopicViewProps> = ({
             onQuote={handleQuotePost}
             onToggleReaction={handleToggleReaction}
             onViewHistory={handleOpenPostHistoryDialog}
+            onStartDirectMessage={handleStartDirectMessage} // Pass down handler
             isTopicLocked={topic.is_locked}
             isProcessingAction={isProcessingPostAction || loadingData}
             topicTitle={topic.title}
@@ -82,9 +86,9 @@ const TopicView: React.FC<TopicViewProps> = ({
       {totalPages > 1 && (
         <div className="mt-8">
           <ForumPagination
-            page={page}
+            currentPage={page} // Ensure prop name matches ForumPagination's expected prop
             totalPages={totalPages}
-            setPage={setPage}
+            onPageChange={setPage} // Ensure prop name matches ForumPagination's expected prop
           />
         </div>
       )}
@@ -98,6 +102,7 @@ const TopicView: React.FC<TopicViewProps> = ({
             onSubmitReply={handleSubmitReply}
             isSubmitting={isSubmittingReply}
             isLocked={topic.is_locked}
+            currentUser={user} // Pass current user if ReplyFormCard needs it
           />
         </div>
       )}

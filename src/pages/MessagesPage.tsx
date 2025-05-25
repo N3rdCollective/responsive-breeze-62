@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useConversations } from '@/hooks/useConversations';
 import ConversationList from '@/components/messaging/ConversationList';
 import ChatView from '@/components/messaging/ChatView';
 import NewConversationModal from '@/components/messaging/NewConversationModal';
-import { Separator } from '@/components/ui/separator';
-import { LayoutGrid, MessageCircle, Users } from 'lucide-react';
-import { Conversation } from '@/types/messaging';
+import { MessageCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const MessagesPage: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { 
     conversations, 
     isLoading: conversationsLoading, 
@@ -43,36 +42,59 @@ const MessagesPage: React.FC = () => {
         console.log("MessagesPage: Conversations loading, skipping selection logic in useEffect.");
         return;
     }
+    
+    const routeState = location.state as { selectConversationWithUser?: string, conversationId?: string } | undefined;
 
-    console.log("MessagesPage useEffect [conversations, selectedConversationId, user, conversationsLoading] triggered. selectedCID:", selectedConversationId, "conversations.length:", conversations.length, "isLoading:", conversationsLoading);
-
-    if (!selectedConversationId && conversations.length > 0) {
+    if (routeState?.selectConversationWithUser && routeState?.conversationId && user) {
+      if (selectedConversationId !== routeState.conversationId) {
+        console.log("MessagesPage: Selecting conversation from route state:", routeState);
+        setSelectedConversationId(routeState.conversationId);
+        // Ensure otherParticipantId is correctly set based on the target user from routeState
+        // This might require finding the conversation object if participant IDs aren't directly in routeState
+        // For now, we assume selectConversationWithUser IS the otherParticipantId.
+        setOtherParticipantId(routeState.selectConversationWithUser); 
+        if (markConversationAsRead && routeState.conversationId) {
+          markConversationAsRead(routeState.conversationId);
+        }
+        // Clear state after processing
+        navigate(location.pathname, { replace: true, state: {} }); 
+      }
+    } else if (!selectedConversationId && conversations.length > 0 && user) {
       const firstConv = conversations[0];
-      if (user && firstConv && firstConv.id) { // Added check for firstConv.id
+      if (firstConv && firstConv.id) {
+        console.log("MessagesPage: Selecting first conversation:", firstConv.id);
         setSelectedConversationId(firstConv.id);
         setOtherParticipantId(user.id === firstConv.participant1_id ? firstConv.participant2_id : firstConv.participant1_id);
-        if (markConversationAsRead && firstConv.id) { // Ensure markConversationAsRead is defined
+        if (markConversationAsRead && firstConv.id) {
           markConversationAsRead(firstConv.id);
         }
       }
-    } else if (conversations.length === 0 && selectedConversationId) {
-      console.log("MessagesPage: Resetting selectedConversationId due to empty conversations array (and not loading).");
+    } else if (conversations.length === 0 && selectedConversationId && !conversationsLoading) {
+      console.log("MessagesPage: Resetting selectedConversationId due to empty conversations array.");
       setSelectedConversationId(null);
       setOtherParticipantId(null);
     }
-  }, [conversations, selectedConversationId, user, conversationsLoading, markConversationAsRead]);
+  }, [
+    conversations, 
+    selectedConversationId, 
+    user, 
+    conversationsLoading, 
+    markConversationAsRead, 
+    location.state, 
+    navigate
+  ]);
 
   const handleSelectConversation = (conversationId: string) => {
     setSelectedConversationId(conversationId);
     const selectedConv = conversations.find(c => c.id === conversationId);
     if (user && selectedConv) {
       setOtherParticipantId(user.id === selectedConv.participant1_id ? selectedConv.participant2_id : selectedConv.participant1_id);
-      if (markConversationAsRead) { // Ensure markConversationAsRead is defined
+      if (markConversationAsRead && conversationId) {
         markConversationAsRead(conversationId);
       }
     } else {
       console.warn("MessagesPage: Could not find selected conversation or user not available for setting otherParticipantId.");
-      setOtherParticipantId(null);
+      setOtherParticipantId(null); // Reset if selection fails
     }
   };
 
@@ -91,19 +113,16 @@ const MessagesPage: React.FC = () => {
     }
 
     try {
-      console.log(`MessagesPage: Attempting to start/create conversation with ${targetUserId} by user ${user.id}`);
       const newConversationId = await startOrCreateConversation(targetUserId);
       if (newConversationId) {
-        console.log(`MessagesPage: Conversation started/found ID: ${newConversationId}. Setting selectedConversationId and otherParticipantId.`);
         setSelectedConversationId(newConversationId);
-        setOtherParticipantId(targetUserId);
+        setOtherParticipantId(targetUserId); // The targetUserId is the other participant
         setIsNewConversationModalOpen(false);
-        if (markConversationAsRead) {
+        if (markConversationAsRead && newConversationId) {
           markConversationAsRead(newConversationId);
         }
       } else {
         toast({ title: "Error", description: "Could not start or find conversation.", variant: "destructive"});
-        console.error("MessagesPage: startOrCreateConversation returned null or undefined ID.");
       }
     } catch (error: any) {
       console.error("MessagesPage: Failed to start or create conversation:", error);
@@ -111,8 +130,8 @@ const MessagesPage: React.FC = () => {
     }
   };
 
-  if (authLoading || (user && conversationsLoading && !conversations.length && !selectedConversationId)) {
-    if (authLoading || (user && conversationsLoading && conversations.length === 0)) {
+  if (authLoading || (user && conversationsLoading && !conversations.length && !selectedConversationId && !location.state?.conversationId)) {
+    if (authLoading || (user && conversationsLoading && conversations.length === 0  && !location.state?.conversationId)) {
          return (
             <div className="min-h-screen flex items-center justify-center bg-background">
                 <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
@@ -148,7 +167,7 @@ const MessagesPage: React.FC = () => {
             <ChatView conversationId={selectedConversationId} otherParticipantId={otherParticipantId} />
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-center text-muted-foreground p-4 md:p-8">
-              {conversationsLoading && conversations.length === 0 ? (
+              {conversationsLoading && conversations.length === 0 && !location.state?.conversationId ? (
                  <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary mb-4"></div>
               ) : (
                 conversations.length > 0 ? null : <MessageCircle size={48} className="mx-auto mb-4" />
@@ -156,7 +175,7 @@ const MessagesPage: React.FC = () => {
               {conversations.length > 0 && !conversationsLoading ? (
                 <p className="text-lg">Select a conversation to start messaging</p>
               ) : (
-                 conversationsLoading && conversations.length === 0 ? (
+                 conversationsLoading && conversations.length === 0 && !location.state?.conversationId ? (
                     <p className="text-lg">Loading conversations...</p>
                  ) : (
                     <p className="text-lg">No conversations yet.</p>

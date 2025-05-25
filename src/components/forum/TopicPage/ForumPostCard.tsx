@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { MessageSquareText, ThumbsUp, Edit3, Trash2, Lock, QuoteIcon, History } from 'lucide-react';
+import { MessageSquareText, ThumbsUp, Edit3, Trash2, Lock, QuoteIcon, History, Mail } from 'lucide-react'; // Added Mail
 import { ForumPost } from '@/types/forum';
 import type { User } from '@supabase/supabase-js';
 import ForumUserProfileInfo from '@/components/forum/ForumUserProfileInfo';
@@ -17,10 +18,11 @@ interface ForumPostCardProps {
   onDelete: (postId: string) => void;
   onQuote: (post: ForumPost) => void;
   onToggleReaction: (postId: string, reactionType: 'like') => void;
-  onViewHistory: (postId: string, postTitle?: string) => void;
+  onViewHistory: (postId:string, postTitle?: string) => void;
   isTopicLocked: boolean;
   isProcessingAction: boolean;
   topicTitle?: string;
+  onStartDirectMessage?: (targetUserId: string) => void; // Added prop
 }
 
 const ForumPostCard: React.FC<ForumPostCardProps> = ({
@@ -35,6 +37,7 @@ const ForumPostCard: React.FC<ForumPostCardProps> = ({
   isTopicLocked,
   isProcessingAction,
   topicTitle,
+  onStartDirectMessage, // Destructure new prop
 }) => {
   const userIsAuthor = currentUser && post.user_id === currentUser.id;
   const userCanInteract = !!currentUser;
@@ -55,13 +58,27 @@ const ForumPostCard: React.FC<ForumPostCardProps> = ({
           <AvatarFallback>{avatarFallback}</AvatarFallback>
         </Avatar>
         <div className="flex-1">
-          {post.profile?.username ? (
-            <Link to={`/u/${post.profile.username}`} className="font-semibold text-sm sm:text-base text-gray-800 dark:text-gray-200 hover:text-primary dark:hover:text-primary-foreground transition-colors">
-              {displayName}
-            </Link>
-          ) : (
-            <p className="font-semibold text-sm sm:text-base text-gray-800 dark:text-gray-200">{displayName}</p>
-          )}
+          <div className="flex items-center gap-2">
+            {post.profile?.username ? (
+              <Link to={`/u/${post.profile.username}`} className="font-semibold text-sm sm:text-base text-gray-800 dark:text-gray-200 hover:text-primary dark:hover:text-primary-foreground transition-colors">
+                {displayName}
+              </Link>
+            ) : (
+              <p className="font-semibold text-sm sm:text-base text-gray-800 dark:text-gray-200">{displayName}</p>
+            )}
+            {currentUser && post.profile?.id && post.user_id !== currentUser.id && onStartDirectMessage && (
+              <Button
+                variant="ghost"
+                size="sm" // Use standard sm size for consistency
+                className="p-1 h-auto text-muted-foreground hover:text-primary" // Minimal padding, auto height
+                onClick={() => post.user_id && onStartDirectMessage(post.user_id)}
+                title={`Message ${displayName}`}
+                aria-label={`Message ${displayName}`}
+              >
+                <Mail className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
           <p className="text-xs text-muted-foreground">
             {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
             {post.is_edited && (
@@ -110,7 +127,7 @@ const ForumPostCard: React.FC<ForumPostCardProps> = ({
               Quote
             </Button>
           )}
-           {post.is_edited && ( // Add View History button here as well for more visibility if desired
+           {post.is_edited && ( 
             <Button
               variant="ghost"
               size="sm"
