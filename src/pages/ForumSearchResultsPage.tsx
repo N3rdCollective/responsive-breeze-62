@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -7,7 +6,7 @@ import { ArrowLeft, Loader2, SearchX } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ForumTopic } from '@/types/forum';
-import ForumSearchResultItem from '@/components/forum/ForumSearchResultItem'; // New import
+import ForumSearchResultItem from '@/components/forum/ForumSearchResultItem';
 
 const fetchForumSearchResults = async (query: string | null): Promise<ForumTopic[]> => {
   if (!query || query.trim() === '') {
@@ -21,10 +20,16 @@ const fetchForumSearchResults = async (query: string | null): Promise<ForumTopic
       title,
       slug,
       created_at,
-      category_id,
+      updated_at,
       user_id,
+      category_id,
+      is_sticky,
+      is_locked,
+      view_count,
+      last_post_at,
+      last_post_user_id,
       category:forum_categories (name, slug),
-      profile:profiles (username, display_name),
+      profile:profiles!user_id (username, display_name),
       _count (posts)
     `)
     .ilike('title', `%${query.trim()}%`)
