@@ -9,11 +9,18 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client'; // Import Supabase client
 
 interface ChatViewProps {
   conversationId: string;
   otherParticipantId: string;
+  // It would be good to pass otherParticipantName here if available from parent
+  // For now, we'll try to derive it or use a generic name.
 }
+
+const TYPING_EVENT_START = 'TYPING_START';
+const TYPING_EVENT_STOP = 'TYPING_STOP';
+const TYPING_INDICATOR_TIMEOUT_MS = 3000; // 3 seconds
 
 const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId }) => {
   const { user } = useAuth();
@@ -27,6 +34,12 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  const [isOtherUserTyping, setIsOtherUserTyping] = useState(false);
+  const [otherUserTypingName, setOtherUserTypingName] = useState<string | null>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const supabaseChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const isCurrentUserTypingRef = useRef(false); // Tracks if current user is marked as typing
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -35,16 +48,105 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
     scrollToBottom();
   }, [messages]);
 
+  // Effect for handling typing indicators and Supabase channel
   useEffect(() => {
-    console.log("ChatView props updated:", { conversationId, otherParticipantId, currentUserId });
-    // Reset file selection when conversation changes
+    if (!conversationId || !currentUserId || !otherParticipantId) {
+      if (supabaseChannelRef.current) {
+        supabase.removeChannel(supabaseChannelRef.current);
+        supabaseChannelRef.current = null;
+      }
+      setIsOtherUserTyping(false); // Reset typing state
+      return;
+    }
+
+    // Ensure previous channel is cleaned up if conversationId changes
+    if (supabaseChannelRef.current && supabaseChannelRef.current.topic !== `realtime:conversation-${conversationId}`) {
+        supabase.removeChannel(supabaseChannelRef.current);
+        supabaseChannelRef.current = null;
+    }
+    
+    if (!supabaseChannelRef.current) {
+        // Use the same channel name as useMessages, configure for broadcast
+        supabaseChannelRef.current = supabase.channel(`conversation-${conversationId}`, {
+        configs: {
+            broadcast: { ack: true }, // ack can be useful for knowing if send was received by server
+        },
+        });
+    }
+
+
+    const handleTypingStart = (payload: any) => {
+      const { userId: typingUserId, userName: typingUserName } = payload.payload;
+      if (typingUserId === otherParticipantId) {
+        setIsOtherUserTyping(true);
+        setOtherUserTypingName(typingUserName || 'Someone');
+        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = setTimeout(() => {
+          setIsOtherUserTyping(false);
+        }, TYPING_INDICATOR_TIMEOUT_MS);
+      }
+    };
+
+    const handleTypingStop = (payload: any) => {
+      const { userId: typingUserId } = payload.payload;
+      if (typingUserId === otherParticipantId) {
+        setIsOtherUserTyping(false);
+        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      }
+    };
+
+    supabaseChannelRef.current
+      .on('broadcast', { event: TYPING_EVENT_START }, handleTypingStart)
+      .on('broadcast', { event: TYPING_EVENT_STOP }, handleTypingStop)
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log(`ChatView: Subscribed to broadcast events on conversation-${conversationId}`);
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            console.error(`ChatView: Broadcast subscription error for conversation-${conversationId}: ${status}`);
+        }
+      });
+
+    return () => {
+      if (supabaseChannelRef.current) {
+        // Send a stop typing event if the user was typing when component unmounts or conversation changes
+        if (isCurrentUserTypingRef.current && currentUserId) {
+            supabaseChannelRef.current.send({
+                type: 'broadcast',
+                event: TYPING_EVENT_STOP,
+                payload: { userId: currentUserId },
+            });
+            isCurrentUserTypingRef.current = false;
+        }
+        // Unsubscribe from specific events or remove channel if no longer needed by other hooks
+        // supabase.removeChannel(supabaseChannelRef.current); // useMessages might still be using it
+        // For safety, only remove listeners we added
+        supabaseChannelRef.current.off('broadcast', { event: TYPING_EVENT_START }, handleTypingStart);
+        supabaseChannelRef.current.off('broadcast', { event: TYPING_EVENT_STOP }, handleTypingStop);
+        // Note: useMessages handles its own channel lifecycle. If this is the *only* user of this channel instance, then removeChannel is okay.
+        // However, since useMessages uses the same channel name, it's safer to just turn off our event listeners.
+      }
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      setIsOtherUserTyping(false); // Reset on unmount/change
+    };
+  }, [conversationId, currentUserId, otherParticipantId]);
+
+
+  useEffect(() => {
+    // Reset file selection and typing status when conversation changes
     setSelectedFile(null);
     setPreviewUrl(null);
     if (fileInputRef.current) {
-        fileInputRef.current.value = ""; // Clear file input
+        fileInputRef.current.value = "";
     }
-  }, [conversationId]);
+    setNewMessageContent(''); // Clear input field
+    if (isCurrentUserTypingRef.current && currentUserId && supabaseChannelRef.current) {
+        sendTypingEvent(false); // send stop if was typing
+    }
+    setIsOtherUserTyping(false); // Reset other user typing indicator
 
+  }, [conversationId]); // currentUserId not needed here as sendTypingEvent checks it
+
+  // Effect for handling file selection and preview
   useEffect(() => {
     if (!selectedFile) {
       setPreviewUrl(null);
@@ -55,18 +157,48 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
     return () => URL.revokeObjectURL(objectUrl); // Clean up
   }, [selectedFile]);
 
+  const sendTypingEvent = (isTyping: boolean) => {
+    if (!supabaseChannelRef.current || !currentUserId || !user) return;
+    
+    // Only send if state actually changes
+    if (isTyping === isCurrentUserTypingRef.current && isTyping) return; // Already sent start
+    if (!isTyping && !isCurrentUserTypingRef.current) return; // Already sent stop or wasn't typing
+
+    const event = isTyping ? TYPING_EVENT_START : TYPING_EVENT_STOP;
+    const displayName = user.user_metadata?.display_name || user.user_metadata?.username || user.email?.split('@')[0] || 'User';
+    
+    supabaseChannelRef.current.send({
+      type: 'broadcast',
+      event: event,
+      payload: { userId: currentUserId, userName: displayName },
+    }).catch(err => console.error("Error sending typing event:", err));
+
+    isCurrentUserTypingRef.current = isTyping;
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newContent = e.target.value;
+    setNewMessageContent(newContent);
+
+    if (newContent.trim() && !isCurrentUserTypingRef.current) {
+      sendTypingEvent(true);
+    } else if (!newContent.trim() && isCurrentUserTypingRef.current) {
+      sendTypingEvent(false);
+    }
+  };
+  
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit from SQL
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
         toast({ title: "File too large", description: "Please select an image smaller than 5MB.", variant: "destructive" });
-        if(event.target) event.target.value = ""; // Clear the input
+        if(event.target) event.target.value = ""; 
         return;
       }
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']; // from SQL
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
       if (!allowedTypes.includes(file.type)) {
         toast({ title: "Invalid file type", description: "Please select a JPG, PNG, GIF, or WEBP image.", variant: "destructive" });
-        if(event.target) event.target.value = ""; // Clear the input
+        if(event.target) event.target.value = "";
         return;
       }
       setSelectedFile(file);
@@ -79,7 +211,7 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
     setSelectedFile(null);
     setPreviewUrl(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = ""; // Clear the file input element
+      fileInputRef.current.value = ""; 
     }
   };
 
@@ -125,7 +257,10 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
           setSelectedFile(null);
           setPreviewUrl(null);
           if (fileInputRef.current) {
-            fileInputRef.current.value = ""; // Clear file input
+            fileInputRef.current.value = "";
+          }
+          if (isCurrentUserTypingRef.current) { // Send stop typing after message sent
+            sendTypingEvent(false);
           }
         },
         onError: (error) => {
@@ -186,6 +321,14 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
         ))}
         <div ref={messagesEndRef} />
       </ScrollArea>
+      
+      {isOtherUserTyping && (
+        <div className="px-4 pb-1 text-xs text-muted-foreground italic h-4">
+          {otherUserTypingName || 'Someone'} is typing...
+        </div>
+      )}
+      {!isOtherUserTyping && <div className="h-4 px-4 pb-1"></div>} {/* Placeholder to prevent layout jump */}
+
       <div className="p-4 border-t dark:border-gray-700/50 bg-background">
         {previewUrl && selectedFile && (
           <div className="mb-2 p-2 border rounded-md relative max-w-xs">
@@ -225,7 +368,7 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
             type="text"
             placeholder="Type a message..."
             value={newMessageContent}
-            onChange={(e) => setNewMessageContent(e.target.value)}
+            onChange={handleInputChange} // Changed to custom handler
             className="flex-1"
             disabled={isSending || !conversationId}
           />
