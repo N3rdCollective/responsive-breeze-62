@@ -50,33 +50,24 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
 
   // Effect for handling typing indicators and Supabase channel
   useEffect(() => {
+    // Cleanup previous channel instance when dependencies change or component unmounts
+    if (supabaseChannelRef.current) {
+      supabase.removeChannel(supabaseChannelRef.current);
+      supabaseChannelRef.current = null; // Important to nullify
+    }
+
+    // If essential data isn't available, don't set up a new channel
     if (!conversationId || !currentUserId || !otherParticipantId) {
-      if (supabaseChannelRef.current) {
-        supabase.removeChannel(supabaseChannelRef.current);
-        supabaseChannelRef.current = null;
-      }
       setIsOtherUserTyping(false); // Reset typing state
-      return;
+      return; // Exit early
     }
 
-    // Ensure previous channel is cleaned up if conversationId changes
-    if (supabaseChannelRef.current && supabaseChannelRef.current.topic !== `realtime:conversation-${conversationId}`) {
-        supabase.removeChannel(supabaseChannelRef.current);
-        supabaseChannelRef.current = null;
-    }
-    
-    if (!supabaseChannelRef.current) {
-        // Use the same channel name as useMessages, configure for broadcast
-        supabaseChannelRef.current = supabase.channel(`conversation-${conversationId}`, {
-          config: {
-            broadcast: { ack: true }, // ack can be useful for knowing if send was received by server
-          },
-        });
-    }
-
-    const handleTypingStart = (payload: any) => {
+    // Define handlers within the effect to capture current 'otherParticipantId'
+    // These handlers are redefined on each effect run if their dependencies change,
+    // ensuring they use the latest values.
+    const handleTypingStartInternal = (payload: any) => {
       const { userId: typingUserId, userName: typingUserName } = payload.payload;
-      if (typingUserId === otherParticipantId) {
+      if (typingUserId === otherParticipantId) { // Uses up-to-date otherParticipantId
         setIsOtherUserTyping(true);
         setOtherUserTypingName(typingUserName || 'Someone');
         if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
@@ -86,17 +77,24 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
       }
     };
 
-    const handleTypingStop = (payload: any) => {
+    const handleTypingStopInternal = (payload: any) => {
       const { userId: typingUserId } = payload.payload;
-      if (typingUserId === otherParticipantId) {
+      if (typingUserId === otherParticipantId) { // Uses up-to-date otherParticipantId
         setIsOtherUserTyping(false);
         if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       }
     };
+    
+    // Create a new channel instance for this effect run
+    const newChannel = supabase.channel(`conversation-${conversationId}`, {
+      config: {
+        broadcast: { ack: true }, // ack can be useful for knowing if send was received by server
+      },
+    });
 
-    supabaseChannelRef.current
-      .on('broadcast', { event: TYPING_EVENT_START }, handleTypingStart)
-      .on('broadcast', { event: TYPING_EVENT_STOP }, handleTypingStop)
+    newChannel
+      .on('broadcast', { event: TYPING_EVENT_START }, handleTypingStartInternal)
+      .on('broadcast', { event: TYPING_EVENT_STOP }, handleTypingStopInternal)
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           console.log(`ChatView: Subscribed to broadcast events on conversation-${conversationId}`);
@@ -105,26 +103,31 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
         }
       });
 
+    supabaseChannelRef.current = newChannel; // Store the new channel instance
+
+    // Return a cleanup function
     return () => {
-      if (supabaseChannelRef.current) {
-        // Send a stop typing event if the user was typing when component unmounts or conversation changes
-        if (isCurrentUserTypingRef.current && currentUserId) {
-            supabaseChannelRef.current.send({
-                type: 'broadcast',
-                event: TYPING_EVENT_STOP,
-                payload: { userId: currentUserId },
-            });
-            isCurrentUserTypingRef.current = false;
-        }
-        
-        // Instead of using .off() which doesn't exist on the RealtimeChannel type,
-        // we'll just remove the channel entirely when cleaning up
-        supabase.removeChannel(supabaseChannelRef.current);
+      // Send a stop typing event if the user was typing when component unmounts or conversation changes
+      if (isCurrentUserTypingRef.current && currentUserId && supabaseChannelRef.current) {
+          // Use the channel instance from THIS effect run
+          supabaseChannelRef.current.send({
+              type: 'broadcast',
+              event: TYPING_EVENT_STOP,
+              payload: { userId: currentUserId },
+          });
+          isCurrentUserTypingRef.current = false;
       }
+      
+      // Remove the channel instance created in THIS effect run
+      if (supabaseChannelRef.current) {
+        supabase.removeChannel(supabaseChannelRef.current);
+        supabaseChannelRef.current = null; // Nullify after removal
+      }
+
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       setIsOtherUserTyping(false); // Reset on unmount/change
     };
-  }, [conversationId, currentUserId, otherParticipantId]);
+  }, [conversationId, currentUserId, otherParticipantId]); // Effect dependencies
 
   useEffect(() => {
     // Reset file selection and typing status when conversation changes
@@ -141,7 +144,6 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
 
   }, [conversationId]); // currentUserId not needed here as sendTypingEvent checks it
 
-  // Effect for handling file selection and preview
   useEffect(() => {
     if (!selectedFile) {
       setPreviewUrl(null);
