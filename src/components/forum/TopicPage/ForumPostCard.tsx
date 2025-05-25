@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { MessageSquareText, ThumbsUp, Edit3, Trash2, Lock, QuoteIcon, History, Mail } from 'lucide-react'; // Added Mail
+import { MessageSquareText, ThumbsUp, Edit3, Trash2, Lock, QuoteIcon, History, Mail } from 'lucide-react';
 import { ForumPost } from '@/types/forum';
 import type { User } from '@supabase/supabase-js';
 import ForumUserProfileInfo from '@/components/forum/ForumUserProfileInfo';
@@ -22,7 +22,7 @@ interface ForumPostCardProps {
   isTopicLocked: boolean;
   isProcessingAction: boolean;
   topicTitle?: string;
-  onStartDirectMessage?: (targetUserId: string) => void; // Added prop
+  onStartDirectMessage?: (targetUserId: string) => void;
 }
 
 const ForumPostCard: React.FC<ForumPostCardProps> = ({
@@ -37,7 +37,7 @@ const ForumPostCard: React.FC<ForumPostCardProps> = ({
   isTopicLocked,
   isProcessingAction,
   topicTitle,
-  onStartDirectMessage, // Destructure new prop
+  onStartDirectMessage,
 }) => {
   const userIsAuthor = currentUser && post.user_id === currentUser.id;
   const userCanInteract = !!currentUser;
@@ -66,11 +66,11 @@ const ForumPostCard: React.FC<ForumPostCardProps> = ({
             ) : (
               <p className="font-semibold text-sm sm:text-base text-gray-800 dark:text-gray-200">{displayName}</p>
             )}
-            {currentUser && post.profile?.id && post.user_id !== currentUser.id && onStartDirectMessage && (
+            {currentUser && post.profile && post.user_id !== currentUser.id && onStartDirectMessage && (
               <Button
                 variant="ghost"
-                size="sm" // Use standard sm size for consistency
-                className="p-1 h-auto text-muted-foreground hover:text-primary" // Minimal padding, auto height
+                size="sm"
+                className="p-1 h-auto text-muted-foreground hover:text-primary"
                 onClick={() => post.user_id && onStartDirectMessage(post.user_id)}
                 title={`Message ${displayName}`}
                 aria-label={`Message ${displayName}`}

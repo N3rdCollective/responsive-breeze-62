@@ -24,7 +24,7 @@ interface TopicViewProps {
   handleQuotePost: (post: ForumPost) => void;
   handleToggleReaction: (postId: string, reactionType: 'like') => void;
   handleOpenPostHistoryDialog: (postId: string, postTitle?: string) => void;
-  handleStartDirectMessage: (targetUserId: string) => void; // Added prop
+  handleStartDirectMessage: (targetUserId: string) => void;
   isProcessingPostAction: boolean;
   replyFormRef: React.RefObject<HTMLDivElement>;
   loadingData: boolean;
@@ -47,7 +47,7 @@ const TopicView: React.FC<TopicViewProps> = ({
   handleQuotePost,
   handleToggleReaction,
   handleOpenPostHistoryDialog,
-  handleStartDirectMessage, // Destructure new prop
+  handleStartDirectMessage,
   isProcessingPostAction,
   replyFormRef,
   loadingData,
@@ -74,7 +74,7 @@ const TopicView: React.FC<TopicViewProps> = ({
             onQuote={handleQuotePost}
             onToggleReaction={handleToggleReaction}
             onViewHistory={handleOpenPostHistoryDialog}
-            onStartDirectMessage={handleStartDirectMessage} // Pass down handler
+            onStartDirectMessage={handleStartDirectMessage}
             isTopicLocked={topic.is_locked}
             isProcessingAction={isProcessingPostAction || loadingData}
             topicTitle={topic.title}
@@ -86,9 +86,9 @@ const TopicView: React.FC<TopicViewProps> = ({
       {totalPages > 1 && (
         <div className="mt-8">
           <ForumPagination
-            currentPage={page} // Ensure prop name matches ForumPagination's expected prop
+            page={page} 
             totalPages={totalPages}
-            onPageChange={setPage} // Ensure prop name matches ForumPagination's expected prop
+            setPage={setPage}
           />
         </div>
       )}
@@ -102,7 +102,7 @@ const TopicView: React.FC<TopicViewProps> = ({
             onSubmitReply={handleSubmitReply}
             isSubmitting={isSubmittingReply}
             isLocked={topic.is_locked}
-            currentUser={user} // Pass current user if ReplyFormCard needs it
+            // currentUser prop removed as ReplyFormCard uses useAuth()
           />
         </div>
       )}
