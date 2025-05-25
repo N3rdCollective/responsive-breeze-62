@@ -1,14 +1,14 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { LockIcon, MessageSquare } from 'lucide-react'; // Added MessageSquare for reply button
+import { LockIcon, MessageSquare } from 'lucide-react';
 import { ForumTopic } from '@/types/forum';
-import { Button } from '@/components/ui/button'; // Added Button
+import { Button } from '@/components/ui/button';
 
 interface TopicHeaderDisplayProps {
   topic: ForumTopic;
   categorySlug?: string;
-  onReplyClick?: () => void; // Added onReplyClick as optional prop
+  onReplyClick?: () => void;
 }
 
 const TopicHeaderDisplay: React.FC<TopicHeaderDisplayProps> = ({ topic, categorySlug, onReplyClick }) => {
@@ -17,12 +17,14 @@ const TopicHeaderDisplay: React.FC<TopicHeaderDisplayProps> = ({ topic, category
 
   return (
     <>
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-2 gap-4"> {/* Reduced mb-6 to mb-2 */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-2 gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             {topic.title}
             {topic.is_locked && (
-              <LockIcon className="h-5 w-5 text-muted-foreground" title="Topic Locked" />
+              <span title="Topic Locked">
+                <LockIcon className="h-5 w-5 text-muted-foreground" aria-label="Topic Locked" />
+              </span>
             )}
           </h1>
           <div className="text-sm text-muted-foreground mt-1">
@@ -36,7 +38,7 @@ const TopicHeaderDisplay: React.FC<TopicHeaderDisplayProps> = ({ topic, category
             </Button>
         )}
       </div>
-      <div className="mb-6"> {/* Kept mb-6 here for the "Back to" link */}
+      <div className="mb-6">
         <Link to={`/members/forum/${currentCategorySlug}`} className="text-sm text-primary hover:underline">
           &larr; Back to {categoryName}
         </Link>
