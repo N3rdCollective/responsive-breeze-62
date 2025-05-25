@@ -1,5 +1,5 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { Toaster } from "@/components/ui/toaster";
+
+import { Route, Routes } from "react-router-dom"; // Removed BrowserRouter as Router
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AuthProvider from "@/hooks/useAuth"; 
 import { StaffAuthProvider } from "@/hooks/useStaffAuth"; 
@@ -16,65 +16,64 @@ import EnhancedProfilePage from "@/pages/ProfilePage";
 import PublicProfilePage from "@/pages/PublicProfilePage"; 
 
 {/* Forum Routes */}
-{/* Assuming MembersPage serves as the Forum Home Page as ForumHomePage.tsx is not found */}
 import ForumCategoryPage from "@/pages/ForumCategoryPage"; 
 import ForumTopicPage from "@/pages/ForumTopicPage"; 
-import ForumNewTopicPage from "@/pages/NewForumTopicPage"; {/* Corrected path */}
+import ForumNewTopicPage from "@/pages/NewForumTopicPage";
 
 {/* Staff Pages */}
 import StaffDashboard from "@/pages/StaffDashboard";
 import StaffNewsEditor from "@/pages/StaffNewsEditor"; 
 import StaffShowsManager from "@/pages/StaffShowsManager"; 
-import StaffForumManager from "@/pages/StaffForumManagementPage"; {/* Corrected path */}
+import StaffForumManager from "@/pages/StaffForumManagementPage";
 import StaffUserManager from "@/pages/StaffUserManager"; 
-import StaffModerationDashboard from "@/pages/StaffModeratorDashboard"; {/* Corrected path */}
+import StaffModerationDashboard from "@/pages/StaffModeratorDashboard";
 import UnifiedStaffDashboard from "@/pages/UnifiedStaffDashboard";
 import NotFoundPage from "@/pages/NotFound"; 
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <StaffAuthProvider>
-          <TooltipProvider>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/personalities" element={<PersonalitiesPage />} />
-              <Route path="/schedule" element={<SchedulePage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/news" element={<NewsPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/auth" element={<AuthPage />} />
-              <Route path="/members" element={<MembersPage />} />
-              <Route path="/profile" element={<EnhancedProfilePage />} />
-              <Route path="/u/:username" element={<PublicProfilePage />} />
-              
-              {/* Forum Routes */}
-              <Route path="/forum" element={<MembersPage />} /> {/* Changed ForumHomePage to MembersPage */}
-              <Route path="/forum/category/:categorySlug" element={<ForumCategoryPage />} />
-              <Route path="/forum/topic/:topicId" element={<ForumTopicPage />} />
-              <Route path="/forum/new-topic/:categoryId" element={<ForumNewTopicPage />} /> {/* Assuming categoryId is used for NewForumTopicPage path based on previous structure */}
-              
-              {/* Staff Routes */}
-              <Route path="/staff/panel" element={<UnifiedStaffDashboard />} />
-              <Route path="/staff/news/editor" element={<StaffNewsEditor />} />
-              <Route path="/staff/news/editor/:postId" element={<StaffNewsEditor />} />
-              <Route path="/staff/shows" element={<StaffShowsManager />} />
-              <Route path="/staff/forum" element={<StaffForumManager />} />
-              <Route path="/staff/users" element={<StaffUserManager />} />
-              <Route path="/staff/moderation" element={<StaffModerationDashboard />} />
-              
-              {/* Legacy Staff Dashboard - can be removed once Unified is complete */}
-              <Route path="/admin/dashboard" element={<StaffDashboard />} />
-              
-              {/* 404 Route */}
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-            <Toaster />
-          </TooltipProvider>
-        </StaffAuthProvider>
-      </AuthProvider>
-    </Router>
+    // <Router> wrapper removed
+    <AuthProvider>
+      <StaffAuthProvider>
+        <TooltipProvider>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/personalities" element={<PersonalitiesPage />} />
+            <Route path="/schedule" element={<SchedulePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/news" element={<NewsPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/members" element={<MembersPage />} />
+            <Route path="/profile" element={<EnhancedProfilePage />} />
+            <Route path="/u/:username" element={<PublicProfilePage />} />
+            
+            {/* Forum Routes */}
+            <Route path="/forum" element={<MembersPage />} />
+            <Route path="/forum/category/:categorySlug" element={<ForumCategoryPage />} />
+            <Route path="/forum/topic/:topicId" element={<ForumTopicPage />} />
+            <Route path="/forum/new-topic/:categoryId" element={<ForumNewTopicPage />} />
+            
+            {/* Staff Routes */}
+            <Route path="/staff/panel" element={<UnifiedStaffDashboard />} />
+            <Route path="/staff/news/editor" element={<StaffNewsEditor />} />
+            <Route path="/staff/news/editor/:postId" element={<StaffNewsEditor />} />
+            <Route path="/staff/shows" element={<StaffShowsManager />} />
+            <Route path="/staff/forum" element={<StaffForumManager />} />
+            <Route path="/staff/users" element={<StaffUserManager />} />
+            <Route path="/staff/moderation" element={<StaffModerationDashboard />} />
+            
+            {/* Legacy Staff Dashboard - can be removed once Unified is complete */}
+            <Route path="/admin/dashboard" element={<StaffDashboard />} />
+            
+            {/* 404 Route */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+          {/* <Toaster /> removed as it's already in main.tsx */}
+        </TooltipProvider>
+      </StaffAuthProvider>
+    </AuthProvider>
+    // </Router> wrapper removed
   );
 }
 
