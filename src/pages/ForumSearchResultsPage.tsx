@@ -72,10 +72,20 @@ const fetchForumSearchResults = async ({ query, byUser, categoryId, startDate, e
   
   queryBuilder = queryBuilder.order('last_post_at', { ascending: false });
 
+  // console.log("Forum Search Query Filters:", { query, byUser, categoryId, startDate, endDate });
+  // console.log("Supabase Query Object (before execution):", queryBuilder);
+
+
   const { data, error } = await queryBuilder;
 
   if (error) {
-    console.error('Error fetching forum search results:', error); // This log is important for debugging
+    console.error('Error fetching forum search results. Supabase error details:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code,
+      fullError: error, // Log the full error object
+    });
     throw new Error('Failed to fetch search results');
   }
 
@@ -122,7 +132,7 @@ const ForumSearchResultsPage: React.FC = () => {
 
   const hasActiveFilters = !!(query?.trim() || byUser?.trim() || categoryId?.trim() || startDate?.trim() || endDate?.trim());
 
-  const { data: results, isLoading, isError, error } = useQuery({
+  const { data: results, isLoading, isError, error: queryHookError } = useQuery({
     queryKey: ['forumSearch', query, byUser, categoryId, startDate, endDate],
     queryFn: () => fetchForumSearchResults({ query, byUser, categoryId, startDate, endDate }),
     enabled: hasActiveFilters, 
@@ -189,7 +199,8 @@ const ForumSearchResultsPage: React.FC = () => {
             {isError && hasActiveFilters && (
               <div className="flex flex-col items-center justify-center p-10 text-destructive">
                 <SearchX className="h-8 w-8 mb-4" />
-                <p>Could not fetch search results. Error: {error?.message}</p>
+                {/* queryHookError contains the error from react-query, which should be the one thrown by fetchForumSearchResults */}
+                <p>Could not fetch search results. Error: {queryHookError?.message}</p>
               </div>
             )}
 
