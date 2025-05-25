@@ -1,7 +1,6 @@
-
 import React, { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
-import Hero from "@/components/Hero"; // Will be replaced by dynamic hero
+import Hero from "@/components/Hero"; // Using the updated Hero component
 import Footer from "@/components/Footer";
 import LiveShowBanner from "@/components/LiveShowBanner";
 import HomeNewsSection from "@/components/home/HomeNewsSection";
@@ -9,20 +8,20 @@ import PersonalitySlider from "@/components/home/PersonalitySlider";
 import VideoGallery from "@/components/VideoGallery";
 import FeaturedArtistSection from "@/components/home/FeaturedArtistSection";
 import { supabase } from "@/integrations/supabase/client";
-import { HomeSettings, defaultSettings, VideoData } from "@/components/staff/home/context/HomeSettingsContext"; // Keep for other settings
-import { Link } from "react-router-dom"; // For CTA button
+import { HomeSettings, defaultSettings, VideoData } from "@/components/staff/home/context/HomeSettingsContext";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Play, Calendar, Mic, Users, Radio as RadioIcon } from "lucide-react"; // Added icons
-import TitleUpdater from "@/components/TitleUpdater"; // For site title
+import { Play, Calendar, Mic, Users, Radio as RadioIcon } from "lucide-react";
+import TitleUpdater from "@/components/TitleUpdater";
 
 // Interface for homepage_content table data
 interface HomepageContentData {
   hero_title: string;
   hero_subtitle: string;
   hero_cta_text: string;
-  hero_background_image?: string;
+  hero_background_image?: string; // This will no longer be directly used by the Hero component itself
   current_show_enabled: boolean;
   current_show_title: string;
   current_show_description: string;
@@ -42,6 +41,7 @@ const defaultHomepageContentData: HomepageContentData = {
   hero_title: "Your Voice, Your Station",
   hero_subtitle: "Experience the best in community radio with live shows, music, discussions, and more.",
   hero_cta_text: "Listen Live",
+  hero_background_image: "", // Default, but not used by Hero.tsx for its main background
   current_show_enabled: true,
   current_show_title: "Morning Drive Time",
   current_show_description: "Start your day with the latest music, news, and community updates.",
@@ -93,6 +93,7 @@ const Index = () => {
         }
         
         // Fetch featured videos (existing logic)
+        // These videos will be passed to the Hero component and VideoGallery
         const { data: videosData, error: videosError } = await supabase
           .from("featured_videos")
           .select("*")
@@ -119,6 +120,7 @@ const Index = () => {
         // Ensure defaults are set if any fetch fails
         setSettings(defaultSettings);
         setHomepageContent(defaultHomepageContentData);
+        setFeaturedVideos([]);
       } finally {
         setIsLoading(false);
       }
@@ -127,9 +129,10 @@ const Index = () => {
     fetchData();
   }, []);
 
-  const heroStyle = homepageContent.hero_background_image 
-    ? { backgroundImage: `url(${homepageContent.hero_background_image})`, backgroundSize: 'cover', backgroundPosition: 'center' } 
-    : {};
+  // heroStyle is no longer needed for the Hero component itself, as Hero.tsx manages its own background.
+  // const heroStyle = homepageContent.hero_background_image 
+  //   ? { backgroundImage: `url(${homepageContent.hero_background_image})`, backgroundSize: 'cover', backgroundPosition: 'center' } 
+  //   : {};
 
   if (isLoading) {
     return (
@@ -141,53 +144,27 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <TitleUpdater /> {/* Uses system_settings for site title, or you can pass a specific title */}
+      <TitleUpdater />
       <Navbar />
       
-      {/* Dynamic Hero Section */}
+      {/* Hero Section with Video Backgrounds */}
       {settings.show_hero && (
-         <section 
-          className="relative pt-20 pb-16 text-white" // Adjusted for background image
-          style={heroStyle}
-        >
-          <div 
-            className="absolute inset-0 bg-black/50" // Overlay for better text readability if image is present
-            style={{ display: homepageContent.hero_background_image ? 'block' : 'none' }}
-          ></div>
-          <div className="container mx-auto px-4 relative z-10"> {/* Ensure content is above overlay */}
-            <div className="max-w-4xl mx-auto text-center">
-              <Badge variant="secondary" className="mb-4 bg-opacity-80 backdrop-blur-sm">
-                <RadioIcon className="w-4 h-4 mr-2" />
-                Live Broadcasting
-              </Badge>
-              <h1 className={`text-4xl md:text-6xl font-bold mb-6 ${!homepageContent.hero_background_image ? 'bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent' : ''}`}>
-                {homepageContent.hero_title}
-              </h1>
-              <p className="text-xl text-gray-200 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-                {homepageContent.hero_subtitle}
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
-                  <Play className="w-5 h-5" />
-                  {homepageContent.hero_cta_text}
-                </Button>
-                <Button size="lg" variant="outline" asChild className="border-white text-white hover:bg-white/10">
-                  <Link to="/schedule" className="gap-2">
-                    <Calendar className="w-5 h-5" />
-                    View Schedule
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
+        <Hero
+          videoBackgrounds={featuredVideos} // Pass the fetched videos to Hero
+          title={homepageContent.hero_title}
+          subtitle={homepageContent.hero_subtitle}
+          ctaText={homepageContent.hero_cta_text}
+        />
       )}
       
-      {/* VideoGallery remains, uses its own data source */}
-      <VideoGallery videos={featuredVideos} />
+      {/* VideoGallery remains, uses its own data source or can use featuredVideos */}
+      {/* If VideoGallery is meant to show the same videos, pass featuredVideos */}
+      {/* If it's different, it should fetch its own or receive different props. */}
+      {/* Assuming it uses the same featured videos for now: */}
+      <VideoGallery videos={featuredVideos} /> 
       
       <div className="container mx-auto px-4 py-8">
-        {settings.show_live_banner && <LiveShowBanner />} {/* This uses useCurrentShow hook */}
+        {settings.show_live_banner && <LiveShowBanner />}
       </div>
 
       {/* Dynamic Current Show Section */}

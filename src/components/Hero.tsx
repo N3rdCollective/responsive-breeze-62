@@ -16,6 +16,9 @@ type GreetingData = {
 
 interface HeroProps {
   videoBackgrounds?: VideoData[];
+  title: string;
+  subtitle: string;
+  ctaText: string;
 }
 
 const defaultVideoBackgrounds: VideoData[] = [];
@@ -47,7 +50,12 @@ const greetings: GreetingData = {
   }
 };
 
-const Hero = ({ videoBackgrounds = defaultVideoBackgrounds }: HeroProps) => {
+const Hero = ({ 
+  videoBackgrounds = defaultVideoBackgrounds,
+  title,
+  subtitle,
+  ctaText 
+}: HeroProps) => {
   const [location, setLocation] = useState<string>("default");
   const [greeting, setGreeting] = useState<string>("");
   const { togglePlayPause, isPlaying } = useAudioPlayer();
@@ -64,6 +72,7 @@ const Hero = ({ videoBackgrounds = defaultVideoBackgrounds }: HeroProps) => {
       }
 
       try {
+        setIsLoading(true); // Ensure loading state is true at the start
         const { data, error } = await supabase
           .from("featured_videos")
           .select("*")
@@ -74,6 +83,7 @@ const Hero = ({ videoBackgrounds = defaultVideoBackgrounds }: HeroProps) => {
         setVideos(data || []);
       } catch (error) {
         console.error("Error fetching featured videos:", error);
+        setVideos([]); // Set to empty array on error
       } finally {
         setIsLoading(false);
       }
@@ -99,22 +109,26 @@ const Hero = ({ videoBackgrounds = defaultVideoBackgrounds }: HeroProps) => {
   }, []);
 
   useEffect(() => {
-    if (videos.length === 0) return;
+    if (videos.length === 0 && !isLoading) return; // Don't run interval if no videos or still loading initial
+    if (videos.length <= 1) return; // No need to rotate if 0 or 1 video
     
     const videoRotationInterval = setInterval(() => {
       setCurrentVideoIndex((prevIndex) => 
         (prevIndex + 1) % videos.length
       );
-    }, 45000);
+    }, 45000); // Rotate every 45 seconds
 
     return () => clearInterval(videoRotationInterval);
-  }, [videos]);
+  }, [videos, isLoading]);
 
   useEffect(() => {
     const getTimeBasedGreeting = () => {
       const hour = new Date().getHours();
       const locationData = greetings[location] || greetings.default;
-      const slang = locationData.slang[Math.floor(Math.random() * locationData.slang.length)];
+      // Ensure slang array is not empty before trying to access a random element
+      const slang = locationData.slang.length > 0 
+        ? locationData.slang[Math.floor(Math.random() * locationData.slang.length)]
+        : "Hey"; // Fallback slang
       
       let timeGreeting;
       if (hour < 12) timeGreeting = locationData.morning;
@@ -128,44 +142,50 @@ const Hero = ({ videoBackgrounds = defaultVideoBackgrounds }: HeroProps) => {
       setGreeting(getTimeBasedGreeting());
     };
 
-    updateGreeting();
-    const interval = setInterval(updateGreeting, 60000); // Update every minute
+    updateGreeting(); // Initial call
+    const interval = setInterval(updateGreeting, 60000); // Update greeting every minute
 
     return () => clearInterval(interval);
   }, [location]);
 
+  // Fallback display when videos are loading or none are available
   if (isLoading || videos.length === 0) {
     return (
       <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
+        {/* Fallback static background image */}
         <img 
-          src="/lovable-uploads/2d39862c-be68-49df-afe5-b212fd22bfbe.png"
-          alt="City skyline fallback image"
+          src="/lovable-uploads/2d39862c-be68-49df-afe5-b212fd22bfbe.png" // Ensure this path is correct
+          alt="City skyline fallback"
           className="absolute inset-0 w-full h-full object-cover object-center"
         />
         
+        {/* Gradient overlay for text readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/80 z-10" />
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center z-20">
-          <span className="inline-block mb-4 px-4 py-1 rounded-full bg-[#666666]/30 dark:bg-[#666666]/40 text-sm font-medium tracking-wide animate-fadeIn text-white">
-            {greeting}
-          </span>
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight animate-fadeIn [animation-delay:200ms] text-white">
-            Experience the Power of Sound
+        {/* Content */}
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center z-20 text-white">
+          {greeting && (
+            <span className="inline-block mb-4 px-4 py-1 rounded-full bg-white/10 backdrop-blur-sm text-sm font-medium tracking-wide animate-fadeIn">
+              {greeting}
+            </span>
+          )}
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight animate-fadeIn [animation-delay:200ms]">
+            {title}
           </h1>
           <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto animate-fadeIn [animation-delay:400ms]">
-            Join us on a journey through music, stories, and connections that move you.
+            {subtitle}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fadeIn [animation-delay:600ms]">
             <Button
-              className="bg-[#FFD700] text-black hover:bg-[#FFD700]/90 dark:bg-[#FFD700] dark:text-black dark:hover:bg-[#FFD700]/90 px-8 py-6 text-lg"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 text-lg"
               onClick={togglePlayPause}
             >
-              {isPlaying ? "Pause" : "Listen Live"}
+              {isPlaying ? "Pause Stream" : ctaText}
             </Button>
             <Link to="/schedule">
               <Button
                 variant="outline"
-                className="border-2 border-[#FFD700] text-[#FFD700] bg-black/40 hover:bg-black/60 px-8 py-6 text-lg dark:border-[#FFD700] dark:text-white dark:hover:bg-[#FFD700]/10"
+                className="border-white text-white hover:bg-white/10 px-8 py-3 text-lg"
               >
                 View Schedule
               </Button>
@@ -176,51 +196,59 @@ const Hero = ({ videoBackgrounds = defaultVideoBackgrounds }: HeroProps) => {
     );
   }
 
+  // Display with YouTube video background
   const currentVideo = videos[currentVideoIndex % videos.length];
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
-        <div className="relative w-full h-full">
-          <iframe
-            src={`https://www.youtube.com/embed/${currentVideo.youtube_id}?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&iv_load_policy=3&playlist=${currentVideo.youtube_id}&disablekb=1&modestbranding=1&start=15`}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            className="absolute w-[300%] h-[300%] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-            title={currentVideo.title}
-          />
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
+      {/* YouTube Iframe Background */}
+      {currentVideo && (
+        <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
+          <div className="relative w-full h-full">
+            <iframe
+              src={`https://www.youtube.com/embed/${currentVideo.youtube_id}?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&iv_load_policy=3&playlist=${currentVideo.youtube_id}&disablekb=1&modestbranding=1&start=15`}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              className="absolute w-[300%] h-[300%] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none" // Scaling for full bleed
+              title={currentVideo.title || 'Background Video'}
+            />
+          </div>
         </div>
-      </div>
+      )}
       
+      {/* Fallback image (hidden by default, but good for structure or if iframe fails catastrophically) */}
       <img 
         src="/lovable-uploads/2d39862c-be68-49df-afe5-b212fd22bfbe.png"
-        alt="City skyline fallback image"
-        className="absolute inset-0 w-full h-full object-cover object-center opacity-0"
-        style={{ opacity: 0 }}
+        alt="Fallback background"
+        className="absolute inset-0 w-full h-full object-cover object-center opacity-0" // Hidden
       />
       
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/80 z-10" />
+      {/* Gradient overlay for text readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70 z-10" />
       
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center z-20">
-        <span className="inline-block mb-4 px-4 py-1 rounded-full bg-[#666666]/30 dark:bg-[#666666]/40 text-sm font-medium tracking-wide animate-fadeIn text-white">
-          {greeting}
-        </span>
-        <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight animate-fadeIn [animation-delay:200ms] text-white">
-          Experience the Power of Sound
+      {/* Content */}
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center z-20 text-white">
+        {greeting && (
+           <span className="inline-block mb-4 px-4 py-1 rounded-full bg-white/10 backdrop-blur-sm text-sm font-medium tracking-wide animate-fadeIn">
+            {greeting}
+          </span>
+        )}
+        <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight animate-fadeIn [animation-delay:200ms]">
+          {title}
         </h1>
         <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto animate-fadeIn [animation-delay:400ms]">
-          Join us on a journey through music, stories, and connections that move you.
+          {subtitle}
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fadeIn [animation-delay:600ms]">
           <Button
-            className="bg-[#FFD700] text-black hover:bg-[#FFD700]/90 dark:bg-[#FFD700] dark:text-black dark:hover:bg-[#FFD700]/90 px-8 py-6 text-lg"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 text-lg"
             onClick={togglePlayPause}
           >
-            {isPlaying ? "Pause" : "Listen Live"}
+            {isPlaying ? "Pause Stream" : ctaText}
           </Button>
           <Link to="/schedule">
             <Button
               variant="outline"
-              className="border-2 border-[#FFD700] text-[#FFD700] bg-black/40 hover:bg-black/60 px-8 py-6 text-lg dark:border-[#FFD700] dark:text-white dark:hover:bg-[#FFD700]/10"
+              className="border-white text-white hover:bg-white/10 px-8 py-3 text-lg"
             >
               View Schedule
             </Button>
