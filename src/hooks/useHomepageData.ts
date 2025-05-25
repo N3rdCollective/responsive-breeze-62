@@ -1,7 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { HomeSettings, defaultSettings, VideoData } from "@/components/staff/home/context/HomeSettingsContext";
+import { HomeSettings as OriginalHomeSettings, defaultSettings as originalDefaultSettings, VideoData } from "@/components/staff/home/context/HomeSettingsContext";
+
+// Align HomeSettings here with the one from context for consistency
+export type HomeSettings = OriginalHomeSettings; 
+export const defaultSettings: HomeSettings = originalDefaultSettings;
 
 // Interface for homepage_content table data
 export interface HomepageContentData {
@@ -69,8 +72,14 @@ export const useHomepageData = (): UseHomepageDataReturn => {
           
         if (settingsError) console.error("Error fetching home settings:", settingsError);
         
-        if (settingsData) setSettings(settingsData as HomeSettings);
-        else setSettings(defaultSettings);
+        // Important: Ensure defaultSettings includes show_stats_section: true
+        // And that settingsData correctly maps to HomeSettings type which now includes show_stats_section
+        if (settingsData) {
+          // Ensure all fields are present, falling back to defaults if a new field is missing from DB
+          setSettings({ ...defaultSettings, ...settingsData } as HomeSettings);
+        } else {
+          setSettings(defaultSettings);
+        }
 
 
         const { data: contentData, error: contentError } = await supabase

@@ -34,7 +34,7 @@ const SectionsTabContent: React.FC = () => {
         </div>
         <Switch
           id="show-video-gallery"
-          checked={true}
+          checked={true} // Assuming this is intentionally always true and disabled as per original code
           disabled
         />
       </div>
@@ -50,6 +50,20 @@ const SectionsTabContent: React.FC = () => {
           id="show-live-banner"
           checked={settings.show_live_banner}
           onCheckedChange={() => handleToggle('show_live_banner')}
+        />
+      </div>
+
+      <div className="flex items-center justify-between space-x-2">
+        <div>
+          <Label htmlFor="show-stats-section">Statistics Section</Label>
+          <p className="text-sm text-muted-foreground">
+            Display key statistics on the home page
+          </p>
+        </div>
+        <Switch
+          id="show-stats-section"
+          checked={settings.show_stats_section}
+          onCheckedChange={() => handleToggle('show_stats_section')}
         />
       </div>
       

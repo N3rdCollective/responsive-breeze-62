@@ -481,6 +481,7 @@ export type Database = {
           show_live_banner: boolean
           show_news_section: boolean
           show_personalities: boolean
+          show_stats_section: boolean | null
           updated_at: string | null
         }
         Insert: {
@@ -490,6 +491,7 @@ export type Database = {
           show_live_banner?: boolean
           show_news_section?: boolean
           show_personalities?: boolean
+          show_stats_section?: boolean | null
           updated_at?: string | null
         }
         Update: {
@@ -499,6 +501,7 @@ export type Database = {
           show_live_banner?: boolean
           show_news_section?: boolean
           show_personalities?: boolean
+          show_stats_section?: boolean | null
           updated_at?: string | null
         }
         Relationships: []

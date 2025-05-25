@@ -52,12 +52,14 @@ const Index = () => {
         {settings.show_live_banner && <LiveShowBanner />}
       </div>
 
-      <StatsSection stats={{
-        broadcasts: homepageContent.stats_broadcasts,
-        shows: homepageContent.stats_shows,
-        listeners: homepageContent.stats_listeners,
-        members: homepageContent.stats_members,
-      }} />
+      {settings.show_stats_section && ( // Conditionally render StatsSection
+        <StatsSection stats={{
+          broadcasts: homepageContent.stats_broadcasts,
+          shows: homepageContent.stats_shows,
+          listeners: homepageContent.stats_listeners,
+          members: homepageContent.stats_members,
+        }} />
+      )}
       
       <div className="container mx-auto px-4 py-8">
         <div className="space-y-16">

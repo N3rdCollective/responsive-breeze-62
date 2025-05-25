@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 export interface VideoData {
@@ -17,6 +16,7 @@ export interface HomeSettings {
   show_news_section: boolean;
   show_personalities: boolean;
   show_live_banner: boolean;
+  show_stats_section: boolean; // Added new setting
   created_at?: string;
   updated_at?: string;
 }
@@ -26,7 +26,8 @@ export const defaultSettings: HomeSettings = {
   show_hero: true,
   show_news_section: true,
   show_personalities: true,
-  show_live_banner: true
+  show_live_banner: true,
+  show_stats_section: true, // Added default for new setting
 };
 
 interface HomeSettingsContextType {
