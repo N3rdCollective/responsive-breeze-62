@@ -30,7 +30,7 @@ const fetchForumSearchResults = async (query: string | null): Promise<ForumTopic
       last_post_user_id,
       category:forum_categories (name, slug),
       profile:profiles!user_id (username, display_name),
-      _count (posts)
+      forum_posts(count)
     `)
     .ilike('title', `%${query.trim()}%`)
     .order('created_at', { ascending: false });
@@ -39,7 +39,36 @@ const fetchForumSearchResults = async (query: string | null): Promise<ForumTopic
     console.error('Error fetching forum search results:', error);
     throw new Error('Failed to fetch search results');
   }
-  return data || [];
+
+  const rawResults = data || [];
+  const transformedResults: ForumTopic[] = rawResults.map((rawTopic: any) => {
+    // Supabase returns the count as 'foreign_table_name_count', so 'forum_posts_count'
+    const { forum_posts_count, ...rest } = rawTopic;
+    
+    // Explicitly define the topic structure to ensure type safety
+    const topic: ForumTopic = {
+      id: rest.id,
+      title: rest.title,
+      slug: rest.slug,
+      created_at: rest.created_at,
+      updated_at: rest.updated_at,
+      user_id: rest.user_id,
+      category_id: rest.category_id,
+      is_sticky: rest.is_sticky,
+      is_locked: rest.is_locked,
+      view_count: rest.view_count,
+      last_post_at: rest.last_post_at,
+      last_post_user_id: rest.last_post_user_id,
+      category: rest.category,
+      profile: rest.profile,
+    };
+
+    if (typeof forum_posts_count === 'number') {
+      topic._count = { posts: forum_posts_count };
+    }
+    return topic;
+  });
+  return transformedResults;
 };
 
 const ForumSearchResultsPage: React.FC = () => {
