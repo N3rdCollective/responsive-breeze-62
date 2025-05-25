@@ -44,13 +44,18 @@ const fetchMessages = async (conversationId: string): Promise<DirectMessage[]> =
   })) as DirectMessage[];
 };
 
-const sendMessage = async (newMessage: {
+const sendMessageSupabase = async (newMessage: {
   conversation_id: string;
   sender_id: string;
   recipient_id: string;
   content: string;
   media_url?: string | null;
 }): Promise<DirectMessage> => {
+  const funcStartTime = Date.now();
+  console.log(`useMessages: sendMessageSupabase called at ${new Date(funcStartTime).toISOString()}`);
+
+  let insertStartTime = Date.now();
+  console.log(`useMessages: Attempting to insert message at ${new Date(insertStartTime).toISOString()}`);
   const { data, error } = await supabase
     .from('messages')
     .insert({ ...newMessage, timestamp: new Date().toISOString() })
@@ -66,12 +71,14 @@ const sendMessage = async (newMessage: {
       profile:profiles!messages_sender_id_fkey (id, username, display_name, profile_picture)
     `)
     .single();
+  const insertEndTime = Date.now();
+  console.log(`useMessages: Message insert operation took ${insertEndTime - insertStartTime}ms.`);
 
   if (error) {
-    console.error('Error sending message:', error);
+    console.error('Error sending message (inserting):', error);
     toast({ title: "Error Sending Message", description: error.message, variant: "destructive" });
     if (error instanceof Error) throw error;
-    throw new Error(typeof error === 'string' ? error : 'Failed to send message');
+    throw new Error(typeof error === 'string' ? error : 'Failed to send message (insert)');
   }
    if (!data) {
     console.error('Error sending message: No data returned after insert.');
@@ -79,11 +86,23 @@ const sendMessage = async (newMessage: {
     throw new Error('No data returned after sending message');
   }
   
-  await supabase
+  const updateConvStartTime = Date.now();
+  console.log(`useMessages: Attempting to update conversation timestamp at ${new Date(updateConvStartTime).toISOString()}`);
+  const { error: convUpdateError } = await supabase
     .from('conversations')
     .update({ last_message_timestamp: new Date().toISOString() })
     .eq('id', newMessage.conversation_id);
+  const updateConvEndTime = Date.now();
+  console.log(`useMessages: Conversation update operation took ${updateConvEndTime - updateConvStartTime}ms.`);
     
+  if (convUpdateError) {
+    console.error('Error updating conversation timestamp:', convUpdateError);
+    // Not throwing here as the message was sent, but logging and toasting error
+    toast({ title: "Warning", description: "Message sent, but failed to update conversation metadata.", variant: "default" });
+  }
+  
+  const funcEndTime = Date.now();
+  console.log(`useMessages: sendMessageSupabase finished at ${new Date(funcEndTime).toISOString()}. Total time in function: ${funcEndTime - funcStartTime}ms`);
   return { 
     ...data, 
     profile: data.profile ? {
@@ -124,7 +143,8 @@ export const useMessages = (conversationId: string | null) => {
         toast({ title: "Error Sending Message", description: "Recipient information is missing.", variant: "destructive" });
         throw new Error('Recipient ID (otherParticipantId) is missing.');
       }
-      return sendMessage({
+      // Renamed the original sendMessage to sendMessageSupabase to avoid confusion with the exported sendMessage from the hook
+      return sendMessageSupabase({
         conversation_id: conversationId,
         sender_id: user.id,
         recipient_id: newMessageData.otherParticipantId,
@@ -133,6 +153,7 @@ export const useMessages = (conversationId: string | null) => {
       });
     },
     onSuccess: (newMessage) => {
+      console.log("useMessages: mutation.onSuccess triggered.");
       queryClient.setQueryData<DirectMessage[]>(queryKey, (oldMessages = []) => {
         const fullNewMessage = {
           ...newMessage,
@@ -142,7 +163,7 @@ export const useMessages = (conversationId: string | null) => {
       queryClient.invalidateQueries({ queryKey: ['conversations', user?.id] });
     },
     onError: (err) => {
-      console.error("Failed to send message:", err);
+      console.error("useMessages: mutation.onError - Failed to send message:", err);
     }
   });
 
@@ -160,18 +181,17 @@ export const useMessages = (conversationId: string | null) => {
           filter: `conversation_id=eq.${conversationId}`,
         },
         (payload) => {
-          const rawNewMessage = payload.new as any; // Treat as any initially for mapping
+          console.log(`useMessages: Received real-time message payload for conversation ${conversationId}:`, payload);
+          const rawNewMessage = payload.new as any; 
           
-          // Map profile_picture to avatar_url for incoming real-time messages
           const newMessage: DirectMessage = {
             ...rawNewMessage,
             profile: rawNewMessage.profile ? {
               id: rawNewMessage.profile.id,
               username: rawNewMessage.profile.username,
               display_name: rawNewMessage.profile.display_name,
-              avatar_url: rawNewMessage.profile.profile_picture // Map here too for consistency
+              avatar_url: rawNewMessage.profile.profile_picture 
             } : null,
-            // Ensure all other fields of DirectMessage are present or defaulted
             id: rawNewMessage.id,
             conversation_id: rawNewMessage.conversation_id,
             sender_id: rawNewMessage.sender_id,
@@ -186,10 +206,14 @@ export const useMessages = (conversationId: string | null) => {
              queryClient.setQueryData<DirectMessage[]>(queryKey, (oldMessages = []) => {
                 const existingMessage = oldMessages.find(msg => msg.id === newMessage.id);
                 if (!existingMessage) {
+                    console.log(`useMessages: Adding new real-time message from other user to cache for conversation ${conversationId}.`);
                     return [...oldMessages, newMessage];
                 }
+                console.log(`useMessages: Real-time message from other user already in cache for conversation ${conversationId}.`);
                 return oldMessages;
              });
+          } else {
+            console.log(`useMessages: Real-time message is from current user, already handled by optimistic update for conversation ${conversationId}.`);
           }
         }
       )
@@ -199,11 +223,12 @@ export const useMessages = (conversationId: string | null) => {
         }
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
             console.error(`Subscription error for conversation ${conversationId}: ${status}`, err);
-            toast({ title: "Realtime Connection Error", description: "Could not connect to messaging service. Please refresh.", variant: "destructive" });
+            toast({ title: "Realtime Connection Error", description: `Could not connect to messaging service (${status}). Please refresh.`, variant: "destructive" });
         }
       });
 
     return () => {
+      console.log(`useMessages: Unsubscribing from conversation ${conversationId}`);
       supabase.removeChannel(channel);
     };
   }, [conversationId, user?.id, queryClient, queryKey]);
@@ -213,7 +238,7 @@ export const useMessages = (conversationId: string | null) => {
     isLoading,
     isError,
     error,
-    sendMessage: mutation.mutate,
+    sendMessage: mutation.mutate, // This is what ChatView calls
     isSending: mutation.isPending,
   };
 };

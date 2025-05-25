@@ -37,6 +37,9 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
+    const sendStartTime = Date.now();
+    console.log(`ChatView: handleSendMessage called at ${new Date(sendStartTime).toISOString()}`);
+
     if (!newMessageContent.trim() || !currentUserId || !otherParticipantId) {
       console.error("ChatView: Cannot send message. Missing data.", {
         content: newMessageContent.trim() || "Empty",
@@ -63,11 +66,13 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
       { content: newMessageContent.trim(), otherParticipantId: otherParticipantId },
       {
         onSuccess: () => {
-          console.log("ChatView: Message sent successfully (mutation onSuccess).");
+          const successTime = Date.now();
+          console.log(`ChatView: Message sent successfully (mutation onSuccess) at ${new Date(successTime).toISOString()}. Total time: ${successTime - sendStartTime}ms`);
           setNewMessageContent('');
         },
         onError: (error) => {
-          console.error("ChatView: Error sending message (mutation onError):", error);
+          const errorTime = Date.now();
+          console.error(`ChatView: Error sending message (mutation onError) at ${new Date(errorTime).toISOString()}. Total time: ${errorTime - sendStartTime}ms. Error:`, error);
           toast({ 
             title: "Message Failed", 
             description: error.message || "Could not send message. Please try again.", 
