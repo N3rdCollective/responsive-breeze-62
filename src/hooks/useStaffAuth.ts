@@ -13,12 +13,16 @@ const StaffAuthProvider = ({ children }: { children: ReactNode }) => {
   const authState = useStaffAuthStateHook({}); 
   const handleLogout = useStaffLogoutHook(authState.staffName);
 
-  const value = {
+  const value: StaffAuthContextType = { // Added explicit type for value
     ...authState,
     handleLogout,
   };
 
-  return <StaffAuthContext.Provider value={value}>{children}</StaffAuthContext.Provider>;
+  return (
+    <StaffAuthContext.Provider value={value}>
+      {children}
+    </StaffAuthContext.Provider>
+  );
 };
 
 export const useStaffAuth = (): StaffAuthContextType => {
@@ -31,3 +35,4 @@ export const useStaffAuth = (): StaffAuthContextType => {
 
 export type { StaffAuthState };
 export default StaffAuthProvider;
+
