@@ -13,13 +13,13 @@ interface StaffAuthContextType extends StaffAuthState {
 // This represents the state when no StaffAuthProvider is an ancestor,
 // effectively meaning "no staff member is currently authenticated in this context."
 const defaultStaffAuthContextValue: StaffAuthContextType = {
-  // Default values for StaffAuthState fields (assuming their types and nullability)
+  // Default values for StaffAuthState fields
   staffName: null,
-  staffId: null, // Part of StaffAuthState
-  userRole: null, // Role of the staff member
-  isLoading: false, // Auth state is not loading by default
-  // Assuming 'permissions' is part of StaffAuthState and defaults to an empty object (no permissions)
-  // If StaffAuthState defines other fields, they would need default "empty" or "null" values here too.
+  staffId: null,
+  userRole: null,
+  isLoading: false,
+  isAdmin: false, // Added missing property
+  isAuthenticated: false, // Added missing property
   permissions: {}, 
   
   // Default handleLogout function for when the provider is not available
@@ -62,3 +62,4 @@ export const useStaffAuth = (): StaffAuthContextType => {
 
 // Export the imported StaffAuthState type (from ./staff/useAuthState) for convenience
 export type { StaffAuthState };
+

@@ -16,7 +16,7 @@ export interface StaffAuthState {
   userRole: string | null; // Allow null for default state
   isAuthenticated: boolean;
   staffId: string | null;
-  permissions: Record<string, boolean>; // Added permissions
+  permissions: Record<string, boolean>; // Kept in state, defaults to empty
 }
 
 export const useAuthState = ({ 
@@ -32,7 +32,7 @@ export const useAuthState = ({
     userRole: null,
     isAuthenticated: false,
     staffId: null,
-    permissions: {}, // Initialize permissions
+    permissions: {}, // Initialize permissions as empty
   });
 
   useEffect(() => {
@@ -52,15 +52,15 @@ export const useAuthState = ({
             console.log(`Redirecting to ${redirectPath}`);
             navigate(redirectPath);
           }
-          setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false, staffId: null, staffName: null, userRole: null, permissions: {} })); // Reset state
+          setState(prev => ({ ...prev, staffName: null, isAdmin: false, isLoading: false, userRole: null, isAuthenticated: false, staffId: null, permissions: {} })); // Reset state
           return;
         }
         
         console.log("Session found, fetching staff data for user ID:", session.user.id);
-        // Ensure 'permissions' column is selected if it exists in the 'staff' table
+        // Removed 'permissions' from select as it does not exist in the staff table schema
         const { data: staffData, error: staffError } = await supabase
           .from("staff")
-          .select("*, permissions") // Attempt to select permissions
+          .select("*") // Select all existing columns
           .eq("id", session.user.id)
           .single();
           
@@ -70,18 +70,17 @@ export const useAuthState = ({
           if (redirectUnauthorized && !window.location.pathname.includes(redirectPath)) {
             navigate(redirectPath);
           }
-          setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false, staffId: null, staffName: null, userRole: null, permissions: {} })); // Reset state
+          setState(prev => ({ ...prev, staffName: null, isAdmin: false, isLoading: false, userRole: null, isAuthenticated: false, staffId: null, permissions: {} })); // Reset state
           return;
         }
         
         console.log("Staff data retrieved:", staffData);
         
         const userRole = staffData.role;
-        // Assuming permissions are stored in a column named 'permissions' of type JSONB or similar
-        // and structured as Record<string, boolean>. If not, adjust accordingly.
-        const permissions = staffData.permissions || {}; 
+        // Permissions will default to an empty object as it's not fetched from DB
+        const permissions = {}; // Default to empty
         
-        console.log("Setting user role:", userRole, "and staff ID:", staffData.id, "and permissions:", permissions);
+        console.log("Setting user role:", userRole, "and staff ID:", staffData.id);
         
         setState({
           staffName: staffData.first_name || staffData.email || "Staff Member",
@@ -90,14 +89,14 @@ export const useAuthState = ({
           userRole: userRole,
           isAuthenticated: true,
           staffId: staffData.id,
-          permissions: permissions, // Set permissions
+          permissions: permissions, // Set permissions (empty object)
         });
       } catch (error) {
         console.error("Auth check error:", error);
         if (redirectUnauthorized && !window.location.pathname.includes(redirectPath)) {
           navigate(redirectPath);
         }
-        setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false, staffId: null, staffName: null, userRole: null, permissions: {} })); // Reset state
+        setState(prev => ({ ...prev, staffName: null, isAdmin: false, isLoading: false, userRole: null, isAuthenticated: false, staffId: null, permissions: {} })); // Reset state
       }
     };
     
@@ -134,3 +133,4 @@ export const useAuthState = ({
 
   return state;
 };
+
