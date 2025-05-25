@@ -9,7 +9,7 @@ interface StaffAuthContextType extends StaffAuthState {
 
 const StaffAuthContext = createContext<StaffAuthContextType | undefined>(undefined);
 
-const StaffAuthProvider = ({ children }: { children: ReactNode }) => {
+export const StaffAuthProvider = ({ children }: { children: ReactNode }) => {
   const authState = useStaffAuthStateHook({}); 
   const handleLogout = useStaffLogoutHook(authState.staffName);
 
@@ -34,5 +34,3 @@ export const useStaffAuth = (): StaffAuthContextType => {
 };
 
 export type { StaffAuthState };
-export default StaffAuthProvider;
-
