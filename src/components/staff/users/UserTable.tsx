@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { Link } from 'react-router-dom'; // Import Link
 import {
   Table,
   TableBody,
@@ -73,17 +73,17 @@ const UserTable: React.FC<UserTableProps> = ({
                     {user.profile_picture ? (
                       <img
                         src={user.profile_picture}
-                        alt={user.display_name}
+                        alt={user.display_name ?? user.username}
                         className="w-8 h-8 rounded-full object-cover"
                       />
                     ) : (
                       <span className="text-sm font-medium text-muted-foreground">
-                        {user.display_name?.charAt(0).toUpperCase()}
+                        {(user.display_name ?? user.username)?.charAt(0).toUpperCase()}
                       </span>
                     )}
                   </div>
                   <div>
-                    <p className="font-medium">{user.display_name}</p>
+                    <p className="font-medium">{user.display_name ?? user.username}</p>
                     <p className="text-sm text-muted-foreground">@{user.username}</p>
                   </div>
                 </div>
@@ -114,8 +114,10 @@ const UserTable: React.FC<UserTableProps> = ({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={() => console.log(`View profile: ${user.id}`)}>
-                      <Eye className="mr-2 h-4 w-4" /> View Profile
+                    <DropdownMenuItem asChild>
+                      <Link to={`/u/${user.username}`}>
+                        <Eye className="mr-2 h-4 w-4" /> View Profile
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => console.log(`View posts: ${user.id}`)}>
                       <MessageSquare className="mr-2 h-4 w-4" /> View Posts 

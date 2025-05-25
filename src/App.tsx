@@ -1,90 +1,76 @@
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/hooks/useAuth";
+import { StaffAuthProvider } from "@/hooks/useStaffAuth";
 
-import { Routes, Route, Navigate } from "react-router-dom";
-import Index from "@/pages/Index";
-import About from "@/pages/About";
-import Contact from "@/pages/Contact";
-import Schedule from "@/pages/Schedule";
-import News from "@/pages/News";
-import NewsPost from "@/pages/NewsPost";
-import Personalities from "@/pages/Personalities";
-import NotFound from "@/pages/NotFound";
-import StaffLogin from "@/pages/StaffLogin";
-import StaffSignup from "@/pages/StaffSignup";
-import StaffRegistration from "@/pages/StaffRegistration";
-import NewsEditor from "@/pages/NewsEditor";
-import RouteErrorElement from "@/components/RouteErrorElement";
-import StaffNews from "@/pages/StaffNews";
-import UnifiedStaffDashboard from "@/pages/UnifiedStaffDashboard";
-import StaffSponsors from "@/pages/StaffSponsors";
-import StaffSystemSettings from "@/pages/StaffSystemSettings";
-import StaffHomePage from "@/pages/StaffHomePage";
-import StaffPersonalitiesPage from "@/pages/StaffPersonalitiesPage";
-import StaffActivityLogs from "@/pages/StaffActivityLogs";
-import StaffFeaturedArtists from "@/pages/StaffFeaturedArtists";
-import ArtistsPage from "@/pages/ArtistsPage";
-import ArtistsArchivePage from "@/pages/ArtistsArchivePage";
-import ArtistDetail from "@/pages/ArtistDetail";
-import MusicPlayer from "@/components/MusicPlayer";
-// Re-add Auth import
-import Auth from "@/pages/Auth";
-import ProfilePage from "@/pages/ProfilePage";
+import HomePage from "@/pages/HomePage";
+import PersonalitiesPage from "@/pages/PersonalitiesPage";
+import SchedulePage from "@/pages/SchedulePage";
+import AboutPage from "@/pages/AboutPage";
+import NewsPage from "@/pages/NewsPage";
+import ContactPage from "@/pages/ContactPage";
+import AuthPage from "@/pages/AuthPage";
 import MembersPage from "@/pages/MembersPage";
-import ForumCategoryPage from "@/pages/ForumCategoryPage";
-import ForumTopicPage from "@/pages/ForumTopicPage";
-import NewForumTopicPage from "@/pages/NewForumTopicPage";
-import StaffForumManagementPage from "@/pages/StaffForumManagementPage";
-import RequestPasswordResetPage from "@/pages/RequestPasswordResetPage";
-import UpdatePasswordPage from "@/pages/UpdatePasswordPage";
-import StaffModeratorDashboard from "@/pages/StaffModeratorDashboard";
+import EnhancedProfilePage from "@/pages/ProfilePage"; // User's own profile
+import PublicProfilePage from "@/pages/PublicProfilePage"; // Page for viewing other users' profiles
+import ForumHomePage from "@/pages/forum/ForumHomePage";
+import ForumCategoryPage from "@/pages/forum/ForumCategoryPage";
+import ForumTopicPage from "@/pages/forum/ForumTopicPage";
+import ForumNewTopicPage from "@/pages/forum/ForumNewTopicPage";
+import StaffDashboard from "@/pages/StaffDashboard";
+import StaffNewsEditor from "@/pages/StaffNewsEditor";
+import StaffShowsManager from "@/pages/StaffShowsManager";
+import StaffForumManager from "@/pages/StaffForumManager";
+import StaffUserManager from "@/pages/StaffUserManager";
+import StaffModerationDashboard from "@/pages/StaffModerationDashboard";
+import UnifiedStaffDashboard from "@/pages/UnifiedStaffDashboard";
+import NotFoundPage from "@/pages/NotFoundPage";
 
 function App() {
   return (
-    <>
-      <Routes>
-        <Route path="/" element={<Index />} errorElement={<RouteErrorElement />} />
-        <Route path="/about" element={<About />} errorElement={<RouteErrorElement />} />
-        <Route path="/contact" element={<Contact />} errorElement={<RouteErrorElement />} />
-        <Route path="/schedule" element={<Schedule />} errorElement={<RouteErrorElement />} />
-        <Route path="/news" element={<News />} errorElement={<RouteErrorElement />} />
-        <Route path="/news/:id" element={<NewsPost />} errorElement={<RouteErrorElement />} />
-        <Route path="/personalities" element={<Personalities />} errorElement={<RouteErrorElement />} />
-        <Route path="/artists" element={<ArtistsPage />} errorElement={<RouteErrorElement />} />
-        <Route path="/artists/archive" element={<ArtistsArchivePage />} errorElement={<RouteErrorElement />} />
-        <Route path="/artists/:id" element={<ArtistDetail />} errorElement={<RouteErrorElement />} />
-        <Route path="/profile" element={<ProfilePage />} errorElement={<RouteErrorElement />} />
-        <Route path="/members" element={<MembersPage />} errorElement={<RouteErrorElement />} />
-        <Route path="/members/forum/:categorySlug" element={<ForumCategoryPage />} errorElement={<RouteErrorElement />} />
-        <Route path="/members/forum/:categorySlug/new" element={<NewForumTopicPage />} errorElement={<RouteErrorElement />} />
-        <Route path="/members/forum/:categorySlug/:topicId" element={<ForumTopicPage />} errorElement={<RouteErrorElement />} />
-        
-        <Route path="/staff" element={<Navigate to="/staff/panel" replace />} errorElement={<RouteErrorElement />} />
-        <Route path="/staff/panel" element={<UnifiedStaffDashboard />} errorElement={<RouteErrorElement />} />
-        <Route path="/staff/news" element={<StaffNews />} errorElement={<RouteErrorElement />} />
-        <Route path="/staff/login" element={<StaffLogin />} errorElement={<RouteErrorElement />} />
-        <Route path="/staff/signup" element={<StaffSignup />} errorElement={<RouteErrorElement />} />
-        <Route path="/staff/registration" element={<StaffRegistration />} errorElement={<RouteErrorElement />} />
-        <Route path="/staff/news/editor" element={<NewsEditor />} errorElement={<RouteErrorElement />} />
-        <Route path="/staff/news/editor/:id" element={<NewsEditor />} errorElement={<RouteErrorElement />} />
-        <Route path="/staff/news/edit/:id" element={<NewsEditor />} errorElement={<RouteErrorElement />} />
-        <Route path="/staff/sponsors" element={<StaffSponsors />} errorElement={<RouteErrorElement />} />
-        <Route path="/staff/system-settings" element={<StaffSystemSettings />} errorElement={<RouteErrorElement />} />
-        <Route path="/staff/home" element={<StaffHomePage />} errorElement={<RouteErrorElement />} />
-        <Route path="/staff/personalities" element={<StaffPersonalitiesPage />} errorElement={<RouteErrorElement />} />
-        <Route path="/staff/activity-logs" element={<StaffActivityLogs />} errorElement={<RouteErrorElement />} />
-        <Route path="/staff/featured-artists" element={<StaffFeaturedArtists />} errorElement={<RouteErrorElement />} />
-        <Route path="/staff/forum-management" element={<StaffForumManagementPage />} errorElement={<RouteErrorElement />} />
-        <Route path="/staff/moderator-dashboard" element={<StaffModeratorDashboard />} errorElement={<RouteErrorElement />} />
-        
-        {/* Re-add Auth route */}
-        <Route path="/auth" element={<Auth />} errorElement={<RouteErrorElement />} />
-        <Route path="/request-password-reset" element={<RequestPasswordResetPage />} errorElement={<RouteErrorElement />} />
-        <Route path="/update-password" element={<UpdatePasswordPage />} errorElement={<RouteErrorElement />} />
-        
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      
-      <MusicPlayer />
-    </>
+    <Router>
+      <AuthProvider>
+        <StaffAuthProvider> {/* Ensure StaffAuthProvider wraps routes that need it */}
+          <TooltipProvider>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/personalities" element={<PersonalitiesPage />} />
+              <Route path="/schedule" element={<SchedulePage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/news" element={<NewsPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/members" element={<MembersPage />} />
+              <Route path="/profile" element={<EnhancedProfilePage />} />
+              <Route path="/u/:username" element={<PublicProfilePage />} /> {/* New Public Profile Route */}
+              
+              {/* Forum Routes */}
+              <Route path="/forum" element={<ForumHomePage />} />
+              <Route path="/forum/category/:categoryId" element={<ForumCategoryPage />} />
+              <Route path="/forum/topic/:topicId" element={<ForumTopicPage />} />
+              <Route path="/forum/new-topic/:categoryId" element={<ForumNewTopicPage />} />
+              
+              {/* Staff Routes */}
+              <Route path="/staff/panel" element={<UnifiedStaffDashboard />} />
+              <Route path="/staff/news/editor" element={<StaffNewsEditor />} />
+              <Route path="/staff/news/editor/:postId" element={<StaffNewsEditor />} />
+              <Route path="/staff/shows" element={<StaffShowsManager />} />
+              <Route path="/staff/forum" element={<StaffForumManager />} />
+              <Route path="/staff/users" element={<StaffUserManager />} />
+              <Route path="/staff/moderation" element={<StaffModerationDashboard />} />
+              
+              {/* Legacy Staff Dashboard - can be removed once Unified is complete */}
+              <Route path="/admin/dashboard" element={<StaffDashboard />} />
+              
+              {/* 404 Route */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+            <Toaster />
+          </TooltipProvider>
+        </StaffAuthProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 

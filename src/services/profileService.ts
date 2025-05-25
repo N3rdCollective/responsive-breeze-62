@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import type { UserProfile } from "@/types/profile";
 import { User } from "@supabase/supabase-js";
@@ -89,6 +88,70 @@ export const fetchUserProfileData = async (
     return { isNewUser: true, defaultUsername };
   }
 };
+
+// New type for public profile data
+export interface PublicUserProfileData {
+  id: string;
+  username: string;
+  display_name: string | null;
+  bio: string | null;
+  avatar_url: string | null;
+  role: string | null; // From profiles table, could be 'user', 'artist', etc.
+  created_at: string; // For join date
+  is_public: boolean;
+  // We can add favorite_genres or social_links if desired for public view later
+}
+
+// New function to fetch a public user profile by username
+export const fetchPublicUserProfileByUsername = async (
+  username: string
+): Promise<PublicUserProfileData | null> => {
+  console.log(`Service: Fetching public profile for username: ${username}`);
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, username, display_name, bio, profile_picture, role, created_at, is_public')
+    .eq('username', username)
+    .single(); // Using single as username should be unique
+
+  if (error) {
+    console.error("Service: Error fetching public profile by username:", error.message);
+    // If error is 'PGRST116' (JSON object requested, multiple (or no) rows returned), it means user not found or multiple (which shouldn't happen for unique username)
+    if (error.code === 'PGRST116') {
+        return null; // User not found
+    }
+    throw error; // Other errors
+  }
+
+  if (data) {
+    console.log("Service: Public profile data found:", data);
+    if (!data.is_public) {
+      // Profile exists but is private, return minimal data indicating it's private
+      return {
+        id: data.id,
+        username: data.username,
+        display_name: data.display_name, // Keep display_name for context
+        bio: null,
+        avatar_url: null, // Don't show avatar for private profiles
+        role: null,
+        created_at: data.created_at,
+        is_public: false,
+      };
+    }
+    return {
+      id: data.id,
+      username: data.username,
+      display_name: data.display_name,
+      bio: data.bio,
+      avatar_url: data.profile_picture, // Map profile_picture to avatar_url
+      role: data.role,
+      created_at: data.created_at,
+      is_public: data.is_public,
+    };
+  }
+
+  return null; // Should be covered by .single() error handling, but as a fallback
+};
+
 
 export const saveUserProfileData = async (
   user: User,
@@ -204,4 +267,3 @@ export const saveUserProfileData = async (
     is_public: result.data.is_public ?? true,
   };
 };
-
