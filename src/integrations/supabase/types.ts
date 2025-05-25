@@ -1142,6 +1142,42 @@ export type Database = {
           },
         ]
       }
+      user_conversation_read_status: {
+        Row: {
+          conversation_id: string
+          id: string
+          last_read_timestamp: string | null
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          id?: string
+          last_read_timestamp?: string | null
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          id?: string
+          last_read_timestamp?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_conversation_read_status_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_conversation_read_status_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1199,6 +1235,10 @@ export type Database = {
           action_note: string
           action_created_at: string
         }[]
+      }
+      get_conversations_with_unread_status: {
+        Args: { p_user_id: string }
+        Returns: Json
       }
       get_post_page_and_index: {
         Args: {

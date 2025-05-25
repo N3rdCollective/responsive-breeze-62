@@ -18,7 +18,8 @@ const MessagesPage: React.FC = () => {
     conversations, 
     isLoading: conversationsLoading, 
     refetchConversations,
-    startOrCreateConversation
+    startOrCreateConversation,
+    markConversationAsRead
   } = useConversations();
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [otherParticipantId, setOtherParticipantId] = useState<string | null>(null);
@@ -46,30 +47,32 @@ const MessagesPage: React.FC = () => {
     console.log("MessagesPage useEffect [conversations, selectedConversationId, user, conversationsLoading] triggered. selectedCID:", selectedConversationId, "conversations.length:", conversations.length, "isLoading:", conversationsLoading);
 
     if (!selectedConversationId && conversations.length > 0) {
-      // Auto-select the first conversation if none is selected and the list is not empty.
-      // Check if the first conversation's ID is already selected to prevent potential loops if not strictly necessary,
-      // though with conversationsLoading check, this might be less of an issue.
-      if (conversations[0].id !== selectedConversationId) { // This check might be redundant if selectedConversationId is confirmed null
+      if (conversations[0].id !== selectedConversationId) { 
         const firstConv = conversations[0];
         console.log("MessagesPage: Auto-selecting first conversation:", firstConv.id);
         setSelectedConversationId(firstConv.id);
         if (user && firstConv) {
           setOtherParticipantId(user.id === firstConv.participant1_id ? firstConv.participant2_id : firstConv.participant1_id);
+          if (markConversationAsRead && firstConv.id) {
+            markConversationAsRead(firstConv.id);
+          }
         }
       }
     } else if (conversations.length === 0 && selectedConversationId) {
-      // If a conversation was selected but the list is now empty (and not loading), clear the selection.
       console.log("MessagesPage: Resetting selectedConversationId due to empty conversations array (and not loading).");
       setSelectedConversationId(null);
       setOtherParticipantId(null);
     }
-  }, [conversations, selectedConversationId, user, conversationsLoading]);
+  }, [conversations, selectedConversationId, user, conversationsLoading, markConversationAsRead]);
 
   const handleSelectConversation = (conversationId: string) => {
     setSelectedConversationId(conversationId);
     const selectedConv = conversations.find(c => c.id === conversationId);
     if (user && selectedConv) {
       setOtherParticipantId(user.id === selectedConv.participant1_id ? selectedConv.participant2_id : selectedConv.participant1_id);
+      if (markConversationAsRead) {
+        markConversationAsRead(conversationId);
+      }
     } else {
       console.warn("MessagesPage: Could not find selected conversation or user not available for setting otherParticipantId.");
       setOtherParticipantId(null);
@@ -92,14 +95,15 @@ const MessagesPage: React.FC = () => {
 
     try {
       console.log(`MessagesPage: Attempting to start/create conversation with ${targetUserId} by user ${user.id}`);
-      const conversationId = await startOrCreateConversation(targetUserId);
-      if (conversationId) {
-        console.log(`MessagesPage: Conversation started/found ID: ${conversationId}. Setting selectedConversationId and otherParticipantId.`);
-        setSelectedConversationId(conversationId);
+      const newConversationId = await startOrCreateConversation(targetUserId);
+      if (newConversationId) {
+        console.log(`MessagesPage: Conversation started/found ID: ${newConversationId}. Setting selectedConversationId and otherParticipantId.`);
+        setSelectedConversationId(newConversationId);
         setOtherParticipantId(targetUserId);
         setIsNewConversationModalOpen(false);
-        // The useConversations hook's invalidation should trigger a refetch of the conversations list.
-        // The useEffect listening to `conversations` and `conversationsLoading` will handle UI updates.
+        if (markConversationAsRead) {
+          markConversationAsRead(newConversationId);
+        }
       } else {
         toast({ title: "Error", description: "Could not start or find conversation.", variant: "destructive"});
         console.error("MessagesPage: startOrCreateConversation returned null or undefined ID.");
@@ -150,7 +154,7 @@ const MessagesPage: React.FC = () => {
               {conversationsLoading && conversations.length === 0 ? (
                  <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary mb-4"></div>
               ) : (
-                <MessageCircle size={48} className="mx-auto mb-4" />
+                conversations.length > 0 ? null : <MessageCircle size={48} className="mx-auto mb-4" />
               )}
               {conversations.length > 0 && !conversationsLoading ? (
                 <p className="text-lg">Select a conversation to start messaging</p>

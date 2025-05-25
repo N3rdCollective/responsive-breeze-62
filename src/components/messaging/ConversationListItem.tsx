@@ -1,9 +1,11 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Conversation } from '@/types/messaging';
 import { formatDistanceToNow } from 'date-fns';
-// Removed unused User import from '@supabase/supabase-js'
+import { Badge } from '@/components/ui/badge'; // Import Badge
+
 
 interface ConversationListItemProps {
   conversation: Conversation;
@@ -18,37 +20,39 @@ const ConversationListItem: React.FC<ConversationListItemProps> = ({ conversatio
   const avatarFallback = displayName.charAt(0).toUpperCase();
 
   let lastMessagePreview = 'No messages yet.';
-  let lastMessageTimestamp = conversation.last_message_timestamp; // Default to conversation's last update
+  let lastMessageTimestamp = conversation.last_message_timestamp;
 
   if (conversation.lastMessage) {
     const prefix = conversation.lastMessage.sender_id === currentUserId ? 'You: ' : '';
-    // Ensure content is a string before calling substring
     const messageContent = typeof conversation.lastMessage.content === 'string' ? conversation.lastMessage.content : '';
     lastMessagePreview = `${prefix}${messageContent.substring(0, 30)}${messageContent.length > 30 ? '...' : ''}`;
-    // Corrected: Use timestamp from the lastMessage object
     lastMessageTimestamp = conversation.lastMessage.timestamp; 
   }
 
+  const unreadCount = conversation.unread_count || 0;
 
   return (
     <button
       onClick={() => onSelect(conversation.id)}
-      className={`w-full text-left p-3 hover:bg-muted/50 dark:hover:bg-muted/30 transition-colors rounded-md ${isSelected ? 'bg-muted dark:bg-muted/60' : ''}`}
+      className={`w-full text-left p-3 hover:bg-muted/50 dark:hover:bg-muted/30 transition-colors rounded-md flex items-center gap-3 ${isSelected ? 'bg-muted dark:bg-muted/60' : ''}`}
     >
-      <div className="flex items-center gap-3">
-        <Avatar className="h-10 w-10">
-          {/* Use avatar_url and provide undefined if null for AvatarImage src */}
-          <AvatarImage src={otherParticipant?.avatar_url || undefined} alt={displayName} />
-          <AvatarFallback>{avatarFallback}</AvatarFallback>
-        </Avatar>
-        <div className="flex-1 min-w-0">
+      <Avatar className="h-10 w-10">
+        <AvatarImage src={otherParticipant?.avatar_url || undefined} alt={displayName} />
+        <AvatarFallback>{avatarFallback}</AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <div className="flex justify-between items-center">
           <p className="font-semibold truncate text-sm text-foreground">{displayName}</p>
-          <p className="text-xs text-muted-foreground truncate">{lastMessagePreview}</p>
+          {unreadCount > 0 && (
+            <Badge variant="destructive" className="h-5 px-1.5 text-xs">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </Badge>
+          )}
         </div>
-        <div className="text-xs text-muted-foreground whitespace-nowrap">
-          {/* Ensure lastMessageTimestamp is valid before formatting */}
-          {lastMessageTimestamp && formatDistanceToNow(new Date(lastMessageTimestamp), { addSuffix: true })}
-        </div>
+        <p className="text-xs text-muted-foreground truncate">{lastMessagePreview}</p>
+      </div>
+      <div className="text-xs text-muted-foreground whitespace-nowrap self-start pt-1">
+        {lastMessageTimestamp && formatDistanceToNow(new Date(lastMessageTimestamp), { addSuffix: true })}
       </div>
     </button>
   );
