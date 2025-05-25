@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { MessageSquareText, ThumbsUp, Edit3, Trash2, Lock, QuoteIcon, History } from 'lucide-react'; // Added History icon
+import { MessageSquareText, ThumbsUp, Edit3, Trash2, Lock, QuoteIcon, History } from 'lucide-react';
 import { ForumPost } from '@/types/forum';
 import type { User } from '@supabase/supabase-js';
 import ForumUserProfileInfo from '@/components/forum/ForumUserProfileInfo';
@@ -18,10 +17,10 @@ interface ForumPostCardProps {
   onDelete: (postId: string) => void;
   onQuote: (post: ForumPost) => void;
   onToggleReaction: (postId: string, reactionType: 'like') => void;
-  onViewHistory: (postId: string, postTitle?: string) => void; // New prop
+  onViewHistory: (postId: string, postTitle?: string) => void;
   isTopicLocked: boolean;
   isProcessingAction: boolean;
-  topicTitle?: string; // Optional: to pass to history dialog
+  topicTitle?: string;
 }
 
 const ForumPostCard: React.FC<ForumPostCardProps> = ({
@@ -32,7 +31,7 @@ const ForumPostCard: React.FC<ForumPostCardProps> = ({
   onDelete,
   onQuote,
   onToggleReaction,
-  onViewHistory, // Destructure new prop
+  onViewHistory,
   isTopicLocked,
   isProcessingAction,
   topicTitle,
@@ -68,7 +67,7 @@ const ForumPostCard: React.FC<ForumPostCardProps> = ({
             {post.is_edited && (
               <Button
                 variant="link"
-                size="xs" // Custom size or adjust padding if needed
+                size="sm"
                 className="italic text-xs p-0 h-auto ml-1 text-muted-foreground hover:text-primary"
                 onClick={() => onViewHistory(post.id, isFirstPost ? topicTitle : undefined)}
               >

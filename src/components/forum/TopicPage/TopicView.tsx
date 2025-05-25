@@ -16,7 +16,7 @@ interface TopicViewProps {
   categorySlug: string | undefined;
   replyContent: string;
   setReplyContent: (content: string) => void;
-  handleSubmitReply: () => Promise<void>;
+  handleSubmitReply: (e: React.FormEvent) => Promise<void>;
   isSubmittingReply: boolean;
   handleOpenEditDialog: (post: ForumPost) => void;
   handleOpenDeleteDialog: (postId: string) => void;
@@ -82,9 +82,9 @@ const TopicView: React.FC<TopicViewProps> = ({
       {totalPages > 1 && (
         <div className="mt-8">
           <ForumPagination
-            currentPage={page}
+            page={page}
             totalPages={totalPages}
-            onPageChange={setPage}
+            setPage={setPage}
           />
         </div>
       )}
@@ -93,12 +93,11 @@ const TopicView: React.FC<TopicViewProps> = ({
       {!topic.is_locked && (
         <div ref={replyFormRef} className="mt-8 scroll-m-20">
           <ReplyFormCard
-            user={user}
             replyContent={replyContent}
-            setReplyContent={setReplyContent}
-            handleSubmitReply={handleSubmitReply}
-            isSubmittingReply={isSubmittingReply}
-            topicIsLocked={topic.is_locked}
+            onReplyContentChange={setReplyContent}
+            onSubmitReply={handleSubmitReply}
+            isSubmitting={isSubmittingReply}
+            isLocked={topic.is_locked}
           />
         </div>
       )}
