@@ -1,5 +1,7 @@
+
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import { Link } from 'react-router-dom'; // Import Link
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
@@ -51,7 +53,13 @@ const ForumPostCard: React.FC<ForumPostCardProps> = ({
           <AvatarFallback>{avatarFallback}</AvatarFallback>
         </Avatar>
         <div className="flex-1">
-          <p className="font-semibold text-sm sm:text-base text-gray-800 dark:text-gray-200">{displayName}</p>
+          {post.profile?.username ? (
+            <Link to={`/u/${post.profile.username}`} className="font-semibold text-sm sm:text-base text-gray-800 dark:text-gray-200 hover:text-primary dark:hover:text-primary-foreground transition-colors">
+              {displayName}
+            </Link>
+          ) : (
+            <p className="font-semibold text-sm sm:text-base text-gray-800 dark:text-gray-200">{displayName}</p>
+          )}
           <p className="text-xs text-muted-foreground">
             {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
             {post.is_edited && <span className="italic"> (edited)</span>}
@@ -131,3 +139,4 @@ const ForumPostCard: React.FC<ForumPostCardProps> = ({
 };
 
 export default ForumPostCard;
+
