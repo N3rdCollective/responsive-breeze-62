@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import DesktopNav from "./navbar/DesktopNav";
@@ -8,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useStaffAuth } from "@/hooks/useStaffAuth"; // Import useStaffAuth
 import { NavigationItem } from "@/types/profile";
 import { toast } from "@/hooks/use-toast";
-// Shield icon is not directly used here but passed to DesktopNav/MobileNav or used in their props
+import { Mail } from "lucide-react"; // Import Mail icon for Messages
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -62,6 +61,7 @@ const Navbar = () => {
   if (user && !staffName) {
     navigationItems.push({ path: "/members", label: "Members" });
     navigationItems.push({ path: "/profile", label: "Profile" });
+    navigationItems.push({ path: "/messages", label: "Messages", icon: Mail }); // Add Messages link
   }
   
   // Auth links (Sign In / Logout)
@@ -141,4 +141,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-

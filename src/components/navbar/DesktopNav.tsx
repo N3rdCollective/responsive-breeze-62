@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import NavItem from "./NavItem";
 import ThemeToggle from "./ThemeToggle";
@@ -47,6 +46,7 @@ const DesktopNav = ({
           isHomePage={isHomePage}
           isScrolled={isScrolled}
           onClick={item.onClick}
+          icon={item.icon} // Pass icon to NavItem
           className="px-3 py-2"
         />
       ))}
@@ -72,4 +72,3 @@ const DesktopNav = ({
 };
 
 export default DesktopNav;
-

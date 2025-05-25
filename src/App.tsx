@@ -12,6 +12,7 @@ import AuthPage from "@/pages/Auth";
 import MembersPage from "@/pages/MembersPage";
 import EnhancedProfilePage from "@/pages/ProfilePage"; 
 import PublicProfilePage from "@/pages/PublicProfilePage"; 
+import MessagesPage from "@/pages/MessagesPage"; // Import the new MessagesPage
 
 {/* Forum Routes */}
 import ForumCategoryPage from "@/pages/ForumCategoryPage"; 
@@ -57,6 +58,7 @@ function App() {
 
           <Route path="/profile" element={<EnhancedProfilePage />} />
           <Route path="/u/:username" element={<PublicProfilePage />} />
+          <Route path="/messages" element={<MessagesPage />} /> {/* Add MessagesPage route */}
           
           {/* Original Forum Routes (kept for direct access or other links) */}
           <Route path="/forum" element={<MembersPage />} /> 
