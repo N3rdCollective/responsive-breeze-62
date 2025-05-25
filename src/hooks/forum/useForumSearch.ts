@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ForumTopic } from '@/types/forum';
@@ -32,7 +31,7 @@ const fetchForumSearchResults = async ({ query, byUser, categoryId, startDate, e
       last_post_at,
       last_post_user_id,
       category:forum_categories (name, slug),
-      profile:profiles (username, display_name, profile_picture), 
+      profile:profiles!user_id (username, display_name, profile_picture), 
       forum_posts(count)
     `);
 
@@ -42,10 +41,7 @@ const fetchForumSearchResults = async ({ query, byUser, categoryId, startDate, e
 
   if (byUser && byUser.trim() !== '') {
     const byUserTrimmed = byUser.trim();
-    queryBuilder = queryBuilder.or(
-      `username.ilike.%${byUserTrimmed}%,display_name.ilike.%${byUserTrimmed}%`,
-      { foreignTable: 'profiles' }
-    );
+    queryBuilder = queryBuilder.filter('user_id', 'in', supabase.from('profiles').select('id').or(`username.ilike.%${byUserTrimmed}%,display_name.ilike.%${byUserTrimmed}%`));
   }
 
   if (categoryId && categoryId.trim() !== '') {
@@ -72,9 +68,10 @@ const fetchForumSearchResults = async ({ query, byUser, categoryId, startDate, e
       details: error.details,
       hint: error.hint,
       code: error.code,
-      fullError: error,
+      fullError: error, // Log the full error object
     });
-    throw new Error('Failed to fetch search results');
+    // Propagate a more specific error if available, or a generic one
+    throw new Error(error.message || 'Failed to fetch search results');
   }
 
   const rawResults = data || [];
@@ -102,7 +99,7 @@ const fetchForumSearchResults = async ({ query, byUser, categoryId, startDate, e
       last_post_at: rest.last_post_at,
       last_post_user_id: rest.last_post_user_id,
       category: rest.category,
-      profile: rest.profile,
+      profile: rest.profile, // This profile is now correctly fetched via user_id
       _count: { posts: postCount },
     };
     return topic;
@@ -120,4 +117,3 @@ export const useForumSearch = (params: FetchResultsParams) => {
     enabled: hasActiveFilters,
   });
 };
-
