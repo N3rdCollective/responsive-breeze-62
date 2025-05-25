@@ -2,12 +2,11 @@ import React from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, SearchX } from 'lucide-react';
+import { ArrowLeft, Loader2, SearchX, Search } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ForumTopic } from '@/types/forum';
 import ForumSearchResultItem from '@/components/forum/ForumSearchResultItem';
-import ForumSearchBar from '@/components/forum/ForumSearchBar';
 import { format } from 'date-fns';
 
 interface FetchResultsParams {
@@ -158,7 +157,7 @@ const ForumSearchResultsPage: React.FC = () => {
     if (startDate) filters.push(<span key="sd">From: <strong className="text-primary">{format(new Date(startDate), "PPP")}</strong></span>);
     if (endDate) filters.push(<span key="ed">To: <strong className="text-primary">{format(new Date(endDate), "PPP")}</strong></span>);
 
-    if (filters.length === 0) return <p className="text-gray-700 dark:text-gray-300 mb-6">Please enter search criteria.</p>;
+    if (filters.length === 0) return <p className="text-gray-700 dark:text-gray-300 mb-6">Please enter search criteria by starting a new search.</p>;
     
     return (
       <div className="text-gray-700 dark:text-gray-300 mb-6">
@@ -167,26 +166,29 @@ const ForumSearchResultsPage: React.FC = () => {
     );
   };
 
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
       <div className="pt-20 pb-12 px-4">
         <div className="max-w-4xl mx-auto">
-          <div className="mb-6">
+          <div className="mb-6 flex justify-between items-center">
             <Button variant="outline" asChild>
               <Link to="/members/forum">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Forum
               </Link>
             </Button>
+            <Button variant="default" asChild>
+              <Link to="/forum/initiate-search">
+                <Search className="mr-2 h-4 w-4" />
+                New Search
+              </Link>
+            </Button>
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Forum Search
+            Forum Search Results
           </h1>
-          
-          <ForumSearchBar /> {/* Display the search bar here */}
           
           {renderFilterSummary()}
 
@@ -217,14 +219,14 @@ const ForumSearchResultsPage: React.FC = () => {
               <div className="flex flex-col items-center justify-center p-10 text-muted-foreground">
                 <SearchX className="h-8 w-8 mb-4" />
                 <p>No topics found matching your search criteria.</p>
-                <p className="text-sm mt-2">Try using different keywords or filters.</p>
+                <p className="text-sm mt-2">Try using different keywords or filters by starting a new search.</p>
               </div>
             )}
             
             {!hasActiveFilters && !isLoading && ( // Show this if no filters are active
                <div className="p-6 bg-card rounded-lg shadow">
                 <p className="text-muted-foreground text-center">
-                  Use the filters above to search the forum.
+                  Please initiate a new search using the button above or by going to the search page.
                 </p>
               </div>
             )}

@@ -1,10 +1,11 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ForumCategories from "@/components/forum/ForumCategories";
-import ForumSearchBar from "@/components/forum/ForumSearchBar"; // Import the new search bar
+import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 
 const MembersPage = () => {
   const { user, loading } = useAuth();
@@ -42,7 +43,15 @@ const MembersPage = () => {
             <p className="mt-2 text-gray-600 dark:text-gray-400">Connect with other members of the community</p>
           </div>
 
-          <ForumSearchBar /> {/* Add the search bar here */}
+          {/* Link to the dedicated search page */}
+          <div className="mb-8 flex justify-center">
+            <Button asChild variant="default" size="lg">
+              <Link to="/forum/initiate-search">
+                <Search className="mr-2 h-5 w-5" />
+                Search Forum Topics
+              </Link>
+            </Button>
+          </div>
           
           <Tabs defaultValue="categories" className="w-full">
             <TabsList className="grid w-full grid-cols-1 mb-6 bg-gray-100/70 dark:bg-gray-800/50 border border-primary/20">

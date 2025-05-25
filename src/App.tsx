@@ -18,6 +18,7 @@ import MessagesPage from "@/pages/MessagesPage"; // Import the new MessagesPage
 import ForumCategoryPage from "@/pages/ForumCategoryPage"; 
 import ForumTopicPage from "@/pages/ForumTopicPage"; 
 import ForumNewTopicPage from "@/pages/NewForumTopicPage";
+import ForumInitiateSearchPage from "@/pages/ForumInitiateSearchPage"; // Import the new dedicated search page
 import ForumSearchResultsPage from "@/pages/ForumSearchResultsPage"; // Import the new search results page
 
 {/* Staff Pages */}
@@ -62,6 +63,7 @@ function App() {
           
           {/* Original Forum Routes (kept for direct access or other links) */}
           <Route path="/forum" element={<MembersPage />} /> 
+          <Route path="/forum/initiate-search" element={<ForumInitiateSearchPage />} /> {/* Add dedicated search page route */}
           <Route path="/forum/search" element={<ForumSearchResultsPage />} /> {/* Add search results route */}
           <Route path="/forum/category/:categorySlug" element={<ForumCategoryPage />} />
           {/* Changed :topicId to :topicSlug */}
