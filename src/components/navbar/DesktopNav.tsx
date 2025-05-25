@@ -15,7 +15,7 @@ interface DesktopNavProps {
   isScrolled: boolean;
   mounted: boolean;
   isUserLoggedIn: boolean;
-  staffName?: string | null; // Add staffName prop
+  staffName?: string | null;
 }
 
 const DesktopNav = ({ 
@@ -25,7 +25,7 @@ const DesktopNav = ({
   isScrolled,
   mounted,
   isUserLoggedIn,
-  staffName // Destructure staffName
+  staffName
 }: DesktopNavProps) => {
   const navItemBaseStyling = (active: boolean) => 
     active
@@ -34,7 +34,7 @@ const DesktopNav = ({
       ? 'text-white hover:text-[#FFD700]'
       : 'text-[#333333] dark:text-white hover:text-[#FFD700] dark:hover:text-[#FFD700]';
   
-  const navItemCommonClasses = 'font-medium transition-colors duration-200 px-3 py-2 flex items-center'; // Base for Staff Panel link
+  const navItemCommonClasses = 'font-medium transition-colors duration-200 px-3 py-2 flex items-center';
 
   return (
     <div className="hidden md:flex items-center space-x-1">
@@ -47,15 +47,16 @@ const DesktopNav = ({
           isHomePage={isHomePage}
           isScrolled={isScrolled}
           onClick={item.onClick}
-          icon={item.icon} // Pass icon to NavItem
-          iconOnly={item.iconOnly} // Pass iconOnly prop
-          className={item.iconOnly ? "p-2" : "px-3 py-2"} // Conditional padding
+          icon={item.icon}
+          iconOnly={item.iconOnly}
+          badgeCount={item.badgeCount} // Added this line to pass badgeCount
+          className={item.iconOnly ? "p-2" : "px-3 py-2"}
         />
       ))}
       {staffName && (
         <Link
           to="/staff/panel"
-          className={cn(navItemBaseStyling(isActive("/staff/panel")), navItemCommonClasses)} // Using commonClasses here
+          className={cn(navItemBaseStyling(isActive("/staff/panel")), navItemCommonClasses)}
           onClick={() => window.scrollTo(0,0)}
         >
           <Shield className="h-4 w-4 mr-1.5" />
@@ -74,4 +75,3 @@ const DesktopNav = ({
 };
 
 export default DesktopNav;
-
