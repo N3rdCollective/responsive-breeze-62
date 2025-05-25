@@ -1,21 +1,33 @@
 
-import { useAuthState, StaffAuthState } from "./staff/useAuthState";
-import { useLogout } from "./staff/useLogout";
+import React, { createContext, useContext, ReactNode } from 'react';
+import { useAuthState as useStaffAuthStateHook, StaffAuthState } from "./staff/useAuthState";
+import { useLogout as useStaffLogoutHook } from "./staff/useLogout";
 
-interface UseStaffAuthProps {
-  redirectUnauthorized?: boolean;
-  redirectPath?: string;
+interface StaffAuthContextType extends StaffAuthState {
+  handleLogout: () => Promise<void>;
 }
 
-export const useStaffAuth = (props: UseStaffAuthProps = {}) => {
-  const authState = useAuthState(props);
-  const handleLogout = useLogout(authState.staffName);
+const StaffAuthContext = createContext<StaffAuthContextType | undefined>(undefined);
 
-  return {
+const StaffAuthProvider = ({ children }: { children: ReactNode }) => {
+  const authState = useStaffAuthStateHook({}); 
+  const handleLogout = useStaffLogoutHook(authState.staffName);
+
+  const value = {
     ...authState,
-    handleLogout
+    handleLogout,
   };
+
+  return <StaffAuthContext.Provider value={value}>{children}</StaffAuthContext.Provider>;
 };
 
-// Export the type for use in other components
+export const useStaffAuth = (): StaffAuthContextType => {
+  const context = useContext(StaffAuthContext);
+  if (context === undefined) {
+    throw new Error('useStaffAuth must be used within a StaffAuthProvider');
+  }
+  return context;
+};
+
 export type { StaffAuthState };
+export default StaffAuthProvider;

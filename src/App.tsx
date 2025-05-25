@@ -2,41 +2,41 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import AuthProvider from "@/hooks/useAuth"; // Changed to default import
-import StaffAuthProvider from "@/hooks/useStaffAuth"; // Changed to default import
+import AuthProvider from "@/hooks/useAuth"; 
+import StaffAuthProvider from "@/hooks/useStaffAuth"; 
 
-import HomePage from "@/pages/Index"; // Corrected path
-import PersonalitiesPage from "@/pages/Personalities"; // Corrected path
-import SchedulePage from "@/pages/Schedule"; // Corrected path
-import AboutPage from "@/pages/About"; // Corrected path
-import NewsPage from "@/pages/News"; // Corrected path
-import ContactPage from "@/pages/Contact"; // Corrected path
-import AuthPage from "@/pages/Auth"; // Corrected path
+import HomePage from "@/pages/Index"; 
+import PersonalitiesPage from "@/pages/Personalities"; 
+import SchedulePage from "@/pages/Schedule"; 
+import AboutPage from "@/pages/About"; 
+import NewsPage from "@/pages/News"; 
+import ContactPage from "@/pages/Contact"; 
+import AuthPage from "@/pages/Auth"; 
 import MembersPage from "@/pages/MembersPage";
-import EnhancedProfilePage from "@/pages/ProfilePage"; // User's own profile
-import PublicProfilePage from "@/pages/PublicProfilePage"; // Page for viewing other users' profiles
+import EnhancedProfilePage from "@/pages/ProfilePage"; 
+import PublicProfilePage from "@/pages/PublicProfilePage"; 
 
 {/* Forum Routes */}
-import ForumHomePage from "@/pages/forum/ForumHomePage";
-import ForumCategoryPage from "@/pages/forum/ForumCategoryPage";
-import ForumTopicPage from "@/pages/forum/ForumTopicPage";
-import ForumNewTopicPage from "@/pages/forum/ForumNewTopicPage";
+{/* Assuming MembersPage serves as the Forum Home Page as ForumHomePage.tsx is not found */}
+import ForumCategoryPage from "@/pages/ForumCategoryPage"; 
+import ForumTopicPage from "@/pages/ForumTopicPage"; 
+import ForumNewTopicPage from "@/pages/NewForumTopicPage"; {/* Corrected path */}
 
-{/* Staff Pages - Assuming these paths are correct as per error log context if files exist */}
+{/* Staff Pages */}
 import StaffDashboard from "@/pages/StaffDashboard";
-import StaffNewsEditor from "@/pages/StaffNewsEditor";
-import StaffShowsManager from "@/pages/StaffShowsManager";
-import StaffForumManager from "@/pages/StaffForumManager";
-import StaffUserManager from "@/pages/StaffUserManager";
-import StaffModerationDashboard from "@/pages/StaffModerationDashboard";
+import StaffNewsEditor from "@/pages/StaffNewsEditor"; 
+import StaffShowsManager from "@/pages/StaffShowsManager"; 
+import StaffForumManager from "@/pages/StaffForumManagementPage"; {/* Corrected path */}
+import StaffUserManager from "@/pages/StaffUserManager"; 
+import StaffModerationDashboard from "@/pages/StaffModeratorDashboard"; {/* Corrected path */}
 import UnifiedStaffDashboard from "@/pages/UnifiedStaffDashboard";
-import NotFoundPage from "@/pages/NotFound"; // Corrected path
+import NotFoundPage from "@/pages/NotFound"; 
 
 function App() {
   return (
     <Router>
       <AuthProvider>
-        <StaffAuthProvider> {/* Ensure StaffAuthProvider wraps routes that need it */}
+        <StaffAuthProvider>
           <TooltipProvider>
             <Routes>
               <Route path="/" element={<HomePage />} />
@@ -48,13 +48,13 @@ function App() {
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/members" element={<MembersPage />} />
               <Route path="/profile" element={<EnhancedProfilePage />} />
-              <Route path="/u/:username" element={<PublicProfilePage />} /> {/* New Public Profile Route */}
+              <Route path="/u/:username" element={<PublicProfilePage />} />
               
               {/* Forum Routes */}
-              <Route path="/forum" element={<ForumHomePage />} />
-              <Route path="/forum/category/:categoryId" element={<ForumCategoryPage />} />
+              <Route path="/forum" element={<MembersPage />} /> {/* Changed ForumHomePage to MembersPage */}
+              <Route path="/forum/category/:categorySlug" element={<ForumCategoryPage />} />
               <Route path="/forum/topic/:topicId" element={<ForumTopicPage />} />
-              <Route path="/forum/new-topic/:categoryId" element={<ForumNewTopicPage />} />
+              <Route path="/forum/new-topic/:categoryId" element={<ForumNewTopicPage />} /> {/* Assuming categoryId is used for NewForumTopicPage path based on previous structure */}
               
               {/* Staff Routes */}
               <Route path="/staff/panel" element={<UnifiedStaffDashboard />} />
