@@ -1,11 +1,10 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ForumCategories from "@/components/forum/ForumCategories";
-// No longer importing ForumLatestPosts
+import ForumSearchBar from "@/components/forum/ForumSearchBar"; // Import the new search bar
 
 const MembersPage = () => {
   const { user, loading } = useAuth();
@@ -42,23 +41,23 @@ const MembersPage = () => {
             </h1>
             <p className="mt-2 text-gray-600 dark:text-gray-400">Connect with other members of the community</p>
           </div>
+
+          <ForumSearchBar /> {/* Add the search bar here */}
           
           <Tabs defaultValue="categories" className="w-full">
-            <TabsList className="grid w-full grid-cols-1 mb-6 bg-gray-100/70 dark:bg-gray-800/50 border border-primary/20"> {/* Changed grid-cols-2 to grid-cols-1 */}
+            <TabsList className="grid w-full grid-cols-1 mb-6 bg-gray-100/70 dark:bg-gray-800/50 border border-primary/20">
               <TabsTrigger 
                 value="categories"
                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
               >
                 Forum Categories
               </TabsTrigger>
-              {/* Removed TabsTrigger for "latest" */}
             </TabsList>
             
             <TabsContent value="categories" className="animate-fadeIn">
               <ForumCategories />
             </TabsContent>
             
-            {/* Removed TabsContent for "latest" */}
           </Tabs>
         </div>
       </div>
