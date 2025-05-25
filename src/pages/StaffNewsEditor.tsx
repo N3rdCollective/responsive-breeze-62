@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from "react";
-import { useNavigate, useSearchParams, useParams } from "react-router-dom"; // Added useParams
+import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
@@ -18,34 +17,33 @@ import {
   ArrowLeft, 
   FileText, 
   Eye, 
-  // Calendar, // Calendar not used
   User,
-  // Tag // Tag not used directly from lucide here, but as a component prop name
+  Tag // Ensured Tag is imported
 } from "lucide-react";
-import TitleUpdater from "@/components/TitleUpdater"; // Assuming this component exists and is correct
+import TitleUpdater from "@/components/TitleUpdater";
 
 interface NewsPost {
   id?: string;
   title: string;
   content: string;
   excerpt: string;
-  featured_image?: string | null; // Allow null
+  featured_image?: string | null;
   category: string;
   status: 'draft' | 'published' | 'archived';
   post_date: string;
-  author_id?: string | null; // Allow null
-  updated_at?: string; // Add updated_at
+  author_id?: string | null;
+  updated_at?: string;
 }
 
 const StaffNewsEditor = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { postId: postIdFromParams } = useParams<{ postId?: string }>(); // For editor/:postId route
-  const { staffName, userRole, isLoading: authLoading, user } = useStaffAuth(); // Assuming user object with id exists
+  const { postId: postIdFromParams } = useParams<{ postId?: string }>();
+  const { staffName, userRole, isLoading: authLoading, staffId } = useStaffAuth(); 
   const { toast } = useToast();
   
   const postIdFromQuery = searchParams.get('id');
-  const postId = postIdFromParams || postIdFromQuery; // Prioritize path param
+  const postId = postIdFromParams || postIdFromQuery;
   const isEditing = !!postId;
   
   const [post, setPost] = useState<NewsPost>({
@@ -53,7 +51,7 @@ const StaffNewsEditor = () => {
     content: '',
     excerpt: '',
     featured_image: null,
-    category: 'general', // Default category
+    category: 'general',
     status: 'draft',
     post_date: new Date().toISOString().split('T')[0]
   });
@@ -71,7 +69,7 @@ const StaffNewsEditor = () => {
     try {
       setIsLoading(true);
       const { data, error } = await supabase
-        .from('posts') // Ensure 'posts' table exists
+        .from('posts')
         .select('*')
         .eq('id', id)
         .single();
@@ -79,11 +77,19 @@ const StaffNewsEditor = () => {
       if (error) throw error;
 
       if (data) {
-        setPost({
-          ...data,
-          post_date: data.post_date ? new Date(data.post_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        const loadedPostData: NewsPost = {
+          id: data.id,
+          title: data.title,
+          content: data.content,
+          excerpt: data.excerpt,
           featured_image: data.featured_image || null,
-        });
+          category: data.category,
+          status: data.status as NewsPost['status'],
+          post_date: data.post_date ? new Date(data.post_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          author_id: data.author_id || null,
+          updated_at: data.updated_at,
+        };
+        setPost(loadedPostData);
       }
     } catch (error) {
       console.error('Error loading post:', error);
@@ -92,7 +98,7 @@ const StaffNewsEditor = () => {
         description: "Failed to load post. It might not exist or there was a network issue.",
         variant: "destructive"
       });
-      navigate('/staff/panel'); // Navigate to a general staff page
+      navigate('/staff/panel');
     } finally {
       setIsLoading(false);
     }
@@ -122,7 +128,7 @@ const StaffNewsEditor = () => {
       const postData: Omit<NewsPost, 'id'> & { author_id?: string | null, updated_at: string, id?:string } = {
         ...post,
         status: newStatus,
-        author_id: user?.id || null, // Set author_id from authenticated user
+        author_id: staffId || null,
         post_date: new Date(post.post_date).toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -131,10 +137,8 @@ const StaffNewsEditor = () => {
         postData.id = postId;
       }
 
-
       let result;
       if (isEditing && postId) {
-        // Ensure we don't try to update the id itself if it's part of postData and matches postId
         const { id, ...updateData } = postData;
         result = await supabase
           .from('posts')
@@ -143,7 +147,6 @@ const StaffNewsEditor = () => {
           .select()
           .single();
       } else {
-        // For insert, remove 'id' if it's undefined or was part of the initial state
         const { id, ...insertData } = postData;
         result = await supabase
           .from('posts')
@@ -159,7 +162,7 @@ const StaffNewsEditor = () => {
         description: `Post ${isEditing ? 'updated' : 'created'} as ${newStatus}.`,
       });
 
-      navigate('/staff/news'); // Navigate to news list page
+      navigate('/staff/news');
     } catch (error) {
       console.error('Error saving post:', error);
       const errorMessage = (error as Error).message || "Failed to save post. Please try again.";
@@ -173,7 +176,7 @@ const StaffNewsEditor = () => {
     }
   };
 
-  const updatePostField = (field: keyof NewsPost, value: string | null) => { // Allow null for featured_image
+  const updatePostField = (field: keyof NewsPost, value: string | null) => {
     setPost(prev => ({ ...prev, [field]: value }));
   };
 
@@ -192,9 +195,8 @@ const StaffNewsEditor = () => {
     );
   }
   
-  // Basic role check (adjust as needed for specific permissions)
   if (!userRole || !['admin', 'editor', 'staff', 'super_admin', 'moderator'].includes(userRole)) {
-     return (
+    return (
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
         <div className="flex items-center justify-center h-[calc(100vh-128px)]">
@@ -211,10 +213,10 @@ const StaffNewsEditor = () => {
 
   return (
     <>
-      <TitleUpdater title={isEditing ? `Edit Post: ${post.title}` : "Create New Post"} />
+      <TitleUpdater title={isEditing ? `Edit Post: ${post.title || 'Untitled'}` : "Create New Post"} />
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
-        <main className="max-w-5xl mx-auto px-4 pt-20 pb-16"> {/* Increased top padding */}
+        <main className="max-w-5xl mx-auto px-4 pt-20 pb-16">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
               <Button variant="outline" size="sm" onClick={() => navigate('/staff/news')}>
@@ -302,8 +304,7 @@ const StaffNewsEditor = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-md">
-                    {/* Using a generic Tag icon from lucide if available, or just text */}
-                    <lucide-react.Tag className="h-5 w-5" /> 
+                    <Tag className="h-5 w-5" /> 
                     Details & Settings
                   </CardTitle>
                 </CardHeader>

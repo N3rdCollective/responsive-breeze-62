@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import TitleUpdater from '@/components/TitleUpdater';
-import { useStaffAuth } from '@/hooks/useStaffAuth'; // For role checking
+import { useStaffAuth } from '@/hooks/useStaffAuth';
 
 const StaffUserManager = () => {
   const navigate = useNavigate();
@@ -24,9 +23,8 @@ const StaffUserManager = () => {
     );
   }
 
-  // Example: Restrict access if not admin or super_admin
   if (!userRole || !['admin', 'super_admin'].includes(userRole)) {
-     return (
+    return (
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
         <main className="container mx-auto px-4 py-24 text-center">

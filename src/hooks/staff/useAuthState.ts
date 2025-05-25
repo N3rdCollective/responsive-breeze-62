@@ -15,6 +15,7 @@ export interface StaffAuthState {
   isLoading: boolean;
   userRole: string;
   isAuthenticated: boolean;
+  staffId: string | null; // Added staffId
 }
 
 export const useAuthState = ({ 
@@ -28,7 +29,8 @@ export const useAuthState = ({
     isAdmin: false,
     isLoading: true,
     userRole: "",
-    isAuthenticated: false
+    isAuthenticated: false,
+    staffId: null, // Initialize staffId
   });
 
   useEffect(() => {
@@ -44,16 +46,15 @@ export const useAuthState = ({
         
         if (!session) {
           console.log("No session found, not authenticated");
-          // If not already on login page and redirectUnauthorized is true, redirect to it
           if (redirectUnauthorized && !window.location.pathname.includes(redirectPath)) {
             console.log(`Redirecting to ${redirectPath}`);
             navigate(redirectPath);
           }
-          setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false }));
+          setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false, staffId: null })); // Reset staffId
           return;
         }
         
-        console.log("Session found, fetching staff data...");
+        console.log("Session found, fetching staff data for user ID:", session.user.id);
         const { data: staffData, error: staffError } = await supabase
           .from("staff")
           .select("*")
@@ -61,41 +62,40 @@ export const useAuthState = ({
           .single();
           
         if (staffError || !staffData) {
-          console.error("Error fetching staff data or staff not found:", staffError);
+          console.error("Error fetching staff data or staff not found for user ID:", session.user.id, staffError);
           await supabase.auth.signOut();
           if (redirectUnauthorized && !window.location.pathname.includes(redirectPath)) {
             navigate(redirectPath);
           }
-          setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false }));
+          setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false, staffId: null })); // Reset staffId
           return;
         }
         
         console.log("Staff data retrieved:", staffData);
         
-        // Use the role directly from the database
         const userRole = staffData.role;
         
-        console.log("Setting user role:", userRole);
+        console.log("Setting user role:", userRole, "and staff ID:", staffData.id);
         
         setState({
-          staffName: staffData.first_name || staffData.email,
+          staffName: staffData.first_name || staffData.email || "Staff Member",
           isAdmin: userRole === "admin" || userRole === "super_admin",
           isLoading: false,
           userRole: userRole,
-          isAuthenticated: true
+          isAuthenticated: true,
+          staffId: staffData.id, // Set staffId from staffData.id
         });
       } catch (error) {
         console.error("Auth check error:", error);
         if (redirectUnauthorized && !window.location.pathname.includes(redirectPath)) {
           navigate(redirectPath);
         }
-        setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false }));
+        setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false, staffId: null })); // Reset staffId
       }
     };
     
     checkAuth();
     
-    // Listen for authentication state changes
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event);
       if (event === "SIGNED_OUT") {
@@ -107,9 +107,14 @@ export const useAuthState = ({
           isAdmin: false,
           isLoading: false,
           userRole: "",
-          isAuthenticated: false
+          isAuthenticated: false,
+          staffId: null, // Reset staffId
         });
       } else if (event === "SIGNED_IN" && session) {
+        // Call checkAuth which now includes fetching staffId
+        checkAuth();
+      } else if (event === "USER_UPDATED" && session) {
+        // Potentially re-check auth if user details important for auth state might change
         checkAuth();
       }
     });
@@ -123,3 +128,4 @@ export const useAuthState = ({
 
   return state;
 };
+
