@@ -1,20 +1,23 @@
+
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import DesktopNav from "./navbar/DesktopNav";
 import MobileNav from "./navbar/MobileNav";
-import AuthModal from "@/components/auth/AuthModal"; // AuthModal import remains for now, might be unused by this link
+import AuthModal from "@/components/auth/AuthModal";
 import { useAuth } from "@/hooks/useAuth";
+import { useStaffAuth } from "@/hooks/useStaffAuth"; // Import useStaffAuth
 import { NavigationItem } from "@/types/profile";
 import { toast } from "@/hooks/use-toast";
+// Shield icon is not directly used here but passed to DesktopNav/MobileNav or used in their props
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const [mounted, setMounted] = useState(false);
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  // isAuthModalOpen state and handleSignInClick are no longer used by the main "Sign In / Sign Up" nav item
-  // but we'll keep them for now in case AuthModal is used elsewhere.
+  
+  const { user, logout: userLogout } = useAuth();
+  const { staffName, handleLogout: staffLogout, userRole: staffUserRole } = useStaffAuth(); // Get staff auth state
+
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false); 
 
   useEffect(() => {
@@ -32,21 +35,16 @@ const Navbar = () => {
 
   const isActive = (path: string) => location.pathname === path;
   const isHomePage = location.pathname === "/";
-  const isUserLoggedIn = !!user;
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      // toast for logout is now handled within useAuth's logout method
-      // navigate("/") is also handled by useAuth's logout via window.location.href
-    } catch (error) {
-      console.error("Logout error from Navbar:", error);
-      // Error toast is also handled within useAuth
-    }
-  };
   
-  // This function is no longer directly tied to the main "Sign In / Sign Up" nav item's primary action
-  // but kept in case AuthModal needs to be triggered by other means.
+  // This handleLogout is for the general user, staff logout is separate
+  // const handleLogout = async () => { // This specific name is shadowed by staffLogout if not careful
+  //   try {
+  //     await userLogout();
+  //   } catch (error) {
+  //     console.error("Logout error from Navbar:", error);
+  //   }
+  // };
+  
   const handleAuthModalOpen = () => {
     setIsAuthModalOpen(true);
   };
@@ -60,25 +58,39 @@ const Navbar = () => {
     { path: "/contact", label: "Contact" },
   ];
 
-  if (user) {
+  // Add links based on general user state (if not staff)
+  if (user && !staffName) {
     navigationItems.push({ path: "/members", label: "Members" });
     navigationItems.push({ path: "/profile", label: "Profile" });
   }
   
-  if (!user) {
-    // Updated to navigate to /auth page
+  // Auth links (Sign In / Logout)
+  if (staffName) { 
+    // If staff is logged in, their primary logout is via staffLogout.
+    // No "Sign In / Sign Up" link.
+    // "Staff Panel" link will be added directly in DesktopNav/MobileNav.
     navigationItems.push({ 
-      path: "/auth", // Changed from "#auth" to "/auth"
-      label: "Sign In / Sign Up"
-      // onClick handler removed, will navigate via path
-    });
-  } else {
-    navigationItems.push({ 
-      path: "#logout", 
+      path: "#logout-staff", 
       label: "Logout",
-      onClick: handleLogout
+      onClick: staffLogout 
+    });
+  } else if (user) { 
+    // Regular user is logged in (and not staff)
+    navigationItems.push({ 
+      path: "#logout-user", 
+      label: "Logout",
+      onClick: userLogout
+    });
+  } else { 
+    // No one logged in
+    navigationItems.push({ 
+      path: "/auth", 
+      label: "Sign In / Sign Up"
     });
   }
+
+  // This prop is for features like NotificationBell that are specific to general user accounts
+  const isGeneralUserLoggedIn = !!user;
 
   return (
     <>
@@ -107,7 +119,8 @@ const Navbar = () => {
               isHomePage={isHomePage}
               isScrolled={isScrolled}
               mounted={mounted}
-              isUserLoggedIn={isUserLoggedIn}
+              isUserLoggedIn={isGeneralUserLoggedIn} // For general user features like NotificationBell
+              staffName={staffName} // Pass staffName
             />
 
             <MobileNav
@@ -116,16 +129,16 @@ const Navbar = () => {
               isHomePage={isHomePage}
               isScrolled={isScrolled}
               mounted={mounted}
-              isUserLoggedIn={isUserLoggedIn}
+              isUserLoggedIn={isGeneralUserLoggedIn} // For general user features like NotificationBell
+              staffName={staffName} // Pass staffName
             />
           </div>
         </div>
       </nav>
-      {/* AuthModal remains in the DOM but won't be opened by the primary "Sign In / Sign Up" navbar link anymore.
-          It could be triggered by `handleAuthModalOpen` if called from elsewhere. */}
       <AuthModal open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen} />
     </>
   );
 };
 
 export default Navbar;
+
