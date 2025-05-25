@@ -220,10 +220,12 @@ export const useMessages = (conversationId: string | null) => {
       .subscribe((status, err) => {
         if (status === 'SUBSCRIBED') {
           console.log(`Subscribed to conversation: ${conversationId}`);
-        }
-        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
             console.error(`Subscription error for conversation ${conversationId}: ${status}`, err);
             toast({ title: "Realtime Connection Error", description: `Could not connect to messaging service (${status}). Please refresh.`, variant: "destructive" });
+        } else if (status === 'CLOSED') {
+            console.info(`Subscription closed for conversation ${conversationId}. This is often normal during cleanup.`, err);
+            // No toast for 'CLOSED' as it can be an intentional cleanup.
         }
       });
 
