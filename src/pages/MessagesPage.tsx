@@ -47,15 +47,12 @@ const MessagesPage: React.FC = () => {
     console.log("MessagesPage useEffect [conversations, selectedConversationId, user, conversationsLoading] triggered. selectedCID:", selectedConversationId, "conversations.length:", conversations.length, "isLoading:", conversationsLoading);
 
     if (!selectedConversationId && conversations.length > 0) {
-      if (conversations[0].id !== selectedConversationId) { 
-        const firstConv = conversations[0];
-        console.log("MessagesPage: Auto-selecting first conversation:", firstConv.id);
+      const firstConv = conversations[0];
+      if (user && firstConv && firstConv.id) { // Added check for firstConv.id
         setSelectedConversationId(firstConv.id);
-        if (user && firstConv) {
-          setOtherParticipantId(user.id === firstConv.participant1_id ? firstConv.participant2_id : firstConv.participant1_id);
-          if (markConversationAsRead && firstConv.id) {
-            markConversationAsRead(firstConv.id);
-          }
+        setOtherParticipantId(user.id === firstConv.participant1_id ? firstConv.participant2_id : firstConv.participant1_id);
+        if (markConversationAsRead && firstConv.id) { // Ensure markConversationAsRead is defined
+          markConversationAsRead(firstConv.id);
         }
       }
     } else if (conversations.length === 0 && selectedConversationId) {
@@ -70,7 +67,7 @@ const MessagesPage: React.FC = () => {
     const selectedConv = conversations.find(c => c.id === conversationId);
     if (user && selectedConv) {
       setOtherParticipantId(user.id === selectedConv.participant1_id ? selectedConv.participant2_id : selectedConv.participant1_id);
-      if (markConversationAsRead) {
+      if (markConversationAsRead) { // Ensure markConversationAsRead is defined
         markConversationAsRead(conversationId);
       }
     } else {
