@@ -1,49 +1,46 @@
 
-import { useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuthActivityLogger } from "./useAuthActivityLogger";
+import { useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 export const useLogout = (staffName: string) => {
-  const navigate = useNavigate();
   const { toast } = useToast();
-  const { logAuthActivity } = useAuthActivityLogger();
+  const navigate = useNavigate();
 
-  const handleLogout = useCallback(async () => {
+  const logout = useCallback(async (): Promise<void> => {
     try {
-      console.log("Logging out user");
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
       
-      // Log the logout action before signing out
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          await logAuthActivity(
-            session.user.id,
-            staffName,
-            "logout",
-            `${staffName} logged out`
-          );
-        }
-      } catch (error) {
-        console.error("Failed to log logout activity:", error);
+      if (error) {
+        console.error('Logout error:', error);
+        toast({
+          title: "Logout Error",
+          description: "Failed to logout properly",
+          variant: "destructive",
+        });
+        return;
       }
-      
-      await supabase.auth.signOut();
+
+      // Show success message
       toast({
         title: "Logged Out",
-        description: "You have been logged out successfully.",
+        description: `Goodbye, ${staffName}!`,
       });
-      navigate("/staff/login");
+
+      // Redirect to login page
+      navigate('/auth'); // Changed from /staff/login
+      
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error('Unexpected logout error:', error);
       toast({
-        title: "Logout failed",
-        description: "There was an error during logout. Please try again.",
+        title: "Logout Error",
+        description: "An unexpected error occurred during logout",
         variant: "destructive",
       });
     }
-  }, [navigate, toast, staffName, logAuthActivity]);
+  }, [staffName, toast, navigate]); // Dependencies updated
 
-  return handleLogout;
+  return logout; // Function name is logout
 };

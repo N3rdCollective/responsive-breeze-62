@@ -16,7 +16,9 @@ const StaffAuthContext = createContext<StaffAuthContextType | undefined>(undefin
 export const StaffAuthProvider = ({ children }: { children: ReactNode }) => {
   // Use the actual imported hooks
   const authState = useActualStaffAuthState({}); // Fetches staff auth state
-  const handleLogout = useActualStaffLogout(authState.staffName); // Gets the logout handler
+  // useActualStaffLogout now returns a function named 'logout', which is assigned to 'handleLogout' here.
+  // The context still exposes this function as 'handleLogout'.
+  const handleLogout = useActualStaffLogout(authState.staffName); 
 
   const value: StaffAuthContextType = {
     ...authState,
@@ -42,4 +44,3 @@ export const useStaffAuth = (): StaffAuthContextType => {
 // Export the imported StaffAuthState type (from ./staff/useAuthState) for convenience
 // This allows other parts of the application to use `StaffAuthState` via `useStaffAuth`
 export type { ActualStaffAuthState as StaffAuthState };
-
