@@ -1,9 +1,8 @@
-
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AuthProvider from "@/hooks/useAuth"; 
-import StaffAuthProvider from "@/hooks/useStaffAuth"; 
+import { StaffAuthProvider } from "@/hooks/useStaffAuth"; 
 
 import HomePage from "@/pages/Index"; 
 import PersonalitiesPage from "@/pages/Personalities"; 
