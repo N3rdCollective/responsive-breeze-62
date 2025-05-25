@@ -47,12 +47,18 @@ function App() {
           <Route path="/news" element={<NewsPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/auth" element={<AuthPage />} />
+          
+          {/* Member & Forum Routes */}
+          {/* Order matters: More specific routes first */}
           <Route path="/members" element={<MembersPage />} />
+          <Route path="/members/forum/:categorySlug" element={<ForumCategoryPage />} /> {/* New route for categories under /members/forum */}
+          <Route path="/members/forum" element={<MembersPage />} /> {/* New route for base /members/forum path */}
+
           <Route path="/profile" element={<EnhancedProfilePage />} />
           <Route path="/u/:username" element={<PublicProfilePage />} />
           
-          {/* Forum Routes */}
-          <Route path="/forum" element={<MembersPage />} />
+          {/* Original Forum Routes (kept for direct access or other links) */}
+          <Route path="/forum" element={<MembersPage />} /> 
           <Route path="/forum/category/:categorySlug" element={<ForumCategoryPage />} />
           <Route path="/forum/topic/:topicId" element={<ForumTopicPage />} />
           <Route path="/forum/new-topic/:categoryId" element={<ForumNewTopicPage />} />

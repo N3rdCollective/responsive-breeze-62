@@ -8,10 +8,10 @@ import { formatDistanceToNow } from 'date-fns';
 
 interface TopicListItemProps {
   topic: ForumTopic;
-  categorySlug: string | undefined;
+  categorySlug: string | undefined; // categorySlug is kept for potential future use or other parts of the component, but not for this specific link.
 }
 
-const TopicListItem: React.FC<TopicListItemProps> = ({ topic, categorySlug }) => {
+const TopicListItem: React.FC<TopicListItemProps> = ({ topic }) => {
   return (
     <li className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50">
       <div className="grid grid-cols-12 gap-4">
@@ -26,7 +26,8 @@ const TopicListItem: React.FC<TopicListItemProps> = ({ topic, categorySlug }) =>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <Link
-                  to={`/members/forum/${categorySlug}/${topic.slug || topic.id}`}
+                  // Corrected link: Use topic.id and the /forum/topic/:topicId route structure
+                  to={`/forum/topic/${topic.id}`}
                   className="font-medium hover:text-primary transition-colors line-clamp-1"
                 >
                   {topic.title}
