@@ -27,23 +27,22 @@ export const useUserSearch = () => {
         throw supabaseError;
       }
       
-      // Map profile_picture to avatar_url as expected by UserProfile type
-      const fetchedUsers = data
-        ? data.map(profile => ({
+      // Explicitly type the objects in the map to conform to UserProfile
+      const fetchedUsers: UserProfile[] = data
+        ? data.map((profile): UserProfile => ({ // Explicit return type UserProfile for map callback
             id: profile.id,
             username: profile.username,
             display_name: profile.display_name,
             avatar_url: profile.profile_picture, // Mapping here
-            // Add other required UserProfile fields with default/null values if not selected
             bio: null,
             favorite_genres: null,
-            role: 'user', // Or fetch if available/needed
+            role: 'user', // This is a valid UserProfile['role'] literal
             social_links: null,
             theme: null,
             is_public: true,
-            created_at: '', // Or fetch if available/needed
+            created_at: new Date().toISOString(), // Use a valid ISO date string
             forum_signature: null,
-            forum_post_count: 0, // Or fetch if available/needed
+            forum_post_count: 0,
           }))
         : [];
       setUsers(fetchedUsers);
@@ -59,3 +58,4 @@ export const useUserSearch = () => {
 
   return { users, isLoading, error, searchUsersByName };
 };
+
