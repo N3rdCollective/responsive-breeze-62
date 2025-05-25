@@ -9,18 +9,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client'; // Import Supabase client
+import { supabase } from '@/integrations/supabase/client';
 
 interface ChatViewProps {
   conversationId: string;
   otherParticipantId: string;
-  // It would be good to pass otherParticipantName here if available from parent
-  // For now, we'll try to derive it or use a generic name.
 }
 
 const TYPING_EVENT_START = 'TYPING_START';
 const TYPING_EVENT_STOP = 'TYPING_STOP';
-const TYPING_INDICATOR_TIMEOUT_MS = 3000; // 3 seconds
+const TYPING_INDICATOR_TIMEOUT_MS = 3000;
 
 const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId }) => {
   const { user } = useAuth();
@@ -38,7 +36,7 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
   const [otherUserTypingName, setOtherUserTypingName] = useState<string | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const supabaseChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  const isCurrentUserTypingRef = useRef(false); // Tracks if current user is marked as typing
+  const isCurrentUserTypingRef = useRef(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -48,101 +46,122 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
     scrollToBottom();
   }, [messages]);
 
-  // Effect for handling typing indicators and Supabase channel
   useEffect(() => {
-    // Cleanup previous channel instance when dependencies change or component unmounts
+    console.log(`ChatView: Typing indicator useEffect running. ConversationID: ${conversationId}, CurrentUserID: ${currentUserId}, OtherParticipantID: ${otherParticipantId}`);
+
     if (supabaseChannelRef.current) {
-      supabase.removeChannel(supabaseChannelRef.current);
-      supabaseChannelRef.current = null; // Important to nullify
+      console.log(`ChatView: Removing previous channel for conversation-${supabaseChannelRef.current.topic.split('-')[1]}`);
+      supabase.removeChannel(supabaseChannelRef.current).then(status => {
+        console.log(`ChatView: Previous channel removal status: ${status}`);
+      });
+      supabaseChannelRef.current = null;
     }
 
-    // If essential data isn't available, don't set up a new channel
     if (!conversationId || !currentUserId || !otherParticipantId) {
-      setIsOtherUserTyping(false); // Reset typing state
-      return; // Exit early
+      console.log("ChatView: Typing indicator setup aborted. Missing conversationId, currentUserId, or otherParticipantId.");
+      setIsOtherUserTyping(false);
+      return;
     }
 
-    // Define handlers within the effect to capture current 'otherParticipantId'
-    // These handlers are redefined on each effect run if their dependencies change,
-    // ensuring they use the latest values.
     const handleTypingStartInternal = (payload: any) => {
+      // Ensure payload and payload.payload exist
+      if (!payload || !payload.payload) {
+        console.error("ChatView: Received TYPING_START with invalid payload structure", payload);
+        return;
+      }
       const { userId: typingUserId, userName: typingUserName } = payload.payload;
-      if (typingUserId === otherParticipantId) { // Uses up-to-date otherParticipantId
+      console.log(`ChatView:EVENT_RECEIVED - TYPING_START from userId: ${typingUserId}, userName: ${typingUserName}. Current otherParticipantId: ${otherParticipantId}`);
+      if (typingUserId === otherParticipantId) {
+        console.log("ChatView:EVENT_MATCH - TYPING_START matches otherParticipantId. Setting isOtherUserTyping to true.");
         setIsOtherUserTyping(true);
         setOtherUserTypingName(typingUserName || 'Someone');
         if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = setTimeout(() => {
+          console.log("ChatView: Typing indicator timed out. Setting isOtherUserTyping to false.");
           setIsOtherUserTyping(false);
         }, TYPING_INDICATOR_TIMEOUT_MS);
+      } else {
+        console.log(`ChatView:EVENT_NO_MATCH - TYPING_START from ${typingUserId} does NOT match otherParticipantId ${otherParticipantId}.`);
       }
     };
 
     const handleTypingStopInternal = (payload: any) => {
+      if (!payload || !payload.payload) {
+        console.error("ChatView: Received TYPING_STOP with invalid payload structure", payload);
+        return;
+      }
       const { userId: typingUserId } = payload.payload;
-      if (typingUserId === otherParticipantId) { // Uses up-to-date otherParticipantId
+      console.log(`ChatView:EVENT_RECEIVED - TYPING_STOP from userId: ${typingUserId}. Current otherParticipantId: ${otherParticipantId}`);
+      if (typingUserId === otherParticipantId) {
+        console.log("ChatView:EVENT_MATCH - TYPING_STOP matches otherParticipantId. Setting isOtherUserTyping to false.");
         setIsOtherUserTyping(false);
         if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      } else {
+        console.log(`ChatView:EVENT_NO_MATCH - TYPING_STOP from ${typingUserId} does NOT match otherParticipantId ${otherParticipantId}.`);
       }
     };
     
-    // Create a new channel instance for this effect run
     const newChannel = supabase.channel(`conversation-${conversationId}`, {
       config: {
-        broadcast: { ack: true }, // ack can be useful for knowing if send was received by server
+        broadcast: { ack: true },
       },
     });
+    console.log(`ChatView: Creating new channel: conversation-${conversationId}`);
 
     newChannel
       .on('broadcast', { event: TYPING_EVENT_START }, handleTypingStartInternal)
       .on('broadcast', { event: TYPING_EVENT_STOP }, handleTypingStopInternal)
-      .subscribe((status) => {
+      .subscribe((status, err) => {
         if (status === 'SUBSCRIBED') {
-          console.log(`ChatView: Subscribed to broadcast events on conversation-${conversationId}`);
-        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-            console.error(`ChatView: Broadcast subscription error for conversation-${conversationId}: ${status}`);
+          console.log(`ChatView: Successfully SUBSCRIBED to broadcast events on conversation-${conversationId}`);
+        } else if (err) {
+            console.error(`ChatView: Broadcast subscription error for conversation-${conversationId}: ${status}`, err);
+        } else {
+            console.log(`ChatView: Broadcast subscription status for conversation-${conversationId}: ${status}`);
         }
       });
 
-    supabaseChannelRef.current = newChannel; // Store the new channel instance
+    supabaseChannelRef.current = newChannel;
 
-    // Return a cleanup function
     return () => {
-      // Send a stop typing event if the user was typing when component unmounts or conversation changes
-      if (isCurrentUserTypingRef.current && currentUserId && supabaseChannelRef.current) {
-          // Use the channel instance from THIS effect run
+      console.log(`ChatView: Cleanup for typing indicator. ConversationID: ${conversationId}, CurrentUserID: ${currentUserId}`);
+      if (isCurrentUserTypingRef.current && currentUserId && supabaseChannelRef.current && supabaseChannelRef.current.state === 'joined') {
+          console.log(`ChatView: Sending TYPING_STOP on cleanup for user ${currentUserId}`);
           supabaseChannelRef.current.send({
               type: 'broadcast',
               event: TYPING_EVENT_STOP,
               payload: { userId: currentUserId },
-          });
+          }).catch(e => console.error("ChatView: Error sending TYPING_STOP on cleanup:", e));
           isCurrentUserTypingRef.current = false;
       }
       
-      // Remove the channel instance created in THIS effect run
       if (supabaseChannelRef.current) {
-        supabase.removeChannel(supabaseChannelRef.current);
-        supabaseChannelRef.current = null; // Nullify after removal
+        console.log(`ChatView: Removing channel on cleanup: conversation-${conversationId}`);
+        supabase.removeChannel(supabaseChannelRef.current).then(status => {
+          console.log(`ChatView: Channel removal on cleanup status: ${status}`);
+        });
+        supabaseChannelRef.current = null;
       }
 
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-      setIsOtherUserTyping(false); // Reset on unmount/change
+      setIsOtherUserTyping(false);
     };
-  }, [conversationId, currentUserId, otherParticipantId]); // Effect dependencies
+  }, [conversationId, currentUserId, otherParticipantId]);
 
   useEffect(() => {
-    // Reset file selection and typing status when conversation changes
+    console.log(`ChatView: Conversation changed to ${conversationId}. Resetting file/input/typing states.`);
     setSelectedFile(null);
     setPreviewUrl(null);
     if (fileInputRef.current) {
         fileInputRef.current.value = "";
     }
-    setNewMessageContent(''); // Clear input field
-    if (isCurrentUserTypingRef.current && currentUserId && supabaseChannelRef.current) {
-        sendTypingEvent(false); // send stop if was typing
+    setNewMessageContent(''); 
+    if (isCurrentUserTypingRef.current && currentUserId && supabaseChannelRef.current && supabaseChannelRef.current.state === 'joined') {
+        sendTypingEvent(false); 
     }
-    setIsOtherUserTyping(false); // Reset other user typing indicator
+    setIsOtherUserTyping(false); 
 
-  }, [conversationId]); // currentUserId not needed here as sendTypingEvent checks it
+  }, [conversationId]); 
 
   useEffect(() => {
     if (!selectedFile) {
@@ -155,20 +174,36 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
   }, [selectedFile]);
 
   const sendTypingEvent = (isTyping: boolean) => {
-    if (!supabaseChannelRef.current || !currentUserId || !user) return;
+    if (!supabaseChannelRef.current || supabaseChannelRef.current.state !== 'joined') {
+      console.log("ChatView:EVENT_SEND_ABORT - sendTypingEvent - Channel not ready or doesn't exist.", { channelState: supabaseChannelRef.current?.state });
+      return;
+    }
+    if (!currentUserId || !user) {
+        console.log("ChatView:EVENT_SEND_ABORT - sendTypingEvent - Missing currentUserId or user.", { currentUserId, hasUser: !!user });
+        return;
+    }
     
-    // Only send if state actually changes
-    if (isTyping === isCurrentUserTypingRef.current && isTyping) return; // Already sent start
-    if (!isTyping && !isCurrentUserTypingRef.current) return; // Already sent stop or wasn't typing
+    if (isTyping === isCurrentUserTypingRef.current && isTyping) {
+        console.log("ChatView:EVENT_SEND_SKIP - sendTypingEvent - Already sent TYPING_START.");
+        return; 
+    }
+    if (!isTyping && !isCurrentUserTypingRef.current) {
+        console.log("ChatView:EVENT_SEND_SKIP - sendTypingEvent - Already sent TYPING_STOP or wasn't typing.");
+        return;
+    }
 
     const event = isTyping ? TYPING_EVENT_START : TYPING_EVENT_STOP;
     const displayName = user.user_metadata?.display_name || user.user_metadata?.username || user.email?.split('@')[0] || 'User';
+    const payloadToSend = { userId: currentUserId, userName: displayName };
     
+    console.log(`ChatView:EVENT_SEND_ATTEMPT - Attempting to send ${event} for user ${currentUserId} (${displayName}) on channel conversation-${conversationId}`, payloadToSend);
     supabaseChannelRef.current.send({
       type: 'broadcast',
       event: event,
-      payload: { userId: currentUserId, userName: displayName },
-    }).catch(err => console.error("Error sending typing event:", err));
+      payload: payloadToSend,
+    }).then(status => {
+        console.log(`ChatView:EVENT_SEND_STATUS - Send status for ${event}: ${status}`);
+    }).catch(err => console.error(`ChatView:EVENT_SEND_ERROR - Error sending ${event} event:`, err));
 
     isCurrentUserTypingRef.current = isTyping;
   };
@@ -176,10 +211,12 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newContent = e.target.value;
     setNewMessageContent(newContent);
-
+    console.log(`ChatView: Input changed. New content: "${newContent}". Current typing state: ${isCurrentUserTypingRef.current}`);
     if (newContent.trim() && !isCurrentUserTypingRef.current) {
+      console.log("ChatView: Input has content, was not typing. Sending TYPING_START.");
       sendTypingEvent(true);
     } else if (!newContent.trim() && isCurrentUserTypingRef.current) {
+      console.log("ChatView: Input is empty, was typing. Sending TYPING_STOP.");
       sendTypingEvent(false);
     }
   };
@@ -256,7 +293,8 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
           if (fileInputRef.current) {
             fileInputRef.current.value = "";
           }
-          if (isCurrentUserTypingRef.current) { // Send stop typing after message sent
+          if (isCurrentUserTypingRef.current) { 
+            console.log("ChatView: Message sent, was typing. Sending TYPING_STOP.");
             sendTypingEvent(false);
           }
         },
@@ -365,7 +403,7 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
             type="text"
             placeholder="Type a message..."
             value={newMessageContent}
-            onChange={handleInputChange} // Changed to custom handler
+            onChange={handleInputChange}
             className="flex-1"
             disabled={isSending || !conversationId}
           />
