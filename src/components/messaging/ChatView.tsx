@@ -68,12 +68,11 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
     if (!supabaseChannelRef.current) {
         // Use the same channel name as useMessages, configure for broadcast
         supabaseChannelRef.current = supabase.channel(`conversation-${conversationId}`, {
-        configs: {
+          config: {
             broadcast: { ack: true }, // ack can be useful for knowing if send was received by server
-        },
+          },
         });
     }
-
 
     const handleTypingStart = (payload: any) => {
       const { userId: typingUserId, userName: typingUserName } = payload.payload;
@@ -117,19 +116,15 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
             });
             isCurrentUserTypingRef.current = false;
         }
-        // Unsubscribe from specific events or remove channel if no longer needed by other hooks
-        // supabase.removeChannel(supabaseChannelRef.current); // useMessages might still be using it
-        // For safety, only remove listeners we added
-        supabaseChannelRef.current.off('broadcast', { event: TYPING_EVENT_START }, handleTypingStart);
-        supabaseChannelRef.current.off('broadcast', { event: TYPING_EVENT_STOP }, handleTypingStop);
-        // Note: useMessages handles its own channel lifecycle. If this is the *only* user of this channel instance, then removeChannel is okay.
-        // However, since useMessages uses the same channel name, it's safer to just turn off our event listeners.
+        
+        // Instead of using .off() which doesn't exist on the RealtimeChannel type,
+        // we'll just remove the channel entirely when cleaning up
+        supabase.removeChannel(supabaseChannelRef.current);
       }
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       setIsOtherUserTyping(false); // Reset on unmount/change
     };
   }, [conversationId, currentUserId, otherParticipantId]);
-
 
   useEffect(() => {
     // Reset file selection and typing status when conversation changes
