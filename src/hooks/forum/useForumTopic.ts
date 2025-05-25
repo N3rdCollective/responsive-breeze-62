@@ -17,9 +17,11 @@ interface UseForumTopicProps {
 export const useForumTopic = ({ page, setPage }: UseForumTopicProps) => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { topicId: routeTopicIdFromParams } = useParams<{ topicId: string }>();
+  // Changed to expect topicSlug from route parameters
+  const { topicSlug: routeTopicSlugFromParams } = useParams<{ topicSlug: string }>();
 
-  const forumTopicData = useForumTopicData(page);
+  // Pass page to useForumTopicData, which now also uses topicSlug from useParams
+  const forumTopicData = useForumTopicData(page); 
 
   const {
     topic,
@@ -27,9 +29,9 @@ export const useForumTopic = ({ page, setPage }: UseForumTopicProps) => {
     setPosts,
     loadingData,
     totalPages,
-    refreshData, // This is the full refresh: () => Promise<void>
-    fetchData,    // This is for specific page: (pageToFetch?: number) => Promise<void>
-    categorySlug,
+    refreshData, 
+    fetchData,    
+    categorySlug, // This is now derived within useForumTopicData
   } = forumTopicData;
 
   const ITEMS_PER_PAGE = 10;
@@ -42,7 +44,7 @@ export const useForumTopic = ({ page, setPage }: UseForumTopicProps) => {
   } = useForumReplyHandler({
     topic,
     user,
-    fetchTopicData: fetchData, // Use fetchData for paged refreshes
+    fetchTopicData: fetchData,
     currentPage: page,
     totalPages,
     postsOnCurrentPage: posts.length,
@@ -67,7 +69,7 @@ export const useForumTopic = ({ page, setPage }: UseForumTopicProps) => {
     posts,
     setPosts: setPosts as React.Dispatch<React.SetStateAction<ForumPost[]>>,
     currentPage: page,
-    fetchTopicData: fetchData, // Use fetchData for paged refreshes
+    fetchTopicData: fetchData, 
   });
 
   const {
@@ -81,10 +83,11 @@ export const useForumTopic = ({ page, setPage }: UseForumTopicProps) => {
   });
 
   useEffect(() => {
-    if (!authLoading && !user && routeTopicIdFromParams) {
+    // Use routeTopicSlugFromParams to check if a topic is being requested
+    if (!authLoading && !user && routeTopicSlugFromParams) {
       navigate("/auth", { replace: true });
     }
-  }, [user, authLoading, navigate, routeTopicIdFromParams]);
+  }, [user, authLoading, navigate, routeTopicSlugFromParams]);
 
   const isProcessingPostAction = submittingUpdatePost || submittingDeletePost || submittingReaction;
 
@@ -93,7 +96,7 @@ export const useForumTopic = ({ page, setPage }: UseForumTopicProps) => {
     authLoading,
     topic,
     posts,
-    setPosts, // Exporting setPosts for optimistic updates
+    setPosts, 
     loadingData,
     replyContent,
     setReplyContent,
@@ -102,8 +105,8 @@ export const useForumTopic = ({ page, setPage }: UseForumTopicProps) => {
     totalPages,
     isSubmittingReply,
     handleSubmitReply,
-    categorySlug,
-    topicId: topic?.id || null,
+    categorySlug, // This comes from forumTopicData, derived from the topic
+    topicId: topic?.id || null, // Keep original topic ID if needed elsewhere
 
     editingPost,
     showEditDialog,
@@ -117,7 +120,6 @@ export const useForumTopic = ({ page, setPage }: UseForumTopicProps) => {
     handleCloseDeleteDialog,
     handleConfirmDeletePost,
     handleToggleReaction,
-    refreshTopicData: refreshData, // This is the full refresh for the page level
+    refreshTopicData: refreshData, 
   };
 };
-

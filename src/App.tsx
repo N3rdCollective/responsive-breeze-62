@@ -60,7 +60,8 @@ function App() {
           {/* Original Forum Routes (kept for direct access or other links) */}
           <Route path="/forum" element={<MembersPage />} /> 
           <Route path="/forum/category/:categorySlug" element={<ForumCategoryPage />} />
-          <Route path="/forum/topic/:topicId" element={<ForumTopicPage />} />
+          {/* Changed :topicId to :topicSlug */}
+          <Route path="/forum/topic/:topicSlug" element={<ForumTopicPage />} /> 
           <Route path="/forum/new-topic/:categoryId" element={<ForumNewTopicPage />} />
           
           {/* Staff Routes - Wrapped with StaffLayout */}

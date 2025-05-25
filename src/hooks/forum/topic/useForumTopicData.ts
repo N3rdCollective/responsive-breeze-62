@@ -13,18 +13,16 @@ interface UseForumTopicDataReturn {
   page: number;
   totalPages: number;
   totalPosts: number;
-  refreshData: () => Promise<void>; // For full refresh, resets topic
-  fetchData: (pageToFetch?: number) => Promise<void>; // For fetching specific page data
-  categorySlug: string | null;
+  refreshData: () => Promise<void>; 
+  fetchData: (pageToFetch?: number) => Promise<void>; 
+  categorySlug: string | null; // This will be derived from the fetched topic
 }
 
 const POSTS_PER_PAGE = 10;
 
 export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDataReturn => {
-  const { categorySlug, topicId } = useParams<{
-    categorySlug: string;
-    topicId: string;
-  }>();
+  // Changed to expect topicSlug from route parameters. categorySlug is NOT part of /forum/topic/:topicSlug route.
+  const { topicSlug: paramTopicSlug } = useParams<{ topicSlug: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -35,26 +33,27 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
   const [totalPages, setTotalPages] = useState(1);
   const [totalPosts, setTotalPosts] = useState(0);
   const [viewCountUpdatedForTopic, setViewCountUpdatedForTopic] = useState<string | null>(null);
+  const [internalCategorySlug, setInternalCategorySlug] = useState<string | null>(null); // For derived category slug
 
   // Fetch topic data (only when topic changes)
   const fetchTopic = useCallback(async (): Promise<ForumTopic | null> => {
-    if (!topicId) return null;
+    if (!paramTopicSlug) return null; // Use paramTopicSlug
 
     try {
-      console.log('[useForumTopicData] Fetching topic:', topicId);
+      console.log('[useForumTopicData] Fetching topic by slug:', paramTopicSlug);
       
       const { data: topicData, error: topicError } = await supabase
         .from('forum_topics')
         .select(`
           *,
-          forum_categories!inner(slug),
+          forum_categories!inner(slug, name), // Ensure category name is also fetched for display
           profile:profiles!forum_topics_user_id_fkey( 
             username,
             display_name,
             profile_picture
           )
         `)
-        .eq('slug', topicId)
+        .eq('slug', paramTopicSlug) // Query by slug using paramTopicSlug
         .single();
 
       if (topicError) {
@@ -65,12 +64,15 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
       if (!topicData) {
         throw new Error('Topic not found');
       }
-
-      const topicCategorySlug = (topicData.forum_categories as any)?.slug; 
-      if (topicCategorySlug !== categorySlug) {
-        console.warn(`Category mismatch, redirecting from ${categorySlug} to ${topicCategorySlug} for topic ${topicId}`);
-        navigate(`/members/forum/${topicCategorySlug}/${topicId}?page=${currentPageFromProp}`, { replace: true });
-        return null;
+      
+      // Set the internal category slug from the fetched topic data
+      const fetchedCategorySlug = (topicData.forum_categories as any)?.slug;
+      if (fetchedCategorySlug) {
+        setInternalCategorySlug(fetchedCategorySlug);
+      } else {
+        console.warn('Topic fetched but category slug is missing:', topicData);
+        // Potentially handle this case, e.g., by setting a default or error state
+        setInternalCategorySlug(null);
       }
 
       console.log('[useForumTopicData] Topic fetched successfully:', topicData.title);
@@ -85,11 +87,12 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
         variant: "destructive"
       });
       if (err.message === 'Topic not found') {
-        navigate('/members/forum', { replace: true });
+        // Consider navigating to a generic forum page or a 404 page for topics
+        navigate('/members/forum', { replace: true }); 
       }
       return null;
     }
-  }, [topicId, categorySlug, navigate, currentPageFromProp, toast]);
+  }, [paramTopicSlug, navigate, toast]); // Removed currentPageFromProp as it's not directly used for slug based fetch logic here
 
   // Fetch posts for current page
   const fetchPosts = useCallback(async (topicId: string, pageToFetch: number): Promise<{ posts: ForumPost[]; totalCount: number }> => {
@@ -145,7 +148,7 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
   }, []);
 
   // Update view count (only once per topic visit)
-  const updateViewCount = useCallback(async (topicId: string) => {
+  const updateViewCount = useCallback(async (topicId: string) => { // topicId here is the actual UUID
     if (viewCountUpdatedForTopic === topicId) return;
 
     try {
@@ -158,39 +161,48 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
   }, [viewCountUpdatedForTopic]);
 
   // Main data fetching function
-  // Uses currentPageFromProp (passed as pageToFetch)
   const fetchData = useCallback(async (pageToFetch: number = currentPageFromProp) => {
-    if (!topicId) {
+    if (!paramTopicSlug) { // Use paramTopicSlug
       setLoadingData(false);
       return;
     }
 
-    console.log(`[useForumTopicData] fetchData called for topic: ${topicId}, page: ${pageToFetch}`);
+    console.log(`[useForumTopicData] fetchData called for topic slug: ${paramTopicSlug}, page: ${pageToFetch}`);
     setLoadingData(true);
     setError(null);
 
     try {
       let currentTopic = topic;
-      if (!currentTopic || currentTopic.slug !== topicId) {
-        console.log(`[useForumTopicData] Topic changed or not loaded. Current topic: ${currentTopic?.slug}, New slug: ${topicId}`);
+      // Check if topic needs to be refetched (e.g., slug changed or topic not loaded)
+      if (!currentTopic || currentTopic.slug !== paramTopicSlug) {
+        console.log(`[useForumTopicData] Topic slug changed or not loaded. Current topic slug: ${currentTopic?.slug}, New slug: ${paramTopicSlug}`);
         const fetchedTopicDetails = await fetchTopic();
         if (!fetchedTopicDetails) {
           setLoadingData(false);
-          return;
+          return; 
         }
         currentTopic = fetchedTopicDetails;
-        setTopic(currentTopic);
-        setViewCountUpdatedForTopic(null); 
-        if (pageToFetch === 1 && currentTopic.id !== viewCountUpdatedForTopic) {
+        setTopic(currentTopic); 
+        // Reset view count updated flag only if the topic *ID* (actual UUID) changes or first load for this slug
+        if (!viewCountUpdatedForTopic || (currentTopic && viewCountUpdatedForTopic !== currentTopic.id)) {
+             setViewCountUpdatedForTopic(null);
+        }
+        // Increment view count if it's the first page and view count hasn't been updated for this topic's ID yet
+        if (pageToFetch === 1 && currentTopic && currentTopic.id !== viewCountUpdatedForTopic) {
            updateViewCount(currentTopic.id);
         }
-      } else if (pageToFetch === 1 && currentTopic.id !== viewCountUpdatedForTopic) {
+      } else if (pageToFetch === 1 && currentTopic && currentTopic.id !== viewCountUpdatedForTopic) {
+        // Also increment if already on topic but navigating to page 1 and not updated
         updateViewCount(currentTopic.id);
       }
 
 
       if (currentTopic) {
-        const { posts: newPosts, totalCount } = await fetchPosts(currentTopic.id, pageToFetch);
+        // Ensure internalCategorySlug is set if topic was already loaded but category slug might not have been derived.
+        if (!internalCategorySlug && currentTopic.category?.slug) {
+            setInternalCategorySlug(currentTopic.category.slug);
+        }
+        const { posts: newPosts, totalCount } = await fetchPosts(currentTopic.id, pageToFetch); // fetchPosts uses topic UUID
         setPosts(newPosts);
         setTotalPosts(totalCount);
         const calculatedTotalPages = Math.max(1, Math.ceil(totalCount / POSTS_PER_PAGE));
@@ -204,24 +216,27 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
     } finally {
       setLoadingData(false);
     }
-  }, [topicId, topic, fetchTopic, fetchPosts, updateViewCount, viewCountUpdatedForTopic, currentPageFromProp]);
+  }, [paramTopicSlug, topic, fetchTopic, fetchPosts, updateViewCount, viewCountUpdatedForTopic, currentPageFromProp, internalCategorySlug]);
 
-  // Effect to fetch data when topicSlug or currentPageFromProp changes.
+  // Effect to fetch data when paramTopicSlug or currentPageFromProp changes.
   useEffect(() => {
-    console.log(`[useForumTopicData] Effect triggered - TopicId: ${topicId}, CurrentPageFromProp: ${currentPageFromProp}`);
-    if (topic && topicId !== topic.slug) {
-        console.log(`[useForumTopicData] Topic slug changed from ${topic.slug} to ${topicId}. Resetting topic state.`);
+    console.log(`[useForumTopicData] Effect triggered - TopicSlug: ${paramTopicSlug}, CurrentPageFromProp: ${currentPageFromProp}`);
+    // If the slug from the URL changes, reset the topic state to force a refetch.
+    if (topic && paramTopicSlug !== topic.slug) {
+        console.log(`[useForumTopicData] Topic slug changed from ${topic.slug} to ${paramTopicSlug}. Resetting topic state.`);
         setTopic(null); 
+        setInternalCategorySlug(null); // Reset derived category slug too
     }
     fetchData(currentPageFromProp);
-  }, [topicId, currentPageFromProp, fetchData, topic]);
+  }, [paramTopicSlug, currentPageFromProp, fetchData]); // Removed topic from dependencies to avoid loop, slug change handles reset.
 
   // Refresh data function (full refresh, resets topic)
   const refreshData = useCallback(async () => {
     console.log('[useForumTopicData] Refreshing data (full)...');
     setTopic(null);
-    setViewCountUpdatedForTopic(null);
-    await fetchData(currentPageFromProp); // Fetches current page after reset
+    setInternalCategorySlug(null); // Reset derived category slug
+    setViewCountUpdatedForTopic(null); // Allow view count to be incremented again on refresh
+    await fetchData(currentPageFromProp); 
   }, [fetchData, currentPageFromProp]);
 
   return {
@@ -233,8 +248,8 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
     page: currentPageFromProp,
     totalPages,
     totalPosts,
-    refreshData, // For full refresh
-    fetchData,    // For fetching specific page data
-    categorySlug: categorySlug || null,
+    refreshData, 
+    fetchData,    
+    categorySlug: internalCategorySlug, // Return the derived category slug
   };
 };
