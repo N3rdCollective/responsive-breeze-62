@@ -7,20 +7,21 @@ import { Button } from '@/components/ui/button';
 import { Send, MessageCircle, AlertTriangle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 interface ChatViewProps {
   conversationId: string;
-  otherParticipantId: string; // Added otherParticipantId
+  otherParticipantId: string;
 }
 
 const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId }) => {
   const { user } = useAuth();
   const currentUserId = user?.id;
-  // Note: useMessages hook doesn't need otherParticipantId directly, it's passed through its sendMessage mutate function
   const { messages, isLoading, isError, sendMessage, isSending } = useMessages(conversationId);
   const [newMessageContent, setNewMessageContent] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -30,19 +31,48 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    console.log("ChatView props updated:", { conversationId, otherParticipantId, currentUserId });
+  }, [conversationId, otherParticipantId, currentUserId]);
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessageContent.trim() || !currentUserId || !otherParticipantId) {
-      console.error("Cannot send message: missing content, user ID, or other participant ID.");
-      // Optionally, show a toast to the user
+      console.error("ChatView: Cannot send message. Missing data.", {
+        content: newMessageContent.trim() || "Empty",
+        currentUserId: currentUserId || "Missing currentUserId",
+        otherParticipantId: otherParticipantId || "Missing otherParticipantId",
+        conversationId: conversationId || "Missing conversationId"
+      });
+      toast({
+        title: "Cannot Send Message",
+        description: "Required information is missing. Please ensure the conversation is correctly loaded.",
+        variant: "destructive",
+      });
       return;
     }
     
+    console.log("ChatView: Attempting to send message with:", {
+      content: newMessageContent.trim(),
+      otherParticipantId: otherParticipantId,
+      conversationId: conversationId,
+      currentUserId: currentUserId,
+    });
+
     sendMessage(
-      { content: newMessageContent.trim(), otherParticipantId: otherParticipantId }, // Pass otherParticipantId
+      { content: newMessageContent.trim(), otherParticipantId: otherParticipantId },
       {
         onSuccess: () => {
+          console.log("ChatView: Message sent successfully (mutation onSuccess).");
           setNewMessageContent('');
+        },
+        onError: (error) => {
+          console.error("ChatView: Error sending message (mutation onError):", error);
+          toast({ 
+            title: "Message Failed", 
+            description: error.message || "Could not send message. Please try again.", 
+            variant: "destructive" 
+          });
         },
       }
     );
@@ -100,9 +130,9 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
           value={newMessageContent}
           onChange={(e) => setNewMessageContent(e.target.value)}
           className="flex-1"
-          disabled={isSending}
+          disabled={isSending || !conversationId}
         />
-        <Button type="submit" disabled={!newMessageContent.trim() || isSending || !otherParticipantId}>
+        <Button type="submit" disabled={!newMessageContent.trim() || isSending || !otherParticipantId || !conversationId}>
           {isSending ? (
             <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-current"></div>
           ) : (

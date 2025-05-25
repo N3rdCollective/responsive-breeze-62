@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { useAuth } from '@/hooks/useAuth';
@@ -6,11 +5,11 @@ import { useNavigate } from 'react-router-dom';
 import { useConversations } from '@/hooks/useConversations';
 import ConversationList from '@/components/messaging/ConversationList';
 import ChatView from '@/components/messaging/ChatView';
-import NewConversationModal from '@/components/messaging/NewConversationModal'; // Import the new modal
+import NewConversationModal from '@/components/messaging/NewConversationModal';
 import { Separator } from '@/components/ui/separator';
 import { LayoutGrid, MessageCircle, Users } from 'lucide-react';
 import { Conversation } from '@/types/messaging';
-import { useToast } from '@/hooks/use-toast'; // Import useToast
+import { useToast } from '@/hooks/use-toast';
 
 const MessagesPage: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
@@ -19,12 +18,12 @@ const MessagesPage: React.FC = () => {
     conversations, 
     isLoading: conversationsLoading, 
     refetchConversations,
-    startOrCreateConversation // Get the new function
+    startOrCreateConversation
   } = useConversations();
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [otherParticipantId, setOtherParticipantId] = useState<string | null>(null);
-  const [isNewConversationModalOpen, setIsNewConversationModalOpen] = useState(false); // State for modal
-  const { toast } = useToast(); // Initialize toast
+  const [isNewConversationModalOpen, setIsNewConversationModalOpen] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -39,22 +38,32 @@ const MessagesPage: React.FC = () => {
   }, [user, refetchConversations]);
   
   useEffect(() => {
+    if (conversationsLoading) {
+        console.log("MessagesPage: Conversations loading, skipping selection logic in useEffect.");
+        return;
+    }
+
+    console.log("MessagesPage useEffect [conversations, selectedConversationId, user, conversationsLoading] triggered. selectedCID:", selectedConversationId, "conversations.length:", conversations.length, "isLoading:", conversationsLoading);
+
     if (!selectedConversationId && conversations.length > 0) {
-      // Check if the first conversation's ID is already selected to prevent infinite loop
-      if (conversations[0].id !== selectedConversationId) {
+      // Auto-select the first conversation if none is selected and the list is not empty.
+      // Check if the first conversation's ID is already selected to prevent potential loops if not strictly necessary,
+      // though with conversationsLoading check, this might be less of an issue.
+      if (conversations[0].id !== selectedConversationId) { // This check might be redundant if selectedConversationId is confirmed null
         const firstConv = conversations[0];
+        console.log("MessagesPage: Auto-selecting first conversation:", firstConv.id);
         setSelectedConversationId(firstConv.id);
         if (user && firstConv) {
           setOtherParticipantId(user.id === firstConv.participant1_id ? firstConv.participant2_id : firstConv.participant1_id);
         }
       }
     } else if (conversations.length === 0 && selectedConversationId) {
-      // If no conversations, clear selection
+      // If a conversation was selected but the list is now empty (and not loading), clear the selection.
+      console.log("MessagesPage: Resetting selectedConversationId due to empty conversations array (and not loading).");
       setSelectedConversationId(null);
       setOtherParticipantId(null);
     }
-  }, [conversations, selectedConversationId, user]);
-
+  }, [conversations, selectedConversationId, user, conversationsLoading]);
 
   const handleSelectConversation = (conversationId: string) => {
     setSelectedConversationId(conversationId);
@@ -62,12 +71,13 @@ const MessagesPage: React.FC = () => {
     if (user && selectedConv) {
       setOtherParticipantId(user.id === selectedConv.participant1_id ? selectedConv.participant2_id : selectedConv.participant1_id);
     } else {
+      console.warn("MessagesPage: Could not find selected conversation or user not available for setting otherParticipantId.");
       setOtherParticipantId(null);
     }
   };
 
   const handleStartNewConversation = () => {
-    setIsNewConversationModalOpen(true); // Open the modal
+    setIsNewConversationModalOpen(true);
   };
 
   const handleSelectUserForNewConversation = async (targetUserId: string) => {
@@ -81,33 +91,26 @@ const MessagesPage: React.FC = () => {
     }
 
     try {
+      console.log(`MessagesPage: Attempting to start/create conversation with ${targetUserId} by user ${user.id}`);
       const conversationId = await startOrCreateConversation(targetUserId);
       if (conversationId) {
-        // The useConversations hook should refetch, and the useEffect for conversations should handle selection.
-        // However, to be more direct:
+        console.log(`MessagesPage: Conversation started/found ID: ${conversationId}. Setting selectedConversationId and otherParticipantId.`);
         setSelectedConversationId(conversationId);
         setOtherParticipantId(targetUserId);
-        setIsNewConversationModalOpen(false); // Close modal
-        
-        // Ensure the new conversation is visible if it was just created
-        // The refetch in startOrCreateConversation should handle this,
-        // but sometimes direct selection needs a bit more nudge or wait for list update.
-        // For now, we rely on the useEffect listening to `conversations` to pick it up.
-        // If not, we might need to manually add it to the local state or force a re-render.
+        setIsNewConversationModalOpen(false);
+        // The useConversations hook's invalidation should trigger a refetch of the conversations list.
+        // The useEffect listening to `conversations` and `conversationsLoading` will handle UI updates.
       } else {
         toast({ title: "Error", description: "Could not start or find conversation.", variant: "destructive"});
+        console.error("MessagesPage: startOrCreateConversation returned null or undefined ID.");
       }
     } catch (error: any) {
-      console.error("Failed to start or create conversation:", error);
+      console.error("MessagesPage: Failed to start or create conversation:", error);
       toast({ title: "Error", description: error.message || "Failed to start conversation.", variant: "destructive"});
     }
   };
 
-
-  if (authLoading || (user && conversationsLoading && !conversations.length && !selectedConversationId)) { // Adjusted loading condition
-    // If there are conversations but none selected yet, it's not necessarily "loading" initial state
-    // Show loader if auth is loading OR (user exists AND conversations are loading AND no conversations yet AND no conversation selected)
-    // This prevents showing loader just because no conv is selected when the list is actually loaded.
+  if (authLoading || (user && conversationsLoading && !conversations.length && !selectedConversationId)) {
     if (authLoading || (user && conversationsLoading && conversations.length === 0)) {
          return (
             <div className="min-h-screen flex items-center justify-center bg-background">
@@ -132,8 +135,6 @@ const MessagesPage: React.FC = () => {
           <ConversationList
             conversations={conversations}
             currentUserId={user.id}
-            // Pass conversationsLoading only if there are no conversations yet.
-            // If conversations exist, list is not "loading" in terms of initial fetch.
             isLoading={conversationsLoading && conversations.length === 0}
             selectedConversationId={selectedConversationId}
             onSelectConversation={handleSelectConversation}
@@ -146,13 +147,21 @@ const MessagesPage: React.FC = () => {
             <ChatView conversationId={selectedConversationId} otherParticipantId={otherParticipantId} />
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-center text-muted-foreground p-4 md:p-8">
-              <MessageCircle size={48} className="mx-auto mb-4" />
-              {conversations.length > 0 ? (
+              {conversationsLoading && conversations.length === 0 ? (
+                 <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary mb-4"></div>
+              ) : (
+                <MessageCircle size={48} className="mx-auto mb-4" />
+              )}
+              {conversations.length > 0 && !conversationsLoading ? (
                 <p className="text-lg">Select a conversation to start messaging</p>
               ) : (
-                 <p className="text-lg">No conversations yet.</p>
+                 conversationsLoading && conversations.length === 0 ? (
+                    <p className="text-lg">Loading conversations...</p>
+                 ) : (
+                    <p className="text-lg">No conversations yet.</p>
+                 )
               )}
-              <p className="text-sm">or start a new one.</p>
+              {!conversationsLoading && <p className="text-sm">or start a new one.</p>}
             </div>
           )}
         </main>
