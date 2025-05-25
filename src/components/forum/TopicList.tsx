@@ -3,16 +3,17 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { Plus } from 'lucide-react'; // Changed from PlusCircle
 import TopicListItem from './TopicListItem';
-import { ForumTopic } from '@/types/forum';
+import { ForumTopic } from '@/types/forum'; // Use imported ForumTopic type
 
 interface TopicListProps {
   topics: ForumTopic[];
-  categorySlug: string | undefined;
+  categorySlug: string | undefined; // Kept for TopicListItem, but not for new topic link
+  categoryId: string | undefined; // Add categoryId prop
 }
 
-const TopicList: React.FC<TopicListProps> = ({ topics, categorySlug }) => {
+const TopicList: React.FC<TopicListProps> = ({ topics, categorySlug, categoryId }) => {
   return (
     <Card className="border-primary/20">
       <CardHeader className="bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 py-4">
@@ -35,11 +36,14 @@ const TopicList: React.FC<TopicListProps> = ({ topics, categorySlug }) => {
           <p className="text-muted-foreground mb-4">
             Be the first to start a discussion in this category!
           </p>
-          <Button asChild className="bg-primary hover:bg-primary/90">
-            <Link to={`/members/forum/${categorySlug}/new`}>
-              <PlusCircle className="h-4 w-4 mr-2" /> Create Topic
-            </Link>
-          </Button>
+          {categoryId && ( // Only show button if categoryId is available
+            <Button asChild className="bg-primary hover:bg-primary/90">
+              {/* FIXED: Use categoryId for the link */}
+              <Link to={`/forum/new-topic/${categoryId}`}>
+                <Plus className="h-4 w-4 mr-2" /> Create Topic
+              </Link>
+            </Button>
+          )}
         </CardContent>
       ) : (
         <CardContent className="p-0">

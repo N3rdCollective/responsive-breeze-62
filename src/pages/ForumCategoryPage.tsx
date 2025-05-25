@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -111,7 +112,8 @@ const ForumCategoryPage = () => {
             </Link>
           </div>
           
-          <TopicList topics={topics} categorySlug={categorySlug} />
+          {/* FIXED: Pass categoryId to TopicList */}
+          <TopicList topics={topics} categorySlug={categorySlug} categoryId={category?.id} />
           
           {topics.length > 0 && totalPages > 1 && (
              <ForumPagination page={page} totalPages={totalPages} setPage={setPage} />
