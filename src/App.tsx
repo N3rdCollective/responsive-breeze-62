@@ -33,6 +33,7 @@ import NotFoundPage from "@/pages/NotFound";
 
 // New StaffLayout component
 import StaffLayout from "@/components/layouts/StaffLayout";
+import MusicPlayer from "@/components/MusicPlayer"; // Added MusicPlayer import
 
 function App() {
   return (
@@ -75,6 +76,7 @@ function App() {
           {/* 404 Route */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
+        <MusicPlayer /> {/* Added MusicPlayer component here */}
       </TooltipProvider>
     </AuthProvider>
   );
