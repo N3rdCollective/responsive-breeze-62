@@ -4,10 +4,11 @@ import MessageItem from './MessageItem';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Send, MessageCircle, AlertTriangle } from 'lucide-react';
+import { Send, MessageCircle, AlertTriangle, Paperclip, XCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface ChatViewProps {
   conversationId: string;
@@ -19,8 +20,11 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
   const currentUserId = user?.id;
   const { messages, isLoading, isError, sendMessage, isSending } = useMessages(conversationId);
   const [newMessageContent, setNewMessageContent] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const scrollToBottom = () => {
@@ -33,42 +37,96 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
 
   useEffect(() => {
     console.log("ChatView props updated:", { conversationId, otherParticipantId, currentUserId });
-  }, [conversationId, otherParticipantId, currentUserId]);
+    // Reset file selection when conversation changes
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    if (fileInputRef.current) {
+        fileInputRef.current.value = ""; // Clear file input
+    }
+  }, [conversationId]);
+
+  useEffect(() => {
+    if (!selectedFile) {
+      setPreviewUrl(null);
+      return;
+    }
+    const objectUrl = URL.createObjectURL(selectedFile);
+    setPreviewUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl); // Clean up
+  }, [selectedFile]);
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit from SQL
+        toast({ title: "File too large", description: "Please select an image smaller than 5MB.", variant: "destructive" });
+        if(event.target) event.target.value = ""; // Clear the input
+        return;
+      }
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']; // from SQL
+      if (!allowedTypes.includes(file.type)) {
+        toast({ title: "Invalid file type", description: "Please select a JPG, PNG, GIF, or WEBP image.", variant: "destructive" });
+        if(event.target) event.target.value = ""; // Clear the input
+        return;
+      }
+      setSelectedFile(file);
+    } else {
+      setSelectedFile(null);
+    }
+  };
+
+  const removeSelectedFile = () => {
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""; // Clear the file input element
+    }
+  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     const sendStartTime = Date.now();
     console.log(`ChatView: handleSendMessage called at ${new Date(sendStartTime).toISOString()}`);
 
-    if (!newMessageContent.trim() || !currentUserId || !otherParticipantId) {
+    const contentToSend = newMessageContent.trim();
+    if ((contentToSend === '' && !selectedFile) || !currentUserId || !otherParticipantId) {
       console.error("ChatView: Cannot send message. Missing data.", {
-        content: newMessageContent.trim() || "Empty",
+        content: contentToSend || (selectedFile ? "[FileSelected]" : "Empty"),
+        selectedFile: selectedFile ? selectedFile.name : "None",
         currentUserId: currentUserId || "Missing currentUserId",
         otherParticipantId: otherParticipantId || "Missing otherParticipantId",
         conversationId: conversationId || "Missing conversationId"
       });
       toast({
         title: "Cannot Send Message",
-        description: "Required information is missing. Please ensure the conversation is correctly loaded.",
+        description: "Message content or file is required, or conversation info is missing.",
         variant: "destructive",
       });
       return;
     }
     
+    const finalContent = contentToSend === '' && selectedFile ? "[Image]" : contentToSend;
+
     console.log("ChatView: Attempting to send message with:", {
-      content: newMessageContent.trim(),
+      content: finalContent,
+      fileName: selectedFile?.name,
       otherParticipantId: otherParticipantId,
       conversationId: conversationId,
       currentUserId: currentUserId,
     });
 
     sendMessage(
-      { content: newMessageContent.trim(), otherParticipantId: otherParticipantId },
+      { content: finalContent, media_file: selectedFile, otherParticipantId: otherParticipantId },
       {
         onSuccess: () => {
           const successTime = Date.now();
           console.log(`ChatView: Message sent successfully (mutation onSuccess) at ${new Date(successTime).toISOString()}. Total time: ${successTime - sendStartTime}ms`);
           setNewMessageContent('');
+          setSelectedFile(null);
+          setPreviewUrl(null);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = ""; // Clear file input
+          }
         },
         onError: (error) => {
           const errorTime = Date.now();
@@ -128,24 +186,59 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
         ))}
         <div ref={messagesEndRef} />
       </ScrollArea>
-      <form onSubmit={handleSendMessage} className="p-4 border-t dark:border-gray-700/50 flex items-center gap-2 bg-background">
-        <Input
-          type="text"
-          placeholder="Type a message..."
-          value={newMessageContent}
-          onChange={(e) => setNewMessageContent(e.target.value)}
-          className="flex-1"
-          disabled={isSending || !conversationId}
-        />
-        <Button type="submit" disabled={!newMessageContent.trim() || isSending || !otherParticipantId || !conversationId}>
-          {isSending ? (
-            <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-current"></div>
-          ) : (
-            <Send size={18} />
-          )}
-          <span className="sr-only">Send message</span>
-        </Button>
-      </form>
+      <div className="p-4 border-t dark:border-gray-700/50 bg-background">
+        {previewUrl && selectedFile && (
+          <div className="mb-2 p-2 border rounded-md relative max-w-xs">
+            <img src={previewUrl} alt="Preview" className="max-h-40 rounded-md" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-1 right-1 h-6 w-6 bg-black/50 hover:bg-black/70 text-white rounded-full"
+              onClick={removeSelectedFile}
+            >
+              <XCircle size={16} />
+              <span className="sr-only">Remove image</span>
+            </Button>
+            <p className="text-xs text-muted-foreground truncate mt-1">{selectedFile.name}</p>
+          </div>
+        )}
+        <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+          <Input
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            onChange={handleFileSelect}
+            ref={fileInputRef}
+            className="hidden"
+            disabled={isSending || !conversationId}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isSending || !conversationId}
+            aria-label="Attach file"
+          >
+            <Paperclip size={18} />
+          </Button>
+          <Input
+            type="text"
+            placeholder="Type a message..."
+            value={newMessageContent}
+            onChange={(e) => setNewMessageContent(e.target.value)}
+            className="flex-1"
+            disabled={isSending || !conversationId}
+          />
+          <Button type="submit" disabled={(!newMessageContent.trim() && !selectedFile) || isSending || !otherParticipantId || !conversationId}>
+            {isSending ? (
+              <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-current"></div>
+            ) : (
+              <Send size={18} />
+            )}
+            <span className="sr-only">Send message</span>
+          </Button>
+        </form>
+      </div>
     </div>
   );
 };

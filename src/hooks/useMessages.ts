@@ -35,6 +35,7 @@ const fetchMessages = async (conversationId: string): Promise<DirectMessage[]> =
   }
   return data.map(msg => ({
     ...msg,
+    media_url: msg.media_url || null, // Ensure media_url is explicitly handled
     profile: msg.profile ? {
       id: msg.profile.id,
       username: msg.profile.username,
@@ -49,16 +50,50 @@ const sendMessageSupabase = async (newMessage: {
   sender_id: string;
   recipient_id: string;
   content: string;
-  media_url?: string | null;
+  media_file?: File | null; // Changed from media_url to media_file
 }): Promise<DirectMessage> => {
   const funcStartTime = Date.now();
   console.log(`useMessages: sendMessageSupabase called at ${new Date(funcStartTime).toISOString()}`);
+
+  let uploadedMediaUrl: string | null = null;
+
+  if (newMessage.media_file) {
+    const file = newMessage.media_file;
+    const filePath = `public/${newMessage.conversation_id}/${newMessage.sender_id}_${Date.now()}_${file.name}`;
+    
+    console.log(`useMessages: Attempting to upload media file: ${filePath}`);
+    const { error: uploadError } = await supabase.storage
+      .from('message_media')
+      .upload(filePath, file);
+
+    if (uploadError) {
+      console.error('Error uploading media file:', uploadError);
+      toast({ title: "Error Uploading File", description: uploadError.message, variant: "destructive" });
+      throw uploadError;
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from('message_media')
+      .getPublicUrl(filePath);
+    
+    uploadedMediaUrl = publicUrlData.publicUrl;
+    console.log(`useMessages: Media file uploaded, public URL: ${uploadedMediaUrl}`);
+  }
+
+  const messageToInsert = {
+    conversation_id: newMessage.conversation_id,
+    sender_id: newMessage.sender_id,
+    recipient_id: newMessage.recipient_id,
+    content: newMessage.content,
+    timestamp: new Date().toISOString(),
+    media_url: uploadedMediaUrl,
+  };
 
   let insertStartTime = Date.now();
   console.log(`useMessages: Attempting to insert message at ${new Date(insertStartTime).toISOString()}`);
   const { data, error } = await supabase
     .from('messages')
-    .insert({ ...newMessage, timestamp: new Date().toISOString() })
+    .insert(messageToInsert)
     .select(`
       id,
       conversation_id,
@@ -104,7 +139,8 @@ const sendMessageSupabase = async (newMessage: {
   const funcEndTime = Date.now();
   console.log(`useMessages: sendMessageSupabase finished at ${new Date(funcEndTime).toISOString()}. Total time in function: ${funcEndTime - funcStartTime}ms`);
   return { 
-    ...data, 
+    ...data,
+    media_url: data.media_url || null, // Ensure media_url is explicitly handled
     profile: data.profile ? {
       id: data.profile.id,
       username: data.profile.username,
@@ -134,7 +170,7 @@ export const useMessages = (conversationId: string | null) => {
     enabled: !!conversationId && !!user?.id,
   });
 
-  const mutation = useMutation<DirectMessage, Error, { content: string; media_url?: string | null; otherParticipantId: string }>({
+  const mutation = useMutation<DirectMessage, Error, { content: string; media_file?: File | null; otherParticipantId: string }>({
     mutationFn: async (newMessageData) => {
       if (!conversationId || !user?.id) {
         throw new Error('User or conversation ID is missing.');
@@ -143,13 +179,12 @@ export const useMessages = (conversationId: string | null) => {
         toast({ title: "Error Sending Message", description: "Recipient information is missing.", variant: "destructive" });
         throw new Error('Recipient ID (otherParticipantId) is missing.');
       }
-      // Renamed the original sendMessage to sendMessageSupabase to avoid confusion with the exported sendMessage from the hook
       return sendMessageSupabase({
         conversation_id: conversationId,
         sender_id: user.id,
         recipient_id: newMessageData.otherParticipantId,
         content: newMessageData.content,
-        media_url: newMessageData.media_url,
+        media_file: newMessageData.media_file, // Pass media_file
       });
     },
     onSuccess: (newMessage) => {
@@ -186,6 +221,7 @@ export const useMessages = (conversationId: string | null) => {
           
           const newMessage: DirectMessage = {
             ...rawNewMessage,
+            media_url: rawNewMessage.media_url || null, // Ensure media_url is handled
             profile: rawNewMessage.profile ? {
               id: rawNewMessage.profile.id,
               username: rawNewMessage.profile.username,
@@ -199,7 +235,6 @@ export const useMessages = (conversationId: string | null) => {
             content: rawNewMessage.content,
             timestamp: rawNewMessage.timestamp,
             is_deleted: rawNewMessage.is_deleted || false,
-            media_url: rawNewMessage.media_url || null,
           };
 
           if (newMessage.sender_id !== user.id) {
@@ -240,7 +275,7 @@ export const useMessages = (conversationId: string | null) => {
     isLoading,
     isError,
     error,
-    sendMessage: mutation.mutate, // This is what ChatView calls
+    sendMessage: mutation.mutate,
     isSending: mutation.isPending,
   };
 };

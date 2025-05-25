@@ -27,7 +27,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, currentUserId }) => 
         </Avatar>
       )}
       <div className={cn(
-        "max-w-[70%] rounded-lg px-3 py-2 text-sm break-words",
+        "max-w-[70%] rounded-lg px-3 py-2 text-sm break-words flex flex-col", // Added flex flex-col
         isCurrentUserMessage
           ? "bg-primary text-primary-foreground"
           : "bg-muted dark:bg-muted/60"
@@ -37,12 +37,20 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, currentUserId }) => 
             {senderDisplayName}
           </p>
         )}
-        <p>{message.content}</p>
+        {message.content && message.content !== "[Image]" && <p>{message.content}</p>}
+        {message.media_url && (
+          <a href={message.media_url} target="_blank" rel="noopener noreferrer" className="mt-1">
+            <img 
+              src={message.media_url} 
+              alt="Shared media" 
+              className="max-w-[200px] md:max-w-[280px] max-h-[300px] object-contain rounded-md cursor-pointer hover:opacity-90 transition-opacity" 
+            />
+          </a>
+        )}
         <p className={cn(
           "text-xs mt-1",
           isCurrentUserMessage ? "text-primary-foreground/80 text-right" : "text-muted-foreground/80 text-left"
         )}>
-          {/* Changed created_at to timestamp */}
           {formatDistanceToNow(new Date(message.timestamp), { addSuffix: true })}
         </p>
       </div>
@@ -57,3 +65,4 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, currentUserId }) => 
 };
 
 export default MessageItem;
+
