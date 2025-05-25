@@ -1,23 +1,28 @@
-import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "@/hooks/useAuth";
-import { StaffAuthProvider } from "@/hooks/useStaffAuth";
+import AuthProvider from "@/hooks/useAuth"; // Changed to default import
+import StaffAuthProvider from "@/hooks/useStaffAuth"; // Changed to default import
 
-import HomePage from "@/pages/HomePage";
-import PersonalitiesPage from "@/pages/PersonalitiesPage";
-import SchedulePage from "@/pages/SchedulePage";
-import AboutPage from "@/pages/AboutPage";
-import NewsPage from "@/pages/NewsPage";
-import ContactPage from "@/pages/ContactPage";
-import AuthPage from "@/pages/AuthPage";
+import HomePage from "@/pages/Index"; // Corrected path
+import PersonalitiesPage from "@/pages/Personalities"; // Corrected path
+import SchedulePage from "@/pages/Schedule"; // Corrected path
+import AboutPage from "@/pages/About"; // Corrected path
+import NewsPage from "@/pages/News"; // Corrected path
+import ContactPage from "@/pages/Contact"; // Corrected path
+import AuthPage from "@/pages/Auth"; // Corrected path
 import MembersPage from "@/pages/MembersPage";
 import EnhancedProfilePage from "@/pages/ProfilePage"; // User's own profile
 import PublicProfilePage from "@/pages/PublicProfilePage"; // Page for viewing other users' profiles
+
+{/* Forum Routes */}
 import ForumHomePage from "@/pages/forum/ForumHomePage";
 import ForumCategoryPage from "@/pages/forum/ForumCategoryPage";
 import ForumTopicPage from "@/pages/forum/ForumTopicPage";
 import ForumNewTopicPage from "@/pages/forum/ForumNewTopicPage";
+
+{/* Staff Pages - Assuming these paths are correct as per error log context if files exist */}
 import StaffDashboard from "@/pages/StaffDashboard";
 import StaffNewsEditor from "@/pages/StaffNewsEditor";
 import StaffShowsManager from "@/pages/StaffShowsManager";
@@ -25,7 +30,7 @@ import StaffForumManager from "@/pages/StaffForumManager";
 import StaffUserManager from "@/pages/StaffUserManager";
 import StaffModerationDashboard from "@/pages/StaffModerationDashboard";
 import UnifiedStaffDashboard from "@/pages/UnifiedStaffDashboard";
-import NotFoundPage from "@/pages/NotFoundPage";
+import NotFoundPage from "@/pages/NotFound"; // Corrected path
 
 function App() {
   return (
