@@ -11,14 +11,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, FileText, Mail, UserX, Ban, UserCheck, Users } from 'lucide-react';
+import { MoreHorizontal, Eye, Ban, UserCheck, UserX, Mail, MessageSquare, Users } from 'lucide-react'; // Added MessageSquare
 import { User } from '@/hooks/admin/useUserManagement';
 import LoadingSpinner from '@/components/staff/LoadingSpinner';
 
 interface UserTableProps {
   users: User[];
   isLoading: boolean;
-  error: string | null;
+  // error: string | null; // error is handled in parent
   onOpenActionDialog: (action: 'suspend' | 'ban' | 'unban', user: User) => void;
   onOpenMessageDialog: (user: User) => void;
   getRoleBadge: (role: User['role']) => JSX.Element;
@@ -28,7 +28,6 @@ interface UserTableProps {
 const UserTable: React.FC<UserTableProps> = ({
   users,
   isLoading,
-  error,
   onOpenActionDialog,
   onOpenMessageDialog,
   getRoleBadge,
@@ -38,14 +37,6 @@ const UserTable: React.FC<UserTableProps> = ({
     return (
       <div className="flex items-center justify-center py-8">
         <LoadingSpinner />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-red-500 p-4 border border-red-500 bg-red-50 rounded-md">
-        Error loading users: {error}
       </div>
     );
   }
@@ -60,19 +51,16 @@ const UserTable: React.FC<UserTableProps> = ({
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="border rounded-lg">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[250px]">User</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead className="hidden md:table-cell">Role</TableHead>
+            <TableHead>User</TableHead>
+            <TableHead>Role</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead className="hidden sm:table-cell">Joined</TableHead>
-            <TableHead className="hidden lg:table-cell text-center">Forum Posts</TableHead>
-            <TableHead className="hidden lg:table-cell text-center">Timeline Posts</TableHead>
-            <TableHead className="hidden lg:table-cell text-center">Reports</TableHead>
-            <TableHead className="hidden md:table-cell">Last Active</TableHead>
+            <TableHead className="text-center">Posts</TableHead>
+            <TableHead className="text-center">Reports</TableHead>
+            <TableHead>Last Active</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -81,12 +69,12 @@ const UserTable: React.FC<UserTableProps> = ({
             <TableRow key={user.id}>
               <TableCell>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
                     {user.profile_picture ? (
                       <img
                         src={user.profile_picture}
                         alt={user.display_name}
-                        className="w-10 h-10 rounded-full object-cover"
+                        className="w-8 h-8 rounded-full object-cover"
                       />
                     ) : (
                       <span className="text-sm font-medium text-muted-foreground">
@@ -96,19 +84,16 @@ const UserTable: React.FC<UserTableProps> = ({
                   </div>
                   <div>
                     <p className="font-medium">{user.display_name}</p>
-                    <p className="text-xs text-muted-foreground">@{user.username}</p>
+                    <p className="text-sm text-muted-foreground">@{user.username}</p>
                   </div>
                 </div>
               </TableCell>
-              <TableCell className="text-sm">{user.email}</TableCell>
-              <TableCell className="hidden md:table-cell">{getRoleBadge(user.role)}</TableCell>
+              <TableCell>{getRoleBadge(user.role)}</TableCell>
               <TableCell>{getStatusBadge(user.status)}</TableCell>
-              <TableCell className="text-sm text-muted-foreground hidden sm:table-cell">
-                {new Date(user.created_at).toLocaleDateString()}
+              <TableCell className="text-center">
+                {(user.forum_post_count ?? 0) + (user.timeline_post_count ?? 0)}
               </TableCell>
-              <TableCell className="text-center hidden lg:table-cell">{user.forum_post_count ?? 0}</TableCell>
-              <TableCell className="text-center hidden lg:table-cell">{user.timeline_post_count ?? 0}</TableCell>
-              <TableCell className="text-center hidden lg:table-cell">
+              <TableCell className="text-center">
                 {user.pending_report_count && user.pending_report_count > 0 ? (
                   <Badge variant="destructive" className="text-xs">
                     {user.pending_report_count}
@@ -117,7 +102,7 @@ const UserTable: React.FC<UserTableProps> = ({
                   <span className="text-muted-foreground">0</span>
                 )}
               </TableCell>
-              <TableCell className="text-sm text-muted-foreground hidden md:table-cell">
+              <TableCell className="text-sm text-muted-foreground">
                 {user.last_active ? new Date(user.last_active).toLocaleDateString() : 'N/A'}
               </TableCell>
               <TableCell className="text-right">
@@ -133,7 +118,7 @@ const UserTable: React.FC<UserTableProps> = ({
                       <Eye className="mr-2 h-4 w-4" /> View Profile
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => console.log(`View posts: ${user.id}`)}>
-                      <FileText className="mr-2 h-4 w-4" /> View Posts
+                      <MessageSquare className="mr-2 h-4 w-4" /> View Posts 
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => onOpenMessageDialog(user)}>
                       <Mail className="mr-2 h-4 w-4" /> Send Message
@@ -175,4 +160,3 @@ const UserTable: React.FC<UserTableProps> = ({
 };
 
 export default UserTable;
-

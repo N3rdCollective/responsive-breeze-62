@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -19,36 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  // DialogTrigger, // Not used in the provided code
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-// import { AlertCircle, CheckCircle, Clock } from "lucide-react"; // Not used
-import { 
   UserCog, 
-  BarChart3, 
   Users, 
   FileText, 
   Radio, 
@@ -57,16 +29,8 @@ import {
   Settings,
   TrendingUp,
   Plus,
-  Eye,
   RefreshCw,
   Search,
-  MoreHorizontal,
-  Ban,
-  UserCheck,
-  UserX,
-  // Calendar, // Not used
-  Mail,
-  MessageSquare
 } from "lucide-react";
 
 // Import existing components
@@ -75,14 +39,20 @@ import ShowManagementCard from "@/components/staff/ShowManagementCard";
 import AdminCard from "@/components/staff/AdminCard";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 
+// Import user management components
+import UserTable from '@/components/staff/users/UserTable';
+import UserActionDialog from '@/components/staff/users/UserActionDialog';
+import SendMessageDialog from '@/components/staff/users/SendMessageDialog';
+
+
 // Import moderation components
 import ReportedContentSection from '@/components/staff/moderator-dashboard/ReportedContentSection';
 import ReportDetails from '@/components/staff/moderator-dashboard/ReportDetails';
 
 // Import database hooks
-import { useContentReports, ContentReport } from '@/hooks/moderation/useContentReports';
+import { useContentReports } from '@/hooks/moderation/useContentReports';
 import { useModerationStats } from '@/hooks/moderation/useModerationStats';
-import { useUserManagement, User } from '@/hooks/admin/useUserManagement'; // Updated import
+import { useUserManagement, User } from '@/hooks/admin/useUserManagement';
 
 const UnifiedStaffDashboard = () => {
   const { toast } = useToast();
@@ -92,23 +62,22 @@ const UnifiedStaffDashboard = () => {
   
   const [activeTab, setActiveTab] = useState(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('tab') || 'overview';
+    return urlParams.get('tab') || 'content'; // Default to 'content'
   });
   
   // Moderation dashboard state
   const [selectedFlagId, setSelectedFlagId] = useState<string | null>(null);
-  const [filterStatus, setFilterStatus] = useState('all'); // For content reports
-  const [searchTerm, setSearchTerm] = useState(''); // For content reports
+  const [filterStatus, setFilterStatus] = useState('all'); 
+  const [searchTerm, setSearchTerm] = useState(''); 
   const [moderationNote, setModerationNote] = useState('');
   
   const { reports, loading: reportsLoading, updateReportStatus, createModerationAction } = useContentReports();
   const { stats: dashboardStats, loading: statsLoading, refreshStats } = useModerationStats();
   
-  // User management from live hook
   const { 
     users: allUsers, 
     loading: usersLoading, 
-    error: usersError, // Added error state from hook
+    error: usersError,
     updateUserStatus: liveUpdateUserStatus, 
     sendUserMessage: liveSendUserMessage, 
     searchUsers: searchUsersHook,
@@ -120,14 +89,14 @@ const UnifiedStaffDashboard = () => {
   const [userFilterStatus, setUserFilterStatus] = useState<'all' | 'active' | 'suspended' | 'banned'>('all');
   const [userFilterRole, setUserFilterRole] = useState<'all' | 'user' | 'moderator' | 'admin'>('all');
   
-  const [userActionDialog, setUserActionDialog] = useState<{
+  const [userActionDialogState, setUserActionDialogState] = useState<{
     open: boolean;
     action: 'suspend' | 'ban' | 'unban' | null;
     user: User | null;
   }>({ open: false, action: null, user: null });
   const [actionReason, setActionReason] = useState('');
   
-  const [messageDialog, setMessageDialog] = useState<{
+  const [messageDialogState, setMessageDialogState] = useState<{
     open: boolean;
     user: User | null;
   }>({ open: false, user: null });
@@ -136,7 +105,7 @@ const UnifiedStaffDashboard = () => {
 
   useEffect(() => {
     const url = new URL(window.location.href);
-    if (activeTab === 'overview') {
+    if (activeTab === 'content') { // Default tab
       url.searchParams.delete('tab');
     } else {
       url.searchParams.set('tab', activeTab);
@@ -219,17 +188,17 @@ const UnifiedStaffDashboard = () => {
   const selectedReportData = selectedFlagId ? reports.find(r => r.id === selectedFlagId) : null;
 
   const openUserActionDialog = (action: 'suspend' | 'ban' | 'unban', user: User) => {
-    setUserActionDialog({ open: true, action, user });
+    setUserActionDialogState({ open: true, action, user });
     setActionReason(''); 
   };
 
-  const handleUserAction = async () => { // Removed parameters, will use state
-    if (!userActionDialog.user || !userActionDialog.action || !actionReason.trim()) {
+  const handleUserAction = async () => { 
+    if (!userActionDialogState.user || !userActionDialogState.action || !actionReason.trim()) {
       toast({ title: "Missing Information", description: "A reason is required for this action.", variant: "destructive"});
       return;
     }
     
-    const { user, action } = userActionDialog;
+    const { user, action } = userActionDialogState;
     let targetStatus: User['status'];
     let actionTypeForHook: 'suspend' | 'ban' | 'unban';
 
@@ -254,49 +223,31 @@ const UnifiedStaffDashboard = () => {
     const success = await liveUpdateUserStatus(user.id, targetStatus, actionReason, actionTypeForHook);
 
     if (success) {
-      let toastTitle = '';
-      let toastDescription = '';
-      const userName = user.display_name || 'User';
-
-      switch (action) {
-          case 'suspend':
-              toastTitle = 'User Suspended';
-              toastDescription = `${userName} has been suspended.`;
-              break;
-          case 'ban':
-              toastTitle = 'User Banned';
-              toastDescription = `${userName} has been banned.`;
-              break;
-          case 'unban':
-              toastTitle = 'User Restored';
-              toastDescription = `${userName}'s access has been restored.`;
-              break;
-      }
-      // Toast is already handled in the hook for success/error of updateUserStatus
-      // toast({ title: toastTitle, description: toastDescription }); 
-      setUserActionDialog({ open: false, action: null, user: null });
+      setUserActionDialogState({ open: false, action: null, user: null });
       setActionReason('');
-      // refreshUsers(); // The hook's updateUserStatus already calls fetchUsers()
     }
-    // Error toast is handled within liveUpdateUserStatus hook
+  };
+
+  const openMessageDialog = (user: User) => {
+    setMessageSubject(''); 
+    setMessageContent('');
+    setMessageDialogState({ open: true, user });
   };
 
   const handleSendMessage = async () => {
-    if (!messageDialog.user || !messageSubject.trim() || !messageContent.trim()) {
+    if (!messageDialogState.user || !messageSubject.trim() || !messageContent.trim()) {
       toast({ title: "Missing Information", description: "Subject and message content are required.", variant: "destructive"});
       return;
     }
-    const success = await liveSendUserMessage(messageDialog.user.id, messageSubject, messageContent);
+    const success = await liveSendUserMessage(messageDialogState.user.id, messageSubject, messageContent);
     if (success) {
-      // Toast is handled in the hook
-      setMessageDialog({ open: false, user: null });
+      setMessageDialogState({ open: false, user: null });
       setMessageSubject('');
       setMessageContent('');
     }
-    // Error toast is handled in the hook
   };
   
-  const filteredUsersResult = useCallback(() => {
+  const filteredUsers = useCallback(() => {
     if (!allUsers || usersLoading) return [];
     return searchUsersHook(allUsers, userSearchTerm, userFilterStatus, userFilterRole);
   }, [allUsers, userSearchTerm, userFilterStatus, userFilterRole, searchUsersHook, usersLoading]);
@@ -314,15 +265,17 @@ const UnifiedStaffDashboard = () => {
     );
   }
 
-  const StatsOverview = () => (
+  // Stats Overview and Quick Actions combined
+  const StatsAndQuickActions = () => (
     <div className="space-y-6">
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="border-l-4 border-l-blue-500">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Monthly Listeners</p>
-                <p className="text-2xl font-bold">1.2M</p>
+                <p className="text-2xl font-bold">1.2M</p> {/* Example static data */}
                 <p className="text-xs text-green-600 flex items-center mt-1">
                   <TrendingUp className="h-3 w-3 mr-1" />
                   +12% from last month
@@ -377,48 +330,47 @@ const UnifiedStaffDashboard = () => {
         </Card>
       </div>
 
-      {activeTab === 'overview' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Plus className="h-5 w-5" />
-              Quick Actions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              <Button variant="outline" onClick={() => handleQuickAction('new-post')} className="h-20 flex-col gap-2">
-                <FileText className="h-6 w-6" />
-                <span className="text-sm">New Post</span>
+      {/* Quick Actions Bar */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Plus className="h-5 w-5" />
+            Quick Actions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4"> {/* Adjusted for 5 items */}
+            <Button variant="outline" onClick={() => handleQuickAction('new-post')} className="h-20 flex-col gap-2">
+              <FileText className="h-6 w-6" />
+              <span className="text-sm text-center">New Post</span>
+            </Button>
+            <Button variant="outline" onClick={() => handleQuickAction('manage-shows')} className="h-20 flex-col gap-2">
+              <Radio className="h-6 w-6" />
+              <span className="text-sm text-center">Manage Shows</span>
+            </Button>
+             <Button variant="outline" onClick={() => handleQuickAction('manage-users')} className="h-20 flex-col gap-2">
+              <Users className="h-6 w-6" /> 
+              <span className="text-sm text-center">Manage Users</span>
+            </Button>
+            <Button 
+              variant={!statsLoading && dashboardStats.pendingReports > 0 ? "destructive" : "outline"} 
+              onClick={() => handleQuickAction('view-reports')} 
+              className="h-20 flex-col gap-2"
+            >
+              <Flag className="h-6 w-6" />
+              <span className="text-sm text-center">
+                {!statsLoading && dashboardStats.pendingReports > 0 ? `${dashboardStats.pendingReports} Reports` : 'View Reports'}
+              </span>
+            </Button>
+            {isAdmin && (
+              <Button variant="outline" onClick={() => handleQuickAction('manage-staff')} className="h-20 flex-col gap-2">
+                <Settings className="h-6 w-6" /> 
+                <span className="text-sm text-center">Manage Staff</span>
               </Button>
-              <Button variant="outline" onClick={() => handleQuickAction('manage-shows')} className="h-20 flex-col gap-2">
-                <Radio className="h-6 w-6" />
-                <span className="text-sm">Manage Shows</span>
-              </Button>
-              <Button 
-                variant={!statsLoading && dashboardStats.pendingReports > 0 ? "destructive" : "outline"} 
-                onClick={() => handleQuickAction('view-reports')} 
-                className="h-20 flex-col gap-2"
-              >
-                <Flag className="h-6 w-6" />
-                <span className="text-sm">
-                  {!statsLoading && dashboardStats.pendingReports > 0 ? `${dashboardStats.pendingReports} Reports` : 'View Reports'}
-                </span>
-              </Button>
-               <Button variant="outline" onClick={() => handleQuickAction('manage-users')} className="h-20 flex-col gap-2">
-                <Users className="h-6 w-6" /> 
-                <span className="text-sm">Manage Users</span>
-              </Button>
-              {isAdmin && (
-                <Button variant="outline" onClick={() => handleQuickAction('manage-staff')} className="h-20 flex-col gap-2">
-                  <Users className="h-6 w-6" /> 
-                  <span className="text-sm">Manage Staff</span>
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 
@@ -483,16 +435,11 @@ const UnifiedStaffDashboard = () => {
             </div>
           </div>
 
-          <StatsOverview />
+          <StatsAndQuickActions />
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <div className="border-b dark:border-gray-700">
-              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 h-auto p-1 bg-muted dark:bg-gray-800 rounded-md">
-                <TabsTrigger value="overview" className="flex items-center gap-2 py-2.5 sm:py-3 data-[state=active]:bg-background dark:data-[state=active]:bg-gray-950 data-[state=active]:shadow-sm">
-                  <BarChart3 className="h-4 w-4" />
-                  <span className="hidden sm:inline">Overview</span>
-                  <span className="sm:hidden">Stats</span>
-                </TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 h-auto p-1 bg-muted dark:bg-gray-800 rounded-md"> {/* Adjusted for 4-5 tabs */}
                 <TabsTrigger value="content" className="flex items-center gap-2 py-2.5 sm:py-3 data-[state=active]:bg-background dark:data-[state=active]:bg-gray-950 data-[state=active]:shadow-sm">
                   <FileText className="h-4 w-4" />
                   <span className="hidden sm:inline">Content</span>
@@ -528,18 +475,6 @@ const UnifiedStaffDashboard = () => {
               </TabsList>
             </div>
             
-            <TabsContent value="overview" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <ContentManagementCard userRole={userRole} />
-                <ShowManagementCard />
-                <AdminCard 
-                  onManageStaff={handleManageUsers} 
-                  onLogout={handleLogout} 
-                  userRole={userRole}
-                />
-              </div>
-            </TabsContent>
-
             <TabsContent value="content" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -598,19 +533,19 @@ const UnifiedStaffDashboard = () => {
                       />
                     </div>
                     <Select value={userFilterStatus} onValueChange={(value) => setUserFilterStatus(value as User['status'] | 'all')}>
-                      <SelectTrigger className="w-full sm:w-[180px]">
-                        <SelectValue placeholder="Filter by status" />
+                      <SelectTrigger className="w-full sm:w-[140px]">
+                        <SelectValue placeholder="Status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Statuses</SelectItem>
+                        <SelectItem value="all">All Status</SelectItem>
                         <SelectItem value="active">Active</SelectItem>
                         <SelectItem value="suspended">Suspended</SelectItem>
                         <SelectItem value="banned">Banned</SelectItem>
                       </SelectContent>
                     </Select>
                     <Select value={userFilterRole} onValueChange={(value) => setUserFilterRole(value as User['role'] | 'all')}>
-                      <SelectTrigger className="w-full sm:w-[180px]">
-                        <SelectValue placeholder="Filter by role" />
+                      <SelectTrigger className="w-full sm:w-[140px]">
+                        <SelectValue placeholder="Role" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Roles</SelectItem>
@@ -655,129 +590,14 @@ const UnifiedStaffDashboard = () => {
                       Error loading users: {usersError}
                     </div>
                   )}
-                  {usersLoading ? (
-                     <div className="flex items-center justify-center py-8">
-                       <LoadingSpinner />
-                     </div>
-                  ) : (
-                    <div className="rounded-md border">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead className="w-[250px]">User</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead className="hidden md:table-cell">Role</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="hidden sm:table-cell">Joined</TableHead>
-                            <TableHead className="hidden lg:table-cell text-center">Forum Posts</TableHead>
-                            <TableHead className="hidden lg:table-cell text-center">Timeline Posts</TableHead>
-                            <TableHead className="hidden lg:table-cell text-center">Reports</TableHead>
-                            <TableHead className="hidden md:table-cell">Last Active</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredUsersResult().map((user) => (
-                            <TableRow key={user.id}>
-                              <TableCell>
-                                <div className="flex items-center gap-3">
-                                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
-                                    {user.profile_picture ? (
-                                      <img 
-                                        src={user.profile_picture} 
-                                        alt={user.display_name}
-                                        className="w-10 h-10 rounded-full object-cover"
-                                      />
-                                    ) : (
-                                      <span className="text-sm font-medium text-muted-foreground">
-                                        {user.display_name?.charAt(0).toUpperCase()}
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div>
-                                    <p className="font-medium">{user.display_name}</p>
-                                    <p className="text-xs text-muted-foreground">@{user.username}</p>
-                                  </div>
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-sm">{user.email}</TableCell>
-                              <TableCell className="hidden md:table-cell">{getRoleBadge(user.role)}</TableCell>
-                              <TableCell>{getStatusBadge(user.status)}</TableCell>
-                              <TableCell className="text-sm text-muted-foreground hidden sm:table-cell">
-                                {new Date(user.created_at).toLocaleDateString()}
-                              </TableCell>
-                              <TableCell className="text-center hidden lg:table-cell">{user.forum_post_count ?? 0}</TableCell>
-                              <TableCell className="text-center hidden lg:table-cell">{user.timeline_post_count ?? 0}</TableCell>
-                              <TableCell className="text-center hidden lg:table-cell">
-                                {user.pending_report_count && user.pending_report_count > 0 ? (
-                                  <Badge variant="destructive" className="text-xs">
-                                    {user.pending_report_count}
-                                  </Badge>
-                                ) : (
-                                  <span className="text-muted-foreground">0</span>
-                                )}
-                              </TableCell>
-                              <TableCell className="text-sm text-muted-foreground hidden md:table-cell">
-                                {user.last_active ? new Date(user.last_active).toLocaleDateString() : 'N/A'}
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0">
-                                      <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                    <DropdownMenuItem onClick={() => console.log(`View profile: ${user.id}`)}>
-                                      <Eye className="mr-2 h-4 w-4" /> View Profile
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => console.log(`View posts: ${user.id}`)}>
-                                      <FileText className="mr-2 h-4 w-4" /> View Posts
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => { setMessageSubject(''); setMessageContent(''); setMessageDialog({ open: true, user });}}>
-                                      <Mail className="mr-2 h-4 w-4" /> Send Message
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    {user.status === 'active' && (
-                                      <>
-                                        <DropdownMenuItem 
-                                          className="text-yellow-600 focus:text-yellow-700 focus:bg-yellow-100"
-                                          onClick={() => openUserActionDialog('suspend', user)}
-                                        >
-                                          <UserX className="mr-2 h-4 w-4" /> Suspend User
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem 
-                                          className="text-red-600 focus:text-red-700 focus:bg-red-100"
-                                          onClick={() => openUserActionDialog('ban', user)}
-                                        >
-                                          <Ban className="mr-2 h-4 w-4" /> Ban User
-                                        </DropdownMenuItem>
-                                      </>
-                                    )}
-                                    {(user.status === 'suspended' || user.status === 'banned') && (
-                                      <DropdownMenuItem 
-                                        className="text-green-600 focus:text-green-700 focus:bg-green-100"
-                                        onClick={() => openUserActionDialog('unban', user)}
-                                      >
-                                        <UserCheck className="mr-2 h-4 w-4" /> Restore User
-                                      </DropdownMenuItem>
-                                    )}
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
-                  {filteredUsersResult().length === 0 && !usersLoading && !usersError && (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>No users found matching your filters.</p>
-                    </div>
-                  )}
+                  <UserTable
+                    users={filteredUsers()}
+                    isLoading={usersLoading}
+                    onOpenActionDialog={openUserActionDialog}
+                    onOpenMessageDialog={openMessageDialog}
+                    getRoleBadge={getRoleBadge}
+                    getStatusBadge={getStatusBadge}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -887,134 +707,28 @@ const UnifiedStaffDashboard = () => {
         onOpenChange={setIsProfileEditorOpen}
       />
 
-      {/* User Action Dialog */}
-      <Dialog open={userActionDialog.open} onOpenChange={(open) => { if (!open) setUserActionDialog({ open: false, action: null, user: null }); }}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>
-              {userActionDialog.action === 'suspend' && 'Suspend User'}
-              {userActionDialog.action === 'ban' && 'Ban User'}
-              {userActionDialog.action === 'unban' && 'Restore User Access'}
-            </DialogTitle>
-            <DialogDescription>
-              {userActionDialog.action === 'suspend' && `Temporarily suspend ${userActionDialog.user?.display_name} from the community.`}
-              {userActionDialog.action === 'ban' && `Permanently ban ${userActionDialog.user?.display_name} from the community.`}
-              {userActionDialog.action === 'unban' && `Restore ${userActionDialog.user?.display_name}'s access to the community.`}
-            </DialogDescription>
-          </DialogHeader>
-          
-          {userActionDialog.user && (
-            <div className="space-y-4 py-4">
-              <div className="flex items-center gap-3 p-3 bg-muted/50 dark:bg-muted/20 rounded-lg border">
-                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
-                  {userActionDialog.user.profile_picture ? (
-                    <img 
-                      src={userActionDialog.user.profile_picture} 
-                      alt={userActionDialog.user.display_name}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-lg font-medium text-muted-foreground">
-                      {userActionDialog.user.display_name?.charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                </div>
-                <div>
-                  <p className="font-semibold">{userActionDialog.user.display_name}</p>
-                  <p className="text-sm text-muted-foreground">@{userActionDialog.user.username}</p>
-                </div>
-              </div>
-              
-              <div className="space-y-1.5">
-                <Label htmlFor="reason" className="text-sm">Reason for action</Label>
-                <Textarea
-                  id="reason"
-                  placeholder={`Enter reason for ${userActionDialog.action === 'unban' ? 'restoring' : userActionDialog.action}...`}
-                  value={actionReason}
-                  onChange={(e) => setActionReason(e.target.value)}
-                  className="min-h-[80px]"
-                />
-                {actionReason.trim().length === 0 && <p className="text-xs text-red-500">A reason is required.</p>}
-              </div>
-            </div>
-          )}
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setUserActionDialog({ open: false, action: null, user: null })}>
-              Cancel
-            </Button>
-            <Button 
-              variant={userActionDialog.action === 'unban' ? 'default' : 'destructive'}
-              onClick={handleUserAction} // Updated to call without params
-              disabled={!actionReason.trim()}
-            >
-              {userActionDialog.action === 'suspend' && 'Confirm Suspension'}
-              {userActionDialog.action === 'ban' && 'Confirm Ban'}
-              {userActionDialog.action === 'unban' && 'Confirm Restoration'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <UserActionDialog
+        isOpen={userActionDialogState.open}
+        onOpenChange={(open) => setUserActionDialogState(prev => ({ ...prev, open }))}
+        action={userActionDialogState.action}
+        user={userActionDialogState.user}
+        reason={actionReason}
+        onReasonChange={setActionReason}
+        onConfirm={handleUserAction}
+        isConfirmDisabled={!actionReason.trim()}
+      />
 
-      {/* Send Message Dialog */}
-      <Dialog open={messageDialog.open} onOpenChange={(open) => { if (!open) setMessageDialog({ open: false, user: null }); }}>
-        <DialogContent className="sm:max-w-[525px]">
-          <DialogHeader>
-            <DialogTitle>Send Message to {messageDialog.user?.display_name}</DialogTitle>
-            <DialogDescription>
-              Compose a message to send to @{messageDialog.user?.username}.
-            </DialogDescription>
-          </DialogHeader>
-          {messageDialog.user && (
-            <div className="space-y-4 py-4">
-               <div className="flex items-center gap-3 p-3 bg-muted/50 dark:bg-muted/20 rounded-lg border">
-                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
-                  {messageDialog.user.profile_picture ? (
-                    <img 
-                      src={messageDialog.user.profile_picture} 
-                      alt={messageDialog.user.display_name}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-lg font-medium text-muted-foreground">
-                      {messageDialog.user.display_name?.charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                </div>
-                <div>
-                  <p className="font-semibold">{messageDialog.user.display_name}</p>
-                  <p className="text-sm text-muted-foreground">@{messageDialog.user.username}</p>
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="message-subject">Subject</Label>
-                <Input 
-                  id="message-subject" 
-                  value={messageSubject} 
-                  onChange={(e) => setMessageSubject(e.target.value)}
-                  placeholder="Message subject"
-                />
-                 {messageSubject.trim().length === 0 && <p className="text-xs text-red-500">Subject is required.</p>}
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="message-content">Message</Label>
-                <Textarea 
-                  id="message-content" 
-                  value={messageContent} 
-                  onChange={(e) => setMessageContent(e.target.value)}
-                  placeholder="Write your message..."
-                  className="min-h-[100px]"
-                />
-                 {messageContent.trim().length === 0 && <p className="text-xs text-red-500">Message content is required.</p>}
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setMessageDialog({ open: false, user: null })}>Cancel</Button>
-            <Button onClick={handleSendMessage} disabled={!messageSubject.trim() || !messageContent.trim()}>Send Message</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <SendMessageDialog
+        isOpen={messageDialogState.open}
+        onOpenChange={(open) => setMessageDialogState(prev => ({ ...prev, open }))}
+        user={messageDialogState.user}
+        subject={messageSubject}
+        onSubjectChange={setMessageSubject}
+        content={messageContent}
+        onContentChange={setMessageContent}
+        onConfirm={handleSendMessage}
+        isConfirmDisabled={!messageSubject.trim() || !messageContent.trim()}
+      />
 
       {/* Report Details Modal */}
       {selectedReportData && (
