@@ -1,17 +1,51 @@
 
 import React from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
-import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2, SearchX } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { ForumTopic } from '@/types/forum';
+import ForumSearchResultItem from '@/components/forum/ForumSearchResultItem'; // New import
+
+const fetchForumSearchResults = async (query: string | null): Promise<ForumTopic[]> => {
+  if (!query || query.trim() === '') {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('forum_topics')
+    .select(`
+      id,
+      title,
+      slug,
+      created_at,
+      category_id,
+      user_id,
+      category:forum_categories (name, slug),
+      profile:profiles (username, display_name),
+      _count (posts)
+    `)
+    .ilike('title', `%${query.trim()}%`)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching forum search results:', error);
+    throw new Error('Failed to fetch search results');
+  }
+  return data || [];
+};
 
 const ForumSearchResultsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q');
 
-  // Placeholder for actual search logic and results display
-  // For now, we'll just show the query.
+  const { data: results, isLoading, isError, error } = useQuery({
+    queryKey: ['forumSearch', query],
+    queryFn: () => fetchForumSearchResults(query),
+    enabled: !!query && query.trim() !== '', // Only run query if 'q' exists and is not empty
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -36,15 +70,48 @@ const ForumSearchResultsPage: React.FC = () => {
             </p>
           ) : (
             <p className="text-gray-700 dark:text-gray-300 mb-6">
-              Please enter a search term.
+              Please enter a search term to see results.
             </p>
           )}
 
-          {/* Placeholder for search results list */}
-          <div className="mt-8 p-6 bg-card rounded-lg shadow">
-            <p className="text-muted-foreground text-center">
-              Search results will appear here. (Implementation pending)
-            </p>
+          <div className="mt-8">
+            {isLoading && (
+              <div className="flex flex-col items-center justify-center p-10 text-muted-foreground">
+                <Loader2 className="h-8 w-8 animate-spin mb-4" />
+                <p>Searching for topics...</p>
+              </div>
+            )}
+
+            {isError && (
+              <div className="flex flex-col items-center justify-center p-10 text-destructive">
+                <SearchX className="h-8 w-8 mb-4" />
+                <p>Could not fetch search results. Error: {error?.message}</p>
+              </div>
+            )}
+
+            {!isLoading && !isError && query && results && results.length > 0 && (
+              <div className="space-y-4">
+                {results.map((topic) => (
+                  <ForumSearchResultItem key={topic.id} topic={topic} />
+                ))}
+              </div>
+            )}
+
+            {!isLoading && !isError && query && results && results.length === 0 && (
+              <div className="flex flex-col items-center justify-center p-10 text-muted-foreground">
+                <SearchX className="h-8 w-8 mb-4" />
+                <p>No topics found matching your search term "{query}".</p>
+                <p className="text-sm mt-2">Try using different keywords or check for typos.</p>
+              </div>
+            )}
+            
+            {!isLoading && !isError && !query && (
+               <div className="p-6 bg-card rounded-lg shadow">
+                <p className="text-muted-foreground text-center">
+                  Enter a term in the search bar on the forum page to find topics.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
