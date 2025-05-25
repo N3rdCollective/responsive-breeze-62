@@ -13,7 +13,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Play, Calendar, Mic, Users, Radio as RadioIcon } from "lucide-react";
+import { Play, Calendar, Users, Radio as RadioIcon } from "lucide-react";
 import TitleUpdater from "@/components/TitleUpdater";
 
 // Interface for homepage_content table data
@@ -21,7 +21,7 @@ interface HomepageContentData {
   hero_title: string;
   hero_subtitle: string;
   hero_cta_text: string;
-  hero_background_image?: string; // This will no longer be directly used by the Hero component itself
+  hero_background_image?: string; 
   current_show_enabled: boolean;
   current_show_title: string;
   current_show_description: string;
@@ -41,7 +41,7 @@ const defaultHomepageContentData: HomepageContentData = {
   hero_title: "Your Voice, Your Station",
   hero_subtitle: "Experience the best in community radio with live shows, music, discussions, and more.",
   hero_cta_text: "Listen Live",
-  hero_background_image: "", // Default, but not used by Hero.tsx for its main background
+  hero_background_image: "", 
   current_show_enabled: true,
   current_show_title: "Morning Drive Time",
   current_show_description: "Start your day with the latest music, news, and community updates.",
@@ -167,7 +167,8 @@ const Index = () => {
         {settings.show_live_banner && <LiveShowBanner />}
       </div>
 
-      {/* Dynamic Current Show Section */}
+      {/* Dynamic Current Show Section - THIS SECTION IS NOW REMOVED */}
+      {/* 
       {homepageContent.current_show_enabled && (
         <section className="py-12 border-b dark:border-gray-800">
           <div className="container mx-auto px-4">
@@ -211,6 +212,7 @@ const Index = () => {
           </div>
         </section>
       )}
+      */}
 
       {/* Dynamic Stats Section */}
       <section className="py-12 bg-muted/20 dark:bg-gray-800/30">
