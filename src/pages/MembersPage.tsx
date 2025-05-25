@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -42,16 +43,6 @@ const MembersPage = () => {
             </h1>
             <p className="mt-2 text-gray-600 dark:text-gray-400">Connect with other members of the community</p>
           </div>
-
-          {/* Link to the dedicated search page */}
-          <div className="mb-8 flex justify-center">
-            <Button asChild variant="default" size="lg">
-              <Link to="/forum/initiate-search">
-                <Search className="mr-2 h-5 w-5" />
-                Search Forum Topics
-              </Link>
-            </Button>
-          </div>
           
           <Tabs defaultValue="categories" className="w-full">
             <TabsList className="grid w-full grid-cols-1 mb-6 bg-gray-100/70 dark:bg-gray-800/50 border border-primary/20">
@@ -68,6 +59,16 @@ const MembersPage = () => {
             </TabsContent>
             
           </Tabs>
+
+          {/* Link to the dedicated search page - MOVED TO BOTTOM */}
+          <div className="mt-8 flex justify-center"> {/* Added mt-8 for spacing */}
+            <Button asChild variant="default" size="lg">
+              <Link to="/forum/initiate-search">
+                <Search className="mr-2 h-5 w-5" />
+                Search Forum Topics
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
     </div>
