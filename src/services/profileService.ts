@@ -47,7 +47,7 @@ export const fetchUserProfileData = async (
   console.log("Service: Fetching profile for user:", user.id);
   const { data, error: fetchError } = await supabase
     .from('profiles')
-    .select('*')
+    .select('*, forum_signature, forum_post_count, created_at') // Ensure new fields are selected
     .eq('id', user.id)
     .maybeSingle();
 
@@ -75,12 +75,14 @@ export const fetchUserProfileData = async (
       display_name: data.display_name || "",
       bio: data.bio || "",
       favorite_genres: data.favorite_genres || [],
-      // The database column is 'profile_picture', we map it to 'avatar_url' in the type
       avatar_url: data.profile_picture, 
       role: (data.role as UserProfile['role']) || "user",
       social_links: processedSocialLinks,
       theme: data.theme || 'default',
       is_public: data.is_public ?? true,
+      created_at: data.created_at, // Add user join date
+      forum_signature: data.forum_signature || null,
+      forum_post_count: data.forum_post_count || 0,
     };
   } else {
     console.log("Service: No profile found, indicating new user setup.");
@@ -96,10 +98,11 @@ export interface PublicUserProfileData {
   display_name: string | null;
   bio: string | null;
   avatar_url: string | null;
-  role: string | null; // From profiles table, could be 'user', 'artist', etc.
-  created_at: string; // For join date
+  role: string | null; 
+  created_at: string; 
   is_public: boolean;
-  // We can add favorite_genres or social_links if desired for public view later
+  forum_signature: string | null;
+  forum_post_count: number;
 }
 
 // New function to fetch a public user profile by username
@@ -109,32 +112,32 @@ export const fetchPublicUserProfileByUsername = async (
   console.log(`Service: Fetching public profile for username: ${username}`);
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, username, display_name, bio, profile_picture, role, created_at, is_public')
+    .select('id, username, display_name, bio, profile_picture, role, created_at, is_public, forum_signature, forum_post_count') // Select new fields
     .eq('username', username)
-    .single(); // Using single as username should be unique
+    .single(); 
 
   if (error) {
     console.error("Service: Error fetching public profile by username:", error.message);
-    // If error is 'PGRST116' (JSON object requested, multiple (or no) rows returned), it means user not found or multiple (which shouldn't happen for unique username)
     if (error.code === 'PGRST116') {
-        return null; // User not found
+        return null; 
     }
-    throw error; // Other errors
+    throw error;
   }
 
   if (data) {
     console.log("Service: Public profile data found:", data);
     if (!data.is_public) {
-      // Profile exists but is private, return minimal data indicating it's private
       return {
         id: data.id,
         username: data.username,
-        display_name: data.display_name, // Keep display_name for context
+        display_name: data.display_name, 
         bio: null,
-        avatar_url: null, // Don't show avatar for private profiles
+        avatar_url: null, 
         role: null,
         created_at: data.created_at,
         is_public: false,
+        forum_signature: null, // Don't show signature for private profiles
+        forum_post_count: data.forum_post_count || 0, // Post count can be public
       };
     }
     return {
@@ -142,14 +145,16 @@ export const fetchPublicUserProfileByUsername = async (
       username: data.username,
       display_name: data.display_name,
       bio: data.bio,
-      avatar_url: data.profile_picture, // Map profile_picture to avatar_url
+      avatar_url: data.profile_picture, 
       role: data.role,
       created_at: data.created_at,
       is_public: data.is_public,
+      forum_signature: data.forum_signature || null,
+      forum_post_count: data.forum_post_count || 0,
     };
   }
 
-  return null; // Should be covered by .single() error handling, but as a fallback
+  return null;
 };
 
 
@@ -164,13 +169,14 @@ export const saveUserProfileData = async (
     socialLinks: UserProfile['social_links'];
     theme: string;
     isPublic: boolean;
-    avatarUrl?: string | null; // Added avatarUrl
+    avatarUrl?: string | null;
+    forumSignature?: string | null; // Add forumSignature for saving
   },
   currentUsername: string | undefined
-): Promise<UserProfile> => {
+): Promise<UserProfile> => { // Ensure UserProfile return type matches the interface
   console.log("Service: Saving profile for user:", user.id);
   
-  const dataToSave: any = { // Use 'any' temporarily for flexibility or define a more specific type
+  const dataToSave: any = { 
     username: profileData.username,
     display_name: profileData.displayName,
     bio: profileData.bio,
@@ -179,6 +185,7 @@ export const saveUserProfileData = async (
     social_links: profileData.socialLinks,
     theme: profileData.theme,
     is_public: profileData.isPublic,
+    forum_signature: profileData.forumSignature, // Save forum signature
     updated_at: new Date().toISOString()
   };
 
@@ -200,7 +207,6 @@ export const saveUserProfileData = async (
 
     if (checkError) {
       console.error("Service: Error checking username:", checkError.message);
-      // Potentially throw or handle as appropriate for the hook
     } else if (existingUser) {
       throw new Error("Username is already taken. Please choose another one.");
     }
@@ -223,7 +229,7 @@ export const saveUserProfileData = async (
       .from('profiles')
       .update(dataToSave)
       .eq('id', user.id)
-      .select()
+      .select('*, forum_signature, forum_post_count, created_at') // Ensure new fields are selected on return
       .single();
   } else {
     result = await supabase
@@ -231,9 +237,9 @@ export const saveUserProfileData = async (
       .insert({
         ...dataToSave,
         id: user.id,
-        created_at: new Date().toISOString() // Ensure created_at is set for new profiles
+        // forum_post_count will default to 0 via DB, created_at from DB
       })
-      .select()
+      .select('*, forum_signature, forum_post_count, created_at') // Ensure new fields are selected on return
       .single();
   }
 
@@ -260,10 +266,13 @@ export const saveUserProfileData = async (
     display_name: result.data.display_name || "",
     bio: result.data.bio || "",
     favorite_genres: result.data.favorite_genres || [],
-    avatar_url: result.data.profile_picture, // Mapped from profile_picture
+    avatar_url: result.data.profile_picture, 
     role: (result.data.role as UserProfile['role']) || "user",
     social_links: processedSocialLinksSaved,
     theme: result.data.theme || 'default',
     is_public: result.data.is_public ?? true,
+    created_at: result.data.created_at,
+    forum_signature: result.data.forum_signature || null,
+    forum_post_count: result.data.forum_post_count || 0,
   };
 };

@@ -1,4 +1,3 @@
-
 export interface UserProfile {
   id: string;
   username: string;
@@ -14,6 +13,9 @@ export interface UserProfile {
   } | null;
   theme?: string | null;
   is_public?: boolean | null;
+  created_at: string; // User's registration/join date
+  forum_signature: string | null;
+  forum_post_count: number;
 }
 
 export type NavigationItem = {

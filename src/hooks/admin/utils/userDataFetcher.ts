@@ -12,10 +12,10 @@ export const fetchUserData = async (): Promise<{
   try {
     console.log("Fetching user data");
     
-    // Fetch base user data from profiles
+    // Fetch base user data from profiles, including new fields
     const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, username, display_name, profile_picture, created_at, role, updated_at')
+      .select('id, username, display_name, profile_picture, created_at, role, updated_at, forum_signature, forum_post_count') // Added forum_signature, forum_post_count
       .order('created_at', { ascending: false });
 
     if (profilesError) {
@@ -31,17 +31,12 @@ export const fetchUserData = async (): Promise<{
     let mappedUsers: User[] = [];
 
     if (userIds.length > 0) {
-      // Fetch forum post counts
-      const { data: forumPostCountsData, error: forumPostCountsError } = await supabase
-        .from('forum_posts')
-        .select('user_id, id')
-        .in('user_id', userIds);
-
-      if (forumPostCountsError) {
-        console.warn('Error fetching forum post counts:', forumPostCountsError.message);
-      }
-
-      // Fetch timeline post counts
+      // Forum post counts are now directly on the profile table, but this fetches specific post details if needed.
+      // The trigger updates `forum_post_count` on profiles, so direct fetching from `forum_posts` for count is redundant here.
+      // However, if you need a list of post IDs or other post data, this is useful.
+      // For this mapping, we'll use the `forum_post_count` from `profilesData`.
+      
+      // Timeline post counts (if still needed separately, or if it's a different count)
       const { data: timelinePostCountsData, error: timelinePostCountsError } = await supabase
         .from('timeline_posts')
         .select('user_id, id')
@@ -51,7 +46,7 @@ export const fetchUserData = async (): Promise<{
         console.warn('Error fetching timeline post counts:', timelinePostCountsError.message);
       }
 
-      // Fetch pending report counts
+      // Pending report counts
       const { data: pendingReportCountsData, error: pendingReportCountsError } = await supabase
         .from('content_reports')
         .select('reported_user_id, id')
@@ -63,11 +58,10 @@ export const fetchUserData = async (): Promise<{
       }
       
       mappedUsers = profilesData.map(profile => {
-        const forum_post_count = forumPostCountsData?.filter(p => p.user_id === profile.id).length || 0;
+        // `forum_post_count` is now directly on `profile`
         const timeline_post_count = timelinePostCountsData?.filter(p => p.user_id === profile.id).length || 0;
         const pending_report_count = pendingReportCountsData?.filter(p => p.reported_user_id === profile.id).length || 0;
 
-        // Use fallbacks for potentially missing columns
         const profileStatus = (profile as any).status || 'active';
         const profileLastActive = (profile as any).last_active || profile.updated_at || profile.created_at;
 
@@ -75,11 +69,12 @@ export const fetchUserData = async (): Promise<{
           id: profile.id,
           username: profile.username || 'N/A',
           display_name: profile.display_name || profile.username || 'Anonymous',
-          email: 'Email N/A', // Email is not on profiles table per schema
+          email: 'Email N/A', 
           profile_picture: profile.profile_picture || undefined,
-          created_at: profile.created_at,
+          created_at: profile.created_at, // This is the user's join date
           last_active: profileLastActive,
-          forum_post_count,
+          forum_post_count: profile.forum_post_count || 0, // Use directly from profile
+          forum_signature: profile.forum_signature || null, // Add forum signature
           timeline_post_count,
           pending_report_count,
           status: profileStatus as User['status'],

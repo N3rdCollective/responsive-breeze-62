@@ -17,14 +17,17 @@ export interface ForumTopic {
   is_sticky: boolean;
   is_locked: boolean;
   view_count: number;
-  created_at: string;
+  created_at: string; // Topic creation date
   updated_at: string;
   last_post_at: string;
   last_post_user_id: string | null;
   profile?: {
     username?: string | null;
     display_name?: string | null;
-    profile_picture?: string | null; // Changed from avatar_url
+    profile_picture?: string | null;
+    created_at?: string | null; // User's join date
+    forum_post_count?: number | null;
+    forum_signature?: string | null;
   };
   _count?: {
     posts: number;
@@ -49,14 +52,17 @@ export interface ForumPost {
   user_id: string;
   content: string;
   is_edited: boolean;
-  created_at: string;
+  created_at: string; // Post creation date
   updated_at: string;
   profile?: {
     username?: string | null;
     display_name?: string | null;
     profile_picture?: string | null;
+    created_at?: string | null; // User's join date
+    forum_post_count?: number | null;
+    forum_signature?: string | null;
   };
-  forum_post_reactions?: ForumPostReaction[]; 
+  forum_post_reactions?: ForumPostReaction[];
 }
 
 export interface CreateTopicInput {

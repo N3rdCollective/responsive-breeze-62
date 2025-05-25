@@ -79,7 +79,14 @@ const TopicManagement: React.FC<TopicManagementProps> = ({ userRole }) => {
         .select(`
           *,
           category:forum_categories(name, slug),
-          profile:profiles!forum_topics_user_id_fkey(username, display_name, profile_picture),
+          profile:profiles!forum_topics_user_id_fkey(
+            username, 
+            display_name, 
+            profile_picture, 
+            created_at, 
+            forum_post_count, 
+            forum_signature
+          ),
           _count:forum_posts(count)
         `)
         .order("is_sticky", { ascending: false })
@@ -94,20 +101,17 @@ const TopicManagement: React.FC<TopicManagementProps> = ({ userRole }) => {
       if (fetchError) throw fetchError;
       
       const mappedTopics = (rawData || []).map(topic => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { profile_picture, ...restOfProfileDetails } = topic.profile || {};
-        const newProfile = topic.profile 
-          ? { ...restOfProfileDetails, avatar_url: profile_picture } 
-          : undefined;
-
-        // Correctly map _count from an array like [{ count: number }] to an object { posts: number }
+        // The profile object from Supabase now directly includes:
+        // username, display_name, profile_picture, created_at, forum_post_count, forum_signature.
+        // No specific mapping needed for these new fields here as they match the type.
+        
         const postsCount = topic._count && Array.isArray(topic._count) && topic._count.length > 0 
           ? (topic._count[0] as { count: number }).count 
           : 0;
 
         return {
           ...topic,
-          profile: newProfile,
+          // profile object from Supabase is used directly as its structure now matches the extended `profile` in `ForumTopic` type
           _count: { posts: postsCount },
         };
       });

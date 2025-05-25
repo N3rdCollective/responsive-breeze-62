@@ -1,4 +1,3 @@
-
 // Define shared types for user management
 
 export interface User {
@@ -7,9 +6,10 @@ export interface User {
   display_name: string;
   email: string;
   profile_picture?: string;
-  created_at: string;
+  created_at: string; // User registration date
   last_active: string;
   forum_post_count: number;
+  forum_signature: string | null; // Added forum signature
   timeline_post_count: number;
   pending_report_count: number;
   status: 'active' | 'suspended' | 'banned';

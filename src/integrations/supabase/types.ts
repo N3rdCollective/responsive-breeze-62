@@ -811,6 +811,8 @@ export type Database = {
           created_at: string | null
           display_name: string | null
           favorite_genres: string[] | null
+          forum_post_count: number
+          forum_signature: string | null
           id: string
           is_public: boolean | null
           profile_picture: string | null
@@ -825,6 +827,8 @@ export type Database = {
           created_at?: string | null
           display_name?: string | null
           favorite_genres?: string[] | null
+          forum_post_count?: number
+          forum_signature?: string | null
           id: string
           is_public?: boolean | null
           profile_picture?: string | null
@@ -839,6 +843,8 @@ export type Database = {
           created_at?: string | null
           display_name?: string | null
           favorite_genres?: string[] | null
+          forum_post_count?: number
+          forum_signature?: string | null
           id?: string
           is_public?: boolean | null
           profile_picture?: string | null
