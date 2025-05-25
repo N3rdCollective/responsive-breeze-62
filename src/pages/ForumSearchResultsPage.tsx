@@ -38,13 +38,11 @@ const fetchForumSearchResults = async ({ query, byUser, categoryId, startDate, e
       last_post_at,
       last_post_user_id,
       category:forum_categories (name, slug),
-      profile:profiles!inner(username, display_name), 
+      profile:profiles (username, display_name, profile_picture), 
       forum_posts(count)
     `);
-    // Using !inner for profile to ensure topics are only returned if they have a matching profile, especially when filtering by user.
-    // If byUser is not set, this might exclude topics from users whose profiles are somehow missing, which is unlikely but possible.
-    // Consider changing to profiles!user_id if byUser filtering leads to unexpected missing results for general searches.
-    // For now, !inner helps ensure the byUser filter works correctly.
+    // Changed profiles!inner to profiles (default left join) to be more resilient to missing profile data.
+    // Added profile_picture to the selection as it's part of ForumTopic type and used in display.
 
   if (query && query.trim() !== '') {
     queryBuilder = queryBuilder.ilike('title', `%${query.trim()}%`);
@@ -52,9 +50,6 @@ const fetchForumSearchResults = async ({ query, byUser, categoryId, startDate, e
 
   if (byUser && byUser.trim() !== '') {
     const byUserTrimmed = byUser.trim();
-    // We are querying profiles table through the relationship established in the select.
-    // The select is 'profile:profiles!inner(username, display_name)'
-    // So we filter on the 'profiles' table's columns.
     queryBuilder = queryBuilder.or(
       `username.ilike.%${byUserTrimmed}%,display_name.ilike.%${byUserTrimmed}%`,
       { foreignTable: 'profiles' }
@@ -66,19 +61,13 @@ const fetchForumSearchResults = async ({ query, byUser, categoryId, startDate, e
   }
 
   if (startDate && startDate.trim() !== '') {
-    // Ensure endDate includes the full day if only startDate is provided, or adjust time component.
-    // For simplicity, we use gte for startDate.
     queryBuilder = queryBuilder.gte('created_at', startDate.trim());
   }
 
   if (endDate && endDate.trim() !== '') {
-    // To include the entire end day, we should use the start of the next day for 'lt'
-    // or ensure the timestamp includes time up to 23:59:59.
-    // For simplicity, using lte. For precise day range, adjust time component or use date parts.
     const endDateObj = new Date(endDate.trim());
-    endDateObj.setDate(endDateObj.getDate() + 1); // Next day for < comparison
+    endDateObj.setDate(endDateObj.getDate() + 1); 
     queryBuilder = queryBuilder.lt('created_at', endDateObj.toISOString().split('T')[0]);
-
   }
   
   queryBuilder = queryBuilder.order('last_post_at', { ascending: false });
@@ -86,23 +75,20 @@ const fetchForumSearchResults = async ({ query, byUser, categoryId, startDate, e
   const { data, error } = await queryBuilder;
 
   if (error) {
-    console.error('Error fetching forum search results:', error);
+    console.error('Error fetching forum search results:', error); // This log is important for debugging
     throw new Error('Failed to fetch search results');
   }
 
   const rawResults = data || [];
-  // Supabase returns count as 'foreign_table_count' if not aliased.
-  // With 'forum_posts(count)', it becomes 'forum_posts_count'
   const transformedResults: ForumTopic[] = rawResults.map((rawTopic: any) => {
-    const { forum_posts, ...rest } = rawTopic; // if forum_posts(count) is used, it might be nested
+    const { forum_posts, ...rest } = rawTopic; 
     
     let postCount = 0;
     if (Array.isArray(forum_posts) && forum_posts.length > 0 && typeof forum_posts[0].count === 'number') {
         postCount = forum_posts[0].count;
-    } else if (rawTopic.forum_posts_count !== undefined) { // Supabase might provide it as foreign_table_count
+    } else if (rawTopic.forum_posts_count !== undefined) { 
         postCount = rawTopic.forum_posts_count;
     }
-
 
     const topic: ForumTopic = {
       id: rest.id,
@@ -118,7 +104,7 @@ const fetchForumSearchResults = async ({ query, byUser, categoryId, startDate, e
       last_post_at: rest.last_post_at,
       last_post_user_id: rest.last_post_user_id,
       category: rest.category,
-      profile: rest.profile,
+      profile: rest.profile, // This will be null if profile doesn't exist (due to left join)
       _count: { posts: postCount },
     };
     return topic;
