@@ -14,8 +14,8 @@ const fetchConversationsForUser = async (userId: string): Promise<Conversation[]
       participant1_id,
       participant2_id,
       last_message_timestamp,
-      participant1:profiles!conversations_participant1_id_fkey (id, username, display_name, profile_picture),
-      participant2:profiles!conversations_participant2_id_fkey (id, username, display_name, profile_picture),
+      participant1:profiles!conversations_participant1_id_fkey (id, username, display_name, avatar_url),
+      participant2:profiles!conversations_participant2_id_fkey (id, username, display_name, avatar_url),
       messages (
         content,
         sender_id,
@@ -46,7 +46,7 @@ const fetchConversationsForUser = async (userId: string): Promise<Conversation[]
         id: otherParticipant.id,
         username: otherParticipant.username,
         display_name: otherParticipant.display_name,
-        profile_picture: otherParticipant.profile_picture,
+        avatar_url: otherParticipant.avatar_url, // Changed profile_picture to avatar_url
       } : undefined,
       lastMessage: lastMessageData ? {
         content: lastMessageData.content,

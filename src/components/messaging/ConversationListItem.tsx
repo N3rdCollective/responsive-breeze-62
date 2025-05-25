@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Conversation } from '@/types/messaging';
 import { formatDistanceToNow } from 'date-fns';
-import { User } from '@supabase/supabase-js';
+// Removed unused User import from '@supabase/supabase-js'
 
 interface ConversationListItemProps {
   conversation: Conversation;
@@ -23,7 +23,9 @@ const ConversationListItem: React.FC<ConversationListItemProps> = ({ conversatio
 
   if (conversation.lastMessage) {
     const prefix = conversation.lastMessage.sender_id === currentUserId ? 'You: ' : '';
-    lastMessagePreview = `${prefix}${conversation.lastMessage.content.substring(0, 30)}${conversation.lastMessage.content.length > 30 ? '...' : ''}`;
+    // Ensure content is a string before calling substring
+    const messageContent = typeof conversation.lastMessage.content === 'string' ? conversation.lastMessage.content : '';
+    lastMessagePreview = `${prefix}${messageContent.substring(0, 30)}${messageContent.length > 30 ? '...' : ''}`;
     lastMessageTimestamp = conversation.lastMessage.created_at;
   }
 
@@ -35,7 +37,8 @@ const ConversationListItem: React.FC<ConversationListItemProps> = ({ conversatio
     >
       <div className="flex items-center gap-3">
         <Avatar className="h-10 w-10">
-          <AvatarImage src={otherParticipant?.profile_picture || undefined} alt={displayName} />
+          {/* Use avatar_url and provide undefined if null for AvatarImage src */}
+          <AvatarImage src={otherParticipant?.avatar_url || undefined} alt={displayName} />
           <AvatarFallback>{avatarFallback}</AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">

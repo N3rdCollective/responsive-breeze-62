@@ -9,7 +9,7 @@ export interface DirectMessage {
   created_at: string; // Supabase typically uses 'timestamp with time zone' which becomes string
   is_deleted?: boolean;
   media_url?: string | null;
-  profile?: Pick<UserProfile, 'id' | 'username' | 'display_name' | 'profile_picture'>; // Sender's profile
+  profile?: Pick<UserProfile, 'id' | 'username' | 'display_name' | 'avatar_url'>; // Sender's profile - Changed profile_picture to avatar_url
 }
 
 export interface Conversation {
@@ -18,15 +18,15 @@ export interface Conversation {
   participant2_id: string;
   last_message_timestamp: string;
   // We'll determine the 'other participant' in the frontend
-  otherParticipantProfile?: Pick<UserProfile, 'id' | 'username' | 'display_name' | 'profile_picture'>;
+  otherParticipantProfile?: Pick<UserProfile, 'id' | 'username' | 'display_name' | 'avatar_url'>; // Changed profile_picture to avatar_url
   lastMessage?: Pick<DirectMessage, 'content' | 'sender_id' | 'created_at'> & { sender_display_name?: string };
   unread_count?: number; // Optional: for future unread messages feature
 }
 
 // For fetching conversations, we'll join with profiles
 export interface FetchedConversation extends Conversation {
-  participant1: Pick<UserProfile, 'id' | 'username' | 'display_name' | 'profile_picture'>;
-  participant2: Pick<UserProfile, 'id' | 'username' | 'display_name' | 'profile_picture'>;
+  participant1: Pick<UserProfile, 'id' | 'username' | 'display_name' | 'avatar_url'>; // Changed profile_picture to avatar_url
+  participant2: Pick<UserProfile, 'id' | 'username' | 'display_name' | 'avatar_url'>; // Changed profile_picture to avatar_url
   // last_message_content: string | null; // If fetching directly
   // last_message_sender_id: string | null; // If fetching directly
 }
