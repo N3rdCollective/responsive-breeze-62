@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -8,7 +7,7 @@ import { formatDistanceToNow } from 'date-fns';
 
 interface TopicListItemProps {
   topic: ForumTopic;
-  categorySlug: string | undefined; // categorySlug is kept for potential future use or other parts of the component, but not for this specific link.
+  categorySlug: string | undefined; // categorySlug is kept for potential future use or other parts of the component.
 }
 
 const TopicListItem: React.FC<TopicListItemProps> = ({ topic }) => {
@@ -26,8 +25,8 @@ const TopicListItem: React.FC<TopicListItemProps> = ({ topic }) => {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <Link
-                  // Corrected link: Use topic.id and the /forum/topic/:topicId route structure
-                  to={`/forum/topic/${topic.id}`}
+                  // Corrected link: Use topic.slug and the /forum/topic/:topicSlug route structure
+                  to={`/forum/topic/${topic.slug}`}
                   className="font-medium hover:text-primary transition-colors line-clamp-1"
                 >
                   {topic.title}
@@ -46,6 +45,7 @@ const TopicListItem: React.FC<TopicListItemProps> = ({ topic }) => {
             </div>
           </div>
         </div>
+        
         <div className="hidden sm:flex sm:col-span-1 items-center justify-center">
           <span className="font-medium">{(topic._count?.posts || 1) - 1}</span> {/* Display replies, not total posts */}
         </div>
