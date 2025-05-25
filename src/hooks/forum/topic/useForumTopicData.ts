@@ -48,7 +48,11 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
         .select(`
           *,
           category:forum_categories!inner (slug, name),
-          profile:profiles!forum_topics_user_id_fkey (username, display_name, profile_picture)
+          profile:profiles!user_id ( 
+            username,
+            display_name,
+            profile_picture
+          )
         `)
         .eq('slug', paramTopicSlug)
         .single();
@@ -61,7 +65,7 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
         if (topicError.code === 'PGRST201') {
             toast({
                 title: "Data Fetching Issue",
-                description: "There's an issue specifying relationships in the data query. Please contact support.",
+                description: "There's an issue specifying relationships in the data query. Please contact support. Details: " + topicError.message,
                 variant: "destructive",
             });
         }
@@ -73,7 +77,7 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
         throw new Error('Topic not found');
       }
       
-      const fetchedCategorySlug = (topicData as any).category?.slug; // Type assertion for safety
+      const fetchedCategorySlug = (topicData as any).category?.slug;
       if (fetchedCategorySlug) {
         setInternalCategorySlug(fetchedCategorySlug);
       } else {
@@ -81,7 +85,7 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
         setInternalCategorySlug(null);
       }
 
-      console.log('[useForumTopicData] Topic fetched successfully:', (topicData as any).title); // Type assertion
+      console.log('[useForumTopicData] Topic fetched successfully:', (topicData as any).title);
       return topicData as ForumTopic;
 
     } catch (err: any) {
@@ -94,7 +98,7 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
           variant: "destructive"
         });
         navigate('/members/forum', { replace: true });
-      } else if (err.code !== 'PGRST201') { // Don't show generic toast if already handled PGRST201
+      } else if (err.code !== 'PGRST201') { 
          toast({
           title: "Error loading topic",
           description: err.message || "An unexpected error occurred.",
@@ -112,11 +116,13 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
       const startIndex = (pageToFetch - 1) * POSTS_PER_PAGE;
       const endIndex = startIndex + POSTS_PER_PAGE - 1;
 
+      // Note: If a similar ambiguity error occurs for posts, this select might also need adjustment
+      // from profile:profiles!forum_posts_user_id_fkey to profile:profiles!user_id
       const { data: postsData, error: postsError, count } = await supabase
         .from('forum_posts')
         .select(`
           *,
-          profile:profiles!forum_posts_user_id_fkey (
+          profile:profiles!user_id ( 
             username,
             display_name,
             profile_picture
@@ -133,6 +139,14 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
 
       if (postsError) {
         console.error('Posts fetch error:', postsError);
+        // Add specific check for PGRST201 for posts if it becomes an issue
+        if (postsError.code === 'PGRST201') {
+            toast({
+                title: "Data Fetching Issue (Posts)",
+                description: "There's an issue specifying relationships in the post data query. Details: " + postsError.message,
+                variant: "destructive",
+            });
+        }
         throw new Error(postsError.message);
       }
 
@@ -152,11 +166,18 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
 
     } catch (err: any) {
       console.error('Error fetching posts:', err);
+      if (err.code !== 'PGRST201') {
+        toast({
+          title: "Error loading posts",
+          description: err.message || "An unexpected error occurred while fetching posts.",
+          variant: "destructive",
+        });
+      }
       throw err; 
     }
-  }, []);
+  }, [toast]); // Added toast to dependency array
 
-  const updateViewCount = useCallback(async (topicId: string) => { // topicId here is the actual UUID
+  const updateViewCount = useCallback(async (topicId: string) => {
     if (viewCountUpdatedForTopic === topicId) return;
 
     try {
@@ -165,6 +186,7 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
       setViewCountUpdatedForTopic(topicId); 
     } catch (err) {
       console.error('Error updating view count:', err);
+      // Optionally, add a toast for view count update failure if desired
     }
   }, [viewCountUpdatedForTopic]);
 
@@ -173,6 +195,7 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
       console.warn('[useForumTopicData] fetchData called without paramTopicSlug. Aborting.');
       setLoadingData(false);
       setError("Topic identifier is missing."); 
+      navigate('/members/forum', { replace: true }); // Navigate away if slug is missing
       return;
     }
 
@@ -182,38 +205,50 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
 
     try {
       let currentTopic = topic;
-      if (!currentTopic || currentTopic.slug !== paramTopicSlug) {
-        console.log(`[useForumTopicData] Topic slug changed or not loaded. Current topic slug: ${currentTopic?.slug}, New slug: ${paramTopicSlug}. Fetching topic details.`);
+      // Fetch topic details if slug changed, or topic is not loaded, or if topic.profile is missing (potential indicator of previous fetch issue)
+      if (!currentTopic || currentTopic.slug !== paramTopicSlug || !currentTopic.profile) {
+        console.log(`[useForumTopicData] Topic slug changed, not loaded, or profile missing. Current topic slug: ${currentTopic?.slug}, New slug: ${paramTopicSlug}. Fetching topic details.`);
         const fetchedTopicDetails = await fetchTopic();
         console.log('[useForumTopicData] Result of fetchTopic in fetchData:', fetchedTopicDetails ? `Title: ${fetchedTopicDetails.title}` : 'null');
         
         if (!fetchedTopicDetails) {
           console.warn('[useForumTopicData] fetchTopic returned null in fetchData. Topic likely not found or error occurred.');
-          setLoadingData(false);
+          // Error handling for topic not found is now inside fetchTopic, including navigation.
+          // If fetchTopic returns null, it means it already handled the error toast and navigation if necessary.
+          setLoadingData(false); 
           return; 
         }
         currentTopic = fetchedTopicDetails;
         setTopic(currentTopic); 
         
+        // Reset view count tracking if topic ID changes
         if (!viewCountUpdatedForTopic || (currentTopic && viewCountUpdatedForTopic !== currentTopic.id)) {
              setViewCountUpdatedForTopic(null); 
         }
         
+        // Update view count if on page 1 and topic exists and view count not yet updated for this topic ID
         if (pageToFetch === 1 && currentTopic && currentTopic.id !== viewCountUpdatedForTopic) {
            console.log('[useForumTopicData] Attempting to update view count on initial load/page 1.');
-           updateViewCount(currentTopic.id);
+           await updateViewCount(currentTopic.id); // Ensure await here
         }
       } else if (pageToFetch === 1 && currentTopic && currentTopic.id !== viewCountUpdatedForTopic) {
+        // This case handles navigating back to page 1 for an already loaded topic
         console.log('[useForumTopicData] Attempting to update view count on navigating to page 1 for existing topic.');
-        updateViewCount(currentTopic.id);
+        await updateViewCount(currentTopic.id); // Ensure await here
       }
 
 
       if (currentTopic) {
+        // Ensure category slug is set if available from the current topic
         if (!internalCategorySlug && currentTopic.category?.slug) {
             setInternalCategorySlug(currentTopic.category.slug);
             console.log(`[useForumTopicData] Derived internalCategorySlug: ${currentTopic.category.slug}`);
+        } else if (internalCategorySlug && currentTopic.category?.slug && internalCategorySlug !== currentTopic.category.slug) {
+            // If category slug somehow changes for the same topic, update it
+            setInternalCategorySlug(currentTopic.category.slug);
+            console.log(`[useForumTopicData] Updated internalCategorySlug: ${currentTopic.category.slug}`);
         }
+
         console.log(`[useForumTopicData] Fetching posts for topic ID: ${currentTopic.id}, page: ${pageToFetch}`);
         const { posts: newPosts, totalCount } = await fetchPosts(currentTopic.id, pageToFetch);
         setPosts(newPosts);
@@ -223,42 +258,83 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
 
         console.log(`[useForumTopicData] Data loaded - Topic: ${currentTopic.title}, Page: ${pageToFetch}/${calculatedTotalPages}, Posts count: ${newPosts.length}`);
       } else {
+        // This else block might be redundant if fetchTopic correctly navigates on "not found"
         console.warn('[useForumTopicData] currentTopic is null after attempting to fetch/load. Posts will not be fetched.');
-        setLoadingData(false);
+        // setError("Failed to load topic details."); // Already handled in fetchTopic
+        // setLoadingData(false); // Already handled in fetchTopic or finally block
       }
     } catch (err: any) {
       console.error('[useForumTopicData] Error in fetchData main try-catch:', err);
+      // Avoid generic toast if specific one (like PGRST201) was already shown in fetchTopic/fetchPosts
+      if (err.code !== 'PGRST201' && err.message !== 'Topic not found') {
+        toast({
+            title: "Error processing topic data",
+            description: err.message || "An unexpected error occurred.",
+            variant: "destructive",
+        });
+      }
       setError(err.message || "An unexpected error occurred while fetching data.");
     } finally {
       setLoadingData(false);
-      console.log(`[useForumTopicData] fetchData finally block. Loading: ${loadingData}, Topic set: ${!!topic}`);
+      console.log(`[useForumTopicData] fetchData finally block. Loading: ${loadingData}, Topic set: ${!!topic}, Posts: ${posts.length}`);
     }
-  }, [paramTopicSlug, topic, fetchTopic, fetchPosts, updateViewCount, viewCountUpdatedForTopic, currentPageFromProp, internalCategorySlug, toast, navigate]); 
+  }, [
+    paramTopicSlug, 
+    topic, // current topic state
+    fetchTopic, 
+    fetchPosts, 
+    updateViewCount, 
+    viewCountUpdatedForTopic, 
+    currentPageFromProp, 
+    internalCategorySlug, 
+    toast, 
+    navigate,
+    posts.length // Added posts.length to ensure re-evaluation if posts change externally (though less likely for this hook)
+]); 
 
   useEffect(() => {
     console.log(`[useForumTopicData] Effect triggered - TopicSlug: ${paramTopicSlug}, CurrentPageFromProp: ${currentPageFromProp}`);
+    // If the topic slug in the URL changes, reset the current topic state to force a re-fetch by fetchData
     if (topic && paramTopicSlug && paramTopicSlug !== topic.slug) {
         console.log(`[useForumTopicData] Topic slug changed from ${topic.slug} to ${paramTopicSlug}. Resetting topic state.`);
         setTopic(null); 
+        setPosts([]); // Clear posts when topic changes
+        setTotalPosts(0);
+        setTotalPages(1);
         setInternalCategorySlug(null); 
+        setViewCountUpdatedForTopic(null); // Reset view count tracking
     }
+    
     if (paramTopicSlug) {
+        // fetchData will handle fetching both topic (if needed) and posts
         fetchData(currentPageFromProp);
     } else {
+        // Handle case where there's no topic slug in the URL (e.g., navigating to a base forum page)
         console.warn("[useForumTopicData] Effect triggered but paramTopicSlug is undefined. Not fetching data.");
         setLoadingData(false);
         setTopic(null);
         setPosts([]);
         setError("Topic slug not available in URL.");
+        // Optionally navigate away if a topic slug is always expected on this page
+        // navigate('/members/forum', { replace: true }); 
     }
+    // fetchData is already memoized with its dependencies, including currentPageFromProp.
+    // Adding topic.slug to dependencies of this useEffect could cause re-runs if topic state itself changes,
+    // which is already handled by the slug comparison.
   }, [paramTopicSlug, currentPageFromProp, fetchData]); 
 
   const refreshData = useCallback(async () => {
     console.log('[useForumTopicData] Refreshing data (full)...');
+    // Reset states to ensure fresh data load
     setTopic(null); 
+    setPosts([]);
+    setTotalPosts(0);
+    setTotalPages(1);
     setInternalCategorySlug(null);
     setViewCountUpdatedForTopic(null); 
+    
     if (paramTopicSlug) {
+        // fetchData will get the current page from currentPageFromProp
         await fetchData(currentPageFromProp); 
     } else {
         console.warn("[useForumTopicData] refreshData called but paramTopicSlug is undefined. Not fetching.");
@@ -266,6 +342,7 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
         setError("Cannot refresh: Topic slug not available.");
     }
   }, [fetchData, currentPageFromProp, paramTopicSlug]);
+
 
   return {
     topic,
