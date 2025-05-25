@@ -42,7 +42,8 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, currentUserId }) => 
           "text-xs mt-1",
           isCurrentUserMessage ? "text-primary-foreground/80 text-right" : "text-muted-foreground/80 text-left"
         )}>
-          {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+          {/* Changed created_at to timestamp */}
+          {formatDistanceToNow(new Date(message.timestamp), { addSuffix: true })}
         </p>
       </div>
       {isCurrentUserMessage && (

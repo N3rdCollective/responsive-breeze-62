@@ -14,41 +14,52 @@ const fetchMessages = async (conversationId: string): Promise<DirectMessage[]> =
       id,
       conversation_id,
       sender_id,
+      recipient_id,
       content,
-      created_at,
+      timestamp, 
       is_deleted,
       media_url,
       profile:profiles!messages_sender_id_fkey (id, username, display_name, avatar_url)
     `)
     .eq('conversation_id', conversationId)
-    .order('created_at', { ascending: true });
+    .order('timestamp', { ascending: true }); // Changed from created_at
 
   if (error) {
     console.error('Error fetching messages:', error);
-    throw error;
+    // Check if data is null and error exists, which can happen if RLS fails or table is empty
+    // The error object itself should be thrown if it's a PostgrestError
+    if (error instanceof Error) throw error;
+    // If it's not an Error instance but error is truthy, wrap it
+    throw new Error(typeof error === 'string' ? error : 'Failed to fetch messages');
   }
-  // Ensure profiles are correctly attached
+  // Ensure data is an array before mapping
+  if (!Array.isArray(data)) {
+    console.warn('fetchMessages: data is not an array', data);
+    return [];
+  }
   return data.map(msg => ({
     ...msg,
-    profile: msg.profile || undefined // Ensure profile is explicitly undefined if null
+    profile: msg.profile || undefined
   })) as DirectMessage[];
 };
 
 const sendMessage = async (newMessage: {
   conversation_id: string;
   sender_id: string;
+  recipient_id: string; // Added recipient_id
   content: string;
   media_url?: string | null;
 }): Promise<DirectMessage> => {
   const { data, error } = await supabase
     .from('messages')
-    .insert(newMessage)
+    .insert({ ...newMessage, timestamp: new Date().toISOString() }) // Add timestamp on insert
     .select(`
       id,
       conversation_id,
       sender_id,
+      recipient_id,
       content,
-      created_at,
+      timestamp,
       is_deleted,
       media_url,
       profile:profiles!messages_sender_id_fkey (id, username, display_name, avatar_url)
@@ -58,12 +69,18 @@ const sendMessage = async (newMessage: {
   if (error) {
     console.error('Error sending message:', error);
     toast({ title: "Error Sending Message", description: error.message, variant: "destructive" });
-    throw error;
+    if (error instanceof Error) throw error;
+    throw new Error(typeof error === 'string' ? error : 'Failed to send message');
+  }
+   if (!data) {
+    console.error('Error sending message: No data returned after insert.');
+    toast({ title: "Error Sending Message", description: "Could not confirm message sent.", variant: "destructive" });
+    throw new Error('No data returned after sending message');
   }
   // Update last_message_timestamp for the conversation
   await supabase
     .from('conversations')
-    .update({ last_message_timestamp: new Date().toISOString() })
+    .update({ last_message_timestamp: new Date().toISOString() }) // ensure this column name is correct in conversations table
     .eq('id', newMessage.conversation_id);
     
   return { ...data, profile: data.profile || undefined } as DirectMessage;
@@ -89,32 +106,34 @@ export const useMessages = (conversationId: string | null) => {
     enabled: !!conversationId && !!user?.id,
   });
 
-  const mutation = useMutation<DirectMessage, Error, { content: string; media_url?: string | null }>({
+  const mutation = useMutation<DirectMessage, Error, { content: string; media_url?: string | null; otherParticipantId: string }>({
     mutationFn: async (newMessageData) => {
       if (!conversationId || !user?.id) {
         throw new Error('User or conversation ID is missing.');
       }
+      if (!newMessageData.otherParticipantId) {
+        toast({ title: "Error Sending Message", description: "Recipient information is missing.", variant: "destructive" });
+        throw new Error('Recipient ID (otherParticipantId) is missing.');
+      }
       return sendMessage({
         conversation_id: conversationId,
         sender_id: user.id,
+        recipient_id: newMessageData.otherParticipantId, // Use otherParticipantId as recipient_id
         content: newMessageData.content,
         media_url: newMessageData.media_url,
       });
     },
     onSuccess: (newMessage) => {
-      // Optimistically update the messages list
       queryClient.setQueryData<DirectMessage[]>(queryKey, (oldMessages = []) => {
         const fullNewMessage = {
           ...newMessage,
         };
         return [...oldMessages, fullNewMessage];
       });
-      // Invalidate conversations query to update last message preview in ConversationList
       queryClient.invalidateQueries({ queryKey: ['conversations', user?.id] });
     },
     onError: (err) => {
       console.error("Failed to send message:", err);
-      // Toast is handled in sendMessage function for RLS errors etc.
     }
   });
 
@@ -137,6 +156,7 @@ export const useMessages = (conversationId: string | null) => {
              queryClient.setQueryData<DirectMessage[]>(queryKey, (oldMessages = []) => {
                 const existingMessage = oldMessages.find(msg => msg.id === newMessage.id);
                 if (!existingMessage) {
+                    // Ensure profile is handled correctly, it might be null from payload.new
                     return [...oldMessages, { ...newMessage, profile: newMessage.profile || undefined }];
                 }
                 return oldMessages;

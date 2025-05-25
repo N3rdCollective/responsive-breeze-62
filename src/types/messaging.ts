@@ -4,11 +4,12 @@ export interface DirectMessage {
   id: string;
   conversation_id: string;
   sender_id: string;
+  recipient_id: string; // Added recipient_id
   content: string;
-  created_at: string; 
+  timestamp: string; // Changed from created_at
   is_deleted?: boolean;
   media_url?: string | null;
-  profile?: Pick<UserProfile, 'id' | 'username' | 'display_name' | 'avatar_url'> | null; // Make profile explicitly nullable
+  profile?: Pick<UserProfile, 'id' | 'username' | 'display_name' | 'avatar_url'> | null;
 }
 
 export interface Conversation {
@@ -18,7 +19,7 @@ export interface Conversation {
   last_message_timestamp: string;
   // We'll determine the 'other participant' in the frontend
   otherParticipantProfile?: Pick<UserProfile, 'id' | 'username' | 'display_name' | 'avatar_url'>; // Changed profile_picture to avatar_url
-  lastMessage?: Pick<DirectMessage, 'content' | 'sender_id' | 'created_at'> & { sender_display_name?: string };
+  lastMessage?: Pick<DirectMessage, 'content' | 'sender_id' | 'timestamp'> & { sender_display_name?: string };
   unread_count?: number; // Optional: for future unread messages feature
 }
 

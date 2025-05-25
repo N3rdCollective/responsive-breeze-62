@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useMessages } from '@/hooks/useMessages';
 import MessageItem from './MessageItem';
@@ -7,16 +6,17 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Send, MessageCircle, AlertTriangle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/hooks/useAuth'; // To get currentUserId
+import { useAuth } from '@/hooks/useAuth';
 
 interface ChatViewProps {
   conversationId: string;
-  // We can get currentUserId from useAuth, so no need to pass as prop
+  otherParticipantId: string; // Added otherParticipantId
 }
 
-const ChatView: React.FC<ChatViewProps> = ({ conversationId }) => {
+const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId }) => {
   const { user } = useAuth();
   const currentUserId = user?.id;
+  // Note: useMessages hook doesn't need otherParticipantId directly, it's passed through its sendMessage mutate function
   const { messages, isLoading, isError, sendMessage, isSending } = useMessages(conversationId);
   const [newMessageContent, setNewMessageContent] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -28,21 +28,22 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId }) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]); // Scroll to bottom when new messages arrive
+  }, [messages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessageContent.trim() || !currentUserId) return;
-
+    if (!newMessageContent.trim() || !currentUserId || !otherParticipantId) {
+      console.error("Cannot send message: missing content, user ID, or other participant ID.");
+      // Optionally, show a toast to the user
+      return;
+    }
+    
     sendMessage(
-      { content: newMessageContent.trim() },
+      { content: newMessageContent.trim(), otherParticipantId: otherParticipantId }, // Pass otherParticipantId
       {
         onSuccess: () => {
           setNewMessageContent('');
-          // Optimistic update handles scrolling, but ensure it happens
-          // setTimeout(scrollToBottom, 50); // slight delay if needed
         },
-        // onError handled by useMessages hook's mutation
       }
     );
   };
@@ -101,7 +102,7 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId }) => {
           className="flex-1"
           disabled={isSending}
         />
-        <Button type="submit" disabled={!newMessageContent.trim() || isSending}>
+        <Button type="submit" disabled={!newMessageContent.trim() || isSending || !otherParticipantId}>
           {isSending ? (
             <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-current"></div>
           ) : (
