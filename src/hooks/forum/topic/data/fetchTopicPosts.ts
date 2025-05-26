@@ -2,13 +2,13 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { ForumPost } from '@/types/forum';
 import { POSTS_PER_PAGE } from '@/config/forumConfig';
-import { type ToastFn } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast'; // Import the toast function itself
 
 export const fetchTopicPosts = async (
   topicId: string,
   pageToFetch: number,
   supabase: SupabaseClient,
-  toast: ToastFn
+  toastFn: typeof toast // Use typeof toast for the type
 ): Promise<{ posts: ForumPost[]; totalCount: number }> => {
   try {
     console.log(`[fetchTopicPosts] Fetching posts for topic ${topicId}, page ${pageToFetch}`);
@@ -41,7 +41,7 @@ export const fetchTopicPosts = async (
     if (postsError) {
       console.error('[fetchTopicPosts] Posts fetch error:', postsError);
       if (postsError.code === 'PGRST201') {
-          toast({
+          toastFn({ // Use the passed toastFn
               title: "Data Fetching Issue (Posts)",
               description: "There's an issue specifying relationships in the post data query. Details: " + postsError.message,
               variant: "destructive",
@@ -67,7 +67,7 @@ export const fetchTopicPosts = async (
   } catch (err: any) {
     console.error('[fetchTopicPosts] Error fetching posts:', err);
     if (err.code !== 'PGRST201') {
-      toast({
+      toastFn({ // Use the passed toastFn
         title: "Error loading posts",
         description: err.message || "An unexpected error occurred while fetching posts.",
         variant: "destructive",

@@ -2,13 +2,13 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { NavigateFunction } from 'react-router-dom';
 import { ForumTopic } from '@/types/forum';
-import { ToastProps } from '@/components/ui/toast';
-import { type ToastFn } from '@/hooks/use-toast'; // Assuming ToastFn or similar type export from use-toast
+// import { ToastProps } from '@/components/ui/toast'; // This import seems unused now
+import { toast } from '@/hooks/use-toast'; // Import the toast function itself
 
 export const fetchTopicDetails = async (
   paramTopicSlug: string,
   supabase: SupabaseClient,
-  toast: ToastFn,
+  toastFn: typeof toast, // Use typeof toast for the type
   navigate: NavigateFunction
 ): Promise<{topic: ForumTopic | null, categorySlug: string | null}> => {
   if (!paramTopicSlug) {
@@ -41,7 +41,7 @@ export const fetchTopicDetails = async (
     if (topicError) {
       console.error('[fetchTopicDetails] Topic fetch error from Supabase:', topicError);
       if (topicError.code === 'PGRST201') {
-          toast({
+          toastFn({ // Use the passed toastFn
               title: "Data Fetching Issue",
               description: "There's an issue specifying relationships in the data query. Please contact support. Details: " + topicError.message,
               variant: "destructive",
@@ -62,14 +62,14 @@ export const fetchTopicDetails = async (
   } catch (err: any) {
     console.error('[fetchTopicDetails] Error in fetchTopicDetails:', err);
     if (err.message === 'Topic not found' || (err.details && err.details.includes('0 rows'))) {
-      toast({
+      toastFn({ // Use the passed toastFn
         title: "Error loading topic",
         description: "The topic could not be found.",
         variant: "destructive"
       });
       navigate('/members/forum', { replace: true });
     } else if (err.code !== 'PGRST201') { 
-       toast({
+       toastFn({ // Use the passed toastFn
         title: "Error loading topic",
         description: err.message || "An unexpected error occurred.",
         variant: "destructive"
