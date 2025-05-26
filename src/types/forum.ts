@@ -36,6 +36,40 @@ export interface ForumTopic {
     name: string;
     slug: string;
   };
+  poll?: ForumPoll | null; // Add poll to ForumTopic
+}
+
+export interface ForumPollVote {
+  id: string;
+  poll_id: string;
+  option_id: string;
+  user_id: string;
+  created_at: string;
+}
+
+export interface ForumPollOption {
+  id: string;
+  poll_id: string;
+  option_text: string;
+  created_at: string;
+  vote_count: number;
+  // Optionally, to indicate if the current user has voted for this option in a multi-choice scenario (not used for single choice display)
+  // currentUserVoted?: boolean; 
+}
+
+export interface ForumPoll {
+  id: string;
+  topic_id: string;
+  user_id: string;
+  question: string;
+  created_at: string;
+  updated_at: string;
+  ends_at?: string | null;
+  allow_multiple_choices: boolean;
+  options: ForumPollOption[];
+  // To store the option_id the current user voted for, if any
+  currentUserVote?: string | null; // option_id
+  totalVotes?: number; // Calculated dynamically or stored
 }
 
 export interface ForumPostReaction {
@@ -79,10 +113,17 @@ export interface ForumPostEditHistoryEntry {
   };
 }
 
+export interface CreatePollInput {
+  question: string;
+  options: string[]; // Array of option texts
+  ends_at?: string | null;
+}
+
 export interface CreateTopicInput {
   category_id: string;
   title: string;
   content: string;
+  poll?: CreatePollInput | null; // Add poll to CreateTopicInput
 }
 
 export interface CreatePostInput {

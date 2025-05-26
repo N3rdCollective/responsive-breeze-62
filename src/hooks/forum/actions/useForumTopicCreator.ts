@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { CreateTopicInput, ForumTopic, ForumPost } from "@/types/forum";
-import { generateSlug } from "@/utils/slugUtils"; // Assuming you have or will create this utility
+import { CreateTopicInput, ForumTopic, ForumPost, ForumPoll, ForumPollOption } from "@/types/forum";
+import { generateSlug } from "@/utils/slugUtils";
 import { createForumNotification } from "../utils/forumNotificationUtils";
 import { extractMentionedUserIds } from "@/utils/mentionUtils";
 
@@ -29,8 +29,8 @@ export const useForumTopicCreator = () => {
           user_id: user.id,
           title: input.title,
           slug: slug,
-          last_post_at: new Date().toISOString(), // Will be updated by trigger on first post
-          last_post_user_id: user.id, // Will be updated by trigger on first post
+          last_post_at: new Date().toISOString(),
+          last_post_user_id: user.id,
         })
         .select(`
           *, 
@@ -58,15 +58,57 @@ export const useForumTopicCreator = () => {
         .single();
       
       if (postError) {
-        // Rollback topic creation if post creation fails? Or handle differently.
-        // For now, just error out. A transaction would be better here.
         console.error("Error creating first post, topic was created but post failed:", postError);
-        await supabase.from('forum_topics').delete().eq('id', topicData.id); // Attempt to rollback
+        await supabase.from('forum_topics').delete().eq('id', topicData.id); // Attempt to rollback topic
         throw new Error(`Failed to create the first post for the topic: ${postError.message}`);
       }
       if (!postData) throw new Error("Failed to create the first post for the topic.");
 
-      toast({ title: "Topic Created!", description: "Your new topic has been successfully created.", variant: "default" });
+      let createdPoll: ForumPoll | null = null;
+      // Create Poll if data is provided
+      if (input.poll && input.poll.question && input.poll.options.length >= 2) {
+        const { data: pollData, error: pollError } = await supabase
+          .from('forum_polls')
+          .insert({
+            topic_id: topicData.id,
+            user_id: user.id,
+            question: input.poll.question,
+            ends_at: input.poll.ends_at || null,
+            // allow_multiple_choices will default to false as per table definition
+          })
+          .select('*')
+          .single();
+
+        if (pollError) {
+          console.error("Error creating poll, topic and post were created but poll failed:", pollError);
+          // Not rolling back topic/post for poll failure at this stage, but logging error.
+          // Could consider more complex rollback or user notification.
+          toast({ title: "Poll Creation Failed", description: "Topic was created, but the poll could not be added: " + pollError.message, variant: "warning" });
+        } else if (pollData) {
+          const pollOptionsToInsert = input.poll.options.map(optText => ({
+            poll_id: pollData.id,
+            option_text: optText,
+          }));
+
+          const { data: pollOptionsData, error: pollOptionsError } = await supabase
+            .from('forum_poll_options')
+            .insert(pollOptionsToInsert)
+            .select('*');
+
+          if (pollOptionsError) {
+            console.error("Error creating poll options:", pollOptionsError);
+            // Rollback poll?
+            await supabase.from('forum_polls').delete().eq('id', pollData.id);
+            toast({ title: "Poll Options Failed", description: "Poll was not added: " + pollOptionsError.message, variant: "warning" });
+          } else if (pollOptionsData) {
+            createdPoll = { ...pollData, options: pollOptionsData as ForumPollOption[], totalVotes: 0 };
+          }
+        }
+      }
+      
+      const finalTopicData = { ...topicData, poll: createdPoll } as ForumTopic;
+
+      toast({ title: "Topic Created!", description: `Your new topic "${input.title}" has been successfully created. ${createdPoll ? 'Poll also added.' : ''}`, variant: "default" });
 
       // Handle mention notifications for the first post
       const mentionedUserIds = extractMentionedUserIds(input.content);
@@ -86,7 +128,7 @@ export const useForumTopicCreator = () => {
         }
       }
 
-      return { topic: topicData as ForumTopic, firstPost: postData as ForumPost };
+      return { topic: finalTopicData, firstPost: postData as ForumPost };
 
     } catch (error: any) {
       console.error("Error creating topic:", error);

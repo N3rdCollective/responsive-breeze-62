@@ -2,10 +2,11 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch"; // Added Switch
+import { Loader2, PlusCircle, XCircle } from "lucide-react"; // Added icons
 import ForumRichTextEditor from "@/components/forum/ForumRichTextEditor";
 
 interface NewTopicFormProps {
@@ -18,6 +19,13 @@ interface NewTopicFormProps {
   isContentEffectivelyEmpty: () => boolean;
   categorySlug: string | undefined;
   categoryName: string;
+  // Poll props
+  enablePoll: boolean;
+  setEnablePoll: (enabled: boolean) => void;
+  pollQuestion: string;
+  setPollQuestion: (question: string) => void;
+  pollOptions: string[];
+  setPollOptions: (options: string[]) => void;
 }
 
 const NewTopicForm: React.FC<NewTopicFormProps> = ({
@@ -29,9 +37,34 @@ const NewTopicForm: React.FC<NewTopicFormProps> = ({
   submitting,
   isContentEffectivelyEmpty,
   categorySlug,
-  categoryName,
+  // categoryName, // categoryName is not used here
+  enablePoll,
+  setEnablePoll,
+  pollQuestion,
+  setPollQuestion,
+  pollOptions,
+  setPollOptions,
 }) => {
   const navigate = useNavigate();
+
+  const handlePollOptionChange = (index: number, value: string) => {
+    const newOptions = [...pollOptions];
+    newOptions[index] = value;
+    setPollOptions(newOptions);
+  };
+
+  const addPollOption = () => {
+    if (pollOptions.length < 10) { // Max 10 options
+      setPollOptions([...pollOptions, ""]);
+    }
+  };
+
+  const removePollOption = (index: number) => {
+    if (pollOptions.length > 2) { // Min 2 options
+      const newOptions = pollOptions.filter((_, i) => i !== index);
+      setPollOptions(newOptions);
+    }
+  };
 
   return (
     <Card className="border-primary/20">
@@ -62,6 +95,81 @@ const NewTopicForm: React.FC<NewTopicFormProps> = ({
                 placeholder="Write your post here..."
               />
             </div>
+
+            {/* Poll Creation Section */}
+            <Card className="border-dashed border-primary/30">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">Create a Poll (Optional)</CardTitle>
+                    <CardDescription className="text-sm">Add a poll to gather opinions with your topic.</CardDescription>
+                  </div>
+                  <Switch
+                    id="enable-poll"
+                    checked={enablePoll}
+                    onCheckedChange={setEnablePoll}
+                    disabled={submitting}
+                  />
+                </div>
+              </CardHeader>
+              {enablePoll && (
+                <CardContent className="space-y-4 pt-2">
+                  <div>
+                    <Label htmlFor="poll-question">Poll Question</Label>
+                    <Input
+                      id="poll-question"
+                      value={pollQuestion}
+                      onChange={(e) => setPollQuestion(e.target.value)}
+                      placeholder="e.g., What's your favorite color?"
+                      className="mt-1"
+                      disabled={submitting}
+                    />
+                  </div>
+                  <div>
+                    <Label>Poll Options</Label>
+                    <div className="space-y-2 mt-1">
+                      {pollOptions.map((option, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <Input
+                            value={option}
+                            onChange={(e) => handlePollOptionChange(index, e.target.value)}
+                            placeholder={`Option ${index + 1}`}
+                            disabled={submitting}
+                          />
+                          {pollOptions.length > 2 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removePollOption(index)}
+                              disabled={submitting}
+                              aria-label="Remove option"
+                              className="text-muted-foreground hover:text-destructive"
+                            >
+                              <XCircle className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      {pollOptions.length < 10 && (
+                         <Button
+                           type="button"
+                           variant="outline"
+                           size="sm"
+                           onClick={addPollOption}
+                           disabled={submitting || pollOptions.length >= 10}
+                           className="mt-2 text-primary border-primary/30 hover:bg-primary/10"
+                         >
+                           <PlusCircle className="mr-2 h-4 w-4" /> Add Option
+                         </Button>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">Min 2 options, Max 10 options.</p>
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+
             <div className="flex justify-end space-x-2 pt-4">
               <Button
                 type="button"

@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useForumTopicCreator } from "@/hooks/forum/actions/useForumTopicCreator";
-import { ForumCategory } from "@/types/forum";
+import { ForumCategory, CreatePollInput } from "@/types/forum";
 import NewTopicPageLoader from "@/components/forum/new-topic/NewTopicPageLoader";
 import CategoryNotFoundDisplay from "@/components/forum/new-topic/CategoryNotFoundDisplay";
 import NewTopicPageHeader from "@/components/forum/new-topic/NewTopicPageHeader";
@@ -21,6 +21,11 @@ const NewForumTopicPage = () => {
   const [loadingCategory, setLoadingCategory] = useState(true);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  
+  // Poll state
+  const [enablePoll, setEnablePoll] = useState(false);
+  const [pollQuestion, setPollQuestion] = useState("");
+  const [pollOptions, setPollOptions] = useState<string[]>(["", ""]); // Start with 2 empty options
   
   useEffect(() => {
     if (!authLoading && !user) {
@@ -94,15 +99,33 @@ const NewForumTopicPage = () => {
     }
     
     if (!category) return;
+
+    let pollInput: CreatePollInput | null = null;
+    if (enablePoll) {
+      if (!pollQuestion.trim()) {
+        toast({ title: "Poll Question Required", description: "Please enter a question for your poll.", variant: "destructive" });
+        return;
+      }
+      const validOptions = pollOptions.map(opt => opt.trim()).filter(opt => opt !== "");
+      if (validOptions.length < 2) {
+        toast({ title: "Poll Options Required", description: "Please provide at least two valid options for your poll.", variant: "destructive" });
+        return;
+      }
+      pollInput = {
+        question: pollQuestion.trim(),
+        options: validOptions,
+      };
+    }
     
     const result = await createTopic({
       category_id: category.id,
       title,
-      content
+      content,
+      poll: pollInput, // Pass poll data
     });
     
-    if (result && result.topic) { // Check if result and result.topic exist
-      navigate(`/members/forum/${categorySlug}/${result.topic.slug || result.topic.id}`); // Access slug and id via result.topic
+    if (result && result.topic) {
+      navigate(`/members/forum/${categorySlug}/${result.topic.slug || result.topic.id}`);
     }
   };
   
@@ -143,6 +166,12 @@ const NewForumTopicPage = () => {
             isContentEffectivelyEmpty={isContentEffectivelyEmpty}
             categorySlug={category.slug}
             categoryName={category.name}
+            enablePoll={enablePoll}
+            setEnablePoll={setEnablePoll}
+            pollQuestion={pollQuestion}
+            setPollQuestion={setPollQuestion}
+            pollOptions={pollOptions}
+            setPollOptions={setPollOptions}
           />
         </div>
       </div>
