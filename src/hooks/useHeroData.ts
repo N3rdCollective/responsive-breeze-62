@@ -1,9 +1,9 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { VideoData } from '@/components/staff/home/context/HomeSettingsContext'; // Assuming this type is globally useful
-import { greetings, GreetingData } from '@/data/greetings';
-import { useAuth } from '@/hooks/useAuth'; // Import useAuth
+import { VideoData } from '@/components/staff/home/context/HomeSettingsContext';
+import { greetings } from '@/data/greetings'; // Removed GreetingData import as it's not used here
+import { useAuth } from '@/hooks/useAuth';
 
 const defaultVideoBackgrounds: VideoData[] = [];
 
@@ -13,18 +13,19 @@ export const useHeroData = (videoBackgroundsProp?: VideoData[]) => {
   const [currentVideoIndex, setCurrentVideoIndex] = useState<number>(0);
   const [videos, setVideos] = useState<VideoData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuth(); // Get user from useAuth
+  const { user } = useAuth();
+  const [profileDisplayName, setProfileDisplayName] = useState<string | null>(null); // New state for profile display name
 
   useEffect(() => {
     const fetchVideos = async () => {
       if (videoBackgroundsProp && videoBackgroundsProp.length > 0) {
         setVideos(videoBackgroundsProp);
-        setIsLoading(false);
+        setIsLoading(false); // Set loading to false only after setting videos
         return;
       }
 
       try {
-        setIsLoading(true);
+        // setIsLoading(true); // Already true by default, ensure it's set if this effect runs multiple times
         const { data, error } = await supabase
           .from("featured_videos")
           .select("*")
@@ -61,6 +62,39 @@ export const useHeroData = (videoBackgroundsProp?: VideoData[]) => {
     fetchLocation();
   }, []);
 
+  // Effect to fetch profile display name when user changes
+  useEffect(() => {
+    if (user?.id) {
+      const fetchProfileDisplayName = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('display_name')
+            .eq('id', user.id)
+            .single();
+
+          if (error) {
+            console.error('Error fetching profile display_name:', error.message);
+            setProfileDisplayName(null);
+            return;
+          }
+          
+          if (data && data.display_name) {
+            setProfileDisplayName(data.display_name);
+          } else {
+            setProfileDisplayName(null); // Explicitly set to null if not found or empty
+          }
+        } catch (err) {
+          console.error('Exception fetching profile display_name:', err);
+          setProfileDisplayName(null);
+        }
+      };
+      fetchProfileDisplayName();
+    } else {
+      setProfileDisplayName(null); // Reset if no user
+    }
+  }, [user]);
+
   useEffect(() => {
     if (videos.length === 0 && !isLoading) return;
     if (videos.length <= 1) return;
@@ -85,22 +119,23 @@ export const useHeroData = (videoBackgroundsProp?: VideoData[]) => {
       else if (hour < 17) timeGreeting = locationData.afternoon;
       else timeGreeting = locationData.evening;
       
-      let displayName = "";
+      let displayNameToUse = "";
       if (user) {
-        // Try to get a displayable name from user_metadata or fallback to email
-        if (user.user_metadata?.display_name) {
-          displayName = user.user_metadata.display_name;
+        if (profileDisplayName) { // Prioritize fetched profile display_name
+          displayNameToUse = profileDisplayName;
+        } else if (user.user_metadata?.display_name) {
+          displayNameToUse = user.user_metadata.display_name;
         } else if (user.user_metadata?.username) {
-          displayName = user.user_metadata.username;
-        } else if (user.user_metadata?.name) {
-          displayName = user.user_metadata.name;
+          displayNameToUse = user.user_metadata.username;
+        } else if (user.user_metadata?.name) { // Fallback to 'name' from metadata
+          displayNameToUse = user.user_metadata.name;
         } else if (user.email) {
-          displayName = user.email.split('@')[0];
+          displayNameToUse = user.email.split('@')[0];
         }
       }
 
-      if (displayName) {
-        return `${slang}! ${timeGreeting}, ${displayName}!`;
+      if (displayNameToUse) {
+        return `${slang}! ${timeGreeting}, ${displayNameToUse}!`;
       }
       return `${slang}! ${timeGreeting}`;
     };
@@ -109,12 +144,11 @@ export const useHeroData = (videoBackgroundsProp?: VideoData[]) => {
       setGreeting(getTimeBasedGreeting());
     };
 
-    updateGreeting(); // Update greeting immediately
-    const interval = setInterval(updateGreeting, 60000); // And then every minute
+    updateGreeting();
+    const interval = setInterval(updateGreeting, 60000);
 
     return () => clearInterval(interval);
-  }, [location, user]); // Add user as a dependency
+  }, [location, user, profileDisplayName, greetings]); // Added profileDisplayName and greetings as dependencies
 
   return { location, greeting, videos, currentVideoIndex, isLoading };
 };
-
