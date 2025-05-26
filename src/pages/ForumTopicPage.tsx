@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -7,7 +6,7 @@ import { useQuoteHandler } from "@/hooks/forum/topic/useQuoteHandler";
 import TopicLoadingStates from "@/components/forum/TopicPage/TopicLoadingStates";
 import TopicView from "@/components/forum/TopicPage/TopicView";
 import TopicDialogs from "@/components/forum/TopicPage/TopicDialogs";
-import ReportContentDialog from "@/components/moderation/ReportContentDialog"; // Import ReportContentDialog
+import ReportContentDialog from "@/components/moderation/ReportContentDialog";
 import { useForumPagination } from "@/hooks/forum/useForumPagination";
 import { usePollVoting } from "@/hooks/forum/topic/usePollVoting";
 import { usePostHistoryDialog } from "@/hooks/forum/topic/usePostHistoryDialog";
@@ -123,70 +122,71 @@ const ForumTopicPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
-      <TopicLoadingStates 
-        authLoading={authLoading}
-        loadingData={loadingData}
-        user={user}
-        topic={topic}
-      />
-      
-      {user && topic && (
-        <>
-          <TopicView
-            topic={topic}
-            posts={posts}
-            user={user}
-            page={page}
-            totalPages={totalPages}
-            setPage={setPageViaPaginationHook}
-            categorySlug={categorySlug}
-            loadingData={loadingData} 
-            replyContent={replyContent}
-            setReplyContent={setReplyContent}
-            handleSubmitReply={handleSubmitReply}
-            isSubmittingReply={isSubmittingReply}
-            handleOpenEditDialog={handleOpenEditDialog}
-            handleOpenDeleteDialog={handleOpenDeleteDialog}
-            handleQuotePost={handleQuotePost}
-            handleToggleReaction={handleToggleReaction}
-            handleOpenPostHistoryDialog={handleOpenPostHistoryDialog}
-            handleStartDirectMessage={handleStartDirectMessage}
-            isProcessingPostAction={isProcessingPostAction}
-            replyFormRef={replyFormRef}
-            handlePollVote={handlePollVote}
-            isSubmittingVote={isSubmittingVote}
-            onOpenReportDialog={handleOpenReportDialog} // Pass handler to TopicView
-          />
-          <TopicDialogs
-            editingPost={editingPost}
-            showEditDialog={showEditDialog}
-            deletingPostId={deletingPostId}
-            showDeleteConfirmDialog={showDeleteConfirmDialog}
-            isProcessingPostAction={isProcessingPostAction}
-            topicIsLocked={topic.is_locked}
-            handleCloseEditDialog={handleCloseEditDialog}
-            handleSaveEditedPost={handleSaveEditedPost}
-            handleCloseDeleteDialog={handleCloseDeleteDialog}
-            handleConfirmDeletePost={handleConfirmDeletePost}
-            showPostHistoryDialog={showPostHistoryDialog}
-            postHistoryPostId={postHistoryPostId}
-            postHistoryTitle={postHistoryTitle}
-            handleClosePostHistoryDialog={handleClosePostHistoryDialog}
-          />
-          {/* Render ReportContentDialog */}
-          {reportDialogData && (
-            <ReportContentDialog
-              isOpen={showReportDialog}
-              onOpenChange={setShowReportDialog}
-              contentType={reportDialogData.contentType}
-              contentId={reportDialogData.contentId}
-              reportedUserId={reportDialogData.reportedUserId}
-              contentPreview={reportDialogData.contentPreview}
-              topicId={reportDialogData.topicId}
+      <main className="pt-24">
+        <TopicLoadingStates 
+          authLoading={authLoading}
+          loadingData={loadingData}
+          user={user}
+          topic={topic}
+        />
+        
+        {user && topic && (
+          <>
+            <TopicView
+              topic={topic}
+              posts={posts}
+              user={user}
+              page={page}
+              totalPages={totalPages}
+              setPage={setPageViaPaginationHook}
+              categorySlug={categorySlug}
+              loadingData={loadingData} 
+              replyContent={replyContent}
+              setReplyContent={setReplyContent}
+              handleSubmitReply={handleSubmitReply}
+              isSubmittingReply={isSubmittingReply}
+              handleOpenEditDialog={handleOpenEditDialog}
+              handleOpenDeleteDialog={handleOpenDeleteDialog}
+              handleQuotePost={handleQuotePost}
+              handleToggleReaction={handleToggleReaction}
+              handleOpenPostHistoryDialog={handleOpenPostHistoryDialog}
+              handleStartDirectMessage={handleStartDirectMessage}
+              isProcessingPostAction={isProcessingPostAction}
+              replyFormRef={replyFormRef}
+              handlePollVote={handlePollVote}
+              isSubmittingVote={isSubmittingVote}
+              onOpenReportDialog={handleOpenReportDialog}
             />
-          )}
-        </>
-      )}
+            <TopicDialogs
+              editingPost={editingPost}
+              showEditDialog={showEditDialog}
+              deletingPostId={deletingPostId}
+              showDeleteConfirmDialog={showDeleteConfirmDialog}
+              isProcessingPostAction={isProcessingPostAction}
+              topicIsLocked={topic.is_locked}
+              handleCloseEditDialog={handleCloseEditDialog}
+              handleSaveEditedPost={handleSaveEditedPost}
+              handleCloseDeleteDialog={handleCloseDeleteDialog}
+              handleConfirmDeletePost={handleConfirmDeletePost}
+              showPostHistoryDialog={showPostHistoryDialog}
+              postHistoryPostId={postHistoryPostId}
+              postHistoryTitle={postHistoryTitle}
+              handleClosePostHistoryDialog={handleClosePostHistoryDialog}
+            />
+            {reportDialogData && (
+              <ReportContentDialog
+                isOpen={showReportDialog}
+                onOpenChange={setShowReportDialog}
+                contentType={reportDialogData.contentType}
+                contentId={reportDialogData.contentId}
+                reportedUserId={reportDialogData.reportedUserId}
+                contentPreview={reportDialogData.contentPreview}
+                topicId={reportDialogData.topicId}
+              />
+            )}
+          </>
+        )}
+      </main>
     </div>
   );
 };
