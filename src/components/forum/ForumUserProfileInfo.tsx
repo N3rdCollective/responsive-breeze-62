@@ -2,6 +2,7 @@
 import React from 'react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { User, CalendarDays, MessageSquareText, VenetianMask } from 'lucide-react';
+import { cn } from "@/lib/utils"; // Moved import to the top
 
 interface ProfileInfo {
   username?: string | null;
@@ -38,18 +39,9 @@ const ForumUserProfileInfo: React.FC<ForumUserProfileInfoProps> = ({ profile, cl
           <span>Posts: {profile.forum_post_count}</span>
         </div>
       )}
-      {profile.forum_signature && (
-        <div className="mt-3 pt-3 border-t border-border/50">
-          <p className="italic whitespace-pre-wrap">{profile.forum_signature}</p>
-        </div>
-      )}
+      {/* Signature display removed from here */}
     </div>
   );
 };
-
-// Helper cn function if not globally available in this context (usually from lib/utils)
-// For standalone component, include it or ensure it's imported from a shared util.
-// Assuming cn is available via "@/lib/utils"
-import { cn } from "@/lib/utils"; 
 
 export default ForumUserProfileInfo;
