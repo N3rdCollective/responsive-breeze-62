@@ -125,7 +125,8 @@ const NewForumTopicPage = () => {
     });
     
     if (result && result.topic) {
-      navigate(`/members/forum/${categorySlug}/${result.topic.slug || result.topic.id}`);
+      // Navigate to the correct forum topic page
+      navigate(`/forum/topic/${result.topic.slug || result.topic.id}`);
     }
   };
   
