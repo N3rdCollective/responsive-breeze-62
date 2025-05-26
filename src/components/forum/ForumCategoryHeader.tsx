@@ -2,14 +2,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Plus, MessageSquare } from 'lucide-react'; // Changed to Plus
-import { ForumCategory } from '@/types/forum'; // Use imported type
-import { Badge } from '@/components/ui/badge'; // Added Badge import
-import { Card, CardHeader, CardTitle } from '@/components/ui/card'; // Added Card imports
+import { Plus, MessageSquare } from 'lucide-react';
+import { ForumCategory } from '@/types/forum';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface ForumCategoryHeaderProps {
-  category: ForumCategory & { topic_count?: number; post_count?: number }; // Allow optional counts
-  categorySlug?: string; // categorySlug is passed but not directly used for the link anymore
+  category: ForumCategory & { topic_count?: number; post_count?: number };
+  categorySlug?: string;
 }
 
 const ForumCategoryHeader: React.FC<ForumCategoryHeaderProps> = ({ category }) => {
@@ -41,8 +41,8 @@ const ForumCategoryHeader: React.FC<ForumCategoryHeaderProps> = ({ category }) =
             )}
           </div>
           <Button asChild className="bg-primary hover:bg-primary/90 text-sm sm:text-base shrink-0">
-            {/* FIXED: Use category.id instead of categorySlug and correct route */}
-            <Link to={`/forum/new-topic/${category.id}`}>
+            {/* Changed category.id to category.slug to match the route parameter */}
+            <Link to={`/forum/new-topic/${category.slug}`}>
               <Plus className="h-4 w-4 mr-2" />
               New Topic
             </Link>
