@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch"; // Added Switch
-import { Loader2, PlusCircle, XCircle } from "lucide-react"; // Added icons
+import { Switch } from "@/components/ui/switch";
+import { Loader2, PlusCircle, XCircle } from "lucide-react";
 import ForumRichTextEditor from "@/components/forum/ForumRichTextEditor";
 
 interface NewTopicFormProps {
@@ -18,14 +18,19 @@ interface NewTopicFormProps {
   submitting: boolean;
   isContentEffectivelyEmpty: () => boolean;
   categorySlug: string | undefined;
-  categoryName: string;
-  // Poll props
+  // categoryName: string; // This was unused, confirm if needed
+  
   enablePoll: boolean;
   setEnablePoll: (enabled: boolean) => void;
   pollQuestion: string;
   setPollQuestion: (question: string) => void;
   pollOptions: string[];
-  setPollOptions: (options: string[]) => void;
+  setPollOptions: (options: string[]) => void; // Though individual handlers are preferred
+
+  // Poll option handlers
+  handlePollOptionChange: (index: number, value: string) => void;
+  addPollOption: () => void;
+  removePollOption: (index: number) => void;
 }
 
 const NewTopicForm: React.FC<NewTopicFormProps> = ({
@@ -37,34 +42,18 @@ const NewTopicForm: React.FC<NewTopicFormProps> = ({
   submitting,
   isContentEffectivelyEmpty,
   categorySlug,
-  // categoryName, // categoryName is not used here
+  // categoryName,
   enablePoll,
   setEnablePoll,
   pollQuestion,
   setPollQuestion,
   pollOptions,
-  setPollOptions,
+  // setPollOptions, // Direct setPollOptions might not be needed if handlers are used
+  handlePollOptionChange,
+  addPollOption,
+  removePollOption,
 }) => {
   const navigate = useNavigate();
-
-  const handlePollOptionChange = (index: number, value: string) => {
-    const newOptions = [...pollOptions];
-    newOptions[index] = value;
-    setPollOptions(newOptions);
-  };
-
-  const addPollOption = () => {
-    if (pollOptions.length < 10) { // Max 10 options
-      setPollOptions([...pollOptions, ""]);
-    }
-  };
-
-  const removePollOption = (index: number) => {
-    if (pollOptions.length > 2) { // Min 2 options
-      const newOptions = pollOptions.filter((_, i) => i !== index);
-      setPollOptions(newOptions);
-    }
-  };
 
   return (
     <Card className="border-primary/20">
@@ -96,7 +85,6 @@ const NewTopicForm: React.FC<NewTopicFormProps> = ({
               />
             </div>
 
-            {/* Poll Creation Section */}
             <Card className="border-dashed border-primary/30">
               <CardHeader>
                 <div className="flex items-center justify-between">
