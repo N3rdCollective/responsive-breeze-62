@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,7 +6,7 @@ import { ForumTopic, ForumPost } from '@/types/forum';
 import { POSTS_PER_PAGE } from '@/config/forumConfig';
 import { fetchTopicDetails } from './data/fetchTopicDetails';
 import { fetchTopicPosts } from './data/fetchTopicPosts';
-import { updateTopicViewCount asexecuteUpdateTopicViewCount } from './data/updateTopicViewCount'; // Renamed import to avoid conflict with potential local var
+import { updateTopicViewCount as executeUpdateTopicViewCount } from './data/updateTopicViewCount'; // Renamed import to avoid conflict with potential local var
 
 interface UseForumTopicDataReturn {
   topic: ForumTopic | null;
