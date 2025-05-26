@@ -15,6 +15,7 @@ import PageLoader from "@/components/general/PageLoader";
 import StatsSection from "@/components/home/StatsSection";
 import CtaSection from "@/components/home/CtaSection";
 import { useHomepageData } from "@/hooks/useHomepageData";
+import SongRequestWidget from "@/components/SongRequestWidget"; // Import the new widget
 
 // The types HomepageContentData, defaultHomepageContentData, HomeSettings, defaultSettings, VideoData
 // are now primarily managed by useHomepageData.ts or their original import sources.
@@ -66,6 +67,7 @@ const Index = () => {
           {showFeaturedArtist && <FeaturedArtistSection />}
           {settings.show_news_section && <HomeNewsSection />}
           {settings.show_personalities && <PersonalitySlider />}
+          <SongRequestWidget /> {/* Add the song request widget here */}
         </div>
       </div>
 
