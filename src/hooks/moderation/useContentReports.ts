@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -22,6 +21,15 @@ export interface ContentReport {
   action_type: string | null;
   action_note: string | null;
   action_created_at: string | null;
+}
+
+export interface NewContentReportPayload {
+  contentType: 'post' | 'topic';
+  contentId: string;
+  reportedUserId: string;
+  reportReason: string;
+  contentPreview?: string; // Optional: a snippet of the content being reported
+  topicId?: string; // Optional: if the content is a post, its parent topic ID
 }
 
 export const useContentReports = () => {
@@ -106,7 +114,12 @@ export const useContentReports = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        throw new Error('User not authenticated');
+        toast({
+          title: "Authentication Error",
+          description: "You must be logged in to report content.",
+          variant: "destructive",
+        });
+        return false;
       }
 
       const { error } = await supabase
@@ -140,6 +153,59 @@ export const useContentReports = () => {
     }
   };
 
+  const createContentReport = async (payload: NewContentReportPayload): Promise<boolean> => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Authentication Error",
+          description: "You must be logged in to report content.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      const { error: reportError } = await supabase
+        .from('content_reports')
+        .insert({
+          content_type: payload.contentType,
+          content_id: payload.contentId,
+          reporter_id: user.id,
+          reported_user_id: payload.reportedUserId,
+          report_reason: payload.reportReason,
+          content_preview: payload.contentPreview,
+          topic_id: payload.topicId,
+          status: 'pending',
+        });
+
+      if (reportError) {
+        console.error('Error creating content report:', reportError);
+        toast({
+          title: "Report Submission Failed",
+          description: reportError.message || "Could not submit your report. Please try again.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      toast({
+        title: "Report Submitted",
+        description: "Thank you, your report has been submitted for review.",
+      });
+      // Optionally, refresh reports list if displayed to moderators immediately
+      // await fetchReports(); 
+      return true;
+    } catch (err: any) {
+      console.error('Error in createContentReport:', err);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while submitting your report.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
   useEffect(() => {
     fetchReports();
   }, []);
@@ -150,6 +216,7 @@ export const useContentReports = () => {
     error,
     fetchReports,
     updateReportStatus,
-    createModerationAction
+    createModerationAction,
+    createContentReport, // Export the new function
   };
 };
