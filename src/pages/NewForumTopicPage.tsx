@@ -77,6 +77,7 @@ const NewForumTopicPage = () => {
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("handleSubmit called"); // Log: Start of handleSubmit
     
     if (!title.trim()) {
       toast({
@@ -98,7 +99,11 @@ const NewForumTopicPage = () => {
       return;
     }
     
-    if (!category) return;
+    if (!category) {
+      console.error("Category not loaded, cannot submit topic.");
+      toast({ title: "Error", description: "Category data is missing.", variant: "destructive" });
+      return;
+    }
 
     let pollInput: CreatePollInput | null = null;
     if (enablePoll) {
@@ -117,16 +122,50 @@ const NewForumTopicPage = () => {
       };
     }
     
+    console.log("Calling createTopic with:", { category_id: category.id, title, content, poll: pollInput }); // Log: Before createTopic
     const result = await createTopic({
       category_id: category.id,
       title,
       content,
-      poll: pollInput, // Pass poll data
+      poll: pollInput,
     });
     
+    console.log("createTopic result:", result); // Log: After createTopic
+    
     if (result && result.topic) {
-      // Navigate to the correct forum topic page
-      navigate(`/forum/topic/${result.topic.slug || result.topic.id}`);
+      console.log("Topic created successfully, attempting to navigate."); // Log: Navigation attempt
+      console.log("Topic slug:", result.topic.slug); // Log: Topic slug
+      console.log("Topic ID:", result.topic.id); // Log: Topic ID
+      
+      const navigateToPath = `/forum/topic/${result.topic.slug || result.topic.id}`;
+      console.log("Navigating to path:", navigateToPath); // Log: Navigation path
+      
+      try {
+        navigate(navigateToPath);
+        console.log("Navigation call successful."); // Log: Navigation call made
+      } catch (navError) {
+        console.error("Error during navigation:", navError); // Log: Navigation error
+        toast({
+          title: "Navigation Error",
+          description: "Could not navigate to the topic page. Please check the console.",
+          variant: "destructive"
+        });
+      }
+    } else {
+      console.log("Topic creation failed or result is invalid, not navigating."); // Log: Topic creation failed
+      if (!result) {
+        toast({
+            title: "Topic Creation Failed",
+            description: "The topic could not be created. Please try again.",
+            variant: "destructive"
+        });
+      } else if (!result.topic) {
+         toast({
+            title: "Topic Data Missing",
+            description: "Topic was created but data is incomplete. Cannot navigate.",
+            variant: "destructive"
+        });
+      }
     }
   };
   
