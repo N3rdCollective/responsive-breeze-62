@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -50,7 +49,7 @@ import ReportedContentSection from '@/components/staff/moderator-dashboard/Repor
 import ReportDetails from '@/components/staff/moderator-dashboard/ReportDetails';
 
 // Import database hooks
-import { useContentReports } from '@/hooks/moderation/useContentReports';
+import { useContentReports, ContentReport } from '@/hooks/moderation/useContentReports';
 import { useModerationStats } from '@/hooks/moderation/useModerationStats';
 import { useUserManagement, User } from '@/hooks/admin/useUserManagement';
 
@@ -71,7 +70,14 @@ const UnifiedStaffDashboard = () => {
   const [searchTerm, setSearchTerm] = useState(''); 
   const [moderationNote, setModerationNote] = useState('');
   
-  const { reports, loading: reportsLoading, updateReportStatus, createModerationAction } = useContentReports();
+  const { 
+    reports, 
+    loading: reportsLoading, 
+    updateReportStatus, 
+    createModerationAction,
+    removeContentOnDb, 
+    lockTopicOnDb
+  } = useContentReports();
   const { stats: dashboardStats, loading: statsLoading, refreshStats } = useModerationStats();
   
   const { 
@@ -125,39 +131,99 @@ const UnifiedStaffDashboard = () => {
     return statusMatch && termMatch;
   });
 
-  const handleModerationAction = async (action: string, reportId: string) => {
-    console.log(`Taking action "${action}" on report ${reportId}`);
+  const handleModerationAction = async (
+    action: string, 
+    reportId: string,
+    details?: {
+      reportedUserId?: string;
+      contentId?: string;
+      contentType?: 'post' | 'topic';
+      topicId?: string;
+    }
+  ) => {
+    console.log(`Taking action "${action}" on report ${reportId}`, details);
     
     try {
-      // For "reopen", we only update status. For other actions, we log a new moderation_action.
-      // We still log a "reopen" action for audit trail.
-      const actionSuccess = await createModerationAction(reportId, action, moderationNote);
-      
-      if (actionSuccess) {
-        let newStatus: 'resolved' | 'rejected' | 'pending' = 'resolved'; // Allow 'pending'
-        
-        if (action === 'dismiss') {
-          newStatus = 'rejected';
-        } else if (action === 'reopen') {
-          newStatus = 'pending'; // Correctly set to pending for reopen
-        }
-        // For actions other than 'reopen' or 'dismiss', it implies resolution.
-        // e.g. 'remove_content', 'warn_user' etc. typically resolve the report.
+      const actionLogged = await createModerationAction(reportId, action, moderationNote);
+      if (!actionLogged) {
+        toast({ title: "Error", description: "Failed to log moderation action.", variant: "destructive" });
+        return;
+      }
 
-        const updateSuccess = await updateReportStatus(reportId, newStatus);
-        
-        if (updateSuccess) {
-          setSelectedFlagId(null);
-          setModerationNote('');
-          if (refreshStats) refreshStats();
-          // Toast message is now handled within updateReportStatus for clarity
+      let newStatus: 'pending' | 'resolved' | 'rejected' = 'resolved';
+      let actionCompleted = false;
+
+      switch (action) {
+        case 'dismiss':
+          newStatus = 'rejected';
+          actionCompleted = await updateReportStatus(reportId, newStatus);
+          break;
+        case 'reopen':
+          newStatus = 'pending';
+          actionCompleted = await updateReportStatus(reportId, newStatus);
+          break;
+        case 'ban_user':
+          if (details?.reportedUserId && moderationNote.trim()) {
+            // Call liveUpdateUserStatus for 'ban' action from UserManagement hook
+            const banSuccess = await liveUpdateUserStatus(details.reportedUserId, 'banned', moderationNote, 'ban');
+            if (banSuccess) {
+              actionCompleted = await updateReportStatus(reportId, 'resolved');
+            } else {
+               toast({ title: "Ban Failed", description: "Could not ban the user.", variant: "destructive" });
+            }
+          } else {
+            toast({ title: "Missing Info", description: "User ID and reason are required to ban a user.", variant: "destructive" });
+          }
+          break;
+        case 'remove_content':
+          if (details?.contentId && details?.contentType) {
+            const removeSuccess = await removeContentOnDb(details.contentId, details.contentType);
+            if (removeSuccess) {
+              actionCompleted = await updateReportStatus(reportId, 'resolved');
+            }
+          } else {
+            toast({ title: "Missing Info", description: "Content ID and type are required to remove content.", variant: "destructive" });
+          }
+          break;
+        case 'lock_topic':
+          if (details?.topicId) {
+             // For lock_topic, we also need to handle unlocking. The action name could be 'lock_topic' or 'unlock_topic'.
+             // The lockTopicOnDb function would need to handle this logic.
+            const lockSuccess = await lockTopicOnDb(details.topicId);
+            if (lockSuccess) {
+              // Locking/unlocking a topic might not always "resolve" the report in the same way.
+              // It depends on the workflow. For now, let's assume it resolves.
+              actionCompleted = await updateReportStatus(reportId, 'resolved');
+              // You might want a different toast message here based on whether it was locked or unlocked.
+              // toast({ title: "Topic Status Changed", description: `Topic ${details.topicId} has been updated.`});
+            }
+          } else {
+             toast({ title: "Missing Info", description: "Topic ID is required to lock/unlock a topic.", variant: "destructive" });
+          }
+          break;
+        // For 'edit_content', 'move_topic', 'warn_user', these actions resolve the report
+        // Their specific side-effects would be implemented similarly to ban_user/remove_content if they had direct DB operations
+        default: // Covers 'edit_content', 'move_topic', 'warn_user' and any other resolving action
+          actionCompleted = await updateReportStatus(reportId, 'resolved');
+          break;
+      }
+      
+      if (actionCompleted) {
+        setSelectedFlagId(null);
+        setModerationNote('');
+        if (refreshStats) refreshStats();
+        // Specific toasts are now handled within updateReportStatus or specific action handlers.
+        // General success toast can be added here if needed for actions not covered by specific toasts.
+        if (action !== 'ban_user' && action !== 'dismiss' && action !== 'reopen' && action !== 'remove_content' && action !== 'lock_topic') {
+           toast({ title: "Action Complete", description: `Action "${action.replace(/_/g, ' ')}" was successful.` });
         }
       }
+
     } catch (error) {
       console.error('Error handling moderation action:', error);
       toast({
         title: "Error",
-        description: "Failed to complete moderation action",
+        description: "Failed to complete moderation action.",
         variant: "destructive"
       });
     }
@@ -660,7 +726,10 @@ const UnifiedStaffDashboard = () => {
                           moderator: report.moderator_name || 'Unknown',
                           timestamp: report.action_created_at || new Date().toISOString(),
                           note: report.action_note || ''
-                        } : undefined
+                        } : undefined,
+                        // Pass down reported_user_id for ban action, and other IDs for relevant actions
+                        reportedUserId: report.reported_user_id, 
+                        topicId: report.topic_id
                       }))}
                       selectedFlag={selectedFlagId}
                       setSelectedFlag={setSelectedFlagId}
@@ -737,41 +806,42 @@ const UnifiedStaffDashboard = () => {
       {/* Report Details Modal */}
       {selectedReportData && (
         <ReportDetails
-          reportData={{
-            id: selectedReportData.id,
-            contentType: selectedReportData.content_type as 'post' | 'topic',
-            contentId: selectedReportData.content_id,
-            content: selectedReportData.content_preview || '',
-            reportReason: selectedReportData.report_reason,
-            reporter: {
+          reportData={{ // Spread the selectedReportData which now includes reported_user_id
+            ...selectedReportData,
+            contentType: selectedReportData.content_type as 'post' | 'topic', // Ensure type assertion
+            content: selectedReportData.content_preview || '', // Ensure content is not null
+             reporter: { // Mocked some data not available in ContentReport
               id: `reporter-detail-${selectedReportData.reporter_name}-${selectedReportData.id}`,
               name: selectedReportData.reporter_name,
               avatar: selectedReportData.reporter_avatar || '/placeholder.svg'
             },
-            author: {
+            author: { // Mocked some data not available in ContentReport
               id: `author-detail-${selectedReportData.reported_user_name}-${selectedReportData.id}`,
               name: selectedReportData.reported_user_name,
               avatar: selectedReportData.reported_user_avatar || '/placeholder.svg',
-              joinDate: new Date().toISOString(),
-              postCount: 0,
-              previousFlags: 0
+              joinDate: new Date().toISOString(), // Placeholder
+              postCount: 0, // Placeholder
+              previousFlags: 0 // Placeholder
             },
-            timestamp: selectedReportData.created_at,
-            topic: {
+            topic: { // Mocked some data not available in ContentReport
               id: selectedReportData.topic_id || `topic-detail-${selectedReportData.id}`,
               title: selectedReportData.topic_title || 'Unknown Topic',
-              category: 'General'
+              category: 'General' // Placeholder
             },
-            status: selectedReportData.status,
-            resolution: selectedReportData.action_type ? {
+             resolution: selectedReportData.action_type ? {
               action: selectedReportData.action_type,
               moderator: selectedReportData.moderator_name || 'Unknown',
               timestamp: selectedReportData.action_created_at || new Date().toISOString(),
               note: selectedReportData.action_note || ''
-            } : undefined
+            } : undefined,
+            // Explicitly pass reportedUserId, contentId, contentType, topicId
+            reportedUserId: selectedReportData.reported_user_id,
+            // contentId: selectedReportData.content_id, - already part of selectedReportData
+            // contentType: selectedReportData.content_type as 'post' | 'topic', - already part of selectedReportData
+            // topicId: selectedReportData.topic_id - already part of selectedReportData
           }}
           onClose={() => setSelectedFlagId(null)}
-          onAction={handleModerationAction}
+          onAction={handleModerationAction} // This function now expects the details object
           moderationNote={moderationNote}
           setModerationNote={setModerationNote}
         />

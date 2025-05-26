@@ -1,13 +1,26 @@
-
 import React from 'react';
 import { XCircle, Trash2, Edit, Move, Lock, AlertTriangle, UserX, CheckCircle, RefreshCw } from 'lucide-react';
-import { Report } from './types';
+import { Report as ReportTypeFromDashboard } from './types';
 import { formatDate } from '@/utils/moderatorUtils';
 
 interface ReportDetailsProps {
-  reportData: Report;
+  reportData: ReportTypeFromDashboard & { 
+    reportedUserId?: string; 
+    contentId: string; 
+    contentType: 'post' | 'topic';
+    topicId?: string | null;
+  };
   onClose: () => void;
-  onAction: (action: string, reportId: string) => void;
+  onAction: (
+    action: string, 
+    reportId: string,
+    details?: { 
+      reportedUserId?: string;
+      contentId?: string;
+      contentType?: 'post' | 'topic';
+      topicId?: string;
+    }
+  ) => void;
   moderationNote: string;
   setModerationNote: (note: string) => void;
 }
@@ -23,11 +36,31 @@ const ReportDetails: React.FC<ReportDetailsProps> = ({
     { label: 'Remove Content', action: 'remove_content', icon: Trash2, color: 'red' },
     { label: 'Edit Content', action: 'edit_content', icon: Edit, color: 'blue' },
     ...(reportData.contentType === 'topic' ? [{ label: 'Move Topic', action: 'move_topic', icon: Move, color: 'yellow' }] : []),
-    { label: 'Lock Thread', action: 'lock_topic', icon: Lock, color: 'purple' },
+    ...(reportData.contentType === 'topic' ? [{ label: 'Lock Thread', action: 'lock_topic', icon: Lock, color: 'purple' }] : []),
     { label: 'Warn User', action: 'warn_user', icon: AlertTriangle, color: 'orange' },
     { label: 'Ban User', action: 'ban_user', icon: UserX, color: 'red', variant: 'destructive' },
     { label: 'Dismiss Report', action: 'dismiss', icon: XCircle, color: 'gray' },
   ];
+
+  const handleActionClick = (actionKey: string) => {
+    const details: {
+      reportedUserId?: string;
+      contentId?: string;
+      contentType?: 'post' | 'topic';
+      topicId?: string;
+    } = {
+      reportedUserId: reportData.reportedUserId,
+      contentId: reportData.contentId,
+      contentType: reportData.contentType,
+      topicId: reportData.topicId || undefined,
+    };
+    
+    if (actionKey === 'ban_user' && !moderationNote.trim()) {
+        console.warn("Ban reason (moderationNote) is empty. Action might fail server-side validation.");
+    }
+
+    onAction(actionKey, reportData.id, details);
+  };
 
   return (
     <div className="mt-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
@@ -109,12 +142,14 @@ const ReportDetails: React.FC<ReportDetailsProps> = ({
           <div>
             <h3 className="text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">Take Action</h3>
             <div className="mb-4">
-              <label htmlFor="moderation-note" className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Moderation Note:</label>
+              <label htmlFor="moderation-note" className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+                Moderation Note (Required for Ban User):
+              </label>
               <textarea
                 id="moderation-note"
                 rows={3}
                 className="w-full border dark:border-gray-600 rounded-md p-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Add additional notes about your decision..."
+                placeholder="Add notes about your decision. For 'Ban User', this note will be the ban reason."
                 value={moderationNote}
                 onChange={(e) => setModerationNote(e.target.value)}
               />
@@ -123,8 +158,9 @@ const ReportDetails: React.FC<ReportDetailsProps> = ({
               {actionButtons.map(btn => (
                 <button 
                   key={btn.action}
-                  className={`flex items-center bg-${btn.color}-100 dark:bg-${btn.color}-900/60 text-${btn.color}-800 dark:text-${btn.color}-200 px-3 py-2 rounded-md text-sm hover:bg-${btn.color}-200 dark:hover:bg-${btn.color}-800/80`}
-                  onClick={() => onAction(btn.action, reportData.id)}
+                  className={`flex items-center bg-${btn.color}-100 dark:bg-${btn.color}-900/60 text-${btn.color}-800 dark:text-${btn.color}-200 px-3 py-2 rounded-md text-sm hover:bg-${btn.color}-200 dark:hover:bg-${btn.color}-800/80 ${btn.action === 'ban_user' && !moderationNote.trim() ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={() => handleActionClick(btn.action)}
+                  disabled={btn.action === 'ban_user' && !moderationNote.trim()}
                 >
                   <btn.icon size={16} className="mr-1" />
                   {btn.label}
@@ -180,7 +216,7 @@ const ReportDetails: React.FC<ReportDetailsProps> = ({
             <div className="flex mt-4">
               <button 
                 className="flex items-center bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-200 px-3 py-2 rounded-md text-sm hover:bg-blue-200 dark:hover:bg-blue-800/80 mr-2"
-                onClick={() => onAction('reopen', reportData.id)}
+                onClick={() => handleActionClick('reopen')}
               >
                 <RefreshCw size={16} className="mr-1" />
                 Reopen Report

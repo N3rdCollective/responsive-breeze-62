@@ -1394,6 +1394,7 @@ export type Database = {
           updated_at: string
           reporter_name: string
           reporter_avatar: string
+          reported_user_id: string
           reported_user_name: string
           reported_user_avatar: string
           topic_id: string

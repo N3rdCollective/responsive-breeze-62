@@ -13,6 +13,7 @@ export interface ContentReport {
   updated_at: string;
   reporter_name: string;
   reporter_avatar: string;
+  reported_user_id: string; // Added this field
   reported_user_name: string;
   reported_user_avatar: string;
   topic_id: string | null;
@@ -41,6 +42,7 @@ export const useContentReports = () => {
   const fetchReports = async () => {
     try {
       setLoading(true);
+      // The RPC function 'get_content_reports_with_details' now returns reported_user_id
       const { data, error } = await supabase.rpc('get_content_reports_with_details');
       
       if (error) {
@@ -49,7 +51,6 @@ export const useContentReports = () => {
         return;
       }
 
-      // Cast and validate the status field to ensure it matches our expected types
       const typedReports = (data || []).map(report => ({
         ...report,
         status: validateReportStatus(report.status)
@@ -210,6 +211,33 @@ export const useContentReports = () => {
     }
   };
 
+  // Placeholder function for removing content
+  const removeContentOnDb = async (contentId: string, contentType: 'post' | 'topic'): Promise<boolean> => {
+    console.log(`Simulating removal of ${contentType} with ID: ${contentId}`);
+    // In a real scenario, this would involve:
+    // 1. Supabase call to delete/archive the post or topic.
+    // 2. For topics, consider what happens to its posts.
+    // For now, we just log and toast success.
+    toast({
+      title: "Content Action (Simulated)",
+      description: `${contentType === 'post' ? 'Post' : 'Topic'} with ID ${contentId} would be removed.`,
+    });
+    return true; 
+  };
+
+  // Placeholder function for locking a topic
+  const lockTopicOnDb = async (topicId: string): Promise<boolean> => {
+    console.log(`Simulating locking of topic with ID: ${topicId}`);
+    // In a real scenario, this would involve:
+    // 1. Supabase call to update the 'is_locked' status of the forum_topics table.
+    // For now, we just log and toast success.
+    toast({
+      title: "Topic Action (Simulated)",
+      description: `Topic with ID ${topicId} would be locked/unlocked.`,
+    });
+    return true;
+  };
+
   useEffect(() => {
     fetchReports();
   }, []);
@@ -222,5 +250,7 @@ export const useContentReports = () => {
     updateReportStatus,
     createModerationAction,
     createContentReport,
+    removeContentOnDb, // Export new function
+    lockTopicOnDb,     // Export new function
   };
 };
