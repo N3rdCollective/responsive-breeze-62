@@ -99,11 +99,6 @@ const ForumPostCard: React.FC<ForumPostCardProps> = ({
       </CardHeader>
       <CardContent className="p-4 prose prose-sm dark:prose-invert max-w-none break-words">
         <div dangerouslySetInnerHTML={{ __html: post.content }} />
-        {post.profile?.forum_signature && (
-          <div className="mt-4 pt-4 border-t border-border/50">
-            <p className="text-sm italic text-muted-foreground whitespace-pre-wrap">{post.profile.forum_signature}</p>
-          </div>
-        )}
       </CardContent>
       <CardFooter className="p-4 border-t dark:border-gray-700/50 flex flex-wrap items-center justify-between gap-2">
         
@@ -184,3 +179,4 @@ const ForumPostCard: React.FC<ForumPostCardProps> = ({
 };
 
 export default ForumPostCard;
+
