@@ -1,4 +1,4 @@
-import { Route, Routes, Outlet } from "react-router-dom";
+import { Route, Routes, Outlet, Navigate } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AuthProvider from "@/hooks/useAuth"; 
 
@@ -36,6 +36,7 @@ import NotFoundPage from "@/pages/NotFound";
 // New StaffLayout component
 import StaffLayout from "@/components/layouts/StaffLayout";
 import MusicPlayer from "@/components/MusicPlayer";
+import RedirectNewTopic from "@/components/utility/RedirectNewTopic"; // Added import for the redirect component
 
 function App() {
   return (
@@ -54,6 +55,7 @@ function App() {
           {/* Member & Forum Routes */}
           {/* Order matters: More specific routes first */}
           <Route path="/members" element={<MembersPage />} />
+          <Route path="/members/forum/:categorySlug/new" element={<RedirectNewTopic />} /> 
           <Route path="/members/forum/:categorySlug" element={<ForumCategoryPage />} /> {/* New route for categories under /members/forum */}
           <Route path="/members/forum" element={<MembersPage />} /> {/* New route for base /members/forum path */}
 
