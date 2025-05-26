@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -102,6 +103,11 @@ const ForumTopicPage = () => {
   
   if (!user && !authLoading) {
     return null;
+  }
+
+  // Log the topic data to inspect its contents, especially topic.poll
+  if (topic) {
+    console.log("ForumTopicPage: Topic data being passed to TopicView:", JSON.stringify(topic, null, 2));
   }
 
   return (
