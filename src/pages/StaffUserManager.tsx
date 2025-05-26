@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -43,7 +42,7 @@ const StaffUserManager = () => {
   
   const [actionDialog, setActionDialog] = useState<{
     open: boolean;
-    action: 'suspend' | 'ban' | 'unban' | null;
+    action: 'suspend' | 'ban' | 'unban' | 'warn' | null; // Added 'warn'
     user: User | null;
   }>({ open: false, action: null, user: null });
   const [actionReason, setActionReason] = useState('');
@@ -71,10 +70,12 @@ const StaffUserManager = () => {
         profile_picture: 'https://randomuser.me/api/portraits/men/1.jpg',
         role: 'user',
         status: 'active',
-        post_count: 45,
-        report_count: 0,
-        last_active: '2024-05-15T10:30:00Z', // Updated dates to be more recent
-        created_at: '2023-06-01T09:00:00Z'
+        forum_post_count: 45, // Changed from post_count
+        pending_report_count: 0, // Changed from report_count
+        last_active: '2024-05-15T10:30:00Z',
+        created_at: '2023-06-01T09:00:00Z',
+        forum_signature: null,
+        timeline_post_count: 0,
       },
       {
         id: '2',
@@ -84,10 +85,12 @@ const StaffUserManager = () => {
         profile_picture: 'https://randomuser.me/api/portraits/women/2.jpg',
         role: 'moderator',
         status: 'active',
-        post_count: 128,
-        report_count: 2,
+        forum_post_count: 128, // Changed from post_count
+        pending_report_count: 2, // Changed from report_count
         last_active: '2024-05-14T15:45:00Z',
-        created_at: '2023-03-15T14:20:00Z'
+        created_at: '2023-03-15T14:20:00Z',
+        forum_signature: "Be kind",
+        timeline_post_count: 10,
       },
       {
         id: '3',
@@ -96,10 +99,12 @@ const StaffUserManager = () => {
         email: 'bob@example.com',
         role: 'user',
         status: 'suspended',
-        post_count: 23,
-        report_count: 5,
+        forum_post_count: 23, // Changed from post_count
+        pending_report_count: 5, // Changed from report_count
         last_active: '2024-05-10T08:20:00Z',
-        created_at: '2023-08-20T11:30:00Z'
+        created_at: '2023-08-20T11:30:00Z',
+        forum_signature: null,
+        timeline_post_count: 2,
       },
       {
         id: '4',
@@ -109,10 +114,12 @@ const StaffUserManager = () => {
         profile_picture: 'https://randomuser.me/api/portraits/women/4.jpg',
         role: 'admin',
         status: 'active',
-        post_count: 89,
-        report_count: 0,
+        forum_post_count: 89, // Changed from post_count
+        pending_report_count: 0, // Changed from report_count
         last_active: '2024-05-16T12:15:00Z',
-        created_at: '2023-01-10T14:45:00Z'
+        created_at: '2023-01-10T14:45:00Z',
+        forum_signature: "Admin on duty",
+        timeline_post_count: 5,
       }
     ];
     
@@ -255,8 +262,8 @@ const StaffUserManager = () => {
   const refreshUsers = () => {
     setIsLoading(true);
     const mockUsersRefreshed: User[] = [ 
-        { id: '1', username: 'john_doe_refreshed', display_name: 'John Doe (Refreshed)', email: 'john_refreshed@example.com', profile_picture: 'https://randomuser.me/api/portraits/men/1.jpg', role: 'user', status: 'active', post_count: 50, report_count: 0, last_active: new Date().toISOString(), created_at: '2023-06-01T09:00:00Z' },
-        { id: '2', username: 'jane_smith', display_name: 'Jane Smith', email: 'jane@example.com', profile_picture: 'https://randomuser.me/api/portraits/women/2.jpg', role: 'moderator', status: 'active', post_count: 130, report_count: 1, last_active: '2024-05-14T15:45:00Z', created_at: '2023-03-15T14:20:00Z'},
+        { id: '1', username: 'john_doe_refreshed', display_name: 'John Doe (Refreshed)', email: 'john_refreshed@example.com', profile_picture: 'https://randomuser.me/api/portraits/men/1.jpg', role: 'user', status: 'active', forum_post_count: 50, pending_report_count: 0, last_active: new Date().toISOString(), created_at: '2023-06-01T09:00:00Z', forum_signature: null, timeline_post_count: 0 },
+        { id: '2', username: 'jane_smith', display_name: 'Jane Smith', email: 'jane@example.com', profile_picture: 'https://randomuser.me/api/portraits/women/2.jpg', role: 'moderator', status: 'active', forum_post_count: 130, pending_report_count: 1, last_active: '2024-05-14T15:45:00Z', created_at: '2023-03-15T14:20:00Z', forum_signature: "Be kind", timeline_post_count: 10 },
     ];
     setTimeout(() => {
       setUsers(mockUsersRefreshed);
@@ -317,6 +324,7 @@ const StaffUserManager = () => {
                   {actionDialog.action === 'suspend' && `Temporarily suspend ${actionDialog.user?.display_name}.`}
                   {actionDialog.action === 'ban' && `Permanently ban ${actionDialog.user?.display_name}.`}
                   {actionDialog.action === 'unban' && `Restore access for ${actionDialog.user?.display_name}.`}
+                  {/* Description for warn can be added here if needed, or handled by a separate WarnUserDialog */}
                 </DialogDescription>
               </DialogHeader>
               {actionDialog.user && (
