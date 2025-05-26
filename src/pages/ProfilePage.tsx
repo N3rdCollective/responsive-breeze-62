@@ -38,7 +38,7 @@ import { useProfileSave } from "@/hooks/profile/useProfileSave";
 import { useThemeSync } from "@/hooks/profile/useThemeSync";
 import type { ProfileDataToSave } from "@/hooks/profile/useProfileSave";
 import type { UserProfile } from "@/types/profile";
-import { AlertCircle, Loader2, ChevronLeft, Camera, Music, Save, Eye, Paintbrush, UserCircle } from 'lucide-react';
+import { AlertCircle, Loader2, ChevronLeft, Camera, Music, Save, Eye, Paintbrush, UserCircle, Edit } from 'lucide-react';
 import { Instagram, Twitter, Globe } from 'lucide-react';
 import Navbar from "@/components/Navbar";
 import AvatarUploadDialog from "@/components/profile/AvatarUploadDialog";
@@ -86,6 +86,7 @@ const EnhancedProfilePage = () => {
     theme, setTheme,
     isPublic, setIsPublic,
     avatarUrl, setAvatarUrl,
+    forumSignature, setForumSignature,
     getProfileFormData
   } = useProfileFormFields({
     profileData: profile,
@@ -229,7 +230,7 @@ const EnhancedProfilePage = () => {
                 <div className="text-sm text-muted-foreground">@{username}</div>
                 <div className="flex items-center mt-2">
                   <Music className="h-4 w-4 mr-1 text-primary" />
-                  <span className="text-sm">{selectedRole}</span>
+                  <span className="text-sm">{selectedRole === 'user' ? 'Music Fan' : selectedRole === 'artist' ? 'Artist' : selectedRole === 'producer' ? 'Producer' : selectedRole === 'industry_professional' ? 'Industry Professional' : selectedRole}</span>
                 </div>
               </CardHeader>
               <CardContent className="text-center pb-6">
@@ -250,14 +251,14 @@ const EnhancedProfilePage = () => {
 
                 <div className="flex justify-center mt-4 space-x-3">
                   {socialLinks?.instagram && (
-                    <a href={`https://instagram.com/${socialLinks.instagram}`} target="_blank" rel="noopener noreferrer">
+                    <a href={`https://instagram.com/${socialLinks.instagram.replace('@','')}`} target="_blank" rel="noopener noreferrer">
                       <Button size="sm" variant="ghost" className="rounded-full h-8 w-8 p-0">
                         <Instagram className="h-4 w-4 text-foreground" />
                       </Button>
                     </a>
                   )}
                   {socialLinks?.twitter && (
-                     <a href={`https://twitter.com/${socialLinks.twitter}`} target="_blank" rel="noopener noreferrer">
+                     <a href={`https://twitter.com/${socialLinks.twitter.replace('@','')}`} target="_blank" rel="noopener noreferrer">
                       <Button size="sm" variant="ghost" className="rounded-full h-8 w-8 p-0">
                         <Twitter className="h-4 w-4 text-foreground" />
                       </Button>
@@ -337,6 +338,19 @@ const EnhancedProfilePage = () => {
                           rows={3}
                           disabled={isSaving}
                         />
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <Label htmlFor="forumSignature">Forum Signature</Label>
+                        <Textarea
+                          id="forumSignature"
+                          value={forumSignature}
+                          onChange={(e) => setForumSignature(e.target.value)}
+                          placeholder="Your signature for forum posts (optional)"
+                          rows={2}
+                          disabled={isSaving}
+                        />
+                        <p className="text-xs text-muted-foreground">This will appear below your posts in the forum.</p>
                       </div>
 
                       <div className="space-y-1">
@@ -495,12 +509,29 @@ const EnhancedProfilePage = () => {
 
                 <TabsContent value="view" className="m-0">
                   <CardContent className="pt-4">
-                    <div className="prose max-w-none">
+                    <div className="prose max-w-none dark:prose-invert">
                       <div className="mb-6">
                         <h3 className="text-lg font-semibold mb-1">About Me</h3>
                         <p className="whitespace-pre-line text-sm">{bio || <span className="italic text-muted-foreground">No bio provided yet.</span>}</p>
                       </div>
 
+                      {forumSignature && (
+                        <div className="mb-6">
+                          <h3 className="text-lg font-semibold mb-2 flex items-center">
+                            <Edit className="h-4 w-4 mr-2 text-primary" />
+                            Forum Signature
+                          </h3>
+                          <blockquote className="border-l-4 border-primary pl-4 italic text-sm text-muted-foreground">
+                            {forumSignature.split('\n').map((line, index) => (
+                              <React.Fragment key={index}>
+                                {line}
+                                <br />
+                              </React.Fragment>
+                            ))}
+                          </blockquote>
+                        </div>
+                      )}
+                      
                       {selectedGenres.length > 0 && (
                         <div className="mb-6">
                           <h3 className="text-lg font-semibold mb-2">Favorite Genres</h3>
@@ -518,15 +549,15 @@ const EnhancedProfilePage = () => {
                         <h3 className="text-lg font-semibold mb-2">Connect</h3>
                         <div className="flex flex-col space-y-2">
                           {socialLinks?.instagram && (
-                            <a href={`https://instagram.com/${socialLinks.instagram}`} target="_blank" rel="noopener noreferrer" className="flex items-center text-sm hover:text-primary transition-colors">
+                            <a href={`https://instagram.com/${socialLinks.instagram.replace('@','')}`} target="_blank" rel="noopener noreferrer" className="flex items-center text-sm hover:text-primary transition-colors">
                               <Instagram className="h-4 w-4 mr-2 text-pink-500" />
-                              @{socialLinks.instagram}
+                              @{socialLinks.instagram.replace('@','')}
                             </a>
                           )}
                           {socialLinks?.twitter && (
-                            <a href={`https://twitter.com/${socialLinks.twitter}`} target="_blank" rel="noopener noreferrer" className="flex items-center text-sm hover:text-primary transition-colors">
+                            <a href={`https://twitter.com/${socialLinks.twitter.replace('@','')}`} target="_blank" rel="noopener noreferrer" className="flex items-center text-sm hover:text-primary transition-colors">
                               <Twitter className="h-4 w-4 mr-2 text-blue-400" />
-                              @{socialLinks.twitter}
+                              @{socialLinks.twitter.replace('@','')}
                             </a>
                           )}
                           {socialLinks?.website && (
