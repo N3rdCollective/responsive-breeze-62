@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, MessageSquare, Mail, UserX, Ban, UserCheck, Users } from "lucide-react";
+import { MoreHorizontal, Eye, MessageSquare, Mail, UserX, Ban, UserCheck, Users, AlertTriangle } from "lucide-react"; // Added AlertTriangle
 import type { User, ActionDialogHandler, MessageDialogHandler } from "./types";
 
 interface UserTableContentProps {
@@ -56,8 +56,8 @@ const UserTableContent: React.FC<UserTableContentProps> = ({
             <TableHead className="min-w-[200px]">User</TableHead>
             <TableHead>Role</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead className="text-center">Posts</TableHead>
-            <TableHead className="text-center">Reports</TableHead>
+            <TableHead className="text-center">Forum Posts</TableHead> {/* Updated Header Text */}
+            <TableHead className="text-center">Pending Reports</TableHead> {/* Updated Header Text */}
             <TableHead>Last Active</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -89,11 +89,11 @@ const UserTableContent: React.FC<UserTableContentProps> = ({
               </TableCell>
               <TableCell>{getRoleBadge(user.role)}</TableCell>
               <TableCell>{getStatusBadge(user.status)}</TableCell>
-              <TableCell className="text-center">{user.post_count}</TableCell>
+              <TableCell className="text-center">{user.forum_post_count}</TableCell> {/* Changed from post_count */}
               <TableCell className="text-center">
-                {user.report_count > 0 ? (
+                {user.pending_report_count > 0 ? ( /* Changed from report_count */
                   <Badge variant="destructive" className="text-xs">
-                    {user.report_count}
+                    {user.pending_report_count} {/* Changed from report_count */}
                   </Badge>
                 ) : (
                   <span className="text-muted-foreground">0</span>
@@ -124,17 +124,25 @@ const UserTableContent: React.FC<UserTableContentProps> = ({
                       Send Message
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
+                     {/* Warn action added here */}
+                    <DropdownMenuItem
+                      className="text-orange-600 focus:text-orange-700 focus:bg-orange-100 dark:text-orange-400 dark:focus:text-orange-300 dark:focus:bg-orange-500/30"
+                      onClick={() => onOpenActionDialog('warn', user)}
+                    >
+                      <AlertTriangle className="mr-2 h-4 w-4" />
+                      Warn User
+                    </DropdownMenuItem>
                     {user.status === 'active' && (
                       <>
                         <DropdownMenuItem
-                          className="text-yellow-600 focus:text-yellow-700 focus:bg-yellow-100"
+                          className="text-yellow-600 focus:text-yellow-700 focus:bg-yellow-100 dark:text-yellow-400 dark:focus:text-yellow-300 dark:focus:bg-yellow-500/30"
                           onClick={() => onOpenActionDialog('suspend', user)}
                         >
                           <UserX className="mr-2 h-4 w-4" />
                           Suspend User
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          className="text-red-600 focus:text-red-700 focus:bg-red-100"
+                          className="text-red-600 focus:text-red-700 focus:bg-red-100 dark:text-red-400 dark:focus:text-red-300 dark:focus:bg-red-500/30"
                           onClick={() => onOpenActionDialog('ban', user)}
                         >
                           <Ban className="mr-2 h-4 w-4" />
@@ -144,7 +152,7 @@ const UserTableContent: React.FC<UserTableContentProps> = ({
                     )}
                     {(user.status === 'suspended' || user.status === 'banned') && (
                       <DropdownMenuItem
-                        className="text-green-600 focus:text-green-700 focus:bg-green-100"
+                        className="text-green-600 focus:text-green-700 focus:bg-green-100 dark:text-green-400 dark:focus:text-green-300 dark:focus:bg-green-500/30"
                         onClick={() => onOpenActionDialog('unban', user)}
                       >
                         <UserCheck className="mr-2 h-4 w-4" />
