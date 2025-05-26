@@ -31,7 +31,7 @@ const fetchForumSearchResults = async ({ query, byUser, categoryId, startDate, e
       last_post_at,
       last_post_user_id,
       category:forum_categories (name, slug),
-      profile:profiles!user_id (username, display_name, profile_picture), 
+      profile:profiles!user_id (username, display_name, profile_picture, created_at, forum_post_count, forum_signature), 
       forum_posts(count)
     `);
 
@@ -125,7 +125,7 @@ const fetchForumSearchResults = async ({ query, byUser, categoryId, startDate, e
       last_post_at: rest.last_post_at,
       last_post_user_id: rest.last_post_user_id,
       category: rest.category,
-      profile: rest.profile, // This profile is now correctly fetched via user_id
+      profile: rest.profile, // This profile now includes created_at, forum_post_count, and forum_signature
       _count: { posts: postCount },
     };
     return topic;
