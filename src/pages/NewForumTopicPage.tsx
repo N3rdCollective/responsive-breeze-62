@@ -81,13 +81,12 @@ const NewForumTopicPage = () => {
             submitting={submitting}
             isContentEffectivelyEmpty={isContentEffectivelyEmpty}
             categorySlug={category.slug}
-            // categoryName={category.name} // Was unused in NewTopicForm
             enablePoll={enablePoll}
             setEnablePoll={setEnablePoll}
             pollQuestion={pollQuestion}
             setPollQuestion={setPollQuestion}
             pollOptions={pollOptions}
-            setPollOptions={() => {}} // No-op as handlers are preferred; or remove if not in interface
+            // Removed setPollOptions prop as it's not defined in NewTopicFormProps
             handlePollOptionChange={handlePollOptionChange}
             addPollOption={addPollOption}
             removePollOption={removePollOption}
