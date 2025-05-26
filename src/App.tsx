@@ -68,7 +68,8 @@ function App() {
           <Route path="/forum/category/:categorySlug" element={<ForumCategoryPage />} />
           {/* Changed :topicId to :topicSlug */}
           <Route path="/forum/topic/:topicSlug" element={<ForumTopicPage />} /> 
-          <Route path="/forum/new-topic/:categoryId" element={<ForumNewTopicPage />} />
+          {/* Changed :categoryId to :categorySlug here */}
+          <Route path="/forum/new-topic/:categorySlug" element={<ForumNewTopicPage />} />
           
           {/* Staff Routes - Wrapped with StaffLayout */}
           <Route element={<StaffLayout />}>
