@@ -136,6 +136,7 @@ const Footer = () => {
         
         <div className="mt-12 pt-8 border-t border-[#666666]/20 dark:border-white/10 text-center text-gray-700 dark:text-white">
           <p>&copy; {new Date().getFullYear()} Radio Station. All rights reserved.</p>
+          <p className="text-sm mt-1">Designed and built by WingZero Designs</p>
         </div>
       </div>
     </footer>
