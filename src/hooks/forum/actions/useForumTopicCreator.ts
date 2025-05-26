@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -74,16 +75,14 @@ export const useForumTopicCreator = () => {
             user_id: user.id,
             question: input.poll.question,
             ends_at: input.poll.ends_at || null,
-            // allow_multiple_choices will default to false as per table definition
+            allow_multiple_choices: false, // Hardcoding for now, can be part of input.poll later
           })
           .select('*')
           .single();
 
         if (pollError) {
           console.error("Error creating poll, topic and post were created but poll failed:", pollError);
-          // Not rolling back topic/post for poll failure at this stage, but logging error.
-          // Could consider more complex rollback or user notification.
-          toast({ title: "Poll Creation Failed", description: "Topic was created, but the poll could not be added: " + pollError.message, variant: "warning" });
+          toast({ title: "Poll Creation Failed", description: "Topic was created, but the poll could not be added: " + pollError.message, variant: "default" }); // Changed variant
         } else if (pollData) {
           const pollOptionsToInsert = input.poll.options.map(optText => ({
             poll_id: pollData.id,
@@ -97,11 +96,12 @@ export const useForumTopicCreator = () => {
 
           if (pollOptionsError) {
             console.error("Error creating poll options:", pollOptionsError);
-            // Rollback poll?
             await supabase.from('forum_polls').delete().eq('id', pollData.id);
-            toast({ title: "Poll Options Failed", description: "Poll was not added: " + pollOptionsError.message, variant: "warning" });
+            toast({ title: "Poll Options Failed", description: "Poll was not added: " + pollOptionsError.message, variant: "default" }); // Changed variant
           } else if (pollOptionsData) {
-            createdPoll = { ...pollData, options: pollOptionsData as ForumPollOption[], totalVotes: 0 };
+            // Recalculate vote_count for options, even if trigger should handle it, to ensure UI consistency immediately
+            const optionsWithCounts = pollOptionsData.map(opt => ({ ...opt, vote_count: 0 })) as ForumPollOption[];
+            createdPoll = { ...pollData, options: optionsWithCounts, totalVotes: 0, allow_multiple_choices: pollData.allow_multiple_choices };
           }
         }
       }
@@ -113,7 +113,8 @@ export const useForumTopicCreator = () => {
       // Handle mention notifications for the first post
       const mentionedUserIds = extractMentionedUserIds(input.content);
       if (mentionedUserIds.length > 0) {
-        const contentPreview = `${user.user_metadata?.display_name || user.email || 'Someone'} mentioned you in the new topic "${topicData.title}"`;
+        const displayName = user.user_metadata?.display_name || user.email?.split('@')[0] || 'Someone';
+        const contentPreview = `${displayName} mentioned you in the new topic "${topicData.title}"`;
         for (const mentionedUserId of mentionedUserIds) {
           if (mentionedUserId !== user.id) { // Don't notify self
             await createForumNotification(
@@ -141,15 +142,3 @@ export const useForumTopicCreator = () => {
 
   return { createTopic, submitting };
 };
-
-// NOTE: You'll need to create `src/utils/slugUtils.ts` if it doesn't exist.
-// A simple implementation for `generateSlug` could be:
-// export const generateSlug = (title: string): string => {
-//   return title
-//     .toLowerCase()
-//     .trim()
-//     .replace(/[^\w\s-]/g, '') // Remove non-word characters except spaces and hyphens
-//     .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
-//     .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
-// };
-// Please let me know if you want me to create this slugUtils.ts file.
