@@ -30,6 +30,12 @@ interface TopicViewProps {
   loadingData: boolean;
   handlePollVote: (optionId: string) => Promise<void>;
   isSubmittingVote: boolean;
+  onOpenReportDialog: ( // Add this prop
+    contentType: 'post' | 'topic',
+    contentId: string,
+    reportedUserId: string,
+    contentPreview?: string
+  ) => void;
 }
 
 const TopicView: React.FC<TopicViewProps> = ({
@@ -55,7 +61,12 @@ const TopicView: React.FC<TopicViewProps> = ({
   loadingData,
   handlePollVote,
   isSubmittingVote,
+  onOpenReportDialog, // Destructure prop
 }) => {
+
+  const handleReportTopic = () => {
+    onOpenReportDialog('topic', topic.id, topic.user_id, topic.title);
+  };
 
   return (
     <div className="max-w-5xl mx-auto px-2 sm:px-4 lg:px-6 py-8">
@@ -63,6 +74,8 @@ const TopicView: React.FC<TopicViewProps> = ({
         topic={topic}
         categorySlug={categorySlug}
         onReplyClick={() => replyFormRef.current?.scrollIntoView({ behavior: 'smooth' })}
+        onReportTopic={handleReportTopic} // Pass handler for topic reporting
+        userCanReport={!!user} // Pass flag to enable/disable report button based on user login
       />
 
       {/* Render PollDisplay if poll data exists */}
@@ -93,6 +106,7 @@ const TopicView: React.FC<TopicViewProps> = ({
             isTopicLocked={topic.is_locked}
             isProcessingAction={isProcessingPostAction || loadingData || isSubmittingVote}
             topicTitle={topic.title}
+            onReportPost={() => onOpenReportDialog('post', post.id, post.user_id, post.content.substring(0, 100) + (post.content.length > 100 ? '...' : ''))} // Pass handler for post reporting
           />
         ))}
       </div>
@@ -117,7 +131,6 @@ const TopicView: React.FC<TopicViewProps> = ({
             onSubmitReply={handleSubmitReply}
             isSubmitting={isSubmittingReply}
             isLocked={topic.is_locked}
-            // currentUser prop removed as ReplyFormCard uses useAuth()
           />
         </div>
       )}

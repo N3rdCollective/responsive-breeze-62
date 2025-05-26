@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { useForumTopic } from "@/hooks/forum/useForumTopic";
@@ -7,10 +7,12 @@ import { useQuoteHandler } from "@/hooks/forum/topic/useQuoteHandler";
 import TopicLoadingStates from "@/components/forum/TopicPage/TopicLoadingStates";
 import TopicView from "@/components/forum/TopicPage/TopicView";
 import TopicDialogs from "@/components/forum/TopicPage/TopicDialogs";
+import ReportContentDialog from "@/components/moderation/ReportContentDialog"; // Import ReportContentDialog
 import { useForumPagination } from "@/hooks/forum/useForumPagination";
 import { usePollVoting } from "@/hooks/forum/topic/usePollVoting";
 import { usePostHistoryDialog } from "@/hooks/forum/topic/usePostHistoryDialog";
 import { useDirectMessagingHandler } from "@/hooks/forum/topic/useDirectMessagingHandler";
+import { ForumPost } from "@/types/forum";
 
 const ForumTopicPage = () => {
   const navigate = useNavigate();
@@ -68,6 +70,37 @@ const ForumTopicPage = () => {
     userId: user?.id,
     onVoteSuccess: refreshTopicData,
   });
+
+  // State for ReportContentDialog
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [reportDialogData, setReportDialogData] = useState<{
+    contentType: 'post' | 'topic';
+    contentId: string;
+    reportedUserId: string;
+    contentPreview?: string;
+    topicId?: string;
+  } | null>(null);
+
+  const handleOpenReportDialog = (
+    contentType: 'post' | 'topic',
+    contentId: string,
+    reportedUserId: string,
+    contentPreview?: string
+  ) => {
+    if (!user) {
+      // Optionally, prompt user to log in or show a toast
+      console.warn("User must be logged in to report content.");
+      return;
+    }
+    setReportDialogData({
+      contentType,
+      contentId,
+      reportedUserId,
+      contentPreview,
+      topicId: topic?.id, // Always pass current topic ID
+    });
+    setShowReportDialog(true);
+  };
   
   useEffect(() => {
     if (!authLoading && !user) {
@@ -116,12 +149,13 @@ const ForumTopicPage = () => {
             handleOpenDeleteDialog={handleOpenDeleteDialog}
             handleQuotePost={handleQuotePost}
             handleToggleReaction={handleToggleReaction}
-            handleOpenPostHistoryDialog={handleOpenPostHistoryDialog} // This comes from the new hook
-            handleStartDirectMessage={handleStartDirectMessage} // This comes from the new hook
+            handleOpenPostHistoryDialog={handleOpenPostHistoryDialog}
+            handleStartDirectMessage={handleStartDirectMessage}
             isProcessingPostAction={isProcessingPostAction}
             replyFormRef={replyFormRef}
             handlePollVote={handlePollVote}
             isSubmittingVote={isSubmittingVote}
+            onOpenReportDialog={handleOpenReportDialog} // Pass handler to TopicView
           />
           <TopicDialogs
             editingPost={editingPost}
@@ -134,11 +168,23 @@ const ForumTopicPage = () => {
             handleSaveEditedPost={handleSaveEditedPost}
             handleCloseDeleteDialog={handleCloseDeleteDialog}
             handleConfirmDeletePost={handleConfirmDeletePost}
-            showPostHistoryDialog={showPostHistoryDialog} // From new hook
-            postHistoryPostId={postHistoryPostId} // From new hook
-            postHistoryTitle={postHistoryTitle} // From new hook
-            handleClosePostHistoryDialog={handleClosePostHistoryDialog} // From new hook
+            showPostHistoryDialog={showPostHistoryDialog}
+            postHistoryPostId={postHistoryPostId}
+            postHistoryTitle={postHistoryTitle}
+            handleClosePostHistoryDialog={handleClosePostHistoryDialog}
           />
+          {/* Render ReportContentDialog */}
+          {reportDialogData && (
+            <ReportContentDialog
+              isOpen={showReportDialog}
+              onOpenChange={setShowReportDialog}
+              contentType={reportDialogData.contentType}
+              contentId={reportDialogData.contentId}
+              reportedUserId={reportDialogData.reportedUserId}
+              contentPreview={reportDialogData.contentPreview}
+              topicId={reportDialogData.topicId}
+            />
+          )}
         </>
       )}
     </div>

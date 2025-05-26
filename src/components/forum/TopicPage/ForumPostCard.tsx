@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { MessageSquareText, ThumbsUp, Edit3, Trash2, Lock, QuoteIcon, History, Mail } from 'lucide-react';
+import { MessageSquareText, ThumbsUp, Edit3, Trash2, Lock, QuoteIcon, History, Mail, Flag } from 'lucide-react';
 import { ForumPost } from '@/types/forum';
 import type { User } from '@supabase/supabase-js';
 import ForumUserProfileInfo from '@/components/forum/ForumUserProfileInfo';
@@ -23,6 +22,7 @@ interface ForumPostCardProps {
   isProcessingAction: boolean;
   topicTitle?: string;
   onStartDirectMessage?: (targetUserId: string) => void;
+  onReportPost: () => void;
 }
 
 const ForumPostCard: React.FC<ForumPostCardProps> = ({
@@ -38,9 +38,11 @@ const ForumPostCard: React.FC<ForumPostCardProps> = ({
   isProcessingAction,
   topicTitle,
   onStartDirectMessage,
+  onReportPost,
 }) => {
   const userIsAuthor = currentUser && post.user_id === currentUser.id;
   const userCanInteract = !!currentUser;
+  const userCanReport = !!currentUser && currentUser.id !== post.user_id;
 
   const displayName = post.profile?.display_name || post.profile?.username || 'Anonymous User';
   const avatarFallback = displayName.charAt(0).toUpperCase();
@@ -107,7 +109,7 @@ const ForumPostCard: React.FC<ForumPostCardProps> = ({
       </CardContent>
       <CardFooter className="p-4 border-t dark:border-gray-700/50 flex flex-wrap items-center justify-between gap-2">
         
-        <div className="flex items-center gap-1 sm:gap-2"> {/* Adjusted gap for responsiveness */}
+        <div className="flex items-center gap-1 sm:gap-2"> {/* Interactions */}
           {userCanInteract && (
             <Button
               variant="ghost"
@@ -145,8 +147,21 @@ const ForumPostCard: React.FC<ForumPostCardProps> = ({
               History
             </Button>
           )}
+          {userCanReport && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onReportPost}
+              disabled={isProcessingAction || isTopicLocked}
+              className="text-muted-foreground hover:text-destructive dark:hover:text-destructive-foreground"
+              title="Report this post"
+            >
+              <Flag className="mr-1 h-4 w-4" />
+              Report
+            </Button>
+          )}
         </div>
-        <div className="flex items-center gap-1 sm:gap-2"> {/* Adjusted gap */}
+        <div className="flex items-center gap-1 sm:gap-2"> {/* Author Actions */}
           {userIsAuthor && !isTopicLocked && (
             <>
               <Button
@@ -171,7 +186,7 @@ const ForumPostCard: React.FC<ForumPostCardProps> = ({
               </Button>
             </>
           )}
-          {isTopicLocked && (
+          {isTopicLocked && !userIsAuthor && (
             <div className="flex items-center text-sm text-amber-600 dark:text-amber-400">
               <Lock className="mr-1 h-4 w-4" />
               Topic Locked
