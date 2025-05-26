@@ -13,7 +13,7 @@ export interface ContentReport {
   updated_at: string;
   reporter_name: string;
   reporter_avatar: string;
-  reported_user_id: string; // Added this field
+  reported_user_id: string; 
   reported_user_name: string;
   reported_user_avatar: string;
   topic_id: string | null;
@@ -29,8 +29,8 @@ export interface NewContentReportPayload {
   contentId: string;
   reportedUserId: string;
   reportReason: string;
-  contentPreview?: string; // Optional: a snippet of the content being reported
-  topicId?: string; // Optional: if the content is a post, its parent topic ID
+  contentPreview?: string; 
+  topicId?: string; 
 }
 
 export const useContentReports = () => {
@@ -211,31 +211,75 @@ export const useContentReports = () => {
     }
   };
 
-  // Placeholder function for removing content
   const removeContentOnDb = async (contentId: string, contentType: 'post' | 'topic'): Promise<boolean> => {
-    console.log(`Simulating removal of ${contentType} with ID: ${contentId}`);
-    // In a real scenario, this would involve:
-    // 1. Supabase call to delete/archive the post or topic.
-    // 2. For topics, consider what happens to its posts.
-    // For now, we just log and toast success.
-    toast({
-      title: "Content Action (Simulated)",
-      description: `${contentType === 'post' ? 'Post' : 'Topic'} with ID ${contentId} would be removed.`,
-    });
-    return true; 
+    try {
+      let tableName: string;
+      if (contentType === 'post') {
+        tableName = 'forum_posts';
+      } else if (contentType === 'topic') {
+        tableName = 'forum_topics';
+      } else {
+        toast({ title: "Error", description: "Invalid content type for removal.", variant: "destructive" });
+        return false;
+      }
+
+      const { error } = await supabase
+        .from(tableName)
+        .delete()
+        .eq('id', contentId);
+
+      if (error) {
+        console.error(`Error removing ${contentType}:`, error);
+        toast({ title: "Error", description: `Failed to remove ${contentType}.`, variant: "destructive" });
+        return false;
+      }
+
+      toast({ title: "Content Removed", description: `The ${contentType} has been successfully removed.` });
+      return true;
+    } catch (err: any) {
+      console.error(`Error removing ${contentType}:`, err);
+      toast({ title: "Error", description: `An unexpected error occurred while removing ${contentType}.`, variant: "destructive" });
+      return false;
+    }
   };
 
-  // Placeholder function for locking a topic
-  const lockTopicOnDb = async (topicId: string): Promise<boolean> => {
-    console.log(`Simulating locking of topic with ID: ${topicId}`);
-    // In a real scenario, this would involve:
-    // 1. Supabase call to update the 'is_locked' status of the forum_topics table.
-    // For now, we just log and toast success.
-    toast({
-      title: "Topic Action (Simulated)",
-      description: `Topic with ID ${topicId} would be locked/unlocked.`,
-    });
-    return true;
+  const lockTopicOnDb = async (topicId: string): Promise<{ success: boolean; locked?: boolean }> => {
+    try {
+      const { data: topicData, error: fetchError } = await supabase
+        .from('forum_topics')
+        .select('is_locked')
+        .eq('id', topicId)
+        .single();
+
+      if (fetchError || !topicData) {
+        console.error('Error fetching topic lock status:', fetchError);
+        toast({ title: "Error", description: "Could not fetch topic details to update lock status.", variant: "destructive" });
+        return { success: false };
+      }
+
+      const newLockStatus = !topicData.is_locked;
+
+      const { error: updateError } = await supabase
+        .from('forum_topics')
+        .update({ is_locked: newLockStatus })
+        .eq('id', topicId);
+
+      if (updateError) {
+        console.error('Error updating topic lock status:', updateError);
+        toast({ title: "Error", description: "Failed to update topic lock status.", variant: "destructive" });
+        return { success: false };
+      }
+
+      toast({ 
+        title: "Topic Status Updated", 
+        description: `Topic has been ${newLockStatus ? 'locked' : 'unlocked'}.` 
+      });
+      return { success: true, locked: newLockStatus };
+    } catch (err: any) {
+      console.error('Error updating topic lock status:', err);
+      toast({ title: "Error", description: "An unexpected error occurred while updating topic lock status.", variant: "destructive" });
+      return { success: false };
+    }
   };
 
   useEffect(() => {
@@ -250,7 +294,7 @@ export const useContentReports = () => {
     updateReportStatus,
     createModerationAction,
     createContentReport,
-    removeContentOnDb, // Export new function
-    lockTopicOnDb,     // Export new function
+    removeContentOnDb,
+    lockTopicOnDb,
   };
 };

@@ -1,9 +1,20 @@
-
 import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-type EntityType = 'post' | 'staff' | 'settings' | 'video' | 'sponsor' | 'personality' | 'show' | 'artist' | 'forum_category' | 'forum_topic';
+type EntityType = 
+  | 'post' 
+  | 'staff' 
+  | 'settings' 
+  | 'video' 
+  | 'sponsor' 
+  | 'personality' 
+  | 'show' 
+  | 'artist' 
+  | 'forum_category' 
+  | 'forum_topic'
+  | 'user'; // Added 'user'
+
 type ActionType = 
   | 'login' 
   | 'logout'
@@ -41,6 +52,10 @@ type ActionType =
   | 'lock_forum_topic'
   | 'unlock_forum_topic'
   | 'delete_forum_topic'
+  | 'delete_forum_post' // Added
+  | 'warn_user' // Added
+  | 'mark_content_for_edit' // Added
+  | 'mark_topic_for_move' // Added
   | string;
 
 export const useStaffActivityLogger = () => {
@@ -54,7 +69,7 @@ export const useStaffActivityLogger = () => {
     details?: any
   ) => {
     try {
-      console.log("Logging activity:", { actionType, description, entityType, entityId });
+      console.log("Logging activity:", { actionType, description, entityType, entityId, details });
       
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {

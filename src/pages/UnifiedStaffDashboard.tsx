@@ -52,12 +52,14 @@ import ReportDetails from '@/components/staff/moderator-dashboard/ReportDetails'
 import { useContentReports, ContentReport } from '@/hooks/moderation/useContentReports';
 import { useModerationStats } from '@/hooks/moderation/useModerationStats';
 import { useUserManagement, User } from '@/hooks/admin/useUserManagement';
+import { useStaffActivityLogger } from '@/hooks/useStaffActivityLogger';
 
 const UnifiedStaffDashboard = () => {
   const { toast } = useToast();
   const [isManageStaffOpen, setIsManageStaffOpen] = useState(false);
   const [isProfileEditorOpen, setIsProfileEditorOpen] = useState(false);
   const { staffName, isAdmin, isLoading: authLoading, handleLogout, userRole } = useStaffAuth();
+  const { logActivity } = useStaffActivityLogger();
   
   const [activeTab, setActiveTab] = useState(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -143,43 +145,61 @@ const UnifiedStaffDashboard = () => {
   ) => {
     console.log(`Taking action "${action}" on report ${reportId}`, details);
     
+    if ((action === 'ban_user' || action === 'warn_user') && !moderationNote.trim()) {
+      toast({ title: "Missing Note", description: "A moderation note is required for this action.", variant: "destructive" });
+      return;
+    }
+
     try {
       const actionLogged = await createModerationAction(reportId, action, moderationNote);
       if (!actionLogged) {
-        toast({ title: "Error", description: "Failed to log moderation action.", variant: "destructive" });
-        return;
+        toast({ title: "Error", description: "Failed to log moderation action entry.", variant: "destructive" });
+        // Decide if we should return or proceed with the action anyway. For now, let's proceed.
       }
 
       let newStatus: 'pending' | 'resolved' | 'rejected' = 'resolved';
       let actionCompleted = false;
+      let mainActionSuccessful = false;
 
       switch (action) {
         case 'dismiss':
           newStatus = 'rejected';
-          actionCompleted = await updateReportStatus(reportId, newStatus);
+          mainActionSuccessful = await updateReportStatus(reportId, newStatus);
+          if (mainActionSuccessful) {
+            logActivity('dismiss_report', `Report ${reportId} dismissed.`, 'content_report', reportId, { reason: moderationNote });
+          }
           break;
         case 'reopen':
           newStatus = 'pending';
-          actionCompleted = await updateReportStatus(reportId, newStatus);
+          mainActionSuccessful = await updateReportStatus(reportId, newStatus);
+          if (mainActionSuccessful) {
+            logActivity('reopen_report', `Report ${reportId} reopened.`, 'content_report', reportId);
+          }
           break;
         case 'ban_user':
-          if (details?.reportedUserId && moderationNote.trim()) {
-            // Call liveUpdateUserStatus for 'ban' action from UserManagement hook
+          if (details?.reportedUserId) {
             const banSuccess = await liveUpdateUserStatus(details.reportedUserId, 'banned', moderationNote, 'ban');
             if (banSuccess) {
-              actionCompleted = await updateReportStatus(reportId, 'resolved');
+              // logActivity already handled by liveUpdateUserStatus via useUserActions
+              mainActionSuccessful = await updateReportStatus(reportId, 'resolved');
             } else {
                toast({ title: "Ban Failed", description: "Could not ban the user.", variant: "destructive" });
             }
           } else {
-            toast({ title: "Missing Info", description: "User ID and reason are required to ban a user.", variant: "destructive" });
+            toast({ title: "Missing Info", description: "User ID is required to ban a user.", variant: "destructive" });
           }
           break;
         case 'remove_content':
           if (details?.contentId && details?.contentType) {
             const removeSuccess = await removeContentOnDb(details.contentId, details.contentType);
             if (removeSuccess) {
-              actionCompleted = await updateReportStatus(reportId, 'resolved');
+              logActivity(
+                details.contentType === 'post' ? 'delete_forum_post' : 'delete_forum_topic', 
+                `${details.contentType} removed due to report ${reportId}. Note: ${moderationNote}`, 
+                details.contentType === 'post' ? 'post' : 'forum_topic', 
+                details.contentId
+              );
+              mainActionSuccessful = await updateReportStatus(reportId, 'resolved');
             }
           } else {
             toast({ title: "Missing Info", description: "Content ID and type are required to remove content.", variant: "destructive" });
@@ -187,36 +207,79 @@ const UnifiedStaffDashboard = () => {
           break;
         case 'lock_topic':
           if (details?.topicId) {
-             // For lock_topic, we also need to handle unlocking. The action name could be 'lock_topic' or 'unlock_topic'.
-             // The lockTopicOnDb function would need to handle this logic.
-            const lockSuccess = await lockTopicOnDb(details.topicId);
-            if (lockSuccess) {
-              // Locking/unlocking a topic might not always "resolve" the report in the same way.
-              // It depends on the workflow. For now, let's assume it resolves.
-              actionCompleted = await updateReportStatus(reportId, 'resolved');
-              // You might want a different toast message here based on whether it was locked or unlocked.
-              // toast({ title: "Topic Status Changed", description: `Topic ${details.topicId} has been updated.`});
+            const lockResult = await lockTopicOnDb(details.topicId);
+            if (lockResult.success) {
+              logActivity(
+                lockResult.locked ? 'lock_forum_topic' : 'unlock_forum_topic', 
+                `Topic ${details.topicId} ${lockResult.locked ? 'locked' : 'unlocked'} due to report ${reportId}. Note: ${moderationNote}`,
+                'forum_topic', 
+                details.topicId
+              );
+              mainActionSuccessful = await updateReportStatus(reportId, 'resolved');
             }
           } else {
              toast({ title: "Missing Info", description: "Topic ID is required to lock/unlock a topic.", variant: "destructive" });
           }
           break;
-        // For 'edit_content', 'move_topic', 'warn_user', these actions resolve the report
-        // Their specific side-effects would be implemented similarly to ban_user/remove_content if they had direct DB operations
-        default: // Covers 'edit_content', 'move_topic', 'warn_user' and any other resolving action
-          actionCompleted = await updateReportStatus(reportId, 'resolved');
+        case 'warn_user':
+          if (details?.reportedUserId) {
+            const subject = "Official Warning from Staff";
+            const messageSuccess = await liveSendUserMessage(details.reportedUserId, subject, moderationNote);
+            if (messageSuccess) {
+              logActivity(
+                'warn_user',
+                `User ${details.reportedUserId} warned due to report ${reportId}. Reason: ${moderationNote}`,
+                'user',
+                details.reportedUserId,
+                { reason: moderationNote, reportId: reportId }
+              );
+              mainActionSuccessful = await updateReportStatus(reportId, 'resolved');
+              toast({ title: "User Warned", description: "Warning message sent successfully."});
+            } else {
+              toast({ title: "Warning Failed", description: "Could not send warning message.", variant: "destructive" });
+            }
+          } else {
+            toast({ title: "Missing Info", description: "User ID is required to warn a user.", variant: "destructive" });
+          }
+          break;
+        case 'edit_content':
+          logActivity(
+            'mark_content_for_edit', 
+            `Content ${details?.contentId} marked for edit due to report ${reportId}. Note: ${moderationNote}`, 
+            details?.contentType, 
+            details?.contentId
+          );
+          mainActionSuccessful = await updateReportStatus(reportId, 'resolved');
+          toast({ title: "Action Logged", description: "Content has been marked for edit."});
+          break;
+        case 'move_topic':
+          if (details?.topicId) {
+            logActivity(
+              'mark_topic_for_move', 
+              `Topic ${details.topicId} marked for move due to report ${reportId}. Note: ${moderationNote}`, 
+              'forum_topic', 
+              details.topicId
+            );
+            mainActionSuccessful = await updateReportStatus(reportId, 'resolved');
+            toast({ title: "Action Logged", description: "Topic has been marked for move."});
+          } else {
+            toast({ title: "Missing Info", description: "Topic ID is required for this action.", variant: "destructive" });
+          }
+          break;
+        default: 
+          mainActionSuccessful = await updateReportStatus(reportId, 'resolved');
+          // Generic log for other actions if any
+          logActivity(action, `Report ${reportId} actioned with '${action}'. Note: ${moderationNote}`, 'content_report', reportId);
+          toast({ title: "Action Complete", description: `Action "${action.replace(/_/g, ' ')}" was successful.` });
           break;
       }
       
+      actionCompleted = mainActionSuccessful; // If main action succeeded, consider it completed for UI update
+
       if (actionCompleted) {
         setSelectedFlagId(null);
         setModerationNote('');
         if (refreshStats) refreshStats();
-        // Specific toasts are now handled within updateReportStatus or specific action handlers.
-        // General success toast can be added here if needed for actions not covered by specific toasts.
-        if (action !== 'ban_user' && action !== 'dismiss' && action !== 'reopen' && action !== 'remove_content' && action !== 'lock_topic') {
-           toast({ title: "Action Complete", description: `Action "${action.replace(/_/g, ' ')}" was successful.` });
-        }
       }
 
     } catch (error) {
@@ -727,7 +790,6 @@ const UnifiedStaffDashboard = () => {
                           timestamp: report.action_created_at || new Date().toISOString(),
                           note: report.action_note || ''
                         } : undefined,
-                        // Pass down reported_user_id for ban action, and other IDs for relevant actions
                         reportedUserId: report.reported_user_id, 
                         topicId: report.topic_id
                       }))}
