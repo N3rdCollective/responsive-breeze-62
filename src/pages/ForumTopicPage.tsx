@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -10,6 +9,7 @@ import TopicDialogs from "@/components/forum/TopicPage/TopicDialogs";
 import { useForumPagination } from "@/hooks/forum/useForumPagination";
 import { useConversations } from "@/hooks/useConversations";
 import { useToast } from "@/hooks/use-toast";
+import { usePollVoting } from "@/hooks/forum/topic/usePollVoting";
 
 const ForumTopicPage = () => {
   const navigate = useNavigate();
@@ -72,6 +72,13 @@ const ForumTopicPage = () => {
     setPostHistoryTitle(undefined);
   };
 
+  // Instantiate the poll voting hook
+  const { handlePollVote, isVoting: isSubmittingVote } = usePollVoting({
+    pollId: topic?.poll?.id,
+    userId: user?.id,
+    onVoteSuccess: refreshTopicData,
+  });
+
   const handleStartDirectMessage = async (targetUserId: string) => {
     if (!user) {
       toast({ title: "Authentication required", description: "Please log in to send messages.", variant: "destructive" });
@@ -108,6 +115,9 @@ const ForumTopicPage = () => {
   // Log the topic data to inspect its contents, especially topic.poll
   if (topic) {
     console.log("ForumTopicPage: Topic data being passed to TopicView:", JSON.stringify(topic, null, 2));
+    if (topic.poll) {
+      console.log("ForumTopicPage: Poll specific data:", JSON.stringify(topic.poll, null, 2));
+    }
   }
 
   return (
@@ -143,6 +153,8 @@ const ForumTopicPage = () => {
             handleStartDirectMessage={handleStartDirectMessage}
             isProcessingPostAction={isProcessingPostAction}
             replyFormRef={replyFormRef}
+            handlePollVote={handlePollVote}
+            isSubmittingVote={isSubmittingVote}
           />
           <TopicDialogs
             editingPost={editingPost}

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ForumPost, ForumTopic } from '@/types/forum';
 import type { User } from '@supabase/supabase-js';
@@ -6,6 +5,7 @@ import ForumPagination from '../ForumPagination';
 import ForumPostCard from './ForumPostCard';
 import ReplyFormCard from './ReplyFormCard';
 import TopicHeaderDisplay from './TopicHeaderDisplay';
+import PollDisplay from './PollDisplay';
 
 interface TopicViewProps {
   topic: ForumTopic;
@@ -28,6 +28,8 @@ interface TopicViewProps {
   isProcessingPostAction: boolean;
   replyFormRef: React.RefObject<HTMLDivElement>;
   loadingData: boolean;
+  handlePollVote: (optionId: string) => Promise<void>;
+  isSubmittingVote: boolean;
 }
 
 const TopicView: React.FC<TopicViewProps> = ({
@@ -51,6 +53,8 @@ const TopicView: React.FC<TopicViewProps> = ({
   isProcessingPostAction,
   replyFormRef,
   loadingData,
+  handlePollVote,
+  isSubmittingVote,
 }) => {
 
   return (
@@ -60,6 +64,17 @@ const TopicView: React.FC<TopicViewProps> = ({
         categorySlug={categorySlug}
         onReplyClick={() => replyFormRef.current?.scrollIntoView({ behavior: 'smooth' })}
       />
+
+      {/* Render PollDisplay if poll data exists */}
+      {topic.poll && (
+        <PollDisplay
+          poll={topic.poll}
+          onVote={handlePollVote}
+          currentUserId={user?.id}
+          disabled={topic.is_locked || isSubmittingVote}
+          isVoting={isSubmittingVote}
+        />
+      )}
 
       {/* Posts List */}
       <div className="space-y-6 mt-6">
@@ -76,7 +91,7 @@ const TopicView: React.FC<TopicViewProps> = ({
             onViewHistory={handleOpenPostHistoryDialog}
             onStartDirectMessage={handleStartDirectMessage}
             isTopicLocked={topic.is_locked}
-            isProcessingAction={isProcessingPostAction || loadingData}
+            isProcessingAction={isProcessingPostAction || loadingData || isSubmittingVote}
             topicTitle={topic.title}
           />
         ))}
