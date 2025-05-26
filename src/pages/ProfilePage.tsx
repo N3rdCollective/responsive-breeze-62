@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { 
   Card, 
@@ -525,7 +525,7 @@ const EnhancedProfilePage = () => {
                             {forumSignature.split('\n').map((line, index) => (
                               <React.Fragment key={index}>
                                 {line}
-                                <br />
+                                {index < forumSignature.split('\n').length -1 && <br />}
                               </React.Fragment>
                             ))}
                           </blockquote>
