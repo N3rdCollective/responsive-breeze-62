@@ -7,6 +7,7 @@ import PersonalitiesPage from "@/pages/Personalities";
 import SchedulePage from "@/pages/Schedule"; 
 import AboutPage from "@/pages/About"; 
 import NewsPage from "@/pages/News"; 
+import NewsPostPage from "@/pages/NewsPost"; // Added import for NewsPostPage
 import ContactPage from "@/pages/Contact"; 
 import AuthPage from "@/pages/Auth"; 
 import MembersPage from "@/pages/MembersPage";
@@ -49,6 +50,7 @@ function App() {
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/news" element={<NewsPage />} />
+          <Route path="/news/:id" element={<NewsPostPage />} /> {/* Added route for individual news posts */}
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/auth" element={<AuthPage />} />
           
