@@ -75,7 +75,7 @@ export const useContentReports = () => {
     return 'pending';
   };
 
-  const updateReportStatus = async (reportId: string, status: 'resolved' | 'rejected') => {
+  const updateReportStatus = async (reportId: string, status: 'pending' | 'resolved' | 'rejected') => {
     try {
       const { error } = await supabase
         .from('content_reports')
@@ -94,6 +94,10 @@ export const useContentReports = () => {
 
       // Refresh reports after update
       await fetchReports();
+      toast({
+        title: "Status Updated",
+        description: `Report status changed to ${status}.`,
+      });
       return true;
     } catch (err: any) {
       console.error('Error updating report status:', err);
@@ -217,6 +221,6 @@ export const useContentReports = () => {
     fetchReports,
     updateReportStatus,
     createModerationAction,
-    createContentReport, // Export the new function
+    createContentReport,
   };
 };

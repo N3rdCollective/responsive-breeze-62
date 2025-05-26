@@ -129,24 +129,28 @@ const UnifiedStaffDashboard = () => {
     console.log(`Taking action "${action}" on report ${reportId}`);
     
     try {
+      // For "reopen", we only update status. For other actions, we log a new moderation_action.
+      // We still log a "reopen" action for audit trail.
       const actionSuccess = await createModerationAction(reportId, action, moderationNote);
       
       if (actionSuccess) {
-        let newStatus: 'resolved' | 'rejected' = 'resolved';
+        let newStatus: 'resolved' | 'rejected' | 'pending' = 'resolved'; // Allow 'pending'
+        
         if (action === 'dismiss') {
           newStatus = 'rejected';
+        } else if (action === 'reopen') {
+          newStatus = 'pending'; // Correctly set to pending for reopen
         }
-        
+        // For actions other than 'reopen' or 'dismiss', it implies resolution.
+        // e.g. 'remove_content', 'warn_user' etc. typically resolve the report.
+
         const updateSuccess = await updateReportStatus(reportId, newStatus);
         
         if (updateSuccess) {
           setSelectedFlagId(null);
           setModerationNote('');
           if (refreshStats) refreshStats();
-          toast({
-            title: "Action completed",
-            description: `Report has been ${action === 'dismiss' ? 'dismissed' : 'resolved'}.`,
-          });
+          // Toast message is now handled within updateReportStatus for clarity
         }
       }
     } catch (error) {
