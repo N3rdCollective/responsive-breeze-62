@@ -806,16 +806,18 @@ const UnifiedStaffDashboard = () => {
       {/* Report Details Modal */}
       {selectedReportData && (
         <ReportDetails
-          reportData={{ // Spread the selectedReportData which now includes reported_user_id
-            ...selectedReportData,
-            contentType: selectedReportData.content_type as 'post' | 'topic', // Ensure type assertion
-            content: selectedReportData.content_preview || '', // Ensure content is not null
-             reporter: { // Mocked some data not available in ContentReport
+          reportData={{
+            id: selectedReportData.id,
+            contentType: selectedReportData.content_type as 'post' | 'topic',
+            contentId: selectedReportData.content_id,
+            content: selectedReportData.content_preview || 'No content preview available.',
+            reportReason: selectedReportData.report_reason,
+            reporter: {
               id: `reporter-detail-${selectedReportData.reporter_name}-${selectedReportData.id}`,
               name: selectedReportData.reporter_name,
               avatar: selectedReportData.reporter_avatar || '/placeholder.svg'
             },
-            author: { // Mocked some data not available in ContentReport
+            author: {
               id: `author-detail-${selectedReportData.reported_user_name}-${selectedReportData.id}`,
               name: selectedReportData.reported_user_name,
               avatar: selectedReportData.reported_user_avatar || '/placeholder.svg',
@@ -823,25 +825,24 @@ const UnifiedStaffDashboard = () => {
               postCount: 0, // Placeholder
               previousFlags: 0 // Placeholder
             },
-            topic: { // Mocked some data not available in ContentReport
+            timestamp: selectedReportData.created_at,
+            topic: {
               id: selectedReportData.topic_id || `topic-detail-${selectedReportData.id}`,
               title: selectedReportData.topic_title || 'Unknown Topic',
               category: 'General' // Placeholder
             },
-             resolution: selectedReportData.action_type ? {
+            status: selectedReportData.status,
+            resolution: selectedReportData.action_type ? {
               action: selectedReportData.action_type,
               moderator: selectedReportData.moderator_name || 'Unknown',
               timestamp: selectedReportData.action_created_at || new Date().toISOString(),
               note: selectedReportData.action_note || ''
             } : undefined,
-            // Explicitly pass reportedUserId, contentId, contentType, topicId
             reportedUserId: selectedReportData.reported_user_id,
-            // contentId: selectedReportData.content_id, - already part of selectedReportData
-            // contentType: selectedReportData.content_type as 'post' | 'topic', - already part of selectedReportData
-            // topicId: selectedReportData.topic_id - already part of selectedReportData
+            topicId: selectedReportData.topic_id,
           }}
           onClose={() => setSelectedFlagId(null)}
-          onAction={handleModerationAction} // This function now expects the details object
+          onAction={handleModerationAction}
           moderationNote={moderationNote}
           setModerationNote={setModerationNote}
         />
