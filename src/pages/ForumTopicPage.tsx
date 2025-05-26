@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+
+import React, { useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { useForumTopic } from "@/hooks/forum/useForumTopic";
 import { useQuoteHandler } from "@/hooks/forum/topic/useQuoteHandler";
@@ -7,14 +8,13 @@ import TopicLoadingStates from "@/components/forum/TopicPage/TopicLoadingStates"
 import TopicView from "@/components/forum/TopicPage/TopicView";
 import TopicDialogs from "@/components/forum/TopicPage/TopicDialogs";
 import { useForumPagination } from "@/hooks/forum/useForumPagination";
-import { useConversations } from "@/hooks/useConversations";
-import { useToast } from "@/hooks/use-toast";
 import { usePollVoting } from "@/hooks/forum/topic/usePollVoting";
+import { usePostHistoryDialog } from "@/hooks/forum/topic/usePostHistoryDialog";
+import { useDirectMessagingHandler } from "@/hooks/forum/topic/useDirectMessagingHandler";
 
 const ForumTopicPage = () => {
   const navigate = useNavigate();
   const replyFormRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
   
   const { page, setPage: setPageViaPaginationHook } = useForumPagination();
   
@@ -53,54 +53,21 @@ const ForumTopicPage = () => {
     replyFormRef,
   });
 
-  const { startOrCreateConversation } = useConversations();
+  const {
+    showPostHistoryDialog,
+    postHistoryPostId,
+    postHistoryTitle,
+    handleOpenPostHistoryDialog,
+    handleClosePostHistoryDialog,
+  } = usePostHistoryDialog();
 
-  // State for Post Edit History Dialog
-  const [showPostHistoryDialog, setShowPostHistoryDialog] = useState(false);
-  const [postHistoryPostId, setPostHistoryPostId] = useState<string | null>(null);
-  const [postHistoryTitle, setPostHistoryTitle] = useState<string | undefined>(undefined);
+  const { handleStartDirectMessage } = useDirectMessagingHandler({ currentUser: user });
 
-  const handleOpenPostHistoryDialog = (postId: string, postTitle?: string) => {
-    setPostHistoryPostId(postId);
-    setPostHistoryTitle(postTitle);
-    setShowPostHistoryDialog(true);
-  };
-
-  const handleClosePostHistoryDialog = () => {
-    setShowPostHistoryDialog(false);
-    setPostHistoryPostId(null);
-    setPostHistoryTitle(undefined);
-  };
-
-  // Instantiate the poll voting hook
   const { handlePollVote, isVoting: isSubmittingVote } = usePollVoting({
     pollId: topic?.poll?.id,
     userId: user?.id,
     onVoteSuccess: refreshTopicData,
   });
-
-  const handleStartDirectMessage = async (targetUserId: string) => {
-    if (!user) {
-      toast({ title: "Authentication required", description: "Please log in to send messages.", variant: "destructive" });
-      navigate('/auth');
-      return;
-    }
-    if (user.id === targetUserId) {
-      toast({ title: "Info", description: "You cannot start a conversation with yourself.", variant: "default" });
-      return;
-    }
-    try {
-      const conversationId = await startOrCreateConversation(targetUserId);
-      if (conversationId) {
-        navigate('/messages', { state: { selectConversationWithUser: targetUserId, conversationId: conversationId } });
-      } else {
-        toast({ title: "Error", description: "Could not start or find conversation.", variant: "destructive" });
-      }
-    } catch (error: any) {
-      console.error("Failed to start direct message:", error);
-      toast({ title: "Error", description: error.message || "Failed to start conversation.", variant: "destructive" });
-    }
-  };
   
   useEffect(() => {
     if (!authLoading && !user) {
@@ -149,8 +116,8 @@ const ForumTopicPage = () => {
             handleOpenDeleteDialog={handleOpenDeleteDialog}
             handleQuotePost={handleQuotePost}
             handleToggleReaction={handleToggleReaction}
-            handleOpenPostHistoryDialog={handleOpenPostHistoryDialog}
-            handleStartDirectMessage={handleStartDirectMessage}
+            handleOpenPostHistoryDialog={handleOpenPostHistoryDialog} // This comes from the new hook
+            handleStartDirectMessage={handleStartDirectMessage} // This comes from the new hook
             isProcessingPostAction={isProcessingPostAction}
             replyFormRef={replyFormRef}
             handlePollVote={handlePollVote}
@@ -167,10 +134,10 @@ const ForumTopicPage = () => {
             handleSaveEditedPost={handleSaveEditedPost}
             handleCloseDeleteDialog={handleCloseDeleteDialog}
             handleConfirmDeletePost={handleConfirmDeletePost}
-            showPostHistoryDialog={showPostHistoryDialog}
-            postHistoryPostId={postHistoryPostId}
-            postHistoryTitle={postHistoryTitle}
-            handleClosePostHistoryDialog={handleClosePostHistoryDialog}
+            showPostHistoryDialog={showPostHistoryDialog} // From new hook
+            postHistoryPostId={postHistoryPostId} // From new hook
+            postHistoryTitle={postHistoryTitle} // From new hook
+            handleClosePostHistoryDialog={handleClosePostHistoryDialog} // From new hook
           />
         </>
       )}
