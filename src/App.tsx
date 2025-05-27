@@ -1,3 +1,4 @@
+
 import { Route, Routes, Outlet, Navigate } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AuthProvider from "@/hooks/useAuth"; 
@@ -24,7 +25,7 @@ import ForumSearchResultsPage from "@/pages/ForumSearchResultsPage"; // Import t
 
 {/* Staff Pages */}
 import StaffLogin from "@/pages/StaffLogin";
-import StaffDashboard from "@/pages/StaffDashboard"; // Legacy
+// import StaffDashboard from "@/pages/StaffDashboard"; // This line will be removed
 import StaffNewsEditor from "@/pages/StaffNewsEditor"; 
 import StaffShowsManager from "@/pages/StaffShowsManager"; 
 import StaffForumManager from "@/pages/StaffForumManagementPage";
@@ -101,3 +102,4 @@ function App() {
 }
 
 export default App;
+
