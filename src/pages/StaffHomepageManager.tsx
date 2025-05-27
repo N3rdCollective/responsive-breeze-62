@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -16,14 +16,26 @@ import {
   ArrowLeft, 
   Home, 
   Eye,
-  ImageIcon, // Renamed to avoid conflict with ImageIcon component
+  ImageIcon,
   Radio,
   BarChart3, // Icon for Stats
-  Megaphone // Icon for CTA
+  Megaphone, // Icon for CTA
+  LayoutGrid // Icon for Section Visibility
 } from "lucide-react";
 import TitleUpdater from "@/components/TitleUpdater";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import LoadingSpinner from "@/components/staff/LoadingSpinner"; // For loading state
+import LoadingSpinner from "@/components/staff/LoadingSpinner";
+import { HomeSettings, defaultSettings as defaultHomeSettingsBase } from "@/components/staff/home/context/HomeSettingsContext";
+import useStaffActivityLogger from "@/hooks/useStaffActivityLogger";
+
+// Define defaultHomeSettings without the id property initially for new records
+const defaultHomeSettings: Omit<HomeSettings, 'id' | 'created_at' | 'updated_at'> = {
+  show_hero: true,
+  show_news_section: true,
+  show_personalities: true,
+  show_live_banner: true,
+  show_stats_section: true,
+};
 
 interface HomepageContent {
   id?: number; // id is not directly editable but used for upsert
@@ -67,11 +79,16 @@ const defaultHomepageContent: HomepageContent = {
 
 const StaffHomepageManager = () => {
   const navigate = useNavigate();
-  const { userRole, isLoading: authLoading } = useStaffAuth();
+  const { userRole, isLoading: authLoading, user } = useStaffAuth();
   const { toast } = useToast();
+  const { logActivity } = useStaffActivityLogger();
   
   const [content, setContent] = useState<HomepageContent>(defaultHomepageContent);
-  const [isLoading, setIsLoading] = useState(true);
+  const [homeSettings, setHomeSettings] = useState<HomeSettings>({...defaultHomeSettingsBase, id: ''}); // Initialize with base defaults + empty id
+  const [homeSettingsId, setHomeSettingsId] = useState<string | null>(null);
+  
+  const [isLoadingContent, setIsLoadingContent] = useState(true);
+  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
   // Permissions check
@@ -89,12 +106,13 @@ const StaffHomepageManager = () => {
     }
     if (!authLoading && canManageHomepage) {
       loadHomepageContent();
+      loadHomeSettings();
     }
-  }, [authLoading, canManageHomepage, navigate, toast]);
+  }, [authLoading, canManageHomepage, navigate, toast, loadHomepageContent, loadHomeSettings]);
 
-  const loadHomepageContent = async () => {
+  const loadHomepageContent = useCallback(async () => {
     try {
-      setIsLoading(true);
+      setIsLoadingContent(true);
       const { data, error } = await supabase
         .from('homepage_content')
         .select('*')
@@ -118,32 +136,112 @@ const StaffHomepageManager = () => {
       });
       setContent(defaultHomepageContent); // Fallback to defaults on error
     } finally {
-      setIsLoading(false);
+      setIsLoadingContent(false);
     }
-  };
+  }, [toast]);
 
-  const handleSave = async () => {
+  const loadHomeSettings = useCallback(async () => {
     try {
-      setIsSaving(true);
-      const { error } = await supabase
-        .from('homepage_content')
-        .upsert({
-          ...content,
-          id: 1, // Ensure we are updating the single row
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'id' }); // Specify conflict resolution
+      setIsLoadingSettings(true);
+      const { data, error } = await supabase
+        .from('home_settings')
+        .select('*')
+        .limit(1) // Assuming a single row for global home settings
+        .maybeSingle();
 
       if (error) throw error;
 
+      if (data) {
+        setHomeSettings(data as HomeSettings);
+        setHomeSettingsId(data.id);
+      } else {
+        // Use default settings but don't set an ID yet
+        setHomeSettings({...defaultHomeSettingsBase, id: '', created_at: undefined, updated_at: undefined });
+        setHomeSettingsId(null);
+      }
+    } catch (error) {
+      console.error('Error loading home settings:', error);
+      toast({
+        title: "Error Loading Settings",
+        description: "Could not load home settings. Using default values.",
+        variant: "destructive"
+      });
+      setHomeSettings({...defaultHomeSettingsBase, id: '', created_at: undefined, updated_at: undefined });
+      setHomeSettingsId(null);
+    } finally {
+      setIsLoadingSettings(false);
+    }
+  }, [toast]);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    let contentSaved = false;
+    let settingsSaved = false;
+
+    try {
+      // Save homepage_content
+      const contentToSave = {
+        ...content,
+        id: 1, // Ensure we are updating the single row
+        updated_at: new Date().toISOString()
+      };
+      const { error: contentError } = await supabase
+        .from('homepage_content')
+        .upsert(contentToSave, { onConflict: 'id' }); // Specify conflict resolution
+
+      if (contentError) throw contentError;
+      contentSaved = true;
+      if (user) {
+        await logActivity('update_homepage_content', 'Updated homepage textual content.', 'homepage_content', 1, contentToSave);
+      }
+      
+      // Save home_settings
+      const settingsToSave = {
+        ...homeSettings,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (homeSettingsId) { // Update existing settings
+        const { error: settingsError } = await supabase
+          .from('home_settings')
+          .update(settingsToSave)
+          .eq('id', homeSettingsId);
+        if (settingsError) throw settingsError;
+      } else { // Insert new settings
+        // Remove id if it's an empty string from default state
+        const { id, ...settingsForInsert } = settingsToSave;
+        const { data: newSettings, error: settingsError } = await supabase
+          .from('home_settings')
+          .insert(settingsForInsert)
+          .select()
+          .single();
+        if (settingsError) throw settingsError;
+        if (newSettings) {
+          setHomeSettings(newSettings as HomeSettings); // Update state with new ID and timestamps
+          setHomeSettingsId(newSettings.id);
+        }
+      }
+      settingsSaved = true;
+      if (user) {
+         await logActivity('update_homepage_settings', 'Updated homepage section visibility.', 'settings', homeSettingsId || 'new_setting', settingsToSave);
+      }
+
       toast({
         title: "Success",
-        description: "Homepage content updated successfully.",
+        description: "Homepage content and settings updated successfully.",
       });
+
     } catch (error) {
-      console.error('Error saving homepage content:', error);
+      console.error('Error saving homepage data:', error);
+      let errorMessage = `Failed to save data: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      if (contentSaved && !settingsSaved) {
+        errorMessage = `Homepage content saved, but failed to save section visibility settings: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      } else if (!contentSaved) {
+         errorMessage = `Failed to save homepage content: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      }
       toast({
         title: "Error Saving Data",
-        description: `Failed to save homepage content: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -155,7 +253,11 @@ const StaffHomepageManager = () => {
     setContent(prev => ({ ...prev, [field]: value }));
   };
 
-  if (authLoading || (isLoading && canManageHomepage)) {
+  const updateHomeSettingField = (field: keyof Pick<HomeSettings, 'show_hero' | 'show_news_section' | 'show_personalities' | 'show_live_banner' | 'show_stats_section'>, value: boolean) => {
+    setHomeSettings(prev => ({ ...prev, [field]: value }));
+  };
+
+  if (authLoading || ((isLoadingContent || isLoadingSettings) && canManageHomepage)) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -168,7 +270,7 @@ const StaffHomepageManager = () => {
   }
 
   if (!canManageHomepage && !authLoading) {
-     // This case should ideally be caught by the useEffect redirect, but as a fallback:
+    // This case should ideally be caught by the useEffect redirect, but as a fallback:
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -179,7 +281,6 @@ const StaffHomepageManager = () => {
       </div>
     );
   }
-
 
   return (
     <>
@@ -197,10 +298,10 @@ const StaffHomepageManager = () => {
               <div>
                 <h1 className="text-2xl font-bold flex items-center gap-2">
                   <Home className="h-6 w-6" />
-                  Homepage Content
+                  Homepage Content & Settings
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  Customize the main sections of your website's homepage.
+                  Customize content and section visibility of your website's homepage.
                 </p>
               </div>
             </div>
@@ -225,11 +326,22 @@ const StaffHomepageManager = () => {
           </div>
 
           <Tabs defaultValue="hero" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-2">
-              <TabsTrigger value="hero">Hero</TabsTrigger>
-              <TabsTrigger value="show">Current Show</TabsTrigger>
-              <TabsTrigger value="stats">Stats</TabsTrigger>
-              <TabsTrigger value="cta">CTA</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+              <TabsTrigger value="hero">
+                <ImageIcon className="h-4 w-4 mr-2 sm:hidden md:inline-flex" />Hero
+              </TabsTrigger>
+              <TabsTrigger value="show">
+                <Radio className="h-4 w-4 mr-2 sm:hidden md:inline-flex" />Current Show
+              </TabsTrigger>
+              <TabsTrigger value="stats">
+                <BarChart3 className="h-4 w-4 mr-2 sm:hidden md:inline-flex" />Stats
+              </TabsTrigger>
+              <TabsTrigger value="cta">
+                <Megaphone className="h-4 w-4 mr-2 sm:hidden md:inline-flex" />CTA
+              </TabsTrigger>
+              <TabsTrigger value="visibility">
+                <LayoutGrid className="h-4 w-4 mr-2 sm:hidden md:inline-flex" />Visibility
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="hero">
@@ -341,6 +453,83 @@ const StaffHomepageManager = () => {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            <TabsContent value="visibility">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Homepage Section Visibility</CardTitle>
+                  <CardDescription>Toggle which major sections appear on your homepage.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6 pt-4">
+                  <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
+                    <div>
+                      <Label htmlFor="show_hero" className="font-medium">Hero Section</Label>
+                      <p className="text-sm text-muted-foreground">
+                        The main banner at the top of the home page.
+                      </p>
+                    </div>
+                    <Switch
+                      id="show_hero"
+                      checked={homeSettings.show_hero}
+                      onCheckedChange={(checked) => updateHomeSettingField('show_hero', checked)}
+                    />
+                  </div>
+                   <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
+                    <div>
+                      <Label htmlFor="show_live_banner" className="font-medium">Live Show Banner</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Banner showing currently playing live show information.
+                      </p>
+                    </div>
+                    <Switch
+                      id="show_live_banner"
+                      checked={homeSettings.show_live_banner}
+                      onCheckedChange={(checked) => updateHomeSettingField('show_live_banner', checked)}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
+                    <div>
+                      <Label htmlFor="show_stats_section" className="font-medium">Statistics Section</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Display key statistics (listeners, shows, etc.).
+                      </p>
+                    </div>
+                    <Switch
+                      id="show_stats_section"
+                      checked={homeSettings.show_stats_section}
+                      onCheckedChange={(checked) => updateHomeSettingField('show_stats_section', checked)}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
+                    <div>
+                      <Label htmlFor="show_news_section" className="font-medium">News Section</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Display recent news articles.
+                      </p>
+                    </div>
+                    <Switch
+                      id="show_news_section"
+                      checked={homeSettings.show_news_section}
+                      onCheckedChange={(checked) => updateHomeSettingField('show_news_section', checked)}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
+                    <div>
+                      <Label htmlFor="show_personalities" className="font-medium">Personalities Slider</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Display a carousel of radio personalities.
+                      </p>
+                    </div>
+                    <Switch
+                      id="show_personalities"
+                      checked={homeSettings.show_personalities}
+                      onCheckedChange={(checked) => updateHomeSettingField('show_personalities', checked)}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
           </Tabs>
         </main>
         <Footer />

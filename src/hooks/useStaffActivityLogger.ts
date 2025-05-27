@@ -1,3 +1,4 @@
+
 import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +15,8 @@ type EntityType =
   | 'forum_category' 
   | 'forum_topic'
   | 'user' // Added 'user'
-  | 'content_report'; // Added 'content_report'
+  | 'content_report' // Added 'content_report'
+  | 'homepage_content'; // Added for homepage text content
 
 type ActionType = 
   | 'login' 
@@ -30,6 +32,8 @@ type ActionType =
   | 'approve_staff'
   | 'reject_staff'
   | 'update_settings'
+  | 'update_homepage_content' // Added for homepage text content
+  | 'update_homepage_settings' // Added for homepage section visibility
   | 'create_video'
   | 'update_video'
   | 'delete_video'
@@ -63,56 +67,83 @@ type ActionType =
 
 export const useStaffActivityLogger = () => {
   const { toast } = useToast();
-  
+  const { logActivity: originalLogActivity } = useAuthActivityLogger(); // Use the renamed original hook
+
   const logActivity = useCallback(async (
     actionType: ActionType, 
     description: string, 
     entityType?: EntityType,
-    entityId?: string,
+    entityId?: string | number, // Allow number for homepage_content id
     details?: any
   ) => {
+    // Use originalLogActivity or the direct implementation as needed
+    // For now, assuming a direct implementation similar to what was here
     try {
-      console.log("Logging activity:", { actionType, description, entityType, entityId, details });
+      console.log("Logging staff activity:", { actionType, description, entityType, entityId, details });
       
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
         console.error("Cannot log activity: No authenticated user");
+        // Potentially show a toast, but be mindful of logActivity being called in various contexts
         return null;
       }
       
       const { data, error } = await supabase.rpc("create_activity_log", {
         p_staff_id: session.user.id,
-        p_action_type: actionType,
+        p_action_type: actionType as string, // Cast to string as RPC expects text
         p_description: description,
         p_entity_type: entityType || null,
-        p_entity_id: entityId || null,
+        // Ensure p_entity_id is string or null for RPC
+        p_entity_id: entityId ? String(entityId) : null, 
         p_details: details ? JSON.stringify(details) : null
       });
 
       if (error) {
-        console.error("Error logging activity:", error);
+        console.error("Error logging staff activity:", error);
         toast({
-          title: "Error",
-          description: `Failed to log activity: ${error.message}`,
+          title: "Error Logging Activity",
+          description: `Failed to log activity: ${error.message}. Please ensure you have 'create_activity_log' permissions.`,
           variant: "destructive",
         });
         return null;
       }
       
-      console.log("Activity logged successfully:", data);
+      console.log("Staff activity logged successfully:", data);
       return data;
     } catch (error) {
-      console.error("Failed to log staff activity:", error);
+      console.error("Failed to log staff activity (catch block):", error);
       toast({
-        title: "Error",
-        description: "Failed to log activity",
+        title: "Logging Error",
+        description: "An unexpected error occurred while trying to log staff activity.",
         variant: "destructive",
       });
       return null;
     }
-  }, [toast]);
+  }, [toast]); // Removed originalLogActivity from deps if not used directly here
   
   return { logActivity };
 };
+
+// Assuming useAuthActivityLogger is a pre-existing hook for general auth logging
+// If it's meant to be the same as this, then this file should be useAuthActivityLogger
+// For now, let's create a placeholder if it doesn't exist.
+// This is a common pattern if refactoring occurred.
+const useAuthActivityLogger = () => {
+    const logActivity = useCallback(async (
+        actionType: string, 
+        description: string, 
+        entityType?: string,
+        entityId?: string | number,
+        details?: any
+      ) => {
+        console.log("Auth activity logger called (placeholder):", 
+          { actionType, description, entityType, entityId, details }
+        );
+        // Placeholder: In a real scenario, this would interact with Supabase
+        return Promise.resolve(null);
+    }, []);
+    return { logActivity };
+};
+
 
 export default useStaffActivityLogger;
