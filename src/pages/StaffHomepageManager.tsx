@@ -79,12 +79,12 @@ const defaultHomepageContent: HomepageContent = {
 
 const StaffHomepageManager = () => {
   const navigate = useNavigate();
-  const { userRole, isLoading: authLoading, user } = useStaffAuth();
+  const { userRole, isLoading: authLoading, staffId } = useStaffAuth(); // Changed: Use staffId
   const { toast } = useToast();
   const { logActivity } = useStaffActivityLogger();
   
   const [content, setContent] = useState<HomepageContent>(defaultHomepageContent);
-  const [homeSettings, setHomeSettings] = useState<HomeSettings>({...defaultHomeSettingsBase, id: ''}); // Initialize with base defaults + empty id
+  const [homeSettings, setHomeSettings] = useState<HomeSettings>({...defaultHomeSettingsBase, id: ''});
   const [homeSettingsId, setHomeSettingsId] = useState<string | null>(null);
   
   const [isLoadingContent, setIsLoadingContent] = useState(true);
@@ -94,29 +94,14 @@ const StaffHomepageManager = () => {
   // Permissions check
   const canManageHomepage = userRole === 'admin' || userRole === 'super_admin' || userRole === 'content_manager';
 
-  useEffect(() => {
-    if (!authLoading && !canManageHomepage) {
-      toast({
-        title: "Access Denied",
-        description: "You don't have permission to manage homepage content.",
-        variant: "destructive",
-      });
-      navigate('/staff/panel');
-      return;
-    }
-    if (!authLoading && canManageHomepage) {
-      loadHomepageContent();
-      loadHomeSettings();
-    }
-  }, [authLoading, canManageHomepage, navigate, toast, loadHomepageContent, loadHomeSettings]);
-
+  // Moved loadHomepageContent and loadHomeSettings before the useEffect that uses them
   const loadHomepageContent = useCallback(async () => {
     try {
       setIsLoadingContent(true);
       const { data, error } = await supabase
         .from('homepage_content')
         .select('*')
-        .eq('id', 1) // We know there's only one row with id 1
+        .eq('id', 1) 
         .maybeSingle();
 
       if (error) throw error;
@@ -124,7 +109,6 @@ const StaffHomepageManager = () => {
       if (data) {
         setContent(data);
       } else {
-        // If no data (e.g., first run after migration), use defaults
         setContent(defaultHomepageContent);
       }
     } catch (error) {
@@ -134,7 +118,7 @@ const StaffHomepageManager = () => {
         description: "Could not load homepage content. Using default values.",
         variant: "destructive"
       });
-      setContent(defaultHomepageContent); // Fallback to defaults on error
+      setContent(defaultHomepageContent); 
     } finally {
       setIsLoadingContent(false);
     }
@@ -146,7 +130,7 @@ const StaffHomepageManager = () => {
       const { data, error } = await supabase
         .from('home_settings')
         .select('*')
-        .limit(1) // Assuming a single row for global home settings
+        .limit(1) 
         .maybeSingle();
 
       if (error) throw error;
@@ -155,7 +139,6 @@ const StaffHomepageManager = () => {
         setHomeSettings(data as HomeSettings);
         setHomeSettingsId(data.id);
       } else {
-        // Use default settings but don't set an ID yet
         setHomeSettings({...defaultHomeSettingsBase, id: '', created_at: undefined, updated_at: undefined });
         setHomeSettingsId(null);
       }
@@ -173,6 +156,22 @@ const StaffHomepageManager = () => {
     }
   }, [toast]);
 
+  useEffect(() => {
+    if (!authLoading && !canManageHomepage) {
+      toast({
+        title: "Access Denied",
+        description: "You don't have permission to manage homepage content.",
+        variant: "destructive",
+      });
+      navigate('/staff/panel');
+      return;
+    }
+    if (!authLoading && canManageHomepage) {
+      loadHomepageContent();
+      loadHomeSettings();
+    }
+  }, [authLoading, canManageHomepage, navigate, toast, loadHomepageContent, loadHomeSettings]);
+
   const handleSave = async () => {
     setIsSaving(true);
     let contentSaved = false;
@@ -182,16 +181,16 @@ const StaffHomepageManager = () => {
       // Save homepage_content
       const contentToSave = {
         ...content,
-        id: 1, // Ensure we are updating the single row
+        id: 1, 
         updated_at: new Date().toISOString()
       };
       const { error: contentError } = await supabase
         .from('homepage_content')
-        .upsert(contentToSave, { onConflict: 'id' }); // Specify conflict resolution
+        .upsert(contentToSave, { onConflict: 'id' }); 
 
       if (contentError) throw contentError;
       contentSaved = true;
-      if (user) {
+      if (staffId) { // Changed: use staffId
         await logActivity('update_homepage_content', 'Updated homepage textual content.', 'homepage_content', 1, contentToSave);
       }
       
@@ -201,14 +200,13 @@ const StaffHomepageManager = () => {
         updated_at: new Date().toISOString(),
       };
 
-      if (homeSettingsId) { // Update existing settings
+      if (homeSettingsId) { 
         const { error: settingsError } = await supabase
           .from('home_settings')
           .update(settingsToSave)
           .eq('id', homeSettingsId);
         if (settingsError) throw settingsError;
-      } else { // Insert new settings
-        // Remove id if it's an empty string from default state
+      } else { 
         const { id, ...settingsForInsert } = settingsToSave;
         const { data: newSettings, error: settingsError } = await supabase
           .from('home_settings')
@@ -217,12 +215,12 @@ const StaffHomepageManager = () => {
           .single();
         if (settingsError) throw settingsError;
         if (newSettings) {
-          setHomeSettings(newSettings as HomeSettings); // Update state with new ID and timestamps
+          setHomeSettings(newSettings as HomeSettings); 
           setHomeSettingsId(newSettings.id);
         }
       }
       settingsSaved = true;
-      if (user) {
+      if (staffId) { // Changed: use staffId
          await logActivity('update_homepage_settings', 'Updated homepage section visibility.', 'settings', homeSettingsId || 'new_setting', settingsToSave);
       }
 
@@ -261,7 +259,7 @@ const StaffHomepageManager = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="flex items-center justify-center h-[calc(100vh-150px)]"> {/* Adjust height for navbar/footer */}
+        <div className="flex items-center justify-center h-[calc(100vh-150px)]">
           <LoadingSpinner />
         </div>
         <Footer />
@@ -270,7 +268,6 @@ const StaffHomepageManager = () => {
   }
 
   if (!canManageHomepage && !authLoading) {
-    // This case should ideally be caught by the useEffect redirect, but as a fallback:
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -287,8 +284,8 @@ const StaffHomepageManager = () => {
       <TitleUpdater title="Homepage Content Manager" />
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
-        {/* Increased pt-8 to pt-24 to avoid overlap with fixed Navbar */}
-        <main className="flex-grow max-w-6xl mx-auto px-4 pt-24 pb-16 w-full">
+        {/* Increased pt-8 to pt-24 to avoid overlap with fixed Navbar, then to pt-32 */}
+        <main className="flex-grow max-w-6xl mx-auto px-4 pt-32 pb-16 w-full"> {/* Increased padding-top */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-4">
               <Button variant="ghost" size="sm" onClick={() => navigate('/staff/panel')}>
@@ -529,7 +526,6 @@ const StaffHomepageManager = () => {
                 </CardContent>
               </Card>
             </TabsContent>
-
           </Tabs>
         </main>
         <Footer />
