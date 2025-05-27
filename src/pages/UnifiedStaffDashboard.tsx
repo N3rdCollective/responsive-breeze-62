@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { useToast } from "@/hooks/use-toast";
 import ManageStaffModal from "@/components/ManageStaffModal";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
@@ -388,12 +386,8 @@ const UnifiedStaffDashboard = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="flex items-center justify-center h-screen">
-          <LoadingSpinner />
-        </div>
-        <Footer />
+      <div className="flex items-center justify-center h-screen">
+        <LoadingSpinner />
       </div>
     );
   }
@@ -523,9 +517,7 @@ const UnifiedStaffDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="max-w-7xl mx-auto px-4 pt-24 pb-16">
+    <div className="max-w-7xl mx-auto">
         <div className="space-y-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
             <div className="space-y-1">
@@ -865,7 +857,6 @@ const UnifiedStaffDashboard = () => {
         isConfirmDisabled={!messageSubject.trim() || !messageContent.trim()}
       />
 
-      {/* Report Details Modal */}
       {selectedReportData && (
         <ReportDetails
           reportData={{
@@ -883,15 +874,15 @@ const UnifiedStaffDashboard = () => {
               id: `author-detail-${selectedReportData.reported_user_name}-${selectedReportData.id}`,
               name: selectedReportData.reported_user_name,
               avatar: selectedReportData.reported_user_avatar || '/placeholder.svg',
-              joinDate: new Date().toISOString(), // Placeholder
-              postCount: 0, // Placeholder
-              previousFlags: 0 // Placeholder
+              joinDate: new Date().toISOString(), 
+              postCount: 0, 
+              previousFlags: 0 
             },
             timestamp: selectedReportData.created_at,
             topic: {
               id: selectedReportData.topic_id || `topic-detail-${selectedReportData.id}`,
               title: selectedReportData.topic_title || 'Unknown Topic',
-              category: 'General' // Placeholder
+              category: 'General' 
             },
             status: selectedReportData.status,
             resolution: selectedReportData.action_type ? {
@@ -909,8 +900,6 @@ const UnifiedStaffDashboard = () => {
           setModerationNote={setModerationNote}
         />
       )}
-      
-      <Footer />
     </div>
   );
 };
