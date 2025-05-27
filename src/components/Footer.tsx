@@ -1,3 +1,4 @@
+
 import { Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
 import SponsorsSection from './footer/SponsorsSection';
 import { useState, useEffect } from 'react';
@@ -136,7 +137,9 @@ const Footer = () => {
         
         <div className="mt-12 pt-8 border-t border-[#666666]/20 dark:border-white/10 text-center text-gray-700 dark:text-white">
           <p>&copy; {new Date().getFullYear()} Radio Station. All rights reserved.</p>
-          <p className="text-sm mt-1">Designed and built by WingZero Designs</p>
+          <p className="text-sm mt-1">
+            Designed and built by <a href="http://wingzerodesigns.com" target="_blank" rel="noopener noreferrer" className="text-[#E6B800] hover:text-[#CC9900] dark:text-[#FFD700] dark:hover:text-[#FFF3B0] hover:underline transition-colors">WingZero Designs</a>
+          </p>
         </div>
       </div>
     </footer>
