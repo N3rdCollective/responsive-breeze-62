@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -17,7 +16,7 @@ import {
   ArrowLeft, 
   Home, 
   Eye,
-  Image as ImageIcon, // Renamed to avoid conflict with ImageIcon component
+  ImageIcon, // Renamed to avoid conflict with ImageIcon component
   Radio,
   BarChart3, // Icon for Stats
   Megaphone // Icon for CTA
@@ -187,7 +186,8 @@ const StaffHomepageManager = () => {
       <TitleUpdater title="Homepage Content Manager" />
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
-        <main className="flex-grow max-w-6xl mx-auto px-4 pt-8 pb-16 w-full">
+        {/* Increased pt-8 to pt-24 to avoid overlap with fixed Navbar */}
+        <main className="flex-grow max-w-6xl mx-auto px-4 pt-24 pb-16 w-full">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-4">
               <Button variant="ghost" size="sm" onClick={() => navigate('/staff/panel')}>
