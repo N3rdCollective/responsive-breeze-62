@@ -30,7 +30,7 @@ const StaffPanel = () => {
   }
 
   return (
-    <> {/* Added React Fragment as a parent */}
+    <> {/* React Fragment as parent */}
       <div className="space-y-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
           <StaffHeader 
@@ -78,4 +78,3 @@ const StaffPanel = () => {
 };
 
 export default StaffPanel;
-
