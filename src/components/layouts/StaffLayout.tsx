@@ -3,8 +3,8 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { StaffAuthProvider } from '@/hooks/useStaffAuth';
 import StaffSidebar from '@/components/staff/StaffSidebar';
-import Footer from '@/components/Footer';
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"; // Assuming these are correct exports
+// import Footer from '@/components/Footer'; // Removed Footer import
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 const StaffLayout: React.FC = () => {
   return (
@@ -19,7 +19,7 @@ const StaffLayout: React.FC = () => {
             <div className="flex-grow p-4 md:p-6 overflow-auto">
               <Outlet />
             </div>
-            <Footer />
+            {/* <Footer /> Removed Footer component */}
           </main>
         </div>
       </SidebarProvider>
