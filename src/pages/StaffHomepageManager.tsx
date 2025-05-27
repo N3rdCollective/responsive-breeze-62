@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -79,7 +77,7 @@ const defaultHomepageContent: HomepageContent = {
 
 const StaffHomepageManager = () => {
   const navigate = useNavigate();
-  const { userRole, isLoading: authLoading, staffId } = useStaffAuth(); // Changed: Use staffId
+  const { userRole, isLoading: authLoading, staffId } = useStaffAuth();
   const { toast } = useToast();
   const { logActivity } = useStaffActivityLogger();
   
@@ -257,24 +255,16 @@ const StaffHomepageManager = () => {
 
   if (authLoading || ((isLoadingContent || isLoadingSettings) && canManageHomepage)) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="flex items-center justify-center h-[calc(100vh-150px)]">
-          <LoadingSpinner />
-        </div>
-        <Footer />
+      <div className="flex items-center justify-center h-[calc(100vh-80px)]"> {/* Approximate height accounting for potential header/trigger bar */}
+        <LoadingSpinner />
       </div>
     );
   }
 
   if (!canManageHomepage && !authLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="container mx-auto px-4 py-16 text-center">
-          <p>Access Denied. Redirecting...</p>
-        </div>
-        <Footer />
+      <div className="container mx-auto px-4 py-16 text-center">
+        <p>Access Denied. Redirecting...</p>
       </div>
     );
   }
@@ -282,254 +272,247 @@ const StaffHomepageManager = () => {
   return (
     <>
       <TitleUpdater title="Homepage Content Manager" />
-      <div className="min-h-screen bg-background flex flex-col">
-        <Navbar />
-        {/* Increased pt-8 to pt-24 to avoid overlap with fixed Navbar, then to pt-32 */}
-        <main className="flex-grow max-w-6xl mx-auto px-4 pt-32 pb-16 w-full"> {/* Increased padding-top */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" onClick={() => navigate('/staff/panel')}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Panel
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold flex items-center gap-2">
-                  <Home className="h-6 w-6" />
-                  Homepage Content & Settings
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  Customize content and section visibility of your website's homepage.
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => window.open('/', '_blank')}
-                size="sm"
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                Preview
-              </Button>
-              <Button 
-                onClick={handleSave}
-                disabled={isSaving}
-                size="sm"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                {isSaving ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </div>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" onClick={() => navigate('/staff/panel')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Panel
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <Home className="h-6 w-6" />
+              Homepage Content & Settings
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Customize content and section visibility of your website's homepage.
+            </p>
           </div>
-
-          <Tabs defaultValue="hero" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-              <TabsTrigger value="hero">
-                <ImageIcon className="h-4 w-4 mr-2 sm:hidden md:inline-flex" />Hero
-              </TabsTrigger>
-              <TabsTrigger value="show">
-                <Radio className="h-4 w-4 mr-2 sm:hidden md:inline-flex" />Current Show
-              </TabsTrigger>
-              <TabsTrigger value="stats">
-                <BarChart3 className="h-4 w-4 mr-2 sm:hidden md:inline-flex" />Stats
-              </TabsTrigger>
-              <TabsTrigger value="cta">
-                <Megaphone className="h-4 w-4 mr-2 sm:hidden md:inline-flex" />CTA
-              </TabsTrigger>
-              <TabsTrigger value="visibility">
-                <LayoutGrid className="h-4 w-4 mr-2 sm:hidden md:inline-flex" />Visibility
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="hero">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Hero Section</CardTitle>
-                  <CardDescription>Manage the main introductory content of your homepage.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="hero_title">Title</Label>
-                    <Input id="hero_title" value={content.hero_title} onChange={(e) => updateContentField('hero_title', e.target.value)} />
-                  </div>
-                  <div>
-                    <Label htmlFor="hero_subtitle">Subtitle</Label>
-                    <Textarea id="hero_subtitle" value={content.hero_subtitle} onChange={(e) => updateContentField('hero_subtitle', e.target.value)} rows={3} />
-                  </div>
-                  <div>
-                    <Label htmlFor="hero_cta_text">Button Text</Label>
-                    <Input id="hero_cta_text" value={content.hero_cta_text} onChange={(e) => updateContentField('hero_cta_text', e.target.value)} />
-                  </div>
-                  <div>
-                    <Label htmlFor="hero_background_image">Background Image URL (Optional)</Label>
-                    <Input id="hero_background_image" value={content.hero_background_image || ''} onChange={(e) => updateContentField('hero_background_image', e.target.value)} placeholder="https://example.com/image.jpg" />
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="show">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Current Show Section</CardTitle>
-                  <CardDescription>Configure the "Now Playing" or "Current Show" block.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Switch id="current_show_enabled" checked={content.current_show_enabled} onCheckedChange={(checked) => updateContentField('current_show_enabled', checked)} />
-                    <Label htmlFor="current_show_enabled">Enable Current Show Section</Label>
-                  </div>
-                  <div>
-                    <Label htmlFor="current_show_title">Show Title</Label>
-                    <Input id="current_show_title" value={content.current_show_title} onChange={(e) => updateContentField('current_show_title', e.target.value)} disabled={!content.current_show_enabled} />
-                  </div>
-                  <div>
-                    <Label htmlFor="current_show_description">Show Description</Label>
-                    <Textarea id="current_show_description" value={content.current_show_description} onChange={(e) => updateContentField('current_show_description', e.target.value)} rows={3} disabled={!content.current_show_enabled}/>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <Label htmlFor="current_show_host">Host(s)</Label>
-                        <Input id="current_show_host" value={content.current_show_host} onChange={(e) => updateContentField('current_show_host', e.target.value)} disabled={!content.current_show_enabled}/>
-                    </div>
-                    <div>
-                        <Label htmlFor="current_show_time">Show Time</Label>
-                        <Input id="current_show_time" value={content.current_show_time} onChange={(e) => updateContentField('current_show_time', e.target.value)} disabled={!content.current_show_enabled}/>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="stats">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Statistics Section</CardTitle>
-                  <CardDescription>Manage the key statistics displayed on the homepage.</CardDescription>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="stats_listeners">Listeners</Label>
-                    <Input id="stats_listeners" value={content.stats_listeners} onChange={(e) => updateContentField('stats_listeners', e.target.value)} />
-                  </div>
-                  <div>
-                    <Label htmlFor="stats_shows">Shows</Label>
-                    <Input id="stats_shows" value={content.stats_shows} onChange={(e) => updateContentField('stats_shows', e.target.value)} />
-                  </div>
-                  <div>
-                    <Label htmlFor="stats_members">Members</Label>
-                    <Input id="stats_members" value={content.stats_members} onChange={(e) => updateContentField('stats_members', e.target.value)} />
-                  </div>
-                  <div>
-                    <Label htmlFor="stats_broadcasts">Broadcasts</Label>
-                    <Input id="stats_broadcasts" value={content.stats_broadcasts} onChange={(e) => updateContentField('stats_broadcasts', e.target.value)} />
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="cta">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Call to Action Section</CardTitle>
-                  <CardDescription>Customize the final call to action block on your homepage.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="cta_section_title">Title</Label>
-                    <Input id="cta_section_title" value={content.cta_section_title} onChange={(e) => updateContentField('cta_section_title', e.target.value)} />
-                  </div>
-                  <div>
-                    <Label htmlFor="cta_section_subtitle">Subtitle</Label>
-                    <Textarea id="cta_section_subtitle" value={content.cta_section_subtitle} onChange={(e) => updateContentField('cta_section_subtitle', e.target.value)} rows={3} />
-                  </div>
-                  <div>
-                    <Label htmlFor="cta_button_text">Button Text</Label>
-                    <Input id="cta_button_text" value={content.cta_button_text} onChange={(e) => updateContentField('cta_button_text', e.target.value)} />
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="visibility">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Homepage Section Visibility</CardTitle>
-                  <CardDescription>Toggle which major sections appear on your homepage.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6 pt-4">
-                  <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
-                    <div>
-                      <Label htmlFor="show_hero" className="font-medium">Hero Section</Label>
-                      <p className="text-sm text-muted-foreground">
-                        The main banner at the top of the home page.
-                      </p>
-                    </div>
-                    <Switch
-                      id="show_hero"
-                      checked={homeSettings.show_hero}
-                      onCheckedChange={(checked) => updateHomeSettingField('show_hero', checked)}
-                    />
-                  </div>
-                   <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
-                    <div>
-                      <Label htmlFor="show_live_banner" className="font-medium">Live Show Banner</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Banner showing currently playing live show information.
-                      </p>
-                    </div>
-                    <Switch
-                      id="show_live_banner"
-                      checked={homeSettings.show_live_banner}
-                      onCheckedChange={(checked) => updateHomeSettingField('show_live_banner', checked)}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
-                    <div>
-                      <Label htmlFor="show_stats_section" className="font-medium">Statistics Section</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Display key statistics (listeners, shows, etc.).
-                      </p>
-                    </div>
-                    <Switch
-                      id="show_stats_section"
-                      checked={homeSettings.show_stats_section}
-                      onCheckedChange={(checked) => updateHomeSettingField('show_stats_section', checked)}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
-                    <div>
-                      <Label htmlFor="show_news_section" className="font-medium">News Section</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Display recent news articles.
-                      </p>
-                    </div>
-                    <Switch
-                      id="show_news_section"
-                      checked={homeSettings.show_news_section}
-                      onCheckedChange={(checked) => updateHomeSettingField('show_news_section', checked)}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
-                    <div>
-                      <Label htmlFor="show_personalities" className="font-medium">Personalities Slider</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Display a carousel of radio personalities.
-                      </p>
-                    </div>
-                    <Switch
-                      id="show_personalities"
-                      checked={homeSettings.show_personalities}
-                      onCheckedChange={(checked) => updateHomeSettingField('show_personalities', checked)}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </main>
-        <Footer />
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => window.open('/', '_blank')}
+            size="sm"
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            Preview
+          </Button>
+          <Button 
+            onClick={handleSave}
+            disabled={isSaving}
+            size="sm"
+          >
+            <Save className="h-4 w-4 mr-2" />
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </div>
       </div>
+
+      <Tabs defaultValue="hero" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+          <TabsTrigger value="hero">
+            <ImageIcon className="h-4 w-4 mr-2 sm:hidden md:inline-flex" />Hero
+          </TabsTrigger>
+          <TabsTrigger value="show">
+            <Radio className="h-4 w-4 mr-2 sm:hidden md:inline-flex" />Current Show
+          </TabsTrigger>
+          <TabsTrigger value="stats">
+            <BarChart3 className="h-4 w-4 mr-2 sm:hidden md:inline-flex" />Stats
+          </TabsTrigger>
+          <TabsTrigger value="cta">
+            <Megaphone className="h-4 w-4 mr-2 sm:hidden md:inline-flex" />CTA
+          </TabsTrigger>
+          <TabsTrigger value="visibility">
+            <LayoutGrid className="h-4 w-4 mr-2 sm:hidden md:inline-flex" />Visibility
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="hero">
+          <Card>
+            <CardHeader>
+              <CardTitle>Hero Section</CardTitle>
+              <CardDescription>Manage the main introductory content of your homepage.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="hero_title">Title</Label>
+                <Input id="hero_title" value={content.hero_title} onChange={(e) => updateContentField('hero_title', e.target.value)} />
+              </div>
+              <div>
+                <Label htmlFor="hero_subtitle">Subtitle</Label>
+                <Textarea id="hero_subtitle" value={content.hero_subtitle} onChange={(e) => updateContentField('hero_subtitle', e.target.value)} rows={3} />
+              </div>
+              <div>
+                <Label htmlFor="hero_cta_text">Button Text</Label>
+                <Input id="hero_cta_text" value={content.hero_cta_text} onChange={(e) => updateContentField('hero_cta_text', e.target.value)} />
+              </div>
+              <div>
+                <Label htmlFor="hero_background_image">Background Image URL (Optional)</Label>
+                <Input id="hero_background_image" value={content.hero_background_image || ''} onChange={(e) => updateContentField('hero_background_image', e.target.value)} placeholder="https://example.com/image.jpg" />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="show">
+          <Card>
+            <CardHeader>
+              <CardTitle>Current Show Section</CardTitle>
+              <CardDescription>Configure the "Now Playing" or "Current Show" block.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Switch id="current_show_enabled" checked={content.current_show_enabled} onCheckedChange={(checked) => updateContentField('current_show_enabled', checked)} />
+                <Label htmlFor="current_show_enabled">Enable Current Show Section</Label>
+              </div>
+              <div>
+                <Label htmlFor="current_show_title">Show Title</Label>
+                <Input id="current_show_title" value={content.current_show_title} onChange={(e) => updateContentField('current_show_title', e.target.value)} disabled={!content.current_show_enabled} />
+              </div>
+              <div>
+                <Label htmlFor="current_show_description">Show Description</Label>
+                <Textarea id="current_show_description" value={content.current_show_description} onChange={(e) => updateContentField('current_show_description', e.target.value)} rows={3} disabled={!content.current_show_enabled}/>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <Label htmlFor="current_show_host">Host(s)</Label>
+                    <Input id="current_show_host" value={content.current_show_host} onChange={(e) => updateContentField('current_show_host', e.target.value)} disabled={!content.current_show_enabled}/>
+                </div>
+                <div>
+                    <Label htmlFor="current_show_time">Show Time</Label>
+                    <Input id="current_show_time" value={content.current_show_time} onChange={(e) => updateContentField('current_show_time', e.target.value)} disabled={!content.current_show_enabled}/>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="stats">
+          <Card>
+            <CardHeader>
+              <CardTitle>Statistics Section</CardTitle>
+              <CardDescription>Manage the key statistics displayed on the homepage.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="stats_listeners">Listeners</Label>
+                <Input id="stats_listeners" value={content.stats_listeners} onChange={(e) => updateContentField('stats_listeners', e.target.value)} />
+              </div>
+              <div>
+                <Label htmlFor="stats_shows">Shows</Label>
+                <Input id="stats_shows" value={content.stats_shows} onChange={(e) => updateContentField('stats_shows', e.target.value)} />
+              </div>
+              <div>
+                <Label htmlFor="stats_members">Members</Label>
+                <Input id="stats_members" value={content.stats_members} onChange={(e) => updateContentField('stats_members', e.target.value)} />
+              </div>
+              <div>
+                <Label htmlFor="stats_broadcasts">Broadcasts</Label>
+                <Input id="stats_broadcasts" value={content.stats_broadcasts} onChange={(e) => updateContentField('stats_broadcasts', e.target.value)} />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="cta">
+          <Card>
+            <CardHeader>
+              <CardTitle>Call to Action Section</CardTitle>
+              <CardDescription>Customize the final call to action block on your homepage.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="cta_section_title">Title</Label>
+                <Input id="cta_section_title" value={content.cta_section_title} onChange={(e) => updateContentField('cta_section_title', e.target.value)} />
+              </div>
+              <div>
+                <Label htmlFor="cta_section_subtitle">Subtitle</Label>
+                <Textarea id="cta_section_subtitle" value={content.cta_section_subtitle} onChange={(e) => updateContentField('cta_section_subtitle', e.target.value)} rows={3} />
+              </div>
+              <div>
+                <Label htmlFor="cta_button_text">Button Text</Label>
+                <Input id="cta_button_text" value={content.cta_button_text} onChange={(e) => updateContentField('cta_button_text', e.target.value)} />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="visibility">
+          <Card>
+            <CardHeader>
+              <CardTitle>Homepage Section Visibility</CardTitle>
+              <CardDescription>Toggle which major sections appear on your homepage.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6 pt-4">
+              <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
+                <div>
+                  <Label htmlFor="show_hero" className="font-medium">Hero Section</Label>
+                  <p className="text-sm text-muted-foreground">
+                    The main banner at the top of the home page.
+                  </p>
+                </div>
+                <Switch
+                  id="show_hero"
+                  checked={homeSettings.show_hero}
+                  onCheckedChange={(checked) => updateHomeSettingField('show_hero', checked)}
+                />
+              </div>
+               <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
+                <div>
+                  <Label htmlFor="show_live_banner" className="font-medium">Live Show Banner</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Banner showing currently playing live show information.
+                  </p>
+                </div>
+                <Switch
+                  id="show_live_banner"
+                  checked={homeSettings.show_live_banner}
+                  onCheckedChange={(checked) => updateHomeSettingField('show_live_banner', checked)}
+                />
+              </div>
+              <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
+                <div>
+                  <Label htmlFor="show_stats_section" className="font-medium">Statistics Section</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Display key statistics (listeners, shows, etc.).
+                  </p>
+                </div>
+                <Switch
+                  id="show_stats_section"
+                  checked={homeSettings.show_stats_section}
+                  onCheckedChange={(checked) => updateHomeSettingField('show_stats_section', checked)}
+                />
+              </div>
+              <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
+                <div>
+                  <Label htmlFor="show_news_section" className="font-medium">News Section</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Display recent news articles.
+                  </p>
+                </div>
+                <Switch
+                  id="show_news_section"
+                  checked={homeSettings.show_news_section}
+                  onCheckedChange={(checked) => updateHomeSettingField('show_news_section', checked)}
+                />
+              </div>
+              <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
+                <div>
+                  <Label htmlFor="show_personalities" className="font-medium">Personalities Slider</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Display a carousel of radio personalities.
+                  </p>
+                </div>
+                <Switch
+                  id="show_personalities"
+                  checked={homeSettings.show_personalities}
+                  onCheckedChange={(checked) => updateHomeSettingField('show_personalities', checked)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </>
   );
 };
