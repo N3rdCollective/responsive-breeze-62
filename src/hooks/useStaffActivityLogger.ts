@@ -13,7 +13,8 @@ type EntityType =
   | 'artist' 
   | 'forum_category' 
   | 'forum_topic'
-  | 'user'; // Added 'user'
+  | 'user' // Added 'user'
+  | 'content_report'; // Added 'content_report'
 
 type ActionType = 
   | 'login' 
@@ -56,6 +57,8 @@ type ActionType =
   | 'warn_user' // Added
   | 'mark_content_for_edit' // Added
   | 'mark_topic_for_move' // Added
+  | 'dismiss_report' // Added from previous changes
+  | 'reopen_report' // Added from previous changes
   | string;
 
 export const useStaffActivityLogger = () => {

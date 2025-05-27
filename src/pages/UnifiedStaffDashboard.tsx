@@ -246,7 +246,7 @@ const UnifiedStaffDashboard = () => {
           logActivity(
             'mark_content_for_edit', 
             `Content ${details?.contentId} marked for edit due to report ${reportId}. Note: ${moderationNote}`, 
-            details?.contentType, 
+            details?.contentType === 'topic' ? 'forum_topic' : details?.contentType, // Fixed: map 'topic' to 'forum_topic'
             details?.contentId
           );
           mainActionSuccessful = await updateReportStatus(reportId, 'resolved');

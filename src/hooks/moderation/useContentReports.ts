@@ -213,18 +213,19 @@ export const useContentReports = () => {
 
   const removeContentOnDb = async (contentId: string, contentType: 'post' | 'topic'): Promise<boolean> => {
     try {
-      let tableName: string;
+      let tableName: 'forum_posts' | 'forum_topics'; // Changed type from string
       if (contentType === 'post') {
         tableName = 'forum_posts';
       } else if (contentType === 'topic') {
         tableName = 'forum_topics';
       } else {
+        // This case should ideally not be reached due to contentType typing
         toast({ title: "Error", description: "Invalid content type for removal.", variant: "destructive" });
         return false;
       }
 
       const { error } = await supabase
-        .from(tableName)
+        .from(tableName) // tableName is now correctly typed
         .delete()
         .eq('id', contentId);
 
