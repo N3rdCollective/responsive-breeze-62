@@ -517,7 +517,8 @@ const UnifiedStaffDashboard = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <>
+      <div className="max-w-7xl mx-auto">
         <div className="space-y-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
             <div className="space-y-1">
@@ -900,7 +901,7 @@ const UnifiedStaffDashboard = () => {
           setModerationNote={setModerationNote}
         />
       )}
-    </div>
+    </>
   );
 };
 
