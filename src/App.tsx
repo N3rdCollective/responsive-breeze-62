@@ -87,8 +87,8 @@ function App() {
             <Route path="/staff/users" element={<StaffUserManager />} />
             <Route path="/staff/moderation" element={<StaffModerationDashboard />} />
             
-            {/* Legacy Staff Dashboard */}
-            <Route path="/admin/dashboard" element={<StaffDashboard />} />
+            {/* Legacy Staff Dashboard - THIS LINE IS REMOVED */}
+            {/* <Route path="/admin/dashboard" element={<StaffDashboard />} /> */}
           </Route>
           
           {/* 404 Route */}
