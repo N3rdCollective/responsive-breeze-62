@@ -30,7 +30,7 @@ const StaffPanel = () => {
   }
 
   return (
-    <> {/* React Fragment as parent */}
+    <>
       <div className="space-y-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
           <StaffHeader 
@@ -56,7 +56,7 @@ const StaffPanel = () => {
           <AdminCard 
             onManageStaff={handleManageUsers} 
             onLogout={handleLogout} 
-            userRole={userRole} // Pass userRole here
+            userRole={userRole}
           />
         </div>
 
@@ -73,7 +73,7 @@ const StaffPanel = () => {
         open={isProfileEditorOpen}
         onOpenChange={setIsProfileEditorOpen}
       />
-    </> {/* Closed React Fragment */}
+    </>
   );
 };
 
