@@ -24,7 +24,7 @@ import TitleUpdater from "@/components/TitleUpdater";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 import { HomeSettings, defaultSettings as defaultHomeSettingsBase } from "@/components/staff/home/context/HomeSettingsContext";
-import useStaffActivityLogger from "@/hooks/useStaffActivityLogger";
+import { useStaffActivityLogger } from "@/hooks/useStaffActivityLogger";
 
 // Define defaultHomeSettings without the id property initially for new records
 const defaultHomeSettings: Omit<HomeSettings, 'id' | 'created_at' | 'updated_at'> = {
@@ -188,8 +188,8 @@ const StaffHomepageManager = () => {
 
       if (contentError) throw contentError;
       contentSaved = true;
-      if (staffId) { // Changed: use staffId
-        await logActivity('update_homepage_content', 'Updated homepage textual content.', 'homepage_content', 1, contentToSave);
+      if (staffId) { 
+        await logActivity('update_homepage_content', 'Updated homepage textual content.', 'homepage_content', '1', contentToSave);
       }
       
       // Save home_settings
@@ -218,7 +218,7 @@ const StaffHomepageManager = () => {
         }
       }
       settingsSaved = true;
-      if (staffId) { // Changed: use staffId
+      if (staffId) {
          await logActivity('update_homepage_settings', 'Updated homepage section visibility.', 'settings', homeSettingsId || 'new_setting', settingsToSave);
       }
 
