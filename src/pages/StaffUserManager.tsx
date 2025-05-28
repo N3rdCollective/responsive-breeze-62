@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +15,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { AlertCircle, CheckCircle, Clock, Ban } from "lucide-react"; // Ban is needed for action dialog consistency
+import { AlertCircle, CheckCircle, Clock, Ban } from "lucide-react";
 import TitleUpdater from "@/components/TitleUpdater";
 
 // New imports for refactored components
@@ -29,8 +27,6 @@ import UserTableCard from "@/components/staff/user-manager/UserTableCard";
 
 const StaffUserManager = () => {
   const navigate = useNavigate();
-  // staffName and isAdmin are destructured but not used in the provided version of the component.
-  // userRole is used for authorization.
   const { userRole, isLoading: authLoading } = useStaffAuth(); 
   const { toast } = useToast();
   
@@ -278,7 +274,7 @@ const StaffUserManager = () => {
   const authAndLoadingState = (
     <UserAuthAndLoadingStates
       authLoading={authLoading}
-      dataLoading={isLoading && !authLoading && (userRole && ['admin', 'super_admin'].includes(userRole))} // only show data loading if authorized and not auth loading
+      dataLoading={isLoading && !authLoading && (userRole && ['admin', 'super_admin'].includes(userRole))}
       isAuthorized={!authLoading && userRole && ['admin', 'super_admin'].includes(userRole)}
       onGoToHomepage={() => navigate('/')}
     />
@@ -292,7 +288,6 @@ const StaffUserManager = () => {
     <>
       <TitleUpdater title="Manage Users - Staff Panel" />
       <div className="min-h-screen bg-background text-foreground">
-        <Navbar />
         <main className="container mx-auto px-4 py-20">
           <UserManagerHeader
             onBackToDashboard={() => navigate('/staff/panel')}
@@ -443,7 +438,6 @@ const StaffUserManager = () => {
             </DialogContent>
           </Dialog>
         </main>
-        <Footer />
       </div>
     </>
   );
