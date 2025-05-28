@@ -13,18 +13,7 @@ import TitleUpdater from "@/components/TitleUpdater";
 
 const StaffModerationDashboard = () => {
   const navigate = useNavigate();
-  const { staffName, userRole, isLoading } = useStaffAuth();
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100vh-128px)]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-lg text-muted-foreground">Loading Moderation Dashboard...</p>
-        </div>
-      </div>
-    );
-  }
+  const { staffName, userRole } = useStaffAuth();
 
   return (
     <>
