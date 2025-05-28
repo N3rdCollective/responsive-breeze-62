@@ -56,10 +56,19 @@ const StaffMemberRow: React.FC<StaffMemberRowProps> = ({
 
   return (
     <TableRow>
-      <TableCell className="font-medium">
-        {getDisplayName()}
+      <TableCell className="font-medium min-w-0">
+        <div className="truncate max-w-[120px] sm:max-w-[200px]" title={getDisplayName()}>
+          {getDisplayName()}
+        </div>
+        <div className="sm:hidden text-xs text-muted-foreground truncate max-w-[120px]" title={staff.email}>
+          {staff.email}
+        </div>
       </TableCell>
-      <TableCell>{staff.email}</TableCell>
+      <TableCell className="hidden sm:table-cell">
+        <div className="truncate max-w-[200px]" title={staff.email}>
+          {staff.email}
+        </div>
+      </TableCell>
       <TableCell>
         <StaffMemberRoleSelect
           staff={staff}
@@ -70,24 +79,26 @@ const StaffMemberRow: React.FC<StaffMemberRowProps> = ({
           setParentIsUpdatingRole={setIsUpdatingRole}
         />
       </TableCell>
-      <TableCell>{formatDate(staff.created_at)}</TableCell>
-      <TableCell className="text-right space-x-2">
-        <StaffMemberPasswordResetButton
-          staff={staff}
-          currentUserRole={currentUserRole}
-          canSendReset={canSendPasswordReset}
-          isTargetSuperAdmin={isTargetSuperAdmin}
-          disabled={isAnyActionDisabled}
-          onUpdate={onUpdate}
-          setParentIsSendingReset={setIsSendingReset}
-        />
-        <StaffMemberRemoveButton
-          staff={staff}
-          currentUserRole={currentUserRole}
-          canRemove={canRemove}
-          disabled={isAnyActionDisabled}
-          onUpdate={onUpdate}
-        />
+      <TableCell className="hidden md:table-cell">{formatDate(staff.created_at)}</TableCell>
+      <TableCell className="text-right">
+        <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 items-end sm:items-center justify-end">
+          <StaffMemberPasswordResetButton
+            staff={staff}
+            currentUserRole={currentUserRole}
+            canSendReset={canSendPasswordReset}
+            isTargetSuperAdmin={isTargetSuperAdmin}
+            disabled={isAnyActionDisabled}
+            onUpdate={onUpdate}
+            setParentIsSendingReset={setIsSendingReset}
+          />
+          <StaffMemberRemoveButton
+            staff={staff}
+            currentUserRole={currentUserRole}
+            canRemove={canRemove}
+            disabled={isAnyActionDisabled}
+            onUpdate={onUpdate}
+          />
+        </div>
       </TableCell>
     </TableRow>
   );

@@ -86,7 +86,7 @@ const MusicPlayer = () => {
           fixed transition-all duration-300 z-50
           ${isFullscreen 
             ? 'top-0 left-0 right-0 bottom-0 h-screen' 
-            : 'bottom-0 left-0 right-0 h-16 bg-background border-t border-border'
+            : 'bottom-0 left-0 right-0 h-14 sm:h-16 bg-background border-t border-border'
           }
         `}
       >
@@ -123,7 +123,7 @@ const MusicPlayer = () => {
   return (
     <div 
       id="desktop-music-player"
-      className="fixed bottom-0 left-0 right-0 w-full h-20 bg-background border-t border-border shadow-lg z-50"
+      className="fixed bottom-0 left-0 right-0 w-full h-16 sm:h-20 bg-background border-t border-border shadow-lg z-50"
     >
       <DesktopPlayer
         isPlaying={isPlaying}

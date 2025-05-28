@@ -4,14 +4,14 @@ import { Link } from "react-router-dom";
 import { Menu, Shield, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import NavItem from "./NavItem"; // Import NavItem
+import NavItem from "./NavItem";
 import ThemeToggle from "./ThemeToggle";
 import ListenButton from "./ListenButton";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-interface MobileNavigationItem { // Renamed to avoid conflict if NavigationItem from types/profile is imported
+interface MobileNavigationItem {
   path: string;
   label: string;
   onClick?: () => void;
@@ -56,12 +56,12 @@ const MobileNav = ({
       ? 'text-primary dark:text-primary'
       : 'text-foreground hover:text-primary dark:hover:text-primary'
     }
-    text-lg font-medium transition-colors duration-200 flex items-center gap-2 relative
+    text-base sm:text-lg font-medium transition-colors duration-200 flex items-center gap-3 relative p-3 rounded-md hover:bg-muted/50
   `;
 
   const buttonClasses = `
     text-foreground hover:text-primary dark:hover:text-primary
-    text-lg font-medium transition-colors duration-200 text-left w-full flex items-center gap-2 relative
+    text-base sm:text-lg font-medium transition-colors duration-200 text-left w-full flex items-center gap-3 relative p-3 rounded-md hover:bg-muted/50
   `;
 
   // Extract the Messages NavItem if it's iconOnly
@@ -84,7 +84,7 @@ const MobileNav = ({
             icon={messagesNavItem.icon}
             iconOnly={messagesNavItem.iconOnly}
             badgeCount={messagesNavItem.badgeCount}
-            className="p-2" // Style as an icon button for the top bar
+            className="p-2"
           />
       )}
       {isUserLoggedIn && <NotificationBell isHomePage={isHomePage} isScrolled={isScrolled} mobile />}
@@ -103,72 +103,80 @@ const MobileNav = ({
             <Menu className="h-6 w-6" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-background text-foreground">
-          <SheetHeader>
+        <SheetContent 
+          side="right" 
+          className="w-[280px] sm:w-[320px] bg-background text-foreground p-0 flex flex-col"
+        >
+          <SheetHeader className="p-4 sm:p-6 border-b">
             <SheetTitle className="text-left text-xl font-bold text-primary dark:text-primary">
               Menu
             </SheetTitle>
           </SheetHeader>
-          <div className="flex flex-col space-y-4 mt-8">
-            {staffName && (
-              <Link
-                to="/staff/panel"
-                onClick={() => handleNavigation(true, "/staff/panel")}
-                className={linkClasses("/staff/panel")}
-              >
-                <Shield className="h-5 w-5" /> Staff Panel
-              </Link>
-            )}
-            {sheetNavigationItems.map((item) => { // Use the filtered list here
-              const ItemIcon = item.icon as LucideIcon | undefined;
-              const accessibilityProps = item.iconOnly && item.label ? { 'aria-label': item.label, title: item.label } : {};
-              
-              const content = (
-                <>
-                  {ItemIcon && <ItemIcon className="h-5 w-5" />}
-                  {item.iconOnly ? null : <span className="flex-1">{item.label}</span>}
-                  {item.badgeCount && item.badgeCount > 0 && (
-                    <Badge
-                      variant="destructive"
-                      className={cn(
-                        "h-5 min-w-[1.25rem] p-0.5 flex items-center justify-center text-xs rounded-full",
-                         item.iconOnly ? "absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2" : "ml-auto" 
-                      )}
-                       style={{ lineHeight: '1' }}
-                    >
-                      {item.badgeCount > 9 ? '9+' : item.badgeCount}
-                    </Badge>
-                  )}
-                </>
-              );
-
-              return item.onClick && item.path.startsWith("#") ? ( 
-                <button
-                  key={item.path + item.label}
-                  onClick={() => handleNavigation(false, undefined, item.onClick)}
-                  className={buttonClasses}
-                  {...accessibilityProps}
-                >
-                  {content}
-                </button>
-              ) : (
+          
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+            <div className="flex flex-col space-y-2">
+              {staffName && (
                 <Link
-                  key={item.path + item.label}
-                  to={item.path}
-                  onClick={() => handleNavigation(true, item.path, item.onClick)}
-                  className={linkClasses(item.path)}
-                  {...accessibilityProps}
+                  to="/staff/panel"
+                  onClick={() => handleNavigation(true, "/staff/panel")}
+                  className={linkClasses("/staff/panel")}
                 >
-                  {content}
+                  <Shield className="h-5 w-5 flex-shrink-0" /> 
+                  <span>Staff Panel</span>
                 </Link>
-              )
-            })}
-            {mounted && (
-              <div className="pt-4 border-t border-border">
-                <ThemeToggle isHomePage={isHomePage} isScrolled={isScrolled} mobile />
-              </div>
-            )}
+              )}
+              {sheetNavigationItems.map((item) => {
+                const ItemIcon = item.icon as LucideIcon | undefined;
+                const accessibilityProps = item.iconOnly && item.label ? { 'aria-label': item.label, title: item.label } : {};
+                
+                const content = (
+                  <>
+                    {ItemIcon && <ItemIcon className="h-5 w-5 flex-shrink-0" />}
+                    {item.iconOnly ? null : <span className="flex-1 truncate">{item.label}</span>}
+                    {item.badgeCount && item.badgeCount > 0 && (
+                      <Badge
+                        variant="destructive"
+                        className={cn(
+                          "h-5 min-w-[1.25rem] p-0.5 flex items-center justify-center text-xs rounded-full flex-shrink-0",
+                           item.iconOnly ? "absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2" : "ml-auto" 
+                        )}
+                         style={{ lineHeight: '1' }}
+                      >
+                        {item.badgeCount > 9 ? '9+' : item.badgeCount}
+                      </Badge>
+                    )}
+                  </>
+                );
+
+                return item.onClick && item.path.startsWith("#") ? ( 
+                  <button
+                    key={item.path + item.label}
+                    onClick={() => handleNavigation(false, undefined, item.onClick)}
+                    className={buttonClasses}
+                    {...accessibilityProps}
+                  >
+                    {content}
+                  </button>
+                ) : (
+                  <Link
+                    key={item.path + item.label}
+                    to={item.path}
+                    onClick={() => handleNavigation(true, item.path, item.onClick)}
+                    className={linkClasses(item.path)}
+                    {...accessibilityProps}
+                  >
+                    {content}
+                  </Link>
+                )
+              })}
+            </div>
           </div>
+          
+          {mounted && (
+            <div className="p-4 sm:p-6 border-t mt-auto">
+              <ThemeToggle isHomePage={isHomePage} isScrolled={isScrolled} mobile />
+            </div>
+          )}
         </SheetContent>
       </Sheet>
     </div>

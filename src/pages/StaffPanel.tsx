@@ -31,36 +31,46 @@ const StaffPanel = () => {
 
   return (
     <>
-      <div className="space-y-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-          <StaffHeader 
-            staffName={staffName} 
-            isAdmin={isAdmin} 
-            showLogoutButton={false}
-            title="Unified Staff Dashboard"
-          />
+      <div className="space-y-6 sm:space-y-8 max-w-full">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="min-w-0 flex-1">
+            <StaffHeader 
+              staffName={staffName} 
+              isAdmin={isAdmin} 
+              showLogoutButton={false}
+              title="Unified Staff Dashboard"
+            />
+          </div>
           
           <Button 
             variant="outline" 
             onClick={() => setIsProfileEditorOpen(true)}
-            className="mt-4 sm:mt-0 flex items-center gap-2"
+            className="flex-shrink-0 flex items-center gap-2 w-full sm:w-auto"
           >
             <UserCog className="h-4 w-4" />
-            Edit Profile
+            <span className="sm:inline">Edit Profile</span>
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <ContentManagementCard userRole={userRole} />
-          <ShowManagementCard />
-          <AdminCard 
-            onManageStaff={handleManageUsers} 
-            onLogout={handleLogout} 
-            userRole={userRole}
-          />
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+          <div className="lg:col-span-1">
+            <ContentManagementCard userRole={userRole} />
+          </div>
+          <div className="lg:col-span-1">
+            <ShowManagementCard />
+          </div>
+          <div className="lg:col-span-2 xl:col-span-1">
+            <AdminCard 
+              onManageStaff={handleManageUsers} 
+              onLogout={handleLogout} 
+              userRole={userRole}
+            />
+          </div>
         </div>
 
-        <StatsPanel />
+        <div className="w-full">
+          <StatsPanel />
+        </div>
       </div>
       
       <ManageStaffModal 
