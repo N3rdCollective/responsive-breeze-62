@@ -53,15 +53,15 @@ const MobileNav = ({
   
   const linkClasses = (path: string) => `
     ${isActive(path)
-      ? 'text-primary dark:text-primary'
-      : 'text-foreground hover:text-primary dark:hover:text-primary'
+      ? 'text-primary dark:text-primary bg-primary/10'
+      : 'text-foreground hover:text-primary dark:hover:text-primary hover:bg-muted/50'
     }
-    text-base sm:text-lg font-medium transition-colors duration-200 flex items-center gap-3 relative p-3 rounded-md hover:bg-muted/50
+    text-base font-medium transition-colors duration-200 flex items-center gap-3 relative p-4 rounded-lg min-h-[52px] touch-manipulation
   `;
 
   const buttonClasses = `
-    text-foreground hover:text-primary dark:hover:text-primary
-    text-base sm:text-lg font-medium transition-colors duration-200 text-left w-full flex items-center gap-3 relative p-3 rounded-md hover:bg-muted/50
+    text-foreground hover:text-primary dark:hover:text-primary hover:bg-muted/50
+    text-base font-medium transition-colors duration-200 text-left w-full flex items-center gap-3 relative p-4 rounded-lg min-h-[52px] touch-manipulation
   `;
 
   // Extract the Messages NavItem if it's iconOnly
@@ -84,7 +84,7 @@ const MobileNav = ({
             icon={messagesNavItem.icon}
             iconOnly={messagesNavItem.iconOnly}
             badgeCount={messagesNavItem.badgeCount}
-            className="p-2"
+            className="p-2 min-h-[44px] min-w-[44px]"
           />
       )}
       {isUserLoggedIn && <NotificationBell isHomePage={isHomePage} isScrolled={isScrolled} mobile />}
@@ -94,6 +94,7 @@ const MobileNav = ({
             variant="ghost"
             size="icon"
             className={`
+              min-h-[44px] min-w-[44px] touch-manipulation
               ${isHomePage && !isScrolled
                 ? "text-white hover:text-primary dark:text-primary dark:hover:text-white"
                 : "text-foreground hover:text-primary dark:hover:text-primary"
@@ -105,7 +106,7 @@ const MobileNav = ({
         </SheetTrigger>
         <SheetContent 
           side="right" 
-          className="w-[280px] sm:w-[320px] bg-background text-foreground p-0 flex flex-col"
+          className="w-[85vw] max-w-[350px] bg-background text-foreground p-0 flex flex-col"
         >
           <SheetHeader className="p-4 sm:p-6 border-b">
             <SheetTitle className="text-left text-xl font-bold text-primary dark:text-primary">

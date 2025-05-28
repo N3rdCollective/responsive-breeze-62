@@ -9,8 +9,8 @@ const News = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="pt-16">
-        {/* Hero Section */}
-        <section className="relative bg-muted text-foreground py-24">
+        {/* Hero Section - Mobile optimized */}
+        <section className="relative bg-muted text-foreground py-16 sm:py-20 lg:py-24">
           <div className="absolute inset-0">
             <img
               src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81"
@@ -20,35 +20,39 @@ const News = () => {
           </div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl">
-              <h1 className="text-4xl font-bold mb-4 text-foreground">Latest News</h1>
-              <p className="text-xl font-medium text-foreground bg-background/50 backdrop-blur-sm p-4 rounded-lg inline-block">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 text-foreground leading-tight">
+                Latest News
+              </h1>
+              <p className="text-base sm:text-lg lg:text-xl font-medium text-foreground bg-background/50 backdrop-blur-sm p-3 sm:p-4 rounded-lg inline-block leading-relaxed">
                 Stay updated with the latest happenings in music, entertainment, and local events. Use the search bar to find specific content.
               </p>
             </div>
           </div>
         </section>
 
-        {/* News Section */}
-        <section className="py-16">
+        {/* News Section - Mobile optimized */}
+        <section className="py-12 sm:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <NewsList />
           </div>
         </section>
 
-        {/* Newsletter Section */}
-        <section className="bg-muted py-16">
+        {/* Newsletter Section - Mobile optimized */}
+        <section className="bg-muted py-12 sm:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-bold mb-4 text-foreground">Stay Updated</h2>
-            <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4 text-foreground">Stay Updated</h2>
+            <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed">
               Subscribe to our newsletter to receive the latest news and updates directly in your inbox.
             </p>
-            <form className="max-w-md mx-auto flex gap-4">
+            <form className="max-w-md mx-auto flex flex-col sm:flex-row gap-3 sm:gap-4">
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="flex-1 px-4 py-2 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                className="flex-1 px-3 sm:px-4 py-2.5 sm:py-2 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm sm:text-base min-h-[44px]"
               />
-              <Button type="submit">Subscribe</Button>
+              <Button type="submit" className="w-full sm:w-auto min-h-[44px] px-6">
+                Subscribe
+              </Button>
             </form>
           </div>
         </section>

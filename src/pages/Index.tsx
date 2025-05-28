@@ -15,10 +15,7 @@ import PageLoader from "@/components/general/PageLoader";
 import StatsSection from "@/components/home/StatsSection";
 import CtaSection from "@/components/home/CtaSection";
 import { useHomepageData } from "@/hooks/useHomepageData";
-import SongRequestWidget from "@/components/SongRequestWidget"; // Import the new widget
-
-// The types HomepageContentData, defaultHomepageContentData, HomeSettings, defaultSettings, VideoData
-// are now primarily managed by useHomepageData.ts or their original import sources.
+import SongRequestWidget from "@/components/SongRequestWidget";
 
 const Index = () => {
   const { 
@@ -49,11 +46,12 @@ const Index = () => {
       
       <VideoGallery videos={featuredVideos} /> 
       
-      <div className="container mx-auto px-4 py-8">
+      {/* Mobile-optimized container with better spacing */}
+      <div className="container mx-auto px-3 sm:px-4 lg:px-8 py-6 sm:py-8">
         {settings.show_live_banner && <LiveShowBanner />}
       </div>
 
-      {settings.show_stats_section && ( // Conditionally render StatsSection
+      {settings.show_stats_section && (
         <StatsSection stats={{
           broadcasts: homepageContent.stats_broadcasts,
           shows: homepageContent.stats_shows,
@@ -62,12 +60,17 @@ const Index = () => {
         }} />
       )}
       
-      <div className="container mx-auto px-4 py-8">
-        <div className="space-y-16">
+      {/* Mobile-optimized main content container */}
+      <div className="container mx-auto px-3 sm:px-4 lg:px-8 py-6 sm:py-8">
+        <div className="space-y-12 sm:space-y-16">
           {showFeaturedArtist && <FeaturedArtistSection />}
           {settings.show_news_section && <HomeNewsSection />}
           {settings.show_personalities && <PersonalitySlider />}
-          <SongRequestWidget /> {/* Add the song request widget here */}
+          
+          {/* Mobile-optimized song request widget */}
+          <div className="w-full max-w-none">
+            <SongRequestWidget />
+          </div>
         </div>
       </div>
 

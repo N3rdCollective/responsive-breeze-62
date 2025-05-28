@@ -5,7 +5,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription, // Added for completeness, though AuthHeader handles titles
+  DialogDescription,
 } from "@/components/ui/dialog";
 import AuthForm from "@/components/auth/AuthForm";
 
@@ -16,16 +16,12 @@ interface AuthModalProps {
 
 const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
   const handleSuccess = () => {
-    onOpenChange(false); // Close the modal on successful authentication
+    onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-card">
-        {/* AuthForm now includes AuthHeader, so we don't need DialogTitle/Description here directly */}
-        {/* <DialogHeader> */}
-          {/* DialogTitle and DialogDescription are part of AuthHeader now, rendered by AuthForm */}
-        {/* </DialogHeader> */}
+      <DialogContent className="sm:max-w-[425px] w-[95vw] max-h-[90vh] overflow-y-auto bg-card p-4 sm:p-6">
         <AuthForm onSuccess={handleSuccess} />
       </DialogContent>
     </Dialog>
