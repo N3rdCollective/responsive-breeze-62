@@ -30,12 +30,13 @@ export const useFetchNewsPost = () => {
     } = callbacks;
     
     if (!postId) {
+      console.log("[useFetchNewsPost] No postId provided");
       setIsLoading(false);
       return;
     }
     
     try {
-      console.log("Fetching news post with ID:", postId);
+      console.log("[useFetchNewsPost] Fetching news post with ID:", postId);
       
       const { data, error } = await supabase
         .from("posts")
@@ -44,7 +45,7 @@ export const useFetchNewsPost = () => {
         .maybeSingle();
       
       if (error) {
-        console.error("Error fetching news post:", error);
+        console.error("[useFetchNewsPost] Error fetching news post:", error);
         toast({
           title: "Error",
           description: `Failed to load news post: ${error.message}`,
@@ -55,7 +56,7 @@ export const useFetchNewsPost = () => {
       }
       
       if (!data) {
-        console.error("News post not found with ID:", postId);
+        console.error("[useFetchNewsPost] News post not found with ID:", postId);
         toast({
           title: "Error",
           description: "News post not found",
@@ -65,19 +66,24 @@ export const useFetchNewsPost = () => {
         return;
       }
       
-      console.log("Post data fetched successfully:", data);
+      console.log("[useFetchNewsPost] Post data fetched successfully:", {
+        id: data.id,
+        title: data.title,
+        status: data.status,
+        category: data.category
+      });
       
-      // Properly set all the form data from the fetched post
+      // Set all the form data from the fetched post
       setTitle(data.title || "");
       setContent(data.content || "");
       setExcerpt(data.excerpt || "");
       
-      // Make sure we explicitly check for valid status values
+      // Ensure valid status values
       if (data.status === "published" || data.status === "draft") {
-        console.log("Setting status to:", data.status);
+        console.log("[useFetchNewsPost] Setting status to:", data.status);
         setStatus(data.status);
       } else {
-        console.log("Invalid status value, defaulting to draft:", data.status);
+        console.log("[useFetchNewsPost] Invalid status value, defaulting to draft:", data.status);
         setStatus("draft");
       }
       
@@ -85,15 +91,19 @@ export const useFetchNewsPost = () => {
       
       // Handle tags from the database
       if (data.tags && Array.isArray(data.tags)) {
+        console.log("[useFetchNewsPost] Setting tags:", data.tags);
         setTags(data.tags);
       } else {
+        console.log("[useFetchNewsPost] No tags found, setting empty array");
         setTags([]);
       }
       
       setCurrentFeaturedImageUrl(data.featured_image || "");
       setIsLoading(false);
+      
+      console.log("[useFetchNewsPost] All data set successfully");
     } catch (error) {
-      console.error("Error in fetchNewsPost:", error);
+      console.error("[useFetchNewsPost] Error in fetchNewsPost:", error);
       toast({
         title: "Error",
         description: "Failed to load news post",

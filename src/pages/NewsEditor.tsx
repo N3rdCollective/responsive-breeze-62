@@ -9,20 +9,6 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TitleUpdater from "@/components/TitleUpdater";
 
-interface NewsPost {
-  id: string;
-  title: string;
-  content: string;
-  excerpt?: string;
-  status: "published" | "draft";
-  category?: string;
-  tags?: string[];
-  featured_image?: string;
-  created_at: string;
-  updated_at: string;
-  author: string;
-}
-
 const NewsEditor = () => {
   const { id } = useParams<{ id: string }>();
   const { staffName, isLoading: authLoading, userRole } = useStaffAuth();
@@ -53,7 +39,6 @@ const NewsEditor = () => {
     isPreviewModalOpen,
     setIsPreviewModalOpen,
     canPublish,
-    fetchNewsPost,
     handleImageSelected,
     handleSave
   } = useNewsEditor({ id, staffName, userRole });
@@ -64,11 +49,7 @@ const NewsEditor = () => {
       navigate("/staff/login");
       return;
     }
-    
-    console.log("Calling fetchNewsPost with id:", id);
-    console.log("Current user role:", userRole);
-    fetchNewsPost();
-  }, [id, staffName, authLoading, fetchNewsPost, userRole, canEditNews, navigate]);
+  }, [staffName, authLoading, canEditNews, navigate]);
   
   if (authLoading) {
     return (
@@ -90,7 +71,7 @@ const NewsEditor = () => {
     );
   }
   
-  if (id && isLoading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <LoadingSpinner />
@@ -100,7 +81,7 @@ const NewsEditor = () => {
   
   return (
     <>
-      <TitleUpdater title={id ? `Edit Post: ${title || 'Untitled'}` : "Create New Post"} />
+      <TitleUpdater title={id ? `Edit Post: ${title || 'Loading...'}` : "Create New Post"} />
       <div className="container mx-auto p-4 max-w-6xl">
         <div className="mb-4">
           <Button
@@ -120,7 +101,7 @@ const NewsEditor = () => {
               {id ? "Edit News Post" : "Create News Post"}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {id ? `Editing "${title || 'Untitled'}"` : 'Create a new article with rich content, tags, and media'}
+              {id ? `Editing "${title || 'Loading...'}"` : 'Create a new article with rich content, tags, and media'}
             </p>
           </div>
         </div>

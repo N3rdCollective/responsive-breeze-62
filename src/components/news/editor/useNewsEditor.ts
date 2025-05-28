@@ -5,7 +5,7 @@ import { NewsStatus } from "./NewsForm";
 import { useNewsState } from "./hooks/useNewsState";
 import { useNewsData } from "./hooks/useNewsData";
 import { useImageHandler } from "./hooks/useImageHandler";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect } from "react";
 import { useNewsPermissions } from "./hooks/useNewsPermissions";
 
 interface UseNewsEditorProps {
@@ -20,7 +20,6 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
   const { handleImageUpload } = useImageHandler();
   const { fetchNewsPost, saveNewsPost } = useNewsData();
   const { canPublish, getFinalStatus } = useNewsPermissions({ userRole });
-  const fetchedRef = useRef(false);
   
   // Use the state hook to manage all form state
   const {
@@ -38,15 +37,11 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
     isPreviewModalOpen, setIsPreviewModalOpen
   } = useNewsState();
 
-  // Fetch the news post data
-  const fetchNewsPostData = useCallback(() => {
+  // Fetch the news post data when editing
+  const fetchNewsPostData = useCallback(async () => {
     if (!id) {
-      // Set default state for new post
+      console.log("[useNewsEditor] No ID provided, setting up for new post");
       setIsLoading(false);
-      return;
-    }
-    
-    if (fetchedRef.current) {
       return;
     }
 
@@ -54,26 +49,37 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
     console.log("[useNewsEditor] Current user role:", userRole);
     
     setIsLoading(true);
-    fetchedRef.current = true;
     
-    fetchNewsPost(id, {
-      setTitle,
-      setContent,
-      setExcerpt,
-      setStatus,
-      setCategory,
-      setTags,
-      setCurrentFeaturedImageUrl,
-      setIsLoading
-    });
+    try {
+      await fetchNewsPost(id, {
+        setTitle,
+        setContent,
+        setExcerpt,
+        setStatus,
+        setCategory,
+        setTags,
+        setCurrentFeaturedImageUrl,
+        setIsLoading
+      });
+      console.log("[useNewsEditor] Post data fetched successfully");
+    } catch (error) {
+      console.error("[useNewsEditor] Error fetching post data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load post data",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
   }, [
     id, fetchNewsPost, setTitle, setContent, setExcerpt, 
     setStatus, setCategory, setTags, setCurrentFeaturedImageUrl, 
-    setIsLoading, userRole
+    setIsLoading, userRole, toast
   ]);
 
-  // Initialize data on component mount
+  // Initialize data on component mount or when ID changes
   useEffect(() => {
+    console.log("[useNewsEditor] Effect triggered with ID:", id);
     fetchNewsPostData();
   }, [fetchNewsPostData]);
 
