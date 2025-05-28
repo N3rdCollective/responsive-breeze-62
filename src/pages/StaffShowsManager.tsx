@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +21,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  // DialogTrigger, // Not explicitly used for programmatic open
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,9 +31,6 @@ import {
   Radio, 
   Edit, 
   Trash2,
-  Clock,
-  Calendar,
-  Users,
   Search
 } from "lucide-react";
 import TitleUpdater from "@/components/TitleUpdater";
@@ -48,7 +42,7 @@ interface Show {
   host_name: string;
   time_slot: string;
   day_of_week: string;
-  duration: number; // in minutes
+  duration: number;
   status: 'active' | 'inactive' | 'scheduled';
   created_at: string;
 }
@@ -160,39 +154,27 @@ const StaffShowsManager = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-background text-foreground">
-        <Navbar />
-        <div className="flex items-center justify-center h-[calc(100vh-128px)]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
-        <Footer />
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   if (!userRole || !['admin', 'staff', 'super_admin'].includes(userRole)) {
     return (
-      <div className="min-h-screen bg-background text-foreground">
-        <Navbar />
-        <main className="container mx-auto px-4 py-24 text-center">
-          <h1 className="text-2xl font-bold text-destructive mb-4">Access Denied</h1>
-          <p className="mb-6">You do not have permission to manage shows.</p>
-          <Button onClick={() => navigate('/')}>Go to Homepage</Button>
-        </main>
-        <Footer />
-      </div>
+      <main className="container mx-auto px-4 py-24 text-center">
+        <h1 className="text-2xl font-bold text-destructive mb-4">Access Denied</h1>
+        <p className="mb-6">You do not have permission to manage shows.</p>
+        <Button onClick={() => navigate('/')}>Go to Homepage</Button>
+      </main>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background text-foreground">
-        <Navbar />
-        <div className="flex items-center justify-center h-[calc(100vh-128px)]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          <p className="ml-4 text-muted-foreground">Loading shows...</p>
-        </div>
-        <Footer />
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <p className="ml-4 text-muted-foreground">Loading shows...</p>
       </div>
     );
   }
@@ -200,157 +182,153 @@ const StaffShowsManager = () => {
   return (
     <>
       <TitleUpdater title="Manage Shows - Staff Panel" />
-      <div className="min-h-screen bg-background text-foreground">
-        <Navbar />
-        <main className="container mx-auto px-4 py-20">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-                <Button variant="outline" size="sm" onClick={() => navigate('/staff/panel')}>
-                    <ArrowLeft className="h-4 w-4 mr-1.5" />
-                    Back to Staff Panel
-                </Button>
-                <div>
-                    <h1 className="text-2xl font-bold flex items-center gap-2">
-                        <Radio className="h-7 w-7 text-primary" /> Show Management
-                    </h1>
-                    <p className="text-sm text-muted-foreground">Manage radio shows, schedules, and programming.</p>
-                </div>
-            </div>
-            <Button onClick={handleCreateShow}>
-              <Plus className="h-4 w-4 mr-2" />
-              New Show
-            </Button>
-          </div>
-
-          <Card>
-            <CardHeader>
-                <CardTitle>Show List & Schedule</CardTitle>
-                <div className="mt-2 relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search shows by title or host..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 w-full sm:w-1/2 lg:w-1/3"
-                    />
-                </div>
-            </CardHeader>
-            <CardContent>
-              <div className="border rounded-md">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[250px]">Show Title</TableHead>
-                      <TableHead>Host</TableHead>
-                      <TableHead>Day</TableHead>
-                      <TableHead>Time</TableHead>
-                      <TableHead>Duration</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredShows.length > 0 ? filteredShows.map((show) => (
-                      <TableRow key={show.id}>
-                        <TableCell className="font-medium">
-                            {show.title}
-                            <p className="text-xs text-muted-foreground line-clamp-1">{show.description}</p>
-                        </TableCell>
-                        <TableCell>{show.host_name}</TableCell>
-                        <TableCell>{show.day_of_week}</TableCell>
-                        <TableCell>{show.time_slot}</TableCell>
-                        <TableCell>{formatDuration(show.duration)}</TableCell>
-                        <TableCell>{getStatusBadge(show.status)}</TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="icon" onClick={() => handleEditShow(show)} className="h-8 w-8">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleDeleteShow(show.id)} className="h-8 w-8 text-destructive hover:text-destructive">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    )) : (
-                      <TableRow>
-                        <TableCell colSpan={7} className="h-24 text-center">
-                          No shows found matching your criteria.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+      <main className="container mx-auto px-4 py-20">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" onClick={() => navigate('/staff/panel')}>
+                  <ArrowLeft className="h-4 w-4 mr-1.5" />
+                  Back to Staff Panel
+              </Button>
+              <div>
+                  <h1 className="text-2xl font-bold flex items-center gap-2">
+                      <Radio className="h-7 w-7 text-primary" /> Show Management
+                  </h1>
+                  <p className="text-sm text-muted-foreground">Manage radio shows, schedules, and programming.</p>
               </div>
-            </CardContent>
-          </Card>
+          </div>
+          <Button onClick={handleCreateShow}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Show
+          </Button>
+        </div>
 
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogContent className="sm:max-w-lg">
-              <DialogHeader>
-                <DialogTitle>{editingShow ? 'Edit Show' : 'Create New Show'}</DialogTitle>
-                <DialogDescription>
-                  {editingShow ? 'Update the details for this show.' : 'Add a new show to the radio schedule.'}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="title">Show Title *</Label>
-                    <Input id="title" value={formData.title} onChange={(e) => handleInputChange('title', e.target.value)} placeholder="Enter show title" />
-                  </div>
-                  <div>
-                    <Label htmlFor="host_name">Host Name *</Label>
-                    <Input id="host_name" value={formData.host_name} onChange={(e) => handleInputChange('host_name', e.target.value)} placeholder="Enter host name" />
-                  </div>
-                </div>
-                
+        <Card>
+          <CardHeader>
+              <CardTitle>Show List & Schedule</CardTitle>
+              <div className="mt-2 relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                      placeholder="Search shows by title or host..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 w-full sm:w-1/2 lg:w-1/3"
+                  />
+              </div>
+          </CardHeader>
+          <CardContent>
+            <div className="border rounded-md">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[250px]">Show Title</TableHead>
+                    <TableHead>Host</TableHead>
+                    <TableHead>Day</TableHead>
+                    <TableHead>Time</TableHead>
+                    <TableHead>Duration</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredShows.length > 0 ? filteredShows.map((show) => (
+                    <TableRow key={show.id}>
+                      <TableCell className="font-medium">
+                          {show.title}
+                          <p className="text-xs text-muted-foreground line-clamp-1">{show.description}</p>
+                      </TableCell>
+                      <TableCell>{show.host_name}</TableCell>
+                      <TableCell>{show.day_of_week}</TableCell>
+                      <TableCell>{show.time_slot}</TableCell>
+                      <TableCell>{formatDuration(show.duration)}</TableCell>
+                      <TableCell>{getStatusBadge(show.status)}</TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" onClick={() => handleEditShow(show)} className="h-8 w-8">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteShow(show.id)} className="h-8 w-8 text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  )) : (
+                    <TableRow>
+                      <TableCell colSpan={7} className="h-24 text-center">
+                        No shows found matching your criteria.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>{editingShow ? 'Edit Show' : 'Create New Show'}</DialogTitle>
+              <DialogDescription>
+                {editingShow ? 'Update the details for this show.' : 'Add a new show to the radio schedule.'}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea id="description" value={formData.description} onChange={(e) => handleInputChange('description', e.target.value)} placeholder="Briefly describe the show" rows={3}/>
+                  <Label htmlFor="title">Show Title *</Label>
+                  <Input id="title" value={formData.title} onChange={(e) => handleInputChange('title', e.target.value)} placeholder="Enter show title" />
                 </div>
-                
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="day_of_week">Day *</Label>
-                    <Select value={formData.day_of_week} onValueChange={(value) => handleInputChange('day_of_week', value)}>
-                      <SelectTrigger><SelectValue placeholder="Select day" /></SelectTrigger>
-                      <SelectContent>
-                        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
-                          <SelectItem key={day} value={day}>{day}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="time_slot">Time *</Label>
-                    <Input id="time_slot" type="time" value={formData.time_slot} onChange={(e) => handleInputChange('time_slot', e.target.value)} />
-                  </div>
-                  <div>
-                    <Label htmlFor="duration">Duration (min)</Label>
-                    <Input id="duration" type="number" value={formData.duration} onChange={(e) => handleInputChange('duration', parseInt(e.target.value) || 0)} min="15" step="15" />
-                  </div>
-                </div>
-                
                 <div>
-                  <Label htmlFor="status">Status</Label>
-                  <Select value={formData.status} onValueChange={(value: 'active' | 'inactive' | 'scheduled') => handleInputChange('status', value)}>
-                    <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                  <Label htmlFor="host_name">Host Name *</Label>
+                  <Input id="host_name" value={formData.host_name} onChange={(e) => handleInputChange('host_name', e.target.value)} placeholder="Enter host name" />
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea id="description" value={formData.description} onChange={(e) => handleInputChange('description', e.target.value)} placeholder="Briefly describe the show" rows={3}/>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="day_of_week">Day *</Label>
+                  <Select value={formData.day_of_week} onValueChange={(value) => handleInputChange('day_of_week', value)}>
+                    <SelectTrigger><SelectValue placeholder="Select day" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="scheduled">Scheduled</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
+                      {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
+                        <SelectItem key={day} value={day}>{day}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
+                <div>
+                  <Label htmlFor="time_slot">Time *</Label>
+                  <Input id="time_slot" type="time" value={formData.time_slot} onChange={(e) => handleInputChange('time_slot', e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="duration">Duration (min)</Label>
+                  <Input id="duration" type="number" value={formData.duration} onChange={(e) => handleInputChange('duration', parseInt(e.target.value) || 0)} min="15" step="15" />
+                </div>
               </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleSaveShow}>{editingShow ? 'Save Changes' : 'Create Show'}</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </main>
-        <Footer />
-      </div>
+              
+              <div>
+                <Label htmlFor="status">Status</Label>
+                <Select value={formData.status} onValueChange={(value: 'active' | 'inactive' | 'scheduled') => handleInputChange('status', value)}>
+                  <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="scheduled">Scheduled</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleSaveShow}>{editingShow ? 'Save Changes' : 'Create Show'}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </main>
     </>
   );
 };

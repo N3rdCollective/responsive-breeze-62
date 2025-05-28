@@ -1,8 +1,6 @@
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,74 +13,65 @@ import TitleUpdater from "@/components/TitleUpdater";
 
 const StaffModerationDashboard = () => {
   const navigate = useNavigate();
-  const { staffName, userRole, isLoading } = useStaffAuth(); // userRole is available if needed later
+  const { staffName, userRole, isLoading } = useStaffAuth();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background text-foreground">
-        <Navbar />
-        <div className="flex items-center justify-center h-[calc(100vh-128px)]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-lg text-muted-foreground">Loading Moderation Dashboard...</p>
-          </div>
+      <div className="flex items-center justify-center h-[calc(100vh-128px)]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-lg text-muted-foreground">Loading Moderation Dashboard...</p>
         </div>
-        <Footer />
       </div>
     );
   }
 
   return (
     <>
-      <TitleUpdater title="Moderation Dashboard - Staff Panel" /> {/* Explicit title for clarity */}
-      <div className="min-h-screen bg-background text-foreground">
-        <Navbar />
-        <main className="max-w-4xl mx-auto px-4 pt-24 pb-16"> {/* Consistent main tag and padding */}
-          {/* Header */}
-          <div className="flex items-start sm:items-center justify-between mb-8 flex-col sm:flex-row gap-4">
-            <div className="flex items-center gap-4">
-                <Button variant="outline" size="sm" onClick={() => navigate('/staff/panel')}>
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back to Staff Panel
-                </Button>
-            </div>
-            <div className="text-center sm:text-left">
-              <h1 className="text-3xl font-bold flex items-center gap-2 justify-center sm:justify-start">
-                <Shield className="h-8 w-8 text-primary" />
-                Moderation Dashboard
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                Content moderation and community management tools.
-              </p>
-            </div>
-          </div>
-
-          {/* Notice Card */}
-          <Card className="border-primary/50 bg-primary/5 dark:bg-primary/10">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-primary">
-                <Shield className="h-5 w-5" />
-                Enhanced Moderation Tools
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-foreground/80 mb-4">
-                Advanced moderation features are now integrated into the Unified Staff Dashboard. 
-                This includes real-time reporting, user management, and content review tools.
-              </p>
-              <Button 
-                onClick={() => navigate('/staff/panel?tab=moderation')}
-                // className="bg-primary hover:bg-primary/90" // Uses default variant
-              >
-                <Shield className="h-4 w-4 mr-2" />
-                Go to Unified Moderation
-                <ArrowRight className="h-4 w-4 ml-1.5" />
+      <TitleUpdater title="Moderation Dashboard - Staff Panel" />
+      <main className="max-w-4xl mx-auto px-4 pt-24 pb-16">
+        {/* Header */}
+        <div className="flex items-start sm:items-center justify-between mb-8 flex-col sm:flex-row gap-4">
+          <div className="flex items-center gap-4">
+              <Button variant="outline" size="sm" onClick={() => navigate('/staff/panel')}>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Staff Panel
               </Button>
-            </CardContent>
-          </Card>
-        </main>
-        <Footer />
-      </div>
+          </div>
+          <div className="text-center sm:text-left">
+            <h1 className="text-3xl font-bold flex items-center gap-2 justify-center sm:justify-start">
+              <Shield className="h-8 w-8 text-primary" />
+              Moderation Dashboard
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Content moderation and community management tools.
+            </p>
+          </div>
+        </div>
+
+        {/* Notice Card */}
+        <Card className="border-primary/50 bg-primary/5 dark:bg-primary/10">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-primary">
+              <Shield className="h-5 w-5" />
+              Enhanced Moderation Tools
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-foreground/80 mb-4">
+              Advanced moderation features are now integrated into the Unified Staff Dashboard. 
+              This includes real-time reporting, user management, and content review tools.
+            </p>
+            <Button 
+              onClick={() => navigate('/staff/panel?tab=moderation')}
+            >
+              <Shield className="h-4 w-4 mr-2" />
+              Go to Unified Moderation
+              <ArrowRight className="h-4 w-4 ml-1.5" />
+            </Button>
+          </CardContent>
+        </Card>
+      </main>
     </>
   );
 };
