@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -43,7 +42,7 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({
   const canPublish = canModify || userRole === 'content_manager';
 
   const handleEdit = () => {
-    navigate(`/staff/news/edit/${postId}`);
+    navigate(`/staff/news/editor/${postId}`);
   };
 
   const handleView = () => {
