@@ -14,16 +14,14 @@ const StaffFeaturedArtistsPage = () => {
   const navigate = useNavigate();
   const logger = useStaffActivityLogger();
   
-  // Check if user has appropriate permissions
   const isModeratorOrHigher = userRole === "admin" || userRole === "moderator" || userRole === "super_admin";
   
   useEffect(() => {
-    // Log page visit
     if (!isLoading && isModeratorOrHigher) {
       logger.logActivity(
         "visit",
         "Visited featured artists management page",
-        undefined, // Using undefined instead of "page" which is not a valid EntityType
+        undefined,
         undefined,
         { page: "featured_artists_management" }
       );

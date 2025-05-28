@@ -8,7 +8,6 @@ import { useNewsEditor } from "@/components/news/editor/useNewsEditor";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// Type definitions for our news posts
 interface NewsPost {
   id: string;
   title: string;
@@ -64,7 +63,6 @@ const NewsEditor = () => {
     
     console.log("Calling fetchNewsPost with id:", id);
     console.log("Current user role:", userRole);
-    // Call fetchNewsPost which now handles both new and existing posts
     fetchNewsPost();
   }, [id, staffName, authLoading, fetchNewsPost, userRole]);
   
@@ -80,7 +78,6 @@ const NewsEditor = () => {
     return null;
   }
   
-  // Only show loading spinner when editing an existing post and data is being fetched
   if (id && isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
