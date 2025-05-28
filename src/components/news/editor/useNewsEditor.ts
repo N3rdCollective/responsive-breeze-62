@@ -7,7 +7,6 @@ import { useNewsData } from "./hooks/useNewsData";
 import { useImageHandler } from "./hooks/useImageHandler";
 import { useCallback, useEffect, useRef } from "react";
 import { useNewsPermissions } from "./hooks/useNewsPermissions";
-import { useSaveNewsWorkflow } from "./hooks/useSaveNewsWorkflow";
 
 interface UseNewsEditorProps {
   id?: string;
@@ -21,7 +20,6 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
   const { handleImageUpload } = useImageHandler();
   const { fetchNewsPost, saveNewsPost } = useNewsData();
   const { canPublish, getFinalStatus } = useNewsPermissions({ userRole });
-  const { executeSaveWorkflow } = useSaveNewsWorkflow({ staffName });
   const fetchedRef = useRef(false);
   
   // Use the state hook to manage all form state
@@ -101,7 +99,7 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
     setIsSaving(true);
     
     try {
-      // Save the post with error handling
+      // Save the post with integrated workflow
       const saveResult = await saveNewsPost(
         {
           id,
@@ -109,7 +107,7 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
           content,
           excerpt,
           status: finalStatus,
-          category: category || 'Uncategorized', // Ensure category is never empty
+          category: category || 'Uncategorized',
           tags: tags || [],
           featuredImage,
           currentFeaturedImageUrl,
@@ -129,17 +127,7 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
         }
       );
       
-      // Handle activity logging through our workflow helper
-      await executeSaveWorkflow(
-        () => Promise.resolve(saveResult), // Pass the already-completed save result
-        {
-          id,
-          title,
-          status: finalStatus,
-          category,
-          hasImage: !!featuredImage || !!currentFeaturedImageUrl
-        }
-      );
+      console.log("[useNewsEditor] Save completed:", saveResult);
     } catch (error) {
       console.error("[useNewsEditor] Error saving post:", error);
       setIsSaving(false);

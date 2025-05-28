@@ -1,19 +1,23 @@
 
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import { extractTextFromHtml } from "../utils/textUtils";
 import { NewsPostData, SaveNewsPostCallbacks } from "./types/newsPostTypes";
 import { createNewsPost, updateNewsPost, fetchUpdatedPost, preparePostData } from "./utils/newsPostUtils";
 import { handlePostImage } from "./utils/imageUtils";
+import { useNewsActivityLogging } from "./useNewsActivityLogging";
 
 /**
- * Hook for saving news post
+ * Hook for saving news post with integrated workflow
  * @returns Function to save news post
  */
 export const useSaveNewsPost = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { logNewsActivity } = useNewsActivityLogging();
 
   /**
-   * Saves a news post (create or update)
+   * Saves a news post (create or update) with complete workflow
    * @param postData Post data to save
    * @param callbacks Object containing callback functions
    * @returns Object containing the saved post id
@@ -28,16 +32,6 @@ export const useSaveNewsPost = () => {
     console.log("SaveNewsPost - Starting save with ID:", id);
     console.log("SaveNewsPost - Post status:", status);
     console.log("SaveNewsPost - Post category:", category);
-    console.log("SaveNewsPost - Post data:", JSON.stringify({
-      title,
-      excerpt: postData.excerpt ? `${postData.excerpt.substring(0, 30)}...` : 'none',
-      status,
-      category,
-      tags,
-      staffName,
-      currentFeaturedImageUrl: currentFeaturedImageUrl ? 'Has image' : 'No image',
-      featuredImage: featuredImage ? `${featuredImage.name} (${featuredImage.size} bytes)` : 'None'
-    }));
     
     if (!title || !content) {
       toast({
@@ -89,7 +83,6 @@ export const useSaveNewsPost = () => {
           throw new Error(`Database error: ${result.error.message} (${result.error.code})`);
         }
         
-        // Fix the type checking to ensure 'data' exists before accessing it
         const verifiedResult = await fetchUpdatedPost(id);
         if ('data' in verifiedResult && verifiedResult.data) {
           console.log("Verified post update:", verifiedResult.data);
@@ -104,6 +97,26 @@ export const useSaveNewsPost = () => {
         if ('data' in result && result.data && result.data.length > 0) {
           postId = result.data[0].id;
         }
+      }
+      
+      // Log the activity after successful save
+      if (postId) {
+        const actionType = id ? 'update_post' : 'create_post';
+        const isPublishing = status === 'published';
+        
+        // If we're updating and publishing, log a publish action instead
+        const finalActionType = id && isPublishing ? 'publish_post' : actionType;
+        
+        await logNewsActivity(
+          finalActionType as any,
+          {
+            id: postId as string,
+            title,
+            category: category || 'Uncategorized',
+            status,
+            hasImage: !!(featuredImage || currentFeaturedImageUrl)
+          }
+        );
       }
       
       toast({
