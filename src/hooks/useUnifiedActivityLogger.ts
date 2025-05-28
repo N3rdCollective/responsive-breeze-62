@@ -33,7 +33,7 @@ export const useUnifiedActivityLogger = () => {
         p_description: description,
         p_entity_type: entityType || null,
         p_entity_id: entityId || null,
-        p_metadata: metadata || null
+        p_details: metadata || null // Changed from p_metadata to p_details
       });
 
       console.log("[useUnifiedActivityLogger] Activity logged:", {
