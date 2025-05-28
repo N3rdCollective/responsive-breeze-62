@@ -17,7 +17,7 @@ const StaffNewsPage = () => {
   const handleRefresh = () => setRefreshTrigger(prev => prev + 1);
   
   // Check if user has appropriate permissions
-  const canManageNews = userRole === "admin" || userRole === "moderator" || userRole === "staff" || userRole === "super_admin";
+  const canManageNews = userRole === "admin" || userRole === "moderator" || userRole === "staff" || userRole === "super_admin" || userRole === "blogger";
   
   if (isLoading) {
     return (
@@ -32,12 +32,12 @@ const StaffNewsPage = () => {
   }
   
   return (
-    <div className="container mx-auto p-4 max-w-5xl">
+    <div className="container mx-auto p-4 max-w-7xl">
       <div className="mb-4">
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate('/staff')}
+          onClick={() => navigate('/staff/panel')}
           className="gap-1 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -51,6 +51,16 @@ const StaffNewsPage = () => {
         isAdmin={isAdmin}
         onLogout={handleLogout}
       />
+      
+      <div className="mb-6 flex justify-end">
+        <Button 
+          onClick={() => navigate("/staff/news/editor")} 
+          className="flex items-center gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          Create New Post
+        </Button>
+      </div>
       
       <NewsListTable 
         refreshTrigger={refreshTrigger} 

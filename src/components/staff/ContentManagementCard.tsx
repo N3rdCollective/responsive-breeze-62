@@ -12,7 +12,8 @@ export const ContentManagementCard = ({ userRole }: ContentManagementCardProps =
   // Check if the user role has permission to manage content
   const hasContentAccess = !userRole || userRole === "super_admin" || 
                           userRole === "admin" || userRole === "moderator" || 
-                          userRole === "content_manager" || userRole === "blogger";
+                          userRole === "content_manager" || userRole === "blogger" ||
+                          userRole === "staff";
   
   // Check if the user can manage all types of content
   const canManageAllContent = !userRole || 
