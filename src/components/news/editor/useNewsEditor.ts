@@ -5,7 +5,7 @@ import { NewsStatus } from "./NewsForm";
 import { useNewsState } from "./hooks/useNewsState";
 import { useNewsData } from "./hooks/useNewsData";
 import { useImageHandler } from "./hooks/useImageHandler";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useNewsPermissions } from "./hooks/useNewsPermissions";
 
 interface UseNewsEditorProps {
@@ -20,6 +20,7 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
   const { handleImageUpload } = useImageHandler();
   const { fetchNewsPost, saveNewsPost } = useNewsData();
   const { canPublish, getFinalStatus } = useNewsPermissions({ userRole });
+  const fetchInProgressRef = useRef(false);
   
   console.log("[useNewsEditor] Hook initialized with:", { id, staffName, userRole });
   
@@ -49,8 +50,14 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
       return;
     }
 
+    // Prevent multiple simultaneous fetch attempts
+    if (fetchInProgressRef.current) {
+      console.log("[useNewsEditor] Fetch already in progress, skipping");
+      return;
+    }
+
     console.log("[useNewsEditor] Starting to fetch post data for ID:", id);
-    setIsLoading(true);
+    fetchInProgressRef.current = true;
     
     try {
       await fetchNewsPost(id, {
@@ -68,10 +75,12 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
       console.error("[useNewsEditor] Error fetching post data:", error);
       toast({
         title: "Error",
-        description: "Failed to load post data",
+        description: "Failed to load post data. Please refresh the page.",
         variant: "destructive",
       });
       setIsLoading(false);
+    } finally {
+      fetchInProgressRef.current = false;
     }
   }, [
     id, fetchNewsPost, setTitle, setContent, setExcerpt, 
@@ -83,7 +92,7 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
   useEffect(() => {
     console.log("[useNewsEditor] Effect triggered - ID changed to:", id);
     fetchNewsPostData();
-  }, [fetchNewsPostData]);
+  }, [id]); // Only depend on ID to prevent multiple calls
 
   // Handle image selection
   const handleImageSelected = (file: File) => {

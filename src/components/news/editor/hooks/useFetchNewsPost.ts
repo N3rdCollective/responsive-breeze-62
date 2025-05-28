@@ -47,11 +47,18 @@ export const useFetchNewsPost = () => {
       console.log("[useFetchNewsPost] Fetching news post with ID:", postId);
       setIsLoading(true);
       
-      const { data, error } = await supabase
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 10000);
+      });
+      
+      const fetchPromise = supabase
         .from("posts")
         .select("*")
         .eq("id", postId)
         .maybeSingle();
+      
+      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
       
       console.log("[useFetchNewsPost] Supabase response:", { data, error });
       
@@ -59,7 +66,7 @@ export const useFetchNewsPost = () => {
         console.error("[useFetchNewsPost] Error fetching news post:", error);
         toast({
           title: "Error",
-          description: `Failed to load news post: ${error.message}`,
+          description: `Failed to load news post. Please try refreshing the page.`,
           variant: "destructive",
         });
         setIsLoading(false);
@@ -70,9 +77,17 @@ export const useFetchNewsPost = () => {
         console.error("[useFetchNewsPost] News post not found with ID:", postId);
         toast({
           title: "Post Not Found",
-          description: `No news post found with ID: ${postId}`,
+          description: `No news post found with ID: ${postId}. Redirecting to create new post.`,
           variant: "destructive",
         });
+        // Reset form for new post instead of staying in loading state
+        setTitle("");
+        setContent("");
+        setExcerpt("");
+        setStatus("draft");
+        setCategory("");
+        setTags([]);
+        setCurrentFeaturedImageUrl("");
         setIsLoading(false);
         return;
       }
@@ -119,7 +134,7 @@ export const useFetchNewsPost = () => {
       console.error("[useFetchNewsPost] Error in fetchNewsPost:", error);
       toast({
         title: "Error",
-        description: "Failed to load news post. Please try again.",
+        description: "Failed to load news post. Please refresh the page and try again.",
         variant: "destructive",
       });
       setIsLoading(false);
