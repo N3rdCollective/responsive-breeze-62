@@ -1,32 +1,30 @@
 
-import { StaffMember } from "../types/pendingStaffTypes";
+import { useMemo } from "react";
 
-export const useStaffMemberPermissions = (staff: StaffMember | undefined, currentUserRole: string | undefined) => {
-  if (!staff || !currentUserRole) {
+export const useStaffMemberPermissions = (currentUserRole: string, targetRole: string) => {
+  return useMemo(() => {
+    const isCurrentUserSuperAdmin = currentUserRole === "super_admin";
+    const isCurrentUserAdmin = currentUserRole === "admin";
+    const isTargetSuperAdmin = targetRole === "super_admin";
+    const isTargetAdmin = targetRole === "admin";
+
+    // Super admins can modify anyone except other super admins
+    // Admins can modify everyone except super admins and other admins
+    const canModifyRole = isCurrentUserSuperAdmin && !isTargetSuperAdmin;
+
+    // Password reset permissions: similar to role modification
+    const canSendPasswordReset = 
+      (isCurrentUserSuperAdmin && !isTargetSuperAdmin) ||
+      (isCurrentUserAdmin && !isTargetSuperAdmin && !isTargetAdmin);
+
+    // Remove permissions: only super admins can remove staff
+    const canRemove = isCurrentUserSuperAdmin && !isTargetSuperAdmin;
+
     return {
-      isTargetSuperAdmin: false,
-      canModifyDetails: false,
-      canSendPasswordReset: false,
+      canModifyRole,
+      canSendPasswordReset,
+      canRemove,
+      isTargetSuperAdmin
     };
-  }
-
-  const isTargetSuperAdmin = staff.role === "super_admin";
-
-  // Can current user modify this staff member's role or remove them?
-  const canModifyDetails =
-    (currentUserRole === "admin" || currentUserRole === "super_admin") &&
-    !isTargetSuperAdmin &&
-    (staff.role !== "admin" || currentUserRole === "super_admin");
-
-  // Can current user send a password reset for this staff member?
-  const canSendPasswordReset =
-    (currentUserRole === "admin" || currentUserRole === "super_admin") &&
-    !isTargetSuperAdmin && // Cannot reset super_admin's password
-    (staff.role !== "admin" || currentUserRole === "super_admin"); // Admin cannot reset other admin, only super_admin can
-
-  return {
-    isTargetSuperAdmin,
-    canModifyDetails,
-    canSendPasswordReset,
-  };
+  }, [currentUserRole, targetRole]);
 };

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { 
   Table, 
   TableBody, 
@@ -8,31 +8,41 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import StaffMemberRow from "./StaffMemberRow";
-
-interface StaffMember {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  role: string;
-  created_at: string;
-}
+import { StaffMember } from "./types/pendingStaffTypes";
 
 interface StaffTableProps {
   staffMembers: StaffMember[];
+  loading: boolean;
+  onStaffUpdate: () => void;
   currentUserRole: string;
-  onRoleChange: (staffId: string, newRole: string) => void;
-  onRemoveStaff: (staffId: string) => void;
-  onResetPassword: (staffId: string) => void;
 }
 
 const StaffTable: React.FC<StaffTableProps> = ({
   staffMembers,
-  currentUserRole,
-  onRoleChange,
-  onRemoveStaff,
-  onResetPassword
+  loading,
+  onStaffUpdate,
+  currentUserRole
 }) => {
+  const [updatingRoleId, setUpdatingRoleId] = useState<string | null>(null);
+  const [sendingResetId, setSendingResetId] = useState<string | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+
+  if (loading) {
+    return (
+      <div className="border rounded-md p-8">
+        <div className="text-center text-muted-foreground">Loading staff members...</div>
+      </div>
+    );
+  }
+
+  if (staffMembers.length === 0) {
+    return (
+      <div className="border rounded-md p-8">
+        <div className="text-center text-muted-foreground">No staff members found.</div>
+      </div>
+    );
+  }
+
   return (
     <div className="border rounded-md">
       <Table>
@@ -49,11 +59,15 @@ const StaffTable: React.FC<StaffTableProps> = ({
           {staffMembers.map((member) => (
             <StaffMemberRow
               key={member.id}
-              member={member}
+              staff={member}
               currentUserRole={currentUserRole}
-              onRoleChange={onRoleChange}
-              onRemoveStaff={onRemoveStaff}
-              onResetPassword={onResetPassword}
+              onUpdate={onStaffUpdate}
+              isUpdatingRole={updatingRoleId === member.id}
+              setIsUpdatingRole={(isUpdating) => setUpdatingRoleId(isUpdating ? member.id : null)}
+              isSendingReset={sendingResetId === member.id}
+              setIsSendingReset={(isSending) => setSendingResetId(isSending ? member.id : null)}
+              isRemoving={removingId === member.id}
+              setIsRemoving={(isRemoving) => setRemovingId(isRemoving ? member.id : null)}
             />
           ))}
         </TableBody>
