@@ -25,7 +25,7 @@ import ForumSearchResultsPage from "@/pages/ForumSearchResultsPage";
 
 {/* Staff Pages */}
 import StaffLogin from "@/pages/StaffLogin";
-import StaffNewsEditor from "@/pages/StaffNewsEditor"; 
+import NewsEditor from "@/pages/NewsEditor"; 
 import StaffNewsPage from "@/pages/StaffNewsPage"; 
 import StaffShowsManager from "@/pages/StaffShowsManager"; 
 import StaffForumManager from "@/pages/StaffForumManagementPage";
@@ -79,8 +79,8 @@ function App() {
             <Route path="/staff/panel" element={<UnifiedStaffDashboard />} />
             <Route path="/staff/home" element={<StaffHomepageManager />} />
             <Route path="/staff/news" element={<StaffNewsPage />} />
-            <Route path="/staff/news/editor" element={<StaffNewsEditor />} />
-            <Route path="/staff/news/editor/:postId" element={<StaffNewsEditor />} />
+            <Route path="/staff/news/editor" element={<NewsEditor />} />
+            <Route path="/staff/news/editor/:postId" element={<NewsEditor />} />
             <Route path="/staff/shows" element={<StaffShowsManager />} />
             <Route path="/staff/forum" element={<StaffForumManager />} />
             <Route path="/staff/users" element={<StaffUserManager />} />

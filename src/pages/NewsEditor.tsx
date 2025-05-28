@@ -7,6 +7,7 @@ import NewsForm from "@/components/news/editor/NewsForm";
 import { useNewsEditor } from "@/components/news/editor/useNewsEditor";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import TitleUpdater from "@/components/TitleUpdater";
 
 interface NewsPost {
   id: string;
@@ -28,6 +29,9 @@ const NewsEditor = () => {
   const navigate = useNavigate();
   
   console.log("NewsEditor loaded with id:", id, "User role:", userRole);
+  
+  // Check if user has appropriate permissions for news editing
+  const canEditNews = userRole === "admin" || userRole === "moderator" || userRole === "staff" || userRole === "super_admin" || userRole === "blogger";
   
   const {
     title,
@@ -56,7 +60,7 @@ const NewsEditor = () => {
   
   useEffect(() => {
     if (authLoading) return;
-    if (!staffName) {
+    if (!staffName || !canEditNews) {
       navigate("/staff/login");
       return;
     }
@@ -64,7 +68,7 @@ const NewsEditor = () => {
     console.log("Calling fetchNewsPost with id:", id);
     console.log("Current user role:", userRole);
     fetchNewsPost();
-  }, [id, staffName, authLoading, fetchNewsPost, userRole]);
+  }, [id, staffName, authLoading, fetchNewsPost, userRole, canEditNews, navigate]);
   
   if (authLoading) {
     return (
@@ -74,8 +78,16 @@ const NewsEditor = () => {
     );
   }
   
-  if (!staffName) {
-    return null;
+  if (!staffName || !canEditNews) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center p-8 bg-card rounded-lg shadow-lg">
+          <h2 className="text-2xl font-semibold mb-4 text-destructive">Access Denied</h2>
+          <p className="mb-6">You do not have permission to access the news editor.</p>
+          <Button onClick={() => navigate('/staff/panel')}>Go to Staff Dashboard</Button>
+        </div>
+      </div>
+    );
   }
   
   if (id && isLoading) {
@@ -87,49 +99,57 @@ const NewsEditor = () => {
   }
   
   return (
-    <div className="container mx-auto p-4 max-w-4xl">
-      <div className="mb-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/staff/news')}
-          className="gap-1 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to News Management
-        </Button>
+    <>
+      <TitleUpdater title={id ? `Edit Post: ${title || 'Untitled'}` : "Create New Post"} />
+      <div className="container mx-auto p-4 max-w-6xl">
+        <div className="mb-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/staff/news')}
+            className="gap-1 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to News Management
+          </Button>
+        </div>
+        
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold">
+              {id ? "Edit News Post" : "Create News Post"}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {id ? `Editing "${title || 'Untitled'}"` : 'Create a new article with rich content, tags, and media'}
+            </p>
+          </div>
+        </div>
+        
+        <NewsForm
+          title={title}
+          setTitle={setTitle}
+          content={content}
+          setContent={setContent}
+          excerpt={excerpt}
+          setExcerpt={setExcerpt}
+          status={status}
+          setStatus={setStatus}
+          category={category}
+          setCategory={setCategory}
+          tags={tags || []}
+          setTags={setTags}
+          currentFeaturedImageUrl={currentFeaturedImageUrl}
+          onImageSelected={handleImageSelected}
+          onSave={handleSave}
+          isSaving={isSaving}
+          isUploading={isUploading}
+          isPreviewModalOpen={isPreviewModalOpen}
+          setIsPreviewModalOpen={setIsPreviewModalOpen}
+          authorName={staffName}
+          canPublish={canPublish}
+        />
       </div>
-      
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">
-          {id ? "Edit News Post" : "Create News Post"}
-        </h1>
-      </div>
-      
-      <NewsForm
-        title={title}
-        setTitle={setTitle}
-        content={content}
-        setContent={setContent}
-        excerpt={excerpt}
-        setExcerpt={setExcerpt}
-        status={status}
-        setStatus={setStatus}
-        category={category}
-        setCategory={setCategory}
-        tags={tags || []}
-        setTags={setTags}
-        currentFeaturedImageUrl={currentFeaturedImageUrl}
-        onImageSelected={handleImageSelected}
-        onSave={handleSave}
-        isSaving={isSaving}
-        isUploading={isUploading}
-        isPreviewModalOpen={isPreviewModalOpen}
-        setIsPreviewModalOpen={setIsPreviewModalOpen}
-        authorName={staffName}
-        canPublish={canPublish}
-      />
-    </div>
+    </>
   );
 };
 
