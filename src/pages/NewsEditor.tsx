@@ -10,11 +10,12 @@ import { Button } from "@/components/ui/button";
 import TitleUpdater from "@/components/TitleUpdater";
 
 const NewsEditor = () => {
-  const { id } = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>();
+  const id = params.id; // Extract id properly from params
   const { staffName, isLoading: authLoading, userRole } = useStaffAuth();
   const navigate = useNavigate();
   
-  console.log("[NewsEditor] Component loaded with params:", { id });
+  console.log("[NewsEditor] Component loaded with params:", { id, params });
   console.log("[NewsEditor] Auth state:", { staffName, isLoading: authLoading, userRole });
   
   // Check if user has appropriate permissions for news editing
