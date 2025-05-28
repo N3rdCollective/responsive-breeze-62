@@ -10,12 +10,14 @@ import { Button } from "@/components/ui/button";
 import TitleUpdater from "@/components/TitleUpdater";
 
 const NewsEditor = () => {
-  const params = useParams<{ id: string }>();
-  const id = params.id; // Extract id properly from params
+  const params = useParams<{ id?: string; postId?: string }>();
+  // Check both 'id' and 'postId' params since routes might use either
+  const id = params.id || params.postId;
   const { staffName, isLoading: authLoading, userRole } = useStaffAuth();
   const navigate = useNavigate();
   
-  console.log("[NewsEditor] Component loaded with params:", { id, params });
+  console.log("[NewsEditor] Component loaded with params:", { params, extractedId: id });
+  console.log("[NewsEditor] URL pathname:", window.location.pathname);
   console.log("[NewsEditor] Auth state:", { staffName, isLoading: authLoading, userRole });
   
   // Check if user has appropriate permissions for news editing
@@ -55,6 +57,16 @@ const NewsEditor = () => {
       return;
     }
   }, [staffName, authLoading, canEditNews, navigate]);
+  
+  // Add effect to log when ID changes
+  useEffect(() => {
+    console.log("[NewsEditor] ID changed:", { id, isLoading });
+    if (id) {
+      console.log("[NewsEditor] Editing existing post with ID:", id);
+    } else {
+      console.log("[NewsEditor] Creating new post");
+    }
+  }, [id, isLoading]);
   
   if (authLoading) {
     return (
@@ -109,7 +121,7 @@ const NewsEditor = () => {
               {id ? "Edit News Post" : "Create News Post"}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {id ? `Editing "${title || 'Loading...'}"` : 'Create a new article with rich content, tags, and media'}
+              {id ? `Editing "${title || 'Loading...'}" (ID: ${id})` : 'Create a new article with rich content, tags, and media'}
             </p>
           </div>
         </div>

@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -43,8 +44,23 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({
 
   const handleEdit = () => {
     console.log("[NewsTableActions] Edit button clicked for post:", postId);
-    console.log("[NewsTableActions] Navigating to editor with ID:", postId);
-    navigate(`/staff/news/editor/${postId}`);
+    console.log("[NewsTableActions] Post details:", { id: postId, title: postTitle, status: postStatus });
+    
+    // Use the correct route that matches your App.tsx
+    const editorRoute = `/staff/news/editor/${postId}`;
+    console.log("[NewsTableActions] Navigating to editor with route:", editorRoute);
+    
+    try {
+      navigate(editorRoute);
+      console.log("[NewsTableActions] Navigation successful");
+    } catch (error) {
+      console.error("[NewsTableActions] Navigation error:", error);
+      toast({
+        title: "Navigation Error",
+        description: "Failed to open editor. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleView = async () => {

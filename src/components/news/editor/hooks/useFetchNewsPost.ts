@@ -17,7 +17,7 @@ interface FetchNewsPostCallbacks {
 export const useFetchNewsPost = () => {
   const { toast } = useToast();
 
-  const fetchNewsPost = async (postId: string, callbacks: FetchNewsPostCallbacks) => {
+  const fetchNewsPost = async (postId: string | undefined, callbacks: FetchNewsPostCallbacks) => {
     const {
       setTitle,
       setContent,
@@ -29,20 +29,31 @@ export const useFetchNewsPost = () => {
       setIsLoading
     } = callbacks;
     
+    console.log("[useFetchNewsPost] Starting fetch with postId:", postId);
+    
     if (!postId) {
-      console.log("[useFetchNewsPost] No postId provided");
+      console.log("[useFetchNewsPost] No postId provided, setting up for new post");
+      setIsLoading(false);
+      return;
+    }
+    
+    if (typeof postId !== 'string' || postId.trim() === '') {
+      console.log("[useFetchNewsPost] Invalid postId:", postId);
       setIsLoading(false);
       return;
     }
     
     try {
       console.log("[useFetchNewsPost] Fetching news post with ID:", postId);
+      setIsLoading(true);
       
       const { data, error } = await supabase
         .from("posts")
         .select("*")
         .eq("id", postId)
         .maybeSingle();
+      
+      console.log("[useFetchNewsPost] Supabase response:", { data, error });
       
       if (error) {
         console.error("[useFetchNewsPost] Error fetching news post:", error);
@@ -58,8 +69,8 @@ export const useFetchNewsPost = () => {
       if (!data) {
         console.error("[useFetchNewsPost] News post not found with ID:", postId);
         toast({
-          title: "Error",
-          description: "News post not found",
+          title: "Post Not Found",
+          description: `No news post found with ID: ${postId}`,
           variant: "destructive",
         });
         setIsLoading(false);
@@ -70,7 +81,9 @@ export const useFetchNewsPost = () => {
         id: data.id,
         title: data.title,
         status: data.status,
-        category: data.category
+        category: data.category,
+        tags: data.tags,
+        featured_image: data.featured_image
       });
       
       // Set all the form data from the fetched post
@@ -106,7 +119,7 @@ export const useFetchNewsPost = () => {
       console.error("[useFetchNewsPost] Error in fetchNewsPost:", error);
       toast({
         title: "Error",
-        description: "Failed to load news post",
+        description: "Failed to load news post. Please try again.",
         variant: "destructive",
       });
       setIsLoading(false);
