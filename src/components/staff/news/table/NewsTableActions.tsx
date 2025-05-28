@@ -42,10 +42,12 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({
   const canPublish = canModify || userRole === 'content_manager';
 
   const handleEdit = () => {
+    console.log("[NewsTableActions] Edit button clicked for post:", postId);
+    console.log("[NewsTableActions] Navigating to editor with ID:", postId);
     navigate(`/staff/news/editor/${postId}`);
   };
 
-  const handleView = () => {
+  const handleView = async () => {
     if (postStatus === 'published') {
       navigate(`/news/${postId}`);
     } else {

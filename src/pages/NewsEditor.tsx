@@ -14,7 +14,8 @@ const NewsEditor = () => {
   const { staffName, isLoading: authLoading, userRole } = useStaffAuth();
   const navigate = useNavigate();
   
-  console.log("NewsEditor loaded with id:", id, "User role:", userRole);
+  console.log("[NewsEditor] Component loaded with params:", { id });
+  console.log("[NewsEditor] Auth state:", { staffName, isLoading: authLoading, userRole });
   
   // Check if user has appropriate permissions for news editing
   const canEditNews = userRole === "admin" || userRole === "moderator" || userRole === "staff" || userRole === "super_admin" || userRole === "blogger";
@@ -44,8 +45,11 @@ const NewsEditor = () => {
   } = useNewsEditor({ id, staffName, userRole });
   
   useEffect(() => {
+    console.log("[NewsEditor] Auth state changed:", { authLoading, staffName, canEditNews });
+    
     if (authLoading) return;
     if (!staffName || !canEditNews) {
+      console.log("[NewsEditor] Redirecting to login - no auth or permissions");
       navigate("/staff/login");
       return;
     }
@@ -72,12 +76,15 @@ const NewsEditor = () => {
   }
   
   if (isLoading) {
+    console.log("[NewsEditor] Still loading post data...");
     return (
       <div className="flex items-center justify-center h-screen">
         <LoadingSpinner />
       </div>
     );
   }
+  
+  console.log("[NewsEditor] Rendering editor with data:", { id, title, status, category });
   
   return (
     <>

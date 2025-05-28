@@ -21,6 +21,8 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
   const { fetchNewsPost, saveNewsPost } = useNewsData();
   const { canPublish, getFinalStatus } = useNewsPermissions({ userRole });
   
+  console.log("[useNewsEditor] Hook initialized with:", { id, staffName, userRole });
+  
   // Use the state hook to manage all form state
   const {
     title, setTitle,
@@ -39,15 +41,15 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
 
   // Fetch the news post data when editing
   const fetchNewsPostData = useCallback(async () => {
+    console.log("[useNewsEditor] fetchNewsPostData called with ID:", id);
+    
     if (!id) {
       console.log("[useNewsEditor] No ID provided, setting up for new post");
       setIsLoading(false);
       return;
     }
 
-    console.log("[useNewsEditor] Fetching post data for ID:", id);
-    console.log("[useNewsEditor] Current user role:", userRole);
-    
+    console.log("[useNewsEditor] Starting to fetch post data for ID:", id);
     setIsLoading(true);
     
     try {
@@ -61,7 +63,7 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
         setCurrentFeaturedImageUrl,
         setIsLoading
       });
-      console.log("[useNewsEditor] Post data fetched successfully");
+      console.log("[useNewsEditor] Post data fetched successfully for ID:", id);
     } catch (error) {
       console.error("[useNewsEditor] Error fetching post data:", error);
       toast({
@@ -74,12 +76,12 @@ export const useNewsEditor = ({ id, staffName, userRole }: UseNewsEditorProps) =
   }, [
     id, fetchNewsPost, setTitle, setContent, setExcerpt, 
     setStatus, setCategory, setTags, setCurrentFeaturedImageUrl, 
-    setIsLoading, userRole, toast
+    setIsLoading, toast
   ]);
 
   // Initialize data on component mount or when ID changes
   useEffect(() => {
-    console.log("[useNewsEditor] Effect triggered with ID:", id);
+    console.log("[useNewsEditor] Effect triggered - ID changed to:", id);
     fetchNewsPostData();
   }, [fetchNewsPostData]);
 
