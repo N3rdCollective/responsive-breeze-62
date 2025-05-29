@@ -23,7 +23,7 @@ import {
   ShieldCheck, 
   MessageSquare,
   LogOut,
-  Settings
+  ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -84,6 +84,27 @@ const StaffSidebar = () => {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        
+        <SidebarGroup className="mt-4">
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  asChild 
+                  className="w-full hover:bg-muted"
+                >
+                  <button 
+                    onClick={() => window.open('/', '_blank')}
+                    className="flex items-center gap-3 px-3 py-2 rounded-md transition-colors w-full text-left"
+                  >
+                    <ArrowLeft className="h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">Back to Website</span>
+                  </button>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

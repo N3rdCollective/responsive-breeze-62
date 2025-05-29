@@ -5,8 +5,6 @@ import { StaffAuthProvider } from '@/hooks/useStaffAuth';
 import StaffSidebar from '@/components/staff/StaffSidebar';
 import StaffRouteProtection from '@/components/staff/StaffRouteProtection';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 
 const StaffLayout: React.FC = () => {
   return (
@@ -19,15 +17,6 @@ const StaffLayout: React.FC = () => {
               <div className="flex items-center justify-between p-3 sm:p-4 border-b bg-background/95 backdrop-blur-sm sticky top-0 z-10">
                 <div className="flex items-center gap-2">
                   <SidebarTrigger className="lg:hidden" />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => window.open('/', '_blank')}
-                    className="gap-1 text-muted-foreground hover:text-foreground"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to Website
-                  </Button>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span className="hidden sm:inline">Staff Panel</span>
