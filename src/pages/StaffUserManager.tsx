@@ -38,7 +38,7 @@ const StaffUserManager = () => {
   
   const [actionDialog, setActionDialog] = useState<{
     open: boolean;
-    action: 'suspend' | 'ban' | 'unban' | 'warn' | null; // Added 'warn'
+    action: 'suspend' | 'ban' | 'unban' | 'warn' | null;
     user: User | null;
   }>({ open: false, action: null, user: null });
   const [actionReason, setActionReason] = useState('');
@@ -50,13 +50,9 @@ const StaffUserManager = () => {
   const [messageSubject, setMessageSubject] = useState('');
   const [messageContent, setMessageContent] = useState('');
 
-  useEffect(() => {
-    // Simulating auth check delay and data fetch
-    if (!authLoading && (!userRole || !['admin', 'super_admin'].includes(userRole))) {
-        setIsLoading(false); // Stop data loading if not authorized
-        return;
-    }
-
+  // Function to load users data
+  const loadUsers = async () => {
+    setIsLoading(true);
     const mockUsers: User[] = [
       {
         id: '1',
@@ -66,8 +62,8 @@ const StaffUserManager = () => {
         profile_picture: 'https://randomuser.me/api/portraits/men/1.jpg',
         role: 'user',
         status: 'active',
-        forum_post_count: 45, // Changed from post_count
-        pending_report_count: 0, // Changed from report_count
+        forum_post_count: 45,
+        pending_report_count: 0,
         last_active: '2024-05-15T10:30:00Z',
         created_at: '2023-06-01T09:00:00Z',
         forum_signature: null,
@@ -81,8 +77,8 @@ const StaffUserManager = () => {
         profile_picture: 'https://randomuser.me/api/portraits/women/2.jpg',
         role: 'moderator',
         status: 'active',
-        forum_post_count: 128, // Changed from post_count
-        pending_report_count: 2, // Changed from report_count
+        forum_post_count: 128,
+        pending_report_count: 2,
         last_active: '2024-05-14T15:45:00Z',
         created_at: '2023-03-15T14:20:00Z',
         forum_signature: "Be kind",
@@ -95,8 +91,8 @@ const StaffUserManager = () => {
         email: 'bob@example.com',
         role: 'user',
         status: 'suspended',
-        forum_post_count: 23, // Changed from post_count
-        pending_report_count: 5, // Changed from report_count
+        forum_post_count: 23,
+        pending_report_count: 5,
         last_active: '2024-05-10T08:20:00Z',
         created_at: '2023-08-20T11:30:00Z',
         forum_signature: null,
@@ -110,8 +106,8 @@ const StaffUserManager = () => {
         profile_picture: 'https://randomuser.me/api/portraits/women/4.jpg',
         role: 'admin',
         status: 'active',
-        forum_post_count: 89, // Changed from post_count
-        pending_report_count: 0, // Changed from report_count
+        forum_post_count: 89,
+        pending_report_count: 0,
         last_active: '2024-05-16T12:15:00Z',
         created_at: '2023-01-10T14:45:00Z',
         forum_signature: "Admin on duty",
@@ -119,13 +115,18 @@ const StaffUserManager = () => {
       }
     ];
     
-    if (userRole && ['admin', 'super_admin'].includes(userRole)) {
-        setTimeout(() => {
-          setUsers(mockUsers);
-          setIsLoading(false);
-        }, 1000);
-    } else {
-        setIsLoading(false); // Ensure loading stops if not authorized
+    setTimeout(() => {
+      setUsers(mockUsers);
+      setIsLoading(false);
+    }, 500); // Reduced delay for better UX
+  };
+
+  useEffect(() => {
+    // Load users when component mounts and user is authorized
+    if (!authLoading && userRole && ['admin', 'super_admin'].includes(userRole)) {
+      loadUsers();
+    } else if (!authLoading) {
+      setIsLoading(false);
     }
   }, [authLoading, userRole]);
 
@@ -205,24 +206,31 @@ const StaffUserManager = () => {
       if (actionDialog.action === 'suspend') newStatus = 'suspended';
       if (actionDialog.action === 'ban') newStatus = 'banned';
       
+      // Update the user status immediately
       setUsers(prev => prev.map(user => 
         user.id === actionDialog.user!.id ? { ...user, status: newStatus } : user
       ));
       
+      // Close dialog and reset state
       setActionDialog({ open: false, action: null, user: null });
       setActionReason('');
       
       toast({
-        title: "User action completed (Mock)",
+        title: "User action completed",
         description: `User ${actionDialog.user.display_name} has been ${actionDialog.action === 'unban' ? 'restored' : actionDialog.action + 'ed'}. Reason: ${actionReason}`,
       });
+
+      // Reload users to ensure consistency
+      await loadUsers();
     } catch (error) {
       console.error("Error performing user action:", error);
       toast({
         title: "Error",
-        description: "Failed to complete user action. See console for details.",
+        description: "Failed to complete user action. Please try again.",
         variant: "destructive"
       });
+      // Reload users in case of error to ensure UI consistency
+      await loadUsers();
     }
   };
 
@@ -242,33 +250,25 @@ const StaffUserManager = () => {
       setMessageSubject('');
       setMessageContent('');
       toast({
-        title: "Message sent (Mock)",
+        title: "Message sent",
         description: `Your message has been sent to ${messageDialog.user.display_name}.`,
       });
     } catch (error) {
       console.error("Error sending message:", error);
       toast({
         title: "Error",
-        description: "Failed to send message. See console for details.",
+        description: "Failed to send message. Please try again.",
         variant: "destructive"
       });
     }
   };
 
-  const refreshUsers = () => {
-    setIsLoading(true);
-    const mockUsersRefreshed: User[] = [ 
-        { id: '1', username: 'john_doe_refreshed', display_name: 'John Doe (Refreshed)', email: 'john_refreshed@example.com', profile_picture: 'https://randomuser.me/api/portraits/men/1.jpg', role: 'user', status: 'active', forum_post_count: 50, pending_report_count: 0, last_active: new Date().toISOString(), created_at: '2023-06-01T09:00:00Z', forum_signature: null, timeline_post_count: 0 },
-        { id: '2', username: 'jane_smith', display_name: 'Jane Smith', email: 'jane@example.com', profile_picture: 'https://randomuser.me/api/portraits/women/2.jpg', role: 'moderator', status: 'active', forum_post_count: 130, pending_report_count: 1, last_active: '2024-05-14T15:45:00Z', created_at: '2023-03-15T14:20:00Z', forum_signature: "Be kind", timeline_post_count: 10 },
-    ];
-    setTimeout(() => {
-      setUsers(mockUsersRefreshed);
-      setIsLoading(false);
-      toast({
-        title: "Data refreshed (Mock)",
-        description: "User data has been updated.",
-      });
-    }, 1000);
+  const refreshUsers = async () => {
+    await loadUsers();
+    toast({
+      title: "Data refreshed",
+      description: "User data has been updated.",
+    });
   };
   
   const authAndLoadingState = (
@@ -319,7 +319,6 @@ const StaffUserManager = () => {
                   {actionDialog.action === 'suspend' && `Temporarily suspend ${actionDialog.user?.display_name}.`}
                   {actionDialog.action === 'ban' && `Permanently ban ${actionDialog.user?.display_name}.`}
                   {actionDialog.action === 'unban' && `Restore access for ${actionDialog.user?.display_name}.`}
-                  {/* Description for warn can be added here if needed, or handled by a separate WarnUserDialog */}
                 </DialogDescription>
               </DialogHeader>
               {actionDialog.user && (

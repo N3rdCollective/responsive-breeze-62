@@ -57,8 +57,16 @@ export const useUserManagement = () => {
   const updateUserStatus = async (userId: string, status: User['status'], reason: string, actionType: 'suspend' | 'ban' | 'unban') => {
     const success = await actionUpdateUserStatus(userId, status, reason, actionType);
     if (success) {
+      // Immediately refresh the users list
       await fetchUsers();
     }
+    return success;
+  };
+
+  // Wrapper for sendUserMessage that doesn't require refresh but ensures UI consistency
+  const sendMessage = async (userId: string, subject: string, content: string) => {
+    const success = await sendUserMessage(userId, subject, content);
+    // No need to refresh for messages, but we could add notification count updates here
     return success;
   };
 
@@ -83,7 +91,7 @@ export const useUserManagement = () => {
     error,
     updateUserStatus,
     createUserAction,
-    sendUserMessage,
+    sendUserMessage: sendMessage,
     getUserActions,
     searchUsers: searchUsersLocal,
     refreshUsers,
