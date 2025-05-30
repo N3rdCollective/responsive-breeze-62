@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import AuthProvider from '@/hooks/useAuth';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import MusicPlayer from "@/components/MusicPlayer";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import RouteErrorElement from "@/components/RouteErrorElement";
 import PageLoader from "@/components/general/PageLoader";
@@ -67,7 +68,7 @@ function App() {
         <TooltipProvider>
           <AuthProvider>
             <BrowserRouter>
-              <div className="min-h-screen bg-background flex flex-col">
+              <div className="min-h-screen bg-background flex flex-col w-full">
                 <Routes>
                   {/* Staff Routes */}
                   <Route path="/staff/login" element={
@@ -140,6 +141,7 @@ function App() {
                         </ErrorBoundary>
                       </main>
                       <Footer />
+                      <MusicPlayer />
                     </>
                   } />
                 </Routes>

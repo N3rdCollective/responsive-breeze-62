@@ -4,7 +4,11 @@ import { Link, useLocation } from 'react-router-dom';
 import NavItem from './NavItem';
 import { useAuth } from '@/hooks/useAuth';
 
-const DesktopNav = () => {
+interface DesktopNavProps {
+  isScrolled: boolean;
+}
+
+const DesktopNav = ({ isScrolled }: DesktopNavProps) => {
   const location = useLocation();
   const { user } = useAuth();
 
@@ -26,7 +30,6 @@ const DesktopNav = () => {
   }
 
   const isHomePage = location.pathname === "/";
-  const isScrolled = false; // This would come from parent component normally
 
   return (
     <nav className="hidden md:flex items-center space-x-8">

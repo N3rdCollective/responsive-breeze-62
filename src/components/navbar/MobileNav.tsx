@@ -1,14 +1,25 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { Menu } from 'lucide-react';
+import { Menu, Mail, User, LogOut, Bell } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserMessages } from '@/hooks/useUserMessages';
+import NotificationBell from '@/components/notifications/NotificationBell';
+import { Separator } from '@/components/ui/separator';
 
-const MobileNav = () => {
+interface MobileNavProps {
+  isScrolled: boolean;
+  isHomePage: boolean;
+}
+
+const MobileNav = ({ isScrolled, isHomePage }: MobileNavProps) => {
   const location = useLocation();
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const { unreadCount } = useUserMessages();
   const [open, setOpen] = React.useState(false);
 
   const navItems = [
@@ -28,31 +39,93 @@ const MobileNav = () => {
     navItems.splice(messagesIndex, 0, { href: '/messages', label: 'Messages' });
   }
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setOpen(false);
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden">
-          <Menu className="h-5 w-5" />
-          <span className="sr-only">Toggle menu</span>
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="left" className="w-64">
-        <nav className="flex flex-col gap-4 mt-6">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              to={item.href}
-              onClick={() => setOpen(false)}
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                location.pathname === item.href ? 'text-primary' : 'text-muted-foreground'
-              }`}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-      </SheetContent>
-    </Sheet>
+    <div className="md:hidden flex items-center space-x-2">
+      {/* Mobile User Controls */}
+      {user && (
+        <div className="flex items-center space-x-2">
+          <NotificationBell mobile isHomePage={isHomePage} isScrolled={isScrolled} />
+          
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/messages")}
+            className={`relative h-9 w-9 ${
+              isHomePage && !isScrolled 
+                ? "text-white hover:text-primary dark:text-primary dark:hover:text-white" 
+                : "text-foreground hover:text-primary dark:hover:text-primary"
+            }`}
+          >
+            <Mail className="h-5 w-5" />
+            {unreadCount > 0 && (
+              <Badge
+                variant="destructive"
+                className="absolute -top-1 -right-1 h-4 w-4 min-w-[1rem] p-0 flex items-center justify-center text-xs rounded-full"
+              >
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </Badge>
+            )}
+          </Button>
+        </div>
+      )}
+
+      {/* Mobile Menu */}
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetTrigger asChild>
+          <Button variant="ghost" size="icon" className="h-9 w-9">
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle menu</span>
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="w-64">
+          <nav className="flex flex-col gap-4 mt-6">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                to={item.href}
+                onClick={() => setOpen(false)}
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  location.pathname === item.href ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+            
+            {user && (
+              <>
+                <Separator />
+                <Link
+                  to="/profile"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
+                >
+                  <User className="mr-2 h-4 w-4" />
+                  Profile
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center text-sm font-medium transition-colors hover:text-primary text-muted-foreground text-left"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Log out
+                </button>
+              </>
+            )}
+          </nav>
+        </SheetContent>
+      </Sheet>
+    </div>
   );
 };
 
