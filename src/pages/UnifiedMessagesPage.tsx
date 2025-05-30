@@ -11,6 +11,7 @@ import NewConversationModal from '@/components/messaging/NewConversationModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageCircle, Mail, MailOpen, Clock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import TitleUpdater from '@/components/TitleUpdater';
@@ -210,9 +211,9 @@ const UnifiedMessagesPage: React.FC = () => {
     <>
       <TitleUpdater title="Messages" />
       <div className="min-h-screen flex flex-col bg-background">
-        <div className="pt-16 flex-1 flex max-h-[calc(100vh-4rem)]">
-          <div className="w-full">
-            <div className="p-4 border-b dark:border-gray-700/50">
+        <div className="pt-16 flex-1 flex flex-col h-[calc(100vh-4rem)]">
+          <div className="w-full h-full flex flex-col">
+            <div className="p-4 border-b dark:border-gray-700/50 flex-shrink-0">
               <div className="flex items-center gap-3">
                 <MessageCircle className="h-8 w-8 text-primary" />
                 <div>
@@ -226,8 +227,8 @@ const UnifiedMessagesPage: React.FC = () => {
               </div>
             </div>
 
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-              <div className="px-4 pt-4">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+              <div className="px-4 pt-4 flex-shrink-0">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="conversations" className="relative">
                     Conversations
@@ -248,8 +249,8 @@ const UnifiedMessagesPage: React.FC = () => {
                 </TabsList>
               </div>
 
-              <TabsContent value="conversations" className="flex-1 flex mt-0">
-                <aside className="w-full md:w-1/3 lg:w-1/4 border-r dark:border-gray-700/50 flex flex-col">
+              <TabsContent value="conversations" className="flex-1 flex mt-0 min-h-0">
+                <aside className="w-full md:w-1/3 lg:w-1/4 border-r dark:border-gray-700/50 flex flex-col min-h-0">
                   <ConversationList
                     conversations={conversations}
                     currentUserId={user.id}
@@ -260,7 +261,7 @@ const UnifiedMessagesPage: React.FC = () => {
                   />
                 </aside>
 
-                <main className="flex-1 flex flex-col">
+                <main className="flex-1 flex flex-col min-h-0">
                   {selectedConversationId && otherParticipantId ? (
                     <ChatView conversationId={selectedConversationId} otherParticipantId={otherParticipantId} />
                   ) : (
@@ -285,108 +286,116 @@ const UnifiedMessagesPage: React.FC = () => {
                 </main>
               </TabsContent>
 
-              <TabsContent value="notifications" className="flex-1 flex mt-0">
-                <div className="w-full grid gap-6 lg:grid-cols-12 p-4">
-                  <div className="lg:col-span-5">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Mail className="h-5 w-5" />
-                          Notifications ({adminMessages.length})
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-0">
-                        {adminMessagesLoading ? (
-                          <div className="p-6 text-center">
-                            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary mx-auto mb-3"></div>
-                            <p className="text-muted-foreground">Loading notifications...</p>
-                          </div>
-                        ) : adminMessages.length === 0 ? (
-                          <div className="p-6 text-center text-muted-foreground">
-                            <Mail className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                            <p>No notifications yet</p>
-                          </div>
-                        ) : (
-                          <div className="space-y-1">
-                            {adminMessages.map((message) => (
-                              <div
-                                key={message.id}
-                                onClick={() => handleAdminMessageClick(message)}
-                                className={`p-4 cursor-pointer transition-colors hover:bg-muted/50 border-b last:border-b-0 ${
-                                  selectedAdminMessage?.id === message.id ? 'bg-muted' : ''
-                                }`}
-                              >
-                                <div className="flex items-start gap-3">
-                                  <div className="mt-1">
-                                    {message.is_read ? (
-                                      <MailOpen className="h-4 w-4 text-muted-foreground" />
-                                    ) : (
-                                      <Mail className="h-4 w-4 text-primary" />
-                                    )}
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <p className={`font-medium truncate ${!message.is_read ? 'font-semibold' : ''}`}>
-                                        {message.subject}
-                                      </p>
-                                      {!message.is_read && (
-                                        <Badge variant="default" className="px-1.5 py-0.5 text-xs">
-                                          New
-                                        </Badge>
-                                      )}
+              <TabsContent value="notifications" className="flex-1 mt-0 min-h-0">
+                <div className="h-full p-4">
+                  <div className="grid gap-6 lg:grid-cols-12 h-full">
+                    <div className="lg:col-span-5 h-full">
+                      <Card className="h-full flex flex-col">
+                        <CardHeader className="flex-shrink-0">
+                          <CardTitle className="flex items-center gap-2">
+                            <Mail className="h-5 w-5" />
+                            Notifications ({adminMessages.length})
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0 flex-1 min-h-0">
+                          {adminMessagesLoading ? (
+                            <div className="p-6 text-center">
+                              <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary mx-auto mb-3"></div>
+                              <p className="text-muted-foreground">Loading notifications...</p>
+                            </div>
+                          ) : adminMessages.length === 0 ? (
+                            <div className="p-6 text-center text-muted-foreground">
+                              <Mail className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                              <p>No notifications yet</p>
+                            </div>
+                          ) : (
+                            <ScrollArea className="h-full">
+                              <div className="space-y-1">
+                                {adminMessages.map((message) => (
+                                  <div
+                                    key={message.id}
+                                    onClick={() => handleAdminMessageClick(message)}
+                                    className={`p-4 cursor-pointer transition-colors hover:bg-muted/50 border-b last:border-b-0 ${
+                                      selectedAdminMessage?.id === message.id ? 'bg-muted' : ''
+                                    }`}
+                                  >
+                                    <div className="flex items-start gap-3">
+                                      <div className="mt-1">
+                                        {message.is_read ? (
+                                          <MailOpen className="h-4 w-4 text-muted-foreground" />
+                                        ) : (
+                                          <Mail className="h-4 w-4 text-primary" />
+                                        )}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <p className={`font-medium truncate ${!message.is_read ? 'font-semibold' : ''}`}>
+                                            {message.subject}
+                                          </p>
+                                          {!message.is_read && (
+                                            <Badge variant="default" className="px-1.5 py-0.5 text-xs">
+                                              New
+                                            </Badge>
+                                          )}
+                                        </div>
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                          <Clock className="h-3 w-3" />
+                                          {new Date(message.created_at).toLocaleDateString()}
+                                        </div>
+                                      </div>
                                     </div>
-                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                      <Clock className="h-3 w-3" />
-                                      {new Date(message.created_at).toLocaleDateString()}
-                                    </div>
                                   </div>
-                                </div>
+                                ))}
                               </div>
-                            ))}
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </div>
+                            </ScrollArea>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </div>
 
-                  <div className="lg:col-span-7">
-                    <Card className="h-fit">
-                      {selectedAdminMessage ? (
-                        <>
-                          <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                              {selectedAdminMessage.is_read ? (
-                                <MailOpen className="h-5 w-5 text-muted-foreground" />
-                              ) : (
-                                <Mail className="h-5 w-5 text-primary" />
-                              )}
-                              {selectedAdminMessage.subject}
-                            </CardTitle>
-                            <CardDescription>
-                              <div className="flex items-center gap-4">
-                                <span>From: Staff</span>
-                                <span>•</span>
-                                <span>{new Date(selectedAdminMessage.created_at).toLocaleString()}</span>
-                                <Badge variant="outline" className="ml-2">
-                                  {selectedAdminMessage.message_type}
-                                </Badge>
-                              </div>
-                            </CardDescription>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="prose prose-sm max-w-none">
-                              <p className="whitespace-pre-wrap">{selectedAdminMessage.message}</p>
+                    <div className="lg:col-span-7 h-full">
+                      <Card className="h-full flex flex-col">
+                        {selectedAdminMessage ? (
+                          <>
+                            <CardHeader className="flex-shrink-0">
+                              <CardTitle className="flex items-center gap-2">
+                                {selectedAdminMessage.is_read ? (
+                                  <MailOpen className="h-5 w-5 text-muted-foreground" />
+                                ) : (
+                                  <Mail className="h-5 w-5 text-primary" />
+                                )}
+                                {selectedAdminMessage.subject}
+                              </CardTitle>
+                              <CardDescription>
+                                <div className="flex items-center gap-4">
+                                  <span>From: Staff</span>
+                                  <span>•</span>
+                                  <span>{new Date(selectedAdminMessage.created_at).toLocaleString()}</span>
+                                  <Badge variant="outline" className="ml-2">
+                                    {selectedAdminMessage.message_type}
+                                  </Badge>
+                                </div>
+                              </CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex-1 min-h-0">
+                              <ScrollArea className="h-full">
+                                <div className="prose prose-sm max-w-none">
+                                  <p className="whitespace-pre-wrap">{selectedAdminMessage.message}</p>
+                                </div>
+                              </ScrollArea>
+                            </CardContent>
+                          </>
+                        ) : (
+                          <CardContent className="flex-1 flex items-center justify-center text-center text-muted-foreground">
+                            <div>
+                              <Mail className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                              <p className="text-lg">Select a notification to read</p>
+                              <p className="text-sm">Choose a notification from the list to view its content</p>
                             </div>
                           </CardContent>
-                        </>
-                      ) : (
-                        <CardContent className="p-12 text-center text-muted-foreground">
-                          <Mail className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                          <p className="text-lg">Select a notification to read</p>
-                          <p className="text-sm">Choose a notification from the list to view its content</p>
-                        </CardContent>
-                      )}
-                    </Card>
+                        )}
+                      </Card>
+                    </div>
                   </div>
                 </div>
               </TabsContent>
