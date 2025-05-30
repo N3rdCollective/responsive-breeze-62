@@ -8,6 +8,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isLoading: boolean;
   logout: () => Promise<void>;
 }
 
@@ -91,7 +92,13 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const value = { user, session, loading, logout };
+  const value = { 
+    user, 
+    session, 
+    loading, 
+    isLoading: loading, 
+    logout 
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
@@ -104,4 +111,5 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
+export { AuthProvider };
 export default AuthProvider;

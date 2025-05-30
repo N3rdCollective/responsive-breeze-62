@@ -5,11 +5,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import { AuthProvider } from '@/hooks/useAuth';
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import AuthProvider from '@/hooks/useAuth';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import RouteErrorElement from "@/components/RouteErrorElement";
 import PageLoader from "@/components/general/PageLoader";
 import StaffLayout from "@/components/layouts/StaffLayout";
@@ -63,7 +63,7 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <ThemeProvider defaultTheme="dark">
         <TooltipProvider>
           <AuthProvider>
             <BrowserRouter>
