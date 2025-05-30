@@ -1,14 +1,12 @@
+
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import DesktopNav from "./navbar/DesktopNav";
 import MobileNav from "./navbar/MobileNav";
 import AuthModal from "@/components/auth/AuthModal";
 import { useAuth } from "@/hooks/useAuth";
-import { useStaffAuth } from "@/hooks/useStaffAuth"; // Import useStaffAuth
-import { NavigationItem } from "@/types/profile";
+import { useStaffAuth } from "@/hooks/useStaffAuth";
 import { toast } from "@/hooks/use-toast";
-import { Mail } from "lucide-react"; // Import Mail icon for Messages
-import { useConversations } from "@/hooks/useConversations"; // Import useConversations
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -16,8 +14,7 @@ const Navbar = () => {
   const [mounted, setMounted] = useState(false);
   
   const { user, logout: userLogout } = useAuth();
-  const { staffName, handleLogout: staffLogout, userRole: staffUserRole } = useStaffAuth(); // Get staff auth state
-  const { totalUnreadCount } = useConversations(); // Get totalUnreadCount
+  const { staffName, handleLogout: staffLogout, userRole: staffUserRole } = useStaffAuth();
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false); 
 
@@ -40,53 +37,6 @@ const Navbar = () => {
   const handleAuthModalOpen = () => {
     setIsAuthModalOpen(true);
   };
-
-  const navigationItems: NavigationItem[] = [
-    { path: "/", label: "Home" },
-    { path: "/personalities", label: "Personalities" },
-    { path: "/schedule", label: "Schedule" },
-    { path: "/about", label: "About" },
-    { path: "/news", label: "News" },
-    { path: "/contact", label: "Contact" },
-  ];
-
-  // Add links based on general user state (if not staff)
-  if (user && !staffName) {
-    navigationItems.push({ path: "/members", label: "Members" });
-    navigationItems.push({ path: "/profile", label: "Profile" });
-    navigationItems.push({ 
-      path: "/messages", 
-      label: "Messages", 
-      icon: Mail, 
-      iconOnly: true,
-      badgeCount: totalUnreadCount > 0 ? totalUnreadCount : undefined, // Add badgeCount
-    });
-  }
-  
-  // Auth links (Sign In / Logout)
-  if (staffName) { 
-    // If staff is logged in, their primary logout is via staffLogout.
-    // No "Sign In / Sign Up" link.
-    // "Staff Panel" link will be added directly in DesktopNav/MobileNav.
-    navigationItems.push({ 
-      path: "#logout-staff", 
-      label: "Logout",
-      onClick: staffLogout 
-    });
-  } else if (user) { 
-    // Regular user is logged in (and not staff)
-    navigationItems.push({ 
-      path: "#logout-user", 
-      label: "Logout",
-      onClick: userLogout
-    });
-  } else { 
-    // No one logged in
-    navigationItems.push({ 
-      path: "/auth", 
-      label: "Sign In / Sign Up"
-    });
-  }
 
   // This prop is for features like NotificationBell that are specific to general user accounts
   const isGeneralUserLoggedIn = !!user;
@@ -112,25 +62,9 @@ const Navbar = () => {
               </Link>
             </div>
 
-            <DesktopNav 
-              navigationItems={navigationItems}
-              isActive={isActive}
-              isHomePage={isHomePage}
-              isScrolled={isScrolled}
-              mounted={mounted}
-              isUserLoggedIn={isGeneralUserLoggedIn} // For general user features like NotificationBell
-              staffName={staffName} // Pass staffName
-            />
+            <DesktopNav />
 
-            <MobileNav
-              navigationItems={navigationItems}
-              isActive={isActive}
-              isHomePage={isHomePage}
-              isScrolled={isScrolled}
-              mounted={mounted}
-              isUserLoggedIn={isGeneralUserLoggedIn} // For general user features like NotificationBell
-              staffName={staffName} // Pass staffName
-            />
+            <MobileNav />
           </div>
         </div>
       </nav>
