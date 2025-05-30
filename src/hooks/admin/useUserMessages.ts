@@ -16,22 +16,16 @@ export const useUserMessages = () => {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       
       if (!currentUser) {
-        toast({ title: "Authentication Error", description: "No authenticated sender found for message.", variant: "destructive" });
-        console.warn('Simulated sendUserMessage: No authenticated sender found.');
+        toast({ 
+          title: "Authentication Error", 
+          description: "You must be logged in to send messages.", 
+          variant: "destructive" 
+        });
+        return false;
       }
-      console.log(`Simulated: Attempting to send message to user ${userId} from ${currentUser?.id || 'Unknown'}`);
-      console.log('Simulated Message Sent:', {
-          recipient_id: userId,
-          sender_id: currentUser?.id || 'simulated_sender_id', 
-          subject,
-          message,
-          message_type: 'admin',
-          created_at: new Date().toISOString()
-      });
 
-      // Actual DB call (assuming 'user_messages' table exists)
-      // Commented out as 'user_messages' might not be in live Supabase types
-      /*
+      console.log(`Sending message to user ${userId} from ${currentUser.id}`);
+      
       const { error: insertError } = await supabase
         .from('user_messages')
         .insert({
@@ -43,20 +37,19 @@ export const useUserMessages = () => {
         });
 
       if (insertError) {
-        console.error("Error sending user message (Simulated):", insertError);
+        console.error("Error sending user message:", insertError);
         throw insertError;
       }
-      */
 
       toast({
-        title: "Message Sent (Simulated)",
-        description: "Your message has been (simulated) sent to the user.",
+        title: "Message Sent",
+        description: "Your message has been sent to the user.",
       });
       return true;
     } catch (err: any) {
-      console.error('Error in sendUserMessage (Simulated):', err);
+      console.error('Error in sendUserMessage:', err);
       toast({
-        title: "Error Sending Message (Simulated)",
+        title: "Error Sending Message",
         description: `Could not send message. ${err.message}`,
         variant: "destructive"
       });
