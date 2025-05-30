@@ -1,4 +1,3 @@
-
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -29,8 +28,7 @@ const ArtistsArchivePage = lazy(() => import("./pages/ArtistsArchivePage"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const PublicProfilePage = lazy(() => import("./pages/PublicProfilePage"));
-const MessagesPage = lazy(() => import("./pages/MessagesPage"));
-const UserMessages = lazy(() => import("./pages/UserMessages"));
+const UnifiedMessagesPage = lazy(() => import("./pages/UnifiedMessagesPage"));
 const MembersPage = lazy(() => import("./pages/MembersPage"));
 const ForumCategoryPage = lazy(() => import("./pages/ForumCategoryPage"));
 const ForumTopicPage = lazy(() => import("./pages/ForumTopicPage"));
@@ -124,8 +122,7 @@ function App() {
                               <Route path="/auth" element={<Auth />} />
                               <Route path="/profile" element={<ProfilePage />} />
                               <Route path="/profile/:userId" element={<PublicProfilePage />} />
-                              <Route path="/messages" element={<UserMessages />} />
-                              <Route path="/direct-messages" element={<MessagesPage />} />
+                              <Route path="/messages" element={<UnifiedMessagesPage />} />
                               <Route path="/members" element={<MembersPage />} />
                               <Route path="/forum/categories/:categorySlug" element={<ForumCategoryPage />} />
                               <Route path="/forum/topic/:topicSlug" element={<ForumTopicPage />} />

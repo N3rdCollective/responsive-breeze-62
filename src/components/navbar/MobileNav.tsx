@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Menu, Mail, User, LogOut, Bell } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
-import { useUserMessages } from '@/hooks/useUserMessages';
+import { useUnifiedMessages } from '@/hooks/useUnifiedMessages';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import { Separator } from '@/components/ui/separator';
 
@@ -19,7 +19,7 @@ const MobileNav = ({ isScrolled, isHomePage }: MobileNavProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { unreadCount } = useUserMessages();
+  const { totalUnreadCount } = useUnifiedMessages();
   const [open, setOpen] = React.useState(false);
 
   const navItems = [
@@ -56,6 +56,7 @@ const MobileNav = ({ isScrolled, isHomePage }: MobileNavProps) => {
         <div className="flex items-center space-x-2">
           <NotificationBell mobile isHomePage={isHomePage} isScrolled={isScrolled} />
           
+          {/* Updated to use unified count */}
           <Button
             variant="ghost"
             size="icon"
@@ -67,12 +68,12 @@ const MobileNav = ({ isScrolled, isHomePage }: MobileNavProps) => {
             }`}
           >
             <Mail className="h-5 w-5" />
-            {unreadCount > 0 && (
+            {totalUnreadCount > 0 && (
               <Badge
                 variant="destructive"
                 className="absolute -top-1 -right-1 h-4 w-4 min-w-[1rem] p-0 flex items-center justify-center text-xs rounded-full"
               >
-                {unreadCount > 9 ? '9+' : unreadCount}
+                {totalUnreadCount > 9 ? '9+' : totalUnreadCount}
               </Badge>
             )}
           </Button>

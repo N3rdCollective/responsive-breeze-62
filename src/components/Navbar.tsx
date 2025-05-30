@@ -8,7 +8,7 @@ import NotificationBell from "@/components/notifications/NotificationBell";
 import ListenButton from "./navbar/ListenButton";
 import { useAuth } from "@/hooks/useAuth";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
-import { useUserMessages } from "@/hooks/useUserMessages";
+import { useUnifiedMessages } from "@/hooks/useUnifiedMessages";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -30,7 +30,7 @@ const Navbar = () => {
   
   const { user, logout: userLogout } = useAuth();
   const { staffName, handleLogout: staffLogout, userRole: staffUserRole } = useStaffAuth();
-  const { unreadCount } = useUserMessages();
+  const { totalUnreadCount } = useUnifiedMessages();
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false); 
 
@@ -104,7 +104,7 @@ const Navbar = () => {
                   {/* Notifications */}
                   <NotificationBell isHomePage={isHomePage} isScrolled={isScrolled} />
                   
-                  {/* Messages */}
+                  {/* Messages - Updated to use unified count */}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -116,12 +116,12 @@ const Navbar = () => {
                     }`}
                   >
                     <Mail className="h-5 w-5" />
-                    {unreadCount > 0 && (
+                    {totalUnreadCount > 0 && (
                       <Badge
                         variant="destructive"
                         className="absolute -top-1 -right-1 h-4 w-4 min-w-[1rem] p-0 flex items-center justify-center text-xs rounded-full"
                       >
-                        {unreadCount > 9 ? '9+' : unreadCount}
+                        {totalUnreadCount > 9 ? '9+' : totalUnreadCount}
                       </Badge>
                     )}
                   </Button>
