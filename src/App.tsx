@@ -1,3 +1,4 @@
+
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -42,7 +43,7 @@ const UpdatePasswordPage = lazy(() => import("./pages/UpdatePasswordPage"));
 // Staff pages
 const StaffLogin = lazy(() => import("./pages/StaffLogin"));
 const StaffRegistration = lazy(() => import("./pages/StaffRegistration"));
-const StaffPanel = lazy(() => import("./pages/StaffPanel"));
+const UnifiedStaffDashboard = lazy(() => import("./pages/UnifiedStaffDashboard"));
 const StaffNewsPage = lazy(() => import("./pages/StaffNewsPage"));
 const NewsEditor = lazy(() => import("./pages/NewsEditor"));
 const StaffHomepageManager = lazy(() => import("./pages/StaffHomepageManager"));
@@ -84,7 +85,7 @@ function App() {
                       <StaffLayout />
                     </Suspense>
                   }>
-                    <Route path="panel" element={<StaffPanel />} />
+                    <Route path="panel" element={<UnifiedStaffDashboard />} />
                     <Route path="news" element={<StaffNewsPage />} />
                     <Route path="news/editor" element={<NewsEditor />} />
                     <Route path="news/editor/:id" element={<NewsEditor />} />
