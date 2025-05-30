@@ -18,7 +18,7 @@ const DesktopNav = ({ isScrolled }: DesktopNavProps) => {
     { href: '/schedule', label: 'Schedule' },
     { href: '/personalities', label: 'Personalities' },
     { href: '/artists', label: 'Artists' },
-    { href: '/forum/categories/general', label: 'Forum' },
+    { href: '/members', label: 'Forum' },
     { href: '/about', label: 'About' },
     { href: '/contact', label: 'Contact' },
   ];
