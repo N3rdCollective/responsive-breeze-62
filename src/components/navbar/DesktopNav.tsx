@@ -25,16 +25,20 @@ const DesktopNav = () => {
     navItems.splice(messagesIndex, 0, { href: '/messages', label: 'Messages' });
   }
 
+  const isHomePage = location.pathname === "/";
+  const isScrolled = false; // This would come from parent component normally
+
   return (
     <nav className="hidden md:flex items-center space-x-8">
       {navItems.map((item) => (
         <NavItem 
           key={item.href} 
-          href={item.href} 
+          path={item.href} 
+          label={item.label}
           isActive={location.pathname === item.href}
-        >
-          {item.label}
-        </NavItem>
+          isHomePage={isHomePage}
+          isScrolled={isScrolled}
+        />
       ))}
     </nav>
   );
