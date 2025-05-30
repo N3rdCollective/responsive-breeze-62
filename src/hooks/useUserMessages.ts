@@ -12,15 +12,15 @@ export const useUserMessages = () => {
     if (user) {
       fetchUnreadCount();
       
-      // Set up real-time subscription for new messages
+      // Set up real-time subscription for conversation messages
       const channel = supabase
-        .channel('user_messages_changes')
+        .channel('conversation_messages_changes')
         .on(
           'postgres_changes',
           {
             event: '*',
             schema: 'public',
-            table: 'user_messages',
+            table: 'messages',
             filter: `recipient_id=eq.${user.id}`
           },
           () => {
@@ -42,16 +42,28 @@ export const useUserMessages = () => {
     if (!user) return;
     
     try {
-      const { count, error } = await supabase
-        .from('user_messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('recipient_id', user.id)
-        .eq('is_read', false);
+      // Get unread count from conversations by checking last read timestamps
+      const { data: conversations, error: convError } = await supabase
+        .from('conversations')
+        .select(`
+          id,
+          last_message_timestamp,
+          user_conversation_read_status!inner(last_read_timestamp)
+        `)
+        .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`)
+        .eq('user_conversation_read_status.user_id', user.id);
 
-      if (error) throw error;
-      setUnreadCount(count || 0);
+      if (convError) throw convError;
+
+      const unreadConversations = conversations?.filter(conv => {
+        const readStatus = conv.user_conversation_read_status[0];
+        if (!readStatus?.last_read_timestamp) return true;
+        return new Date(conv.last_message_timestamp) > new Date(readStatus.last_read_timestamp);
+      }).length || 0;
+
+      setUnreadCount(unreadConversations);
     } catch (err) {
-      console.error('Error fetching unread count:', err);
+      console.error('Error fetching conversation unread count:', err);
     } finally {
       setLoading(false);
     }
