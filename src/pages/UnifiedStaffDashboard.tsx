@@ -28,6 +28,7 @@ import {
   Plus,
   RefreshCw,
   Search,
+  Video,
 } from "lucide-react";
 
 // Import existing components
@@ -41,10 +42,13 @@ import UserTable from '@/components/staff/users/UserTable';
 import UserActionDialog from '@/components/staff/users/UserActionDialog';
 import SendMessageDialog from '@/components/staff/users/SendMessageDialog';
 
-
 // Import moderation components
 import ReportedContentSection from '@/components/staff/moderator-dashboard/ReportedContentSection';
 import ReportDetails from '@/components/staff/moderator-dashboard/ReportDetails';
+
+// Import video management components
+import { HomeSettingsProvider } from "@/components/staff/home/context/HomeSettingsContext";
+import VideosTabContent from "@/components/staff/home/components/VideosTabContent";
 
 // Import database hooks
 import { useContentReports, ContentReport } from '@/hooks/moderation/useContentReports';
@@ -302,6 +306,9 @@ const UnifiedStaffDashboard = () => {
       case 'manage-shows':
         setActiveTab('shows');
         break;
+      case 'manage-videos':
+        setActiveTab('videos');
+        break;
       case 'view-reports':
         setActiveTab('moderation');
         break;
@@ -466,7 +473,7 @@ const UnifiedStaffDashboard = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4"> {/* Adjusted for 5 items */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
             <Button variant="outline" onClick={() => handleQuickAction('new-post')} className="h-20 flex-col gap-2">
               <FileText className="h-6 w-6" />
               <span className="text-sm text-center">New Post</span>
@@ -474,6 +481,10 @@ const UnifiedStaffDashboard = () => {
             <Button variant="outline" onClick={() => handleQuickAction('manage-shows')} className="h-20 flex-col gap-2">
               <Radio className="h-6 w-6" />
               <span className="text-sm text-center">Manage Shows</span>
+            </Button>
+            <Button variant="outline" onClick={() => handleQuickAction('manage-videos')} className="h-20 flex-col gap-2">
+              <Video className="h-6 w-6" />
+              <span className="text-sm text-center">Featured Videos</span>
             </Button>
              <Button variant="outline" onClick={() => handleQuickAction('manage-users')} className="h-20 flex-col gap-2">
               <Users className="h-6 w-6" /> 
@@ -565,11 +576,16 @@ const UnifiedStaffDashboard = () => {
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <div className="border-b dark:border-gray-700">
-              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 h-auto p-1 bg-muted dark:bg-gray-800 rounded-md"> {/* Adjusted for 4-5 tabs */}
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 h-auto p-1 bg-muted dark:bg-gray-800 rounded-md">
                 <TabsTrigger value="content" className="flex items-center gap-2 py-2.5 sm:py-3 data-[state=active]:bg-background dark:data-[state=active]:bg-gray-950 data-[state=active]:shadow-sm">
                   <FileText className="h-4 w-4" />
                   <span className="hidden sm:inline">Content</span>
                    <span className="sm:hidden">Content</span>
+                </TabsTrigger>
+                <TabsTrigger value="videos" className="flex items-center gap-2 py-2.5 sm:py-3 data-[state=active]:bg-background dark:data-[state=active]:bg-gray-950 data-[state=active]:shadow-sm">
+                  <Video className="h-4 w-4" />
+                  <span className="hidden sm:inline">Videos</span>
+                  <span className="sm:hidden">Videos</span>
                 </TabsTrigger>
                 <TabsTrigger value="shows" className="flex items-center gap-2 py-2.5 sm:py-3 data-[state=active]:bg-background dark:data-[state=active]:bg-gray-950 data-[state=active]:shadow-sm">
                   <Radio className="h-4 w-4" />
@@ -614,6 +630,25 @@ const UnifiedStaffDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <ContentManagementCard userRole={userRole} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="videos" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Video className="h-5 w-5" />
+                    Featured Videos Management
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Manage YouTube videos displayed in the Hero section and Featured Music Videos gallery.
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <HomeSettingsProvider>
+                    <VideosTabContent />
+                  </HomeSettingsProvider>
                 </CardContent>
               </Card>
             </TabsContent>

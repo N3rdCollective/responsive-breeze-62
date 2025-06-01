@@ -17,7 +17,7 @@ import { useStaffAuth } from "@/hooks/useStaffAuth";
 import { 
   LayoutDashboard, 
   Newspaper, 
-  Home, 
+  Video, 
   Radio, 
   Users, 
   ShieldCheck, 
@@ -29,7 +29,7 @@ import { Button } from '@/components/ui/button';
 
 const mainNavigationItems = [
   { title: 'Dashboard', href: '/staff/panel', icon: LayoutDashboard },
-  { title: 'Homepage', href: '/staff/home', icon: Home },
+  { title: 'Featured Videos', href: '/staff/panel?tab=videos', icon: Video },
   { title: 'News', href: '/staff/news/editor', icon: Newspaper },
   { title: 'Shows', href: '/staff/shows', icon: Radio },
   { title: 'Users', href: '/staff/users', icon: Users },
