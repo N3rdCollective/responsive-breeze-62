@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +14,8 @@ interface AuthModalProps {
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
+  const [isSignUp, setIsSignUp] = useState(false);
+
   const handleSuccess = () => {
     onOpenChange(false);
   };
@@ -22,7 +23,21 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] w-[95vw] max-h-[90vh] overflow-y-auto bg-card p-4 sm:p-6">
-        <AuthForm onSuccess={handleSuccess} />
+        <DialogHeader>
+          <DialogTitle className="text-2xl">
+            {isSignUp ? "Create an account" : "Welcome back"}
+          </DialogTitle>
+          <DialogDescription>
+            {isSignUp
+              ? "Sign up to join our music community"
+              : "Sign in to your account"}
+          </DialogDescription>
+        </DialogHeader>
+        <AuthForm 
+          onSuccess={handleSuccess} 
+          isSignUp={isSignUp}
+          setIsSignUp={setIsSignUp}
+        />
       </DialogContent>
     </Dialog>
   );

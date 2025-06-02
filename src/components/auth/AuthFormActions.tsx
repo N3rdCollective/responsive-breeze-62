@@ -1,12 +1,10 @@
-
-import React from 'react';
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
 
 interface AuthFormActionsProps {
   isLoading: boolean;
   isSignUp: boolean;
-  setIsSignUp: (value: boolean | ((prev: boolean) => boolean)) => void;
+  setIsSignUp: (isSignUp: boolean) => void;
 }
 
 const AuthFormActions: React.FC<AuthFormActionsProps> = ({
@@ -16,32 +14,27 @@ const AuthFormActions: React.FC<AuthFormActionsProps> = ({
 }) => {
   return (
     <>
-      <Button
-        type="submit"
-        className="w-full"
-        disabled={isLoading}
-      >
+      <Button type="submit" disabled={isLoading}>
         {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            {isSignUp ? "Creating account..." : "Signing in..."}
-          </>
+          <span>Loading...</span>
+        ) : isSignUp ? (
+          "Create Account"
         ) : (
-          isSignUp ? "Sign Up" : "Sign In"
+          "Sign In"
         )}
       </Button>
-
-      <Button
-        type="button"
-        variant="ghost"
-        className="w-full"
-        onClick={() => setIsSignUp(prev => !prev)}
-        disabled={isLoading}
-      >
-        {isSignUp
-          ? "Already have an account? Sign in"
-          : "Don't have an account? Sign up"}
-      </Button>
+      <div className="text-center">
+        <Button
+          type="button"
+          variant="link"
+          className="text-sm"
+          onClick={() => setIsSignUp(!isSignUp)}
+        >
+          {isSignUp
+            ? "Already have an account? Sign in"
+            : "Don't have an account? Sign up"}
+        </Button>
+      </div>
     </>
   );
 };

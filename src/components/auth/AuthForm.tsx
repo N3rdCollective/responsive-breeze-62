@@ -2,19 +2,19 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import AuthHeader from "@/components/auth/AuthHeader";
 import AuthErrorAlert from "@/components/auth/AuthErrorAlert";
 import AuthFormFields from "@/components/auth/AuthFormFields";
 import AuthFormActions from "@/components/auth/AuthFormActions";
 
 interface AuthFormProps {
-  onSuccess?: () => void; // Callback to close modal or handle success
+  onSuccess?: () => void;
+  isSignUp: boolean;
+  setIsSignUp: (isSignUp: boolean) => void;
 }
 
-const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
+const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, isSignUp, setIsSignUp }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -29,8 +29,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
 
     try {
       if (isSignUp) {
-        // For AuthForm (simple modal), we don't collect first/last name directly.
-        // We'll derive username and display_name from email for the profile.
         const defaultUsername = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').substring(0, 20);
         const defaultDisplayName = email.split('@')[0];
 
@@ -41,7 +39,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
             data: {
               username: defaultUsername,
               display_name: defaultDisplayName,
-              // first_name and last_name will be null, user can update later in profile
               first_name: null, 
               last_name: null,
               user_role: "user"
@@ -58,20 +55,16 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
             title: "Account created successfully",
             description: "Please check your email for verification. You're now logged in.",
           });
-          // The handle_new_user trigger will create the profile.
-          // No need to manually insert profile here anymore.
           if (onSuccess) onSuccess();
-          // Redirect to profile so user can complete it if they wish
           navigate("/profile"); 
         } else {
-          // Handle cases where user might be null but no error (e.g. email confirmation required)
-           toast({
+          toast({
             title: "Registration submitted",
             description: "Please check your email for verification instructions to complete your signup.",
             duration: 7000,
           });
           if (onSuccess) onSuccess();
-          navigate("/"); // Stay or navigate to a generic page
+          navigate("/");
         }
       } else {
         const { data, error: signInError } = await supabase.auth.signInWithPassword({
@@ -106,7 +99,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
 
   return (
     <div className="space-y-1">
-      <AuthHeader isSignUp={isSignUp} />
       <form onSubmit={handleSubmit} className="pt-4">
         <div className="space-y-4">
           <AuthErrorAlert error={error} />
