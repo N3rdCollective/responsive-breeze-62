@@ -14,7 +14,7 @@ const AuthFormActions: React.FC<AuthFormActionsProps> = ({
 }) => {
   return (
     <>
-      <Button type="submit" disabled={isLoading}>
+      <Button type="submit\" disabled={isLoading}>
         {isLoading ? (
           <span>Loading...</span>
         ) : isSignUp ? (
