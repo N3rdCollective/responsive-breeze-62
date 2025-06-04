@@ -61,7 +61,7 @@ const MobileNav = ({ isScrolled, isHomePage, onAuthModalOpen }: MobileNavProps) 
 
   return (
     <div className="md:hidden flex items-center space-x-2">
-      {/* Mobile User Controls */}
+      {/* Mobile User Controls - Only for authenticated users */}
       {user && (
         <div className="flex items-center space-x-2">
           <NotificationBell mobile isHomePage={isHomePage} isScrolled={isScrolled} />
@@ -88,23 +88,6 @@ const MobileNav = ({ isScrolled, isHomePage, onAuthModalOpen }: MobileNavProps) 
             )}
           </Button>
         </div>
-      )}
-
-      {/* Sign In Button for non-authenticated users */}
-      {!user && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleAuthAction}
-          className={`h-9 px-3 ${
-            isHomePage && !isScrolled 
-              ? "text-white hover:text-primary dark:text-primary dark:hover:text-white" 
-              : "text-foreground hover:text-primary dark:hover:text-primary"
-          }`}
-        >
-          <LogIn className="h-4 w-4 mr-2" />
-          Sign In
-        </Button>
       )}
 
       {/* Mobile Menu */}
