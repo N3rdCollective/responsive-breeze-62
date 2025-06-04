@@ -23,12 +23,6 @@ const DesktopNav = ({ isScrolled }: DesktopNavProps) => {
     { href: '/contact', label: 'Contact' },
   ];
 
-  // Add Messages link for authenticated users
-  if (user) {
-    const messagesIndex = navItems.findIndex(item => item.href === '/contact');
-    navItems.splice(messagesIndex, 0, { href: '/messages', label: 'Messages' });
-  }
-
   const isHomePage = location.pathname === "/";
 
   return (
