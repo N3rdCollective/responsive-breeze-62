@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 
@@ -14,7 +15,7 @@ const AuthFormActions: React.FC<AuthFormActionsProps> = ({
 }) => {
   return (
     <>
-      <Button type="submit\" disabled={isLoading}>
+      <Button type="submit" disabled={isLoading} className="w-full h-11 text-base">
         {isLoading ? (
           <span>Loading...</span>
         ) : isSignUp ? (
@@ -23,11 +24,11 @@ const AuthFormActions: React.FC<AuthFormActionsProps> = ({
           "Sign In"
         )}
       </Button>
-      <div className="text-center">
+      <div className="text-center mt-4">
         <Button
           type="button"
           variant="link"
-          className="text-sm"
+          className="text-sm p-0 h-auto"
           onClick={() => setIsSignUp(!isSignUp)}
         >
           {isSignUp

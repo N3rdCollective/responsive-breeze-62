@@ -156,8 +156,12 @@ const Navbar = () => {
               )}
             </div>
 
-            {/* Mobile Navigation */}
-            <MobileNav isScrolled={isScrolled} isHomePage={isHomePage} />
+            {/* Mobile Navigation - Pass the auth modal handler */}
+            <MobileNav 
+              isScrolled={isScrolled} 
+              isHomePage={isHomePage} 
+              onAuthModalOpen={handleAuthModalOpen}
+            />
           </div>
         </div>
       </nav>

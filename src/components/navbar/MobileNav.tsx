@@ -3,7 +3,7 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { Menu, Mail, User, LogOut, Bell } from 'lucide-react';
+import { Menu, Mail, User, LogOut, Bell, LogIn } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useUnifiedMessages } from '@/hooks/useUnifiedMessages';
@@ -13,9 +13,10 @@ import { Separator } from '@/components/ui/separator';
 interface MobileNavProps {
   isScrolled: boolean;
   isHomePage: boolean;
+  onAuthModalOpen?: () => void;
 }
 
-const MobileNav = ({ isScrolled, isHomePage }: MobileNavProps) => {
+const MobileNav = ({ isScrolled, isHomePage, onAuthModalOpen }: MobileNavProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -46,6 +47,15 @@ const MobileNav = ({ isScrolled, isHomePage }: MobileNavProps) => {
       navigate("/");
     } catch (error) {
       console.error("Logout error:", error);
+    }
+  };
+
+  const handleAuthAction = () => {
+    setOpen(false);
+    if (onAuthModalOpen) {
+      onAuthModalOpen();
+    } else {
+      navigate('/auth');
     }
   };
 
@@ -80,6 +90,23 @@ const MobileNav = ({ isScrolled, isHomePage }: MobileNavProps) => {
         </div>
       )}
 
+      {/* Sign In Button for non-authenticated users */}
+      {!user && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleAuthAction}
+          className={`h-9 px-3 ${
+            isHomePage && !isScrolled 
+              ? "text-white hover:text-primary dark:text-primary dark:hover:text-white" 
+              : "text-foreground hover:text-primary dark:hover:text-primary"
+          }`}
+        >
+          <LogIn className="h-4 w-4 mr-2" />
+          Sign In
+        </Button>
+      )}
+
       {/* Mobile Menu */}
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
@@ -103,9 +130,10 @@ const MobileNav = ({ isScrolled, isHomePage }: MobileNavProps) => {
               </Link>
             ))}
             
-            {user && (
+            <Separator />
+            
+            {user ? (
               <>
-                <Separator />
                 <Link
                   to="/profile"
                   onClick={() => setOpen(false)}
@@ -122,6 +150,14 @@ const MobileNav = ({ isScrolled, isHomePage }: MobileNavProps) => {
                   Log out
                 </button>
               </>
+            ) : (
+              <button
+                onClick={handleAuthAction}
+                className="flex items-center text-sm font-medium transition-colors hover:text-primary text-muted-foreground text-left"
+              >
+                <LogIn className="mr-2 h-4 w-4" />
+                Sign In / Sign Up
+              </button>
             )}
           </nav>
         </SheetContent>
