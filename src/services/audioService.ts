@@ -3,9 +3,32 @@ import { STREAM_URL, BACKUP_STREAM_URL } from "@/constants/stream";
 
 // Global singleton state
 let audioInstance: HTMLAudioElement | null = null;
+let backupAudioInstance: HTMLAudioElement | null = null;
 let listeners: Array<() => void> = [];
 let globalIsPlaying = false;
 let isUsingBackupStream = false;
+let isInitialized = false;
+
+/**
+ * Initialize audio instances on first load
+ */
+const initializeAudio = () => {
+  if (isInitialized) return;
+  
+  console.log("AudioService: Initializing audio instances");
+  
+  // Pre-create main audio instance
+  audioInstance = new Audio();
+  audioInstance.preload = 'none'; // Don't auto-load data
+  audioInstance.src = STREAM_URL;
+  
+  // Pre-create backup audio instance
+  backupAudioInstance = new Audio();
+  backupAudioInstance.preload = 'none';
+  backupAudioInstance.src = BACKUP_STREAM_URL;
+  
+  isInitialized = true;
+};
 
 /**
  * Notify all listeners about state changes
@@ -19,6 +42,11 @@ const notifyListeners = () => {
  * Register a listener function to be called when audio state changes
  */
 export const registerListener = (callback: () => void) => {
+  // Initialize on first listener registration
+  if (!isInitialized) {
+    initializeAudio();
+  }
+  
   listeners.push(callback);
   console.log("AudioService: Registered listener, total listeners:", listeners.length);
   return () => {
@@ -41,26 +69,26 @@ export const getIsUsingBackupStream = () => isUsingBackupStream;
  * Set volume on the audio instance
  */
 export const setVolume = (volumeLevel: number) => {
-  if (audioInstance) {
+  const currentAudio = isUsingBackupStream ? backupAudioInstance : audioInstance;
+  if (currentAudio) {
     console.log("AudioService: Setting volume to", volumeLevel);
-    audioInstance.volume = volumeLevel / 100;
+    currentAudio.volume = volumeLevel / 100;
   }
 };
 
 /**
- * Stop audio playback and cleanup
+ * Stop audio playback
  */
 export const stopPlayback = () => {
   console.log("AudioService: Stopping playback");
-  if (audioInstance) {
+  
+  if (audioInstance && !audioInstance.paused) {
     audioInstance.pause();
-    audioInstance.src = "";
-    // Remove all event listeners
-    audioInstance.onplay = null;
-    audioInstance.onpause = null;
-    audioInstance.onerror = null;
-    audioInstance = null;
   }
+  if (backupAudioInstance && !backupAudioInstance.paused) {
+    backupAudioInstance.pause();
+  }
+  
   globalIsPlaying = false;
   notifyListeners();
 };
@@ -72,24 +100,28 @@ export const stopPlayback = () => {
 export const startPlayback = async (volume: number): Promise<boolean> => {
   console.log("AudioService: Starting playback, volume:", volume, "using backup:", isUsingBackupStream);
   
-  // Stop any existing playback first to prevent multiple instances
-  if (audioInstance) {
-    stopPlayback();
+  // Ensure audio instances are initialized
+  if (!isInitialized) {
+    initializeAudio();
   }
   
-  // Create a new audio element and load the stream
-  const currentStreamUrl = isUsingBackupStream ? BACKUP_STREAM_URL : STREAM_URL;
-  console.log("AudioService: Using stream URL:", currentStreamUrl);
+  // Stop any existing playback first
+  stopPlayback();
   
-  audioInstance = new Audio(currentStreamUrl);
+  const currentAudio = isUsingBackupStream ? backupAudioInstance : audioInstance;
+  
+  if (!currentAudio) {
+    console.error("AudioService: No audio instance available");
+    return false;
+  }
   
   // Apply volume settings
-  audioInstance.volume = volume / 100;
+  currentAudio.volume = volume / 100;
   
   try {
     // Start playing
     console.log("AudioService: Attempting to play stream");
-    await audioInstance.play();
+    await currentAudio.play();
     globalIsPlaying = true;
     console.log("AudioService: Playback started successfully");
     notifyListeners();
@@ -100,32 +132,33 @@ export const startPlayback = async (volume: number): Promise<boolean> => {
     if (!isUsingBackupStream) {
       // Try the backup stream if main stream failed
       isUsingBackupStream = true;
-      console.log("Trying backup stream:", BACKUP_STREAM_URL);
+      console.log("Trying backup stream");
       
-      // Create a new audio element with the backup stream
-      if (audioInstance) {
-        audioInstance.pause();
-        audioInstance.src = "";
+      if (!backupAudioInstance) {
+        console.error("AudioService: No backup audio instance available");
+        return false;
       }
       
-      audioInstance = new Audio(BACKUP_STREAM_URL);
-      audioInstance.volume = volume / 100;
+      // Apply volume settings to backup
+      backupAudioInstance.volume = volume / 100;
       
       try {
         // Play the backup stream
         console.log("AudioService: Attempting to play backup stream");
-        await audioInstance.play();
+        await backupAudioInstance.play();
         globalIsPlaying = true;
         console.log("AudioService: Backup stream playback started successfully");
         notifyListeners();
         return true;
       } catch (backupError) {
         console.error("Backup stream playback failed:", backupError);
-        stopPlayback(); // This already calls notifyListeners
+        globalIsPlaying = false;
+        notifyListeners();
         return false;
       }
     } else {
-      stopPlayback(); // This already calls notifyListeners
+      globalIsPlaying = false;
+      notifyListeners();
       return false;
     }
   }
