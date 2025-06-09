@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -207,55 +208,53 @@ const UnifiedMessagesPage: React.FC = () => {
   return (
     <>
       <TitleUpdater title="Messages" />
-      <div className="h-screen flex flex-col bg-background">
-        <div className="pt-16 flex-1 flex flex-col min-h-0">
-          <div className="h-full flex flex-col min-h-0">
-            <MessagesPageHeader totalUnreadCount={totalUnreadCount} />
+      <div className="flex flex-col bg-background" style={{ height: 'calc(100vh - 64px)', marginTop: '64px' }}>
+        <div className="flex flex-col h-full min-h-0">
+          <MessagesPageHeader totalUnreadCount={totalUnreadCount} />
 
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-              <div className="px-4 pt-4 flex-shrink-0">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="conversations" className="relative">
-                    Conversations
-                    {conversationUnreadCount > 0 && (
-                      <Badge variant="destructive" className="ml-2 h-5 w-5 min-w-[1.25rem] p-0 flex items-center justify-center text-xs rounded-full">
-                        {conversationUnreadCount > 9 ? '9+' : conversationUnreadCount}
-                      </Badge>
-                    )}
-                  </TabsTrigger>
-                  <TabsTrigger value="notifications" className="relative">
-                    Notifications
-                    {adminUnreadCount > 0 && (
-                      <Badge variant="destructive" className="ml-2 h-5 w-5 min-w-[1.25rem] p-0 flex items-center justify-center text-xs rounded-full">
-                        {adminUnreadCount > 9 ? '9+' : adminUnreadCount}
-                      </Badge>
-                    )}
-                  </TabsTrigger>
-                </TabsList>
-              </div>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+            <div className="px-4 pt-4 flex-shrink-0">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="conversations" className="relative">
+                  Conversations
+                  {conversationUnreadCount > 0 && (
+                    <Badge variant="destructive" className="ml-2 h-5 w-5 min-w-[1.25rem] p-0 flex items-center justify-center text-xs rounded-full">
+                      {conversationUnreadCount > 9 ? '9+' : conversationUnreadCount}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="notifications" className="relative">
+                  Notifications
+                  {adminUnreadCount > 0 && (
+                    <Badge variant="destructive" className="ml-2 h-5 w-5 min-w-[1.25rem] p-0 flex items-center justify-center text-xs rounded-full">
+                      {adminUnreadCount > 9 ? '9+' : adminUnreadCount}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-              <TabsContent value="conversations" className="flex-1 flex mt-0 min-h-0">
-                <ConversationsTab
-                  conversations={conversations}
-                  currentUserId={user.id}
-                  conversationsLoading={conversationsLoading}
-                  selectedConversationId={selectedConversationId}
-                  otherParticipantId={otherParticipantId}
-                  onSelectConversation={handleSelectConversation}
-                  onStartNewConversation={handleStartNewConversation}
-                />
-              </TabsContent>
+            <TabsContent value="conversations" className="flex-1 flex mt-0 min-h-0">
+              <ConversationsTab
+                conversations={conversations}
+                currentUserId={user.id}
+                conversationsLoading={conversationsLoading}
+                selectedConversationId={selectedConversationId}
+                otherParticipantId={otherParticipantId}
+                onSelectConversation={handleSelectConversation}
+                onStartNewConversation={handleStartNewConversation}
+              />
+            </TabsContent>
 
-              <TabsContent value="notifications" className="flex-1 mt-0 min-h-0">
-                <NotificationsTab
-                  adminMessages={adminMessages}
-                  adminMessagesLoading={adminMessagesLoading}
-                  selectedAdminMessage={selectedAdminMessage}
-                  onAdminMessageClick={handleAdminMessageClick}
-                />
-              </TabsContent>
-            </Tabs>
-          </div>
+            <TabsContent value="notifications" className="flex-1 mt-0 min-h-0">
+              <NotificationsTab
+                adminMessages={adminMessages}
+                adminMessagesLoading={adminMessagesLoading}
+                selectedAdminMessage={selectedAdminMessage}
+                onAdminMessageClick={handleAdminMessageClick}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
 
         {user && (
