@@ -126,7 +126,7 @@ function App() {
                               <Route path="/messages" element={<UnifiedMessagesPage />} />
                               <Route path="/members" element={<MembersPage />} />
                               <Route path="/forum/categories/:categorySlug" element={<ForumCategoryPage />} />
-                              <Route path="/forum/topic/:topicSlug" element={<ForumTopicPage />} />
+                              <Route path="/members/forum/:categorySlug/:topicSlug" element={<ForumTopicPage />} />
                               <Route path="/forum/categories/:categorySlug/new-topic" element={<NewForumTopicPage />} />
                               <Route path="/forum/search" element={<ForumInitiateSearchPage />} />
                               <Route path="/forum/search/results" element={<ForumSearchResultsPage />} />
