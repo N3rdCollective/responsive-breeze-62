@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useMessages } from '@/hooks/useMessages';
 import { useAuth } from '@/hooks/useAuth';
@@ -107,7 +108,7 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
   }
   
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className="flex flex-col h-full">
       <MessageList
         messages={messages}
         isLoading={messagesLoading}
@@ -116,24 +117,26 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
         conversationId={conversationId}
       />
       
-      <TypingIndicatorDisplay
-        isTyping={isOtherUserTyping}
-        userName={otherUserTypingName}
-      />
+      <div className="flex-shrink-0">
+        <TypingIndicatorDisplay
+          isTyping={isOtherUserTyping}
+          userName={otherUserTypingName}
+        />
 
-      <MessageInputBar
-        onSendMessage={handleSendMessageWrapper}
-        isSending={isSending}
-        conversationId={conversationId}
-        otherParticipantId={otherParticipantId}
-        inputValue={currentMessageInput}
-        onInputValueChange={setCurrentMessageInput}
-        selectedFile={selectedFile}
-        previewUrl={previewUrl}
-        fileInputRef={fileInputRef}
-        onFileSelect={handleFileSelect}
-        onRemoveFile={removeSelectedFile}
-      />
+        <MessageInputBar
+          onSendMessage={handleSendMessageWrapper}
+          isSending={isSending}
+          conversationId={conversationId}
+          otherParticipantId={otherParticipantId}
+          inputValue={currentMessageInput}
+          onInputValueChange={setCurrentMessageInput}
+          selectedFile={selectedFile}
+          previewUrl={previewUrl}
+          fileInputRef={fileInputRef}
+          onFileSelect={handleFileSelect}
+          onRemoveFile={removeSelectedFile}
+        />
+      </div>
     </div>
   );
 };
