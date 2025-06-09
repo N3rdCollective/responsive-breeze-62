@@ -207,9 +207,9 @@ const UnifiedMessagesPage: React.FC = () => {
   return (
     <>
       <TitleUpdater title="Messages" />
-      <div className="min-h-screen flex flex-col bg-background">
-        <div className="pt-16 flex-1 flex flex-col max-h-screen">
-          <div className="w-full h-full flex flex-col min-h-0">
+      <div className="h-screen flex flex-col bg-background">
+        <div className="pt-16 flex-1 flex flex-col min-h-0">
+          <div className="h-full flex flex-col min-h-0">
             <MessagesPageHeader totalUnreadCount={totalUnreadCount} />
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
@@ -234,7 +234,7 @@ const UnifiedMessagesPage: React.FC = () => {
                 </TabsList>
               </div>
 
-              <TabsContent value="conversations" className="flex-1 flex mt-0 min-h-0 overflow-hidden">
+              <TabsContent value="conversations" className="flex-1 flex mt-0 min-h-0">
                 <ConversationsTab
                   conversations={conversations}
                   currentUserId={user.id}
@@ -246,7 +246,7 @@ const UnifiedMessagesPage: React.FC = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="notifications" className="flex-1 mt-0 min-h-0 overflow-hidden">
+              <TabsContent value="notifications" className="flex-1 mt-0 min-h-0">
                 <NotificationsTab
                   adminMessages={adminMessages}
                   adminMessagesLoading={adminMessagesLoading}

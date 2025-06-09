@@ -27,7 +27,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, isError,
 
   if (isLoading) {
     return (
-      <div className="flex-1 p-4 space-y-4 min-h-0 overflow-hidden">
+      <div className="flex-1 p-4 space-y-4 min-h-0">
         {[...Array(5)].map((_, i) => (
           <div key={i} className={`flex gap-2 ${i % 2 === 0 ? 'justify-start' : 'justify-end'}`}>
             {i % 2 === 0 && <Skeleton className="h-8 w-8 rounded-full" />}
@@ -50,7 +50,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, isError,
   }
 
   return (
-    <ScrollArea className="flex-1 min-h-0" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+    <ScrollArea className="flex-1 min-h-0">
       <div className="p-4 space-y-4">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground min-h-[200px]">
