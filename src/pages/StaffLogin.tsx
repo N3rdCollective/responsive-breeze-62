@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -16,15 +17,17 @@ const StaffLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, isLoading: authLoading } = useStaffAuth();
 
   // Redirect if already authenticated
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
       console.log('✅ Already authenticated, redirecting to staff panel');
-      navigate("/staff/panel");
+      const from = location.state?.from?.pathname || "/staff/panel";
+      navigate(from, { replace: true });
     }
-  }, [isAuthenticated, authLoading, navigate]);
+  }, [isAuthenticated, authLoading, navigate, location]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,63 +54,14 @@ const StaffLogin = () => {
       if (data.user) {
         console.log('✅ Login successful, user:', data.user.id);
         
-        // Wait longer for RLS context to be fully established
-        console.log('⏳ Waiting for RLS context to be established...');
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Check if user is staff with better error handling
-        console.log('🔍 Verifying staff status...');
-        const { data: staffData, error: staffError } = await supabase
-          .from('staff')
-          .select('id, role')
-          .eq('id', data.user.id)
-          .single();
-
-        if (staffError) {
-          console.error('❌ Staff verification error:', staffError);
-          if (staffError.code === 'PGRST116') {
-            // No rows returned - user is not staff
-            await supabase.auth.signOut();
-            toast({
-              title: "Access Denied",
-              description: "This account does not have staff access.",
-              variant: "destructive",
-            });
-          } else {
-            // Other error
-            await supabase.auth.signOut();
-            toast({
-              title: "Verification Error",
-              description: "Unable to verify staff access. Please try again.",
-              variant: "destructive",
-            });
-          }
-          return;
-        }
-
-        if (!staffData) {
-          console.error('❌ No staff data returned');
-          await supabase.auth.signOut();
-          toast({
-            title: "Access Denied",
-            description: "This account does not have staff access.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        console.log('✅ Staff verified:', staffData);
-        
         toast({
-          title: "Welcome!",
-          description: "You have successfully logged in to the staff panel.",
+          title: "Login Successful",
+          description: "Welcome to the staff panel!",
         });
 
-        // Add even longer delay to ensure authentication context is properly established
-        setTimeout(() => {
-          console.log('🔄 Redirecting to staff panel...');
-          navigate("/staff/panel");
-        }, 1500);
+        // The useStaffAuth context will handle the authentication state
+        // and StaffRouteProtection will handle the redirect
+        console.log('🔄 Login complete, authentication context will handle redirect');
       }
     } catch (error: any) {
       console.error('❌ Unexpected login error:', error);

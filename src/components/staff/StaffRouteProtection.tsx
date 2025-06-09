@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useStaffAuth } from '@/hooks/useStaffAuth';
 import { Button } from '@/components/ui/button';
-import { Shield, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 interface StaffRouteProtectionProps {
   children: React.ReactNode;
@@ -15,12 +15,14 @@ const StaffRouteProtection: React.FC<StaffRouteProtectionProps> = ({
   requiredRoles = [] 
 }) => {
   const { isLoading, isAuthenticated, userRole, handleLogout } = useStaffAuth();
+  const location = useLocation();
 
   console.log('🛡️ StaffRouteProtection check:', {
     isLoading,
     isAuthenticated,
     userRole,
-    requiredRoles
+    requiredRoles,
+    currentPath: location.pathname
   });
 
   // Show loading spinner while checking authentication
@@ -31,16 +33,24 @@ const StaffRouteProtection: React.FC<StaffRouteProtectionProps> = ({
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-lg text-muted-foreground">Verifying staff access...</p>
-          <p className="text-sm text-muted-foreground mt-2">This may take a moment...</p>
+          <p className="text-sm text-muted-foreground mt-2">Please wait...</p>
         </div>
       </div>
     );
   }
 
-  // Only redirect after loading is complete and we're certain user is not authenticated
-  if (!isLoading && !isAuthenticated) {
-    console.log('❌ Not authenticated after loading complete, redirecting to login');
+  // Only redirect if we're certain the user is not authenticated AND not on login/signup pages
+  const isAuthPage = location.pathname.includes('/staff/login') || location.pathname.includes('/staff/signup');
+  
+  if (!isLoading && !isAuthenticated && !isAuthPage) {
+    console.log('❌ Not authenticated, redirecting to login');
     return <Navigate to="/staff/login" replace />;
+  }
+
+  // If user is authenticated but on login page, redirect to panel
+  if (!isLoading && isAuthenticated && isAuthPage) {
+    console.log('✅ Already authenticated, redirecting to panel');
+    return <Navigate to="/staff/panel" replace />;
   }
 
   // Check role-based permissions if required roles are specified and user is authenticated
@@ -75,21 +85,9 @@ const StaffRouteProtection: React.FC<StaffRouteProtectionProps> = ({
     );
   }
 
-  // Only render protected content if authenticated (or still loading)
-  if (isAuthenticated || isLoading) {
-    console.log('✅ Access granted, rendering protected content');
-    return <>{children}</>;
-  }
-
-  // Fallback loading state
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-        <p className="text-lg text-muted-foreground">Loading...</p>
-      </div>
-    </div>
-  );
+  // Render protected content if authenticated or on auth pages
+  console.log('✅ Access granted, rendering content');
+  return <>{children}</>;
 };
 
 export default StaffRouteProtection;

@@ -13,6 +13,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import RouteErrorElement from "@/components/RouteErrorElement";
 import PageLoader from "@/components/general/PageLoader";
 import StaffLayout from "@/components/layouts/StaffLayout";
+import { StaffAuthProvider } from "@/hooks/useStaffAuth";
 
 // Lazy load components
 const Index = lazy(() => import("./pages/Index"));
@@ -69,39 +70,35 @@ function App() {
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <div className="min-h-screen bg-background flex flex-col w-full">
                 <Routes>
-                  {/* Staff Routes */}
-                  <Route path="/staff/login" element={
-                    <Suspense fallback={<PageLoader />}>
-                      <StaffLogin />
-                    </Suspense>
-                  } />
-                  <Route path="/staff/signup" element={
-                    <Suspense fallback={<PageLoader />}>
-                      <StaffRegistration />
-                    </Suspense>
-                  } />
+                  {/* Staff Routes - Now wrapped with StaffAuthProvider */}
                   <Route path="/staff/*" element={
-                    <Suspense fallback={<PageLoader />}>
-                      <StaffLayout />
-                    </Suspense>
-                  }>
-                    <Route path="panel" element={<UnifiedStaffDashboard />} />
-                    <Route path="analytics" element={<StaffAnalytics />} />
-                    <Route path="news" element={<StaffNewsPage />} />
-                    <Route path="news/editor" element={<NewsEditor />} />
-                    <Route path="news/editor/:id" element={<NewsEditor />} />
-                    <Route path="home" element={<StaffHomepageManager />} />
-                    <Route path="personalities" element={<StaffPersonalities />} />
-                    <Route path="featured-artists" element={<StaffFeaturedArtists />} />
-                    <Route path="shows" element={<StaffShowsManager />} />
-                    <Route path="users" element={<StaffUserManager />} />
-                    <Route path="forum" element={<StaffForumManagementPage />} />
-                    <Route path="moderation" element={<StaffModeratorDashboard />} />
-                    <Route path="activity" element={<StaffActivityLogs />} />
-                    <Route path="sponsors" element={<StaffSponsors />} />
-                    <Route path="settings" element={<StaffSystemSettings />} />
-                    <Route path="about" element={<StaffAboutEditor />} />
-                  </Route>
+                    <StaffAuthProvider>
+                      <Suspense fallback={<PageLoader />}>
+                        <Routes>
+                          <Route path="login" element={<StaffLogin />} />
+                          <Route path="signup" element={<StaffRegistration />} />
+                          <Route path="*" element={<StaffLayout />}>
+                            <Route path="panel" element={<UnifiedStaffDashboard />} />
+                            <Route path="analytics" element={<StaffAnalytics />} />
+                            <Route path="news" element={<StaffNewsPage />} />
+                            <Route path="news/editor" element={<NewsEditor />} />
+                            <Route path="news/editor/:id" element={<NewsEditor />} />
+                            <Route path="home" element={<StaffHomepageManager />} />
+                            <Route path="personalities" element={<StaffPersonalities />} />
+                            <Route path="featured-artists" element={<StaffFeaturedArtists />} />
+                            <Route path="shows" element={<StaffShowsManager />} />
+                            <Route path="users" element={<StaffUserManager />} />
+                            <Route path="forum" element={<StaffForumManagementPage />} />
+                            <Route path="moderation" element={<StaffModeratorDashboard />} />
+                            <Route path="activity" element={<StaffActivityLogs />} />
+                            <Route path="sponsors" element={<StaffSponsors />} />
+                            <Route path="settings" element={<StaffSystemSettings />} />
+                            <Route path="about" element={<StaffAboutEditor />} />
+                          </Route>
+                        </Routes>
+                      </Suspense>
+                    </StaffAuthProvider>
+                  } />
                   
                   {/* Public Routes */}
                   <Route path="/*" element={
