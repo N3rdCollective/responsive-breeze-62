@@ -2,6 +2,8 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useStaffPermissions } from "./staff/useStaffPermissions";
 import { useLogout as useStaffLogoutHook } from "./staff/useLogout";
+import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect } from 'react';
 
 // Define the context type using the staff permissions system
 interface StaffAuthContextType {
@@ -47,11 +49,53 @@ export const StaffAuthProvider = ({ children }: { children: ReactNode }) => {
     validateAction 
   } = useStaffPermissions();
   
-  const handleLogout = useStaffLogoutHook(null); // We'll get the staff name from permissions if needed
+  const [staffData, setStaffData] = useState<{
+    staffName: string | null;
+    staffId: string | null;
+  }>({
+    staffName: null,
+    staffId: null,
+  });
+  
+  const handleLogout = useStaffLogoutHook(staffData.staffName);
+
+  // Fetch staff details when authentication is confirmed
+  useEffect(() => {
+    const fetchStaffDetails = async () => {
+      if (!isStaff || loading) return;
+      
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: staffDetails, error } = await supabase
+          .from('staff')
+          .select('id, first_name, display_name, email')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching staff details:', error);
+          return;
+        }
+
+        if (staffDetails) {
+          setStaffData({
+            staffName: staffDetails.display_name || staffDetails.first_name || staffDetails.email || 'Staff Member',
+            staffId: staffDetails.id,
+          });
+        }
+      } catch (error) {
+        console.error('Error in fetchStaffDetails:', error);
+      }
+    };
+
+    fetchStaffDetails();
+  }, [isStaff, loading]);
 
   const value: StaffAuthContextType = {
-    staffName: null, // This could be derived from user profile if needed
-    staffId: null, // This could be derived from auth if needed
+    staffName: staffData.staffName,
+    staffId: staffData.staffId,
     userRole: role,
     isLoading: loading,
     isAdmin: role === 'admin' || role === 'super_admin',

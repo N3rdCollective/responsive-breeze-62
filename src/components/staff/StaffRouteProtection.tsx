@@ -14,7 +14,7 @@ const StaffRouteProtection: React.FC<StaffRouteProtectionProps> = ({
   children, 
   requiredRoles = [] 
 }) => {
-  const { isLoading, isAuthenticated, userRole, staffName } = useStaffAuth();
+  const { isLoading, isAuthenticated, userRole, handleLogout } = useStaffAuth();
 
   // Show loading spinner while checking authentication
   if (isLoading) {
@@ -29,7 +29,7 @@ const StaffRouteProtection: React.FC<StaffRouteProtectionProps> = ({
   }
 
   // Redirect to login if not authenticated
-  if (!isAuthenticated || !staffName) {
+  if (!isAuthenticated) {
     return <Navigate to="/staff/login" replace />;
   }
 
@@ -51,9 +51,14 @@ const StaffRouteProtection: React.FC<StaffRouteProtectionProps> = ({
               <span className="font-medium">Required:</span> {requiredRoles.join(', ')}
             </p>
           </div>
-          <Button onClick={() => window.history.back()} variant="outline">
-            Go Back
-          </Button>
+          <div className="flex gap-2 justify-center">
+            <Button onClick={() => window.history.back()} variant="outline">
+              Go Back
+            </Button>
+            <Button onClick={handleLogout} variant="destructive">
+              Logout
+            </Button>
+          </div>
         </div>
       </div>
     );
