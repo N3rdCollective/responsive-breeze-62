@@ -34,7 +34,7 @@ const StaffUserManager = () => {
   const { userRole, isLoading: authLoading } = useStaffAuth(); 
   const { toast } = useToast();
   
-  // Use the real user management hook instead of local state
+  // Use the real user management hook
   const {
     users,
     loading: isLoading,
@@ -57,6 +57,7 @@ const StaffUserManager = () => {
     user: null as User | null
   });
   const [actionReason, setActionReason] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
   
   // Message dialog state with stable initial structure
   const [messageDialog, setMessageDialog] = useState({
@@ -65,6 +66,7 @@ const StaffUserManager = () => {
   });
   const [messageSubject, setMessageSubject] = useState('');
   const [messageContent, setMessageContent] = useState('');
+  const [messageLoading, setMessageLoading] = useState(false);
 
   // Filter users using the search utility from the hook
   const filteredUsers = searchUsers(users, searchTerm, filterStatus, filterRole);
@@ -106,7 +108,7 @@ const StaffUserManager = () => {
   };
 
   const handleUserAction = async () => {
-    if (!actionDialog.user || !actionDialog.action) return;
+    if (!actionDialog.user || !actionDialog.action || actionLoading) return;
     if (!actionReason.trim()) {
       toast({
         title: "Validation Error",
@@ -116,6 +118,7 @@ const StaffUserManager = () => {
       return;
     }
 
+    setActionLoading(true);
     try {
       let newStatus: User['status'] = 'active';
       if (actionDialog.action === 'suspend') newStatus = 'suspended';
@@ -145,11 +148,13 @@ const StaffUserManager = () => {
         description: "Failed to complete user action. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setActionLoading(false);
     }
   };
 
   const handleSendMessage = async () => {
-    if (!messageDialog.user) return;
+    if (!messageDialog.user || messageLoading) return;
     if (!messageSubject.trim() || !messageContent.trim()) {
       toast({
         title: "Validation Error",
@@ -159,6 +164,7 @@ const StaffUserManager = () => {
       return;
     }
     
+    setMessageLoading(true);
     try {
       const success = await sendUserMessage(messageDialog.user.id, messageSubject, messageContent);
       
@@ -178,6 +184,8 @@ const StaffUserManager = () => {
         description: "Failed to send message. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setMessageLoading(false);
     }
   };
 
@@ -287,21 +295,26 @@ const StaffUserManager = () => {
                       value={actionReason}
                       onChange={(e) => setActionReason(e.target.value)}
                       className="min-h-[80px]"
+                      disabled={actionLoading}
                     />
                      {actionReason.trim().length === 0 && <p className="text-xs text-red-500">A reason is required.</p>}
                   </div>
                 </div>
               )}
               <DialogFooter>
-                <Button variant="outline" onClick={() => setActionDialog({ open: false, action: null, user: null })}>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setActionDialog({ open: false, action: null, user: null })}
+                  disabled={actionLoading}
+                >
                   Cancel
                 </Button>
                 <Button 
                   variant={actionDialog.action === 'unban' ? 'default' : 'destructive'}
                   onClick={handleUserAction}
-                  disabled={!actionReason.trim()}
+                  disabled={!actionReason.trim() || actionLoading}
                 >
-                  Confirm {actionDialog.action ? actionDialog.action.charAt(0).toUpperCase() + actionDialog.action.slice(1) : ''}
+                  {actionLoading ? 'Processing...' : `Confirm ${actionDialog.action ? actionDialog.action.charAt(0).toUpperCase() + actionDialog.action.slice(1) : ''}`}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -344,6 +357,7 @@ const StaffUserManager = () => {
                         value={messageSubject}
                         onChange={(e) => setMessageSubject(e.target.value)}
                         placeholder="Message subject"
+                        disabled={messageLoading}
                       />
                       {messageSubject.trim().length === 0 && <p className="text-xs text-red-500">Subject is required.</p>}
                     </div>
@@ -355,20 +369,25 @@ const StaffUserManager = () => {
                         onChange={(e) => setMessageContent(e.target.value)}
                         placeholder="Write your message..."
                         className="min-h-[100px]"
+                        disabled={messageLoading}
                       />
                       {messageContent.trim().length === 0 && <p className="text-xs text-red-500">Message content is required.</p>}
                     </div>
                   </div>
               )}
               <DialogFooter>
-                <Button variant="outline" onClick={() => setMessageDialog({ open: false, user: null })}>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setMessageDialog({ open: false, user: null })}
+                  disabled={messageLoading}
+                >
                   Cancel
                 </Button>
                 <Button 
                   onClick={handleSendMessage}
-                  disabled={!messageSubject.trim() || !messageContent.trim()}
+                  disabled={!messageSubject.trim() || !messageContent.trim() || messageLoading}
                 >
-                  Send Message
+                  {messageLoading ? 'Sending...' : 'Send Message'}
                 </Button>
               </DialogFooter>
             </DialogContent>

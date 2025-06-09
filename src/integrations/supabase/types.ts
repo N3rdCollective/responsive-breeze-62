@@ -1018,15 +1018,22 @@ export type Database = {
           bio: string | null
           created_at: string | null
           display_name: string | null
+          email: string | null
           favorite_genres: string[] | null
+          first_name: string | null
           forum_post_count: number
           forum_signature: string | null
           id: string
           is_public: boolean | null
+          last_active: string | null
+          last_name: string | null
+          pending_report_count: number | null
           profile_picture: string | null
           role: string | null
           social_links: Json | null
+          status: string | null
           theme: string | null
+          timeline_post_count: number | null
           updated_at: string | null
           username: string | null
         }
@@ -1034,15 +1041,22 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           display_name?: string | null
+          email?: string | null
           favorite_genres?: string[] | null
+          first_name?: string | null
           forum_post_count?: number
           forum_signature?: string | null
           id: string
           is_public?: boolean | null
+          last_active?: string | null
+          last_name?: string | null
+          pending_report_count?: number | null
           profile_picture?: string | null
           role?: string | null
           social_links?: Json | null
+          status?: string | null
           theme?: string | null
+          timeline_post_count?: number | null
           updated_at?: string | null
           username?: string | null
         }
@@ -1050,15 +1064,22 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           display_name?: string | null
+          email?: string | null
           favorite_genres?: string[] | null
+          first_name?: string | null
           forum_post_count?: number
           forum_signature?: string | null
           id?: string
           is_public?: boolean | null
+          last_active?: string | null
+          last_name?: string | null
+          pending_report_count?: number | null
           profile_picture?: string | null
           role?: string | null
           social_links?: Json | null
+          status?: string | null
           theme?: string | null
+          timeline_post_count?: number | null
           updated_at?: string | null
           username?: string | null
         }
@@ -1309,6 +1330,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_actions: {
+        Row: {
+          action_type: string
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          moderator_id: string
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          moderator_id: string
+          reason: string
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          moderator_id?: string
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_conversation_read_status: {
         Row: {

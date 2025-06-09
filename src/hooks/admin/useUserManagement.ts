@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { User, UserAction } from './utils/userTypes';
@@ -7,7 +8,7 @@ import { useUserActions } from './useUserActions';
 import { useUserMessages } from './useUserMessages';
 
 /**
- * Main hook for user management that combines data fetching, actions, and messaging
+ * Main hook for user management with optimistic updates to prevent UI freezing
  */
 export const useUserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -19,7 +20,6 @@ export const useUserManagement = () => {
   const { updateUserStatus: actionUpdateUserStatus, createUserAction, getUserActions } = useUserActions();
   const { sendUserMessage } = useUserMessages();
 
-  // Remove useCallback to prevent unstable dependencies
   const fetchUsers = async () => {
     try {
       setLoading(true);
@@ -53,35 +53,56 @@ export const useUserManagement = () => {
     }
   };
 
-  // Wrapper for updateUserStatus that refreshes user data after update
+  // Optimistic update wrapper for updateUserStatus
   const updateUserStatus = async (userId: string, status: User['status'], reason: string, actionType: 'suspend' | 'ban' | 'unban') => {
-    const success = await actionUpdateUserStatus(userId, status, reason, actionType);
-    if (success) {
-      // Immediately refresh the users list
-      await fetchUsers();
+    // Optimistically update the local state immediately
+    setUsers(prevUsers => 
+      prevUsers.map(user => 
+        user.id === userId ? { ...user, status } : user
+      )
+    );
+
+    try {
+      const success = await actionUpdateUserStatus(userId, status, reason, actionType);
+      
+      if (!success) {
+        // Rollback optimistic update on failure
+        const { users: freshUsers } = await fetchUserData();
+        if (freshUsers) {
+          setUsers(freshUsers);
+        }
+      }
+      
+      return success;
+    } catch (error) {
+      console.error("Error in optimistic updateUserStatus:", error);
+      // Rollback optimistic update on error
+      const { users: freshUsers } = await fetchUserData();
+      if (freshUsers) {
+        setUsers(freshUsers);
+      }
+      return false;
     }
-    return success;
   };
 
-  // Wrapper for sendUserMessage that doesn't require refresh but ensures UI consistency
+  // Wrapper for sendUserMessage that doesn't require refresh
   const sendMessage = async (userId: string, subject: string, content: string) => {
     const success = await sendUserMessage(userId, subject, content);
-    // No need to refresh for messages, but we could add notification count updates here
     return success;
   };
 
-  // Local search function - keep existing implementation
+  // Local search function
   const searchUsersLocal = (allUsers: User[], searchTermLocal: string, statusFilterLocal: string, roleFilterLocal: string) => {
     return searchUsersUtil(allUsers, searchTermLocal, statusFilterLocal, roleFilterLocal);
   };
   
-  // Simplified refresh function without useCallback
-  const refreshUsers = () => {
+  // Refresh function that doesn't disrupt UI state
+  const refreshUsers = async () => {
     console.log("refreshUsers called in useUserManagement");
-    fetchUsers();
+    await fetchUsers();
   };
 
-  // Stable useEffect for initial load
+  // Initial load
   useEffect(() => {
     console.log("Initial fetchUsers call in useEffect, useUserManagement");
     fetchUsers();
