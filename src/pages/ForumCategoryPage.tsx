@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -29,6 +28,8 @@ const ForumCategoryPage = () => {
     error: categoryDataError 
   } = useForumCategoryData({ categorySlug, page });
 
+  console.log('[ForumCategoryPage] Rendering with category:', category?.name, 'topics:', topics.length, 'loading:', categoryDataLoading);
+
   // useEffect for auth redirection remains the same
   useEffect(() => {
     if (!authLoading && !user) {
@@ -36,9 +37,8 @@ const ForumCategoryPage = () => {
     }
   }, [user, authLoading, navigate]);
   
-  // The main data fetching useEffect is now in useForumCategoryData hook
-  
   if (authLoading || categoryDataLoading) {
+    console.log('[ForumCategoryPage] Showing loading state - auth loading:', authLoading, 'data loading:', categoryDataLoading);
     return (
       <div className="min-h-screen">
         <Navbar />
@@ -60,9 +60,9 @@ const ForumCategoryPage = () => {
     );
   }
   
-  // Category not found is handled by the hook via redirect and toast.
-  // This fallback is for the case where navigation hasn't completed yet or if there was an error.
+  // Enhanced error handling with logging
   if (!category && !categoryDataLoading) { 
+    console.log('[ForumCategoryPage] Category not found, showing error state. Error:', categoryDataError);
     return (
       <div className="min-h-screen">
         <Navbar />
@@ -86,8 +86,8 @@ const ForumCategoryPage = () => {
   }
 
   // If category is still null after loading and no error, it implies it was handled by redirect in hook.
-  // To prevent rendering with null category if redirect is slow:
   if (!category) {
+     console.log('[ForumCategoryPage] Category still null after loading, showing loading fallback');
      return (
       <div className="min-h-screen">
         <Navbar />
@@ -98,6 +98,8 @@ const ForumCategoryPage = () => {
       </div>
     );
   }
+  
+  console.log('[ForumCategoryPage] Rendering main content for category:', category.name);
   
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -112,7 +114,6 @@ const ForumCategoryPage = () => {
             </Link>
           </div>
           
-          {/* FIXED: Pass categoryId to TopicList */}
           <TopicList topics={topics} categorySlug={categorySlug} categoryId={category?.id} />
           
           {topics.length > 0 && totalPages > 1 && (

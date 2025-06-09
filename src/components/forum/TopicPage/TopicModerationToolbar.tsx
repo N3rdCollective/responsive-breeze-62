@@ -44,20 +44,27 @@ const TopicModerationToolbar: React.FC<TopicModerationToolbarProps> = ({
     try {
       const newStatus = !topic.is_sticky;
       
+      console.log(`[TopicModerationToolbar] Toggling sticky status from ${topic.is_sticky} to ${newStatus} for topic ${topic.id}`);
+      
       const { error } = await supabase
         .from("forum_topics")
         .update({ is_sticky: newStatus })
         .eq("id", topic.id);
       
-      if (error) throw error;
+      if (error) {
+        console.error('[TopicModerationToolbar] Sticky toggle error:', error);
+        throw error;
+      }
       
       toast({
         title: "Success",
         description: `Topic ${newStatus ? "pinned" : "unpinned"} successfully`,
       });
       
+      console.log('[TopicModerationToolbar] Sticky toggle successful, refreshing topic data');
       await onTopicUpdate();
     } catch (err: any) {
+      console.error('[TopicModerationToolbar] Error in toggleTopicSticky:', err);
       toast({
         title: "Error",
         description: `Failed to update topic: ${err.message}`,
@@ -73,20 +80,27 @@ const TopicModerationToolbar: React.FC<TopicModerationToolbarProps> = ({
     try {
       const newStatus = !topic.is_locked;
       
+      console.log(`[TopicModerationToolbar] Toggling lock status from ${topic.is_locked} to ${newStatus} for topic ${topic.id}`);
+      
       const { error } = await supabase
         .from("forum_topics")
         .update({ is_locked: newStatus })
         .eq("id", topic.id);
       
-      if (error) throw error;
+      if (error) {
+        console.error('[TopicModerationToolbar] Lock toggle error:', error);
+        throw error;
+      }
       
       toast({
         title: "Success",
         description: `Topic ${newStatus ? "locked" : "unlocked"} successfully`,
       });
       
+      console.log('[TopicModerationToolbar] Lock toggle successful, refreshing topic data');
       await onTopicUpdate();
     } catch (err: any) {
+      console.error('[TopicModerationToolbar] Error in toggleTopicLocked:', err);
       toast({
         title: "Error",
         description: `Failed to update topic: ${err.message}`,
@@ -100,12 +114,17 @@ const TopicModerationToolbar: React.FC<TopicModerationToolbarProps> = ({
   const handleDeleteTopic = async () => {
     setIsProcessing(true);
     try {
+      console.log(`[TopicModerationToolbar] Deleting topic ${topic.id}`);
+      
       const { error } = await supabase
         .from("forum_topics")
         .delete()
         .eq("id", topic.id);
       
-      if (error) throw error;
+      if (error) {
+        console.error('[TopicModerationToolbar] Delete error:', error);
+        throw error;
+      }
       
       toast({
         title: "Success",
@@ -114,6 +133,7 @@ const TopicModerationToolbar: React.FC<TopicModerationToolbarProps> = ({
       
       setDeleteDialogOpen(false);
       
+      console.log('[TopicModerationToolbar] Topic deleted, navigating back to category');
       // Navigate back to category
       if (topic.category?.slug) {
         navigate(`/members/forum/${topic.category.slug}`);
@@ -121,6 +141,7 @@ const TopicModerationToolbar: React.FC<TopicModerationToolbarProps> = ({
         navigate('/members');
       }
     } catch (err: any) {
+      console.error('[TopicModerationToolbar] Error in handleDeleteTopic:', err);
       toast({
         title: "Error",
         description: `Failed to delete topic: ${err.message}`,

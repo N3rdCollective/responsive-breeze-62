@@ -31,17 +31,23 @@ export const useForumCategoryData = ({ categorySlug, page }: UseForumCategoryDat
         setLoading(true);
         setError(null);
 
-        // Fetch category
+        console.log(`[useForumCategoryData] Fetching category and topics for: ${categorySlug}, page: ${page}`);
+
+        // Fetch category with error handling
         const { data: categoryData, error: categoryError } = await supabase
           .from('forum_categories')
           .select('*')
           .eq('slug', categorySlug)
           .single();
 
-        if (categoryError) throw categoryError;
+        if (categoryError) {
+          console.error('[useForumCategoryData] Category fetch error:', categoryError);
+          throw categoryError;
+        }
 
         if (!categoryData) {
-          navigate('/members'); // Redirect to forum index if category not found
+          console.warn('[useForumCategoryData] Category not found, redirecting to forum index');
+          navigate('/members');
           toast({
             title: "Category not found",
             description: "The forum category you're looking for doesn't exist.",
@@ -50,20 +56,26 @@ export const useForumCategoryData = ({ categorySlug, page }: UseForumCategoryDat
           setLoading(false);
           return;
         }
+        
+        console.log('[useForumCategoryData] Category loaded:', categoryData.name);
         setCategory(categoryData);
 
-        // Count total topics for pagination
+        // Count total topics for pagination with error handling
         const { count, error: countError } = await supabase
           .from('forum_topics')
           .select('*', { count: 'exact', head: true })
           .eq('category_id', categoryData.id);
 
-        if (countError) throw countError;
+        if (countError) {
+          console.error('[useForumCategoryData] Topic count error:', countError);
+          throw countError;
+        }
 
         const totalPageCount = Math.ceil((count || 0) / ITEMS_PER_PAGE);
         setTotalPages(totalPageCount || 1);
+        console.log(`[useForumCategoryData] Total topics: ${count}, pages: ${totalPageCount}`);
 
-        // Fetch topics
+        // Fetch topics with comprehensive error handling
         const { data: topicsRawData, error: topicsError } = await supabase
           .from('forum_topics')
           .select(`
@@ -86,30 +98,50 @@ export const useForumCategoryData = ({ categorySlug, page }: UseForumCategoryDat
           .order('last_post_at', { ascending: false })
           .range((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE - 1);
 
-        if (topicsError) throw topicsError;
+        if (topicsError) {
+          console.error('[useForumCategoryData] Topics fetch error:', topicsError);
+          throw topicsError;
+        }
 
+        console.log(`[useForumCategoryData] Raw topics loaded: ${topicsRawData?.length || 0}`);
+
+        // Process topics with enhanced error handling
         const topicsWithCounts = await Promise.all((topicsRawData || []).map(async (topic) => {
-          const { count: postCount, error: postCountError } = await supabase
-            .from('forum_posts')
-            .select('*', { count: 'exact', head: true })
-            .eq('topic_id', topic.id);
+          try {
+            const { count: postCount, error: postCountError } = await supabase
+              .from('forum_posts')
+              .select('*', { count: 'exact', head: true })
+              .eq('topic_id', topic.id);
 
-          if (postCountError) {
-            console.error(`Error fetching post count for topic ${topic.id}:`, postCountError);
+            if (postCountError) {
+              console.error(`[useForumCategoryData] Error fetching post count for topic ${topic.id}:`, postCountError);
+              // Continue with 0 count instead of failing
+            }
+                        
+            return {
+              ...topic,
+              _count: {
+                posts: postCount || 0,
+              },
+            } as ForumTopic;
+          } catch (topicError) {
+            console.error(`[useForumCategoryData] Error processing topic ${topic.id}:`, topicError);
+            // Return topic with default count instead of failing
+            return {
+              ...topic,
+              _count: {
+                posts: 0,
+              },
+            } as ForumTopic;
           }
-                      
-          return {
-            ...topic,
-            _count: {
-              posts: postCount || 0,
-            },
-          } as ForumTopic;
         }));
         
+        console.log(`[useForumCategoryData] Processed topics: ${topicsWithCounts.length}`);
         setTopics(topicsWithCounts);
       } catch (err: any) {
-        console.error('Error fetching forum data:', err.message);
-        setError(err.message || "Failed to load forum data.");
+        console.error('[useForumCategoryData] Error in fetchCategoryAndTopics:', err);
+        const errorMessage = err.message || "Failed to load forum data.";
+        setError(errorMessage);
         toast({
           title: "Error loading forum",
           description: "We couldn't load the forum data. Please try again.",
@@ -125,4 +157,3 @@ export const useForumCategoryData = ({ categorySlug, page }: UseForumCategoryDat
 
   return { category, topics, loadingData: loading, totalPages, error };
 };
-

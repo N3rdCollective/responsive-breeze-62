@@ -36,6 +36,19 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
   const [totalPosts, setTotalPosts] = useState(0);
   const [viewCountUpdatedForTopic, setViewCountUpdatedForTopic] = useState<string | null>(null);
 
+  // Clear cache when topic slug changes
+  useEffect(() => {
+    if (topic && paramTopicSlug && paramTopicSlug !== topic.slug) {
+      console.log(`[useForumTopicData] Topic slug changed, clearing cache. Old: ${topic.slug}, New: ${paramTopicSlug}`);
+      setTopic(null); 
+      setPosts([]);
+      setTotalPosts(0);
+      setTotalPages(1);
+      setViewCountUpdatedForTopic(null);
+      setError(null);
+    }
+  }, [paramTopicSlug, topic?.slug]);
+
   const fetchData = useCallback(async (pageToFetch: number = currentPageFromProp) => {
     if (!paramTopicSlug) {
       console.warn('[useForumTopicData] fetchData called without paramTopicSlug. Aborting.');
@@ -53,15 +66,15 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
       let currentTopic = topic;
 
       if (!currentTopic || currentTopic.slug !== paramTopicSlug || !currentTopic.profile || currentTopic.profile.forum_signature === undefined) {
-        console.log(`[useForumTopicData] Topic slug changed or not fully loaded. Current topic slug: ${currentTopic?.slug}, New slug: ${paramTopicSlug}. Fetching topic details.`);
+        console.log(`[useForumTopicData] Topic needs to be loaded/refreshed`);
         
         const topicDetailsResult = await fetchTopicDetails(paramTopicSlug, supabase, toast, navigate);
         const fetchedTopic = topicDetailsResult.topic;
 
-        console.log('[useForumTopicData] Result of fetchTopicDetails in fetchData:', fetchedTopic ? `Title: ${fetchedTopic.title}` : 'null');
+        console.log('[useForumTopicData] Result of fetchTopicDetails:', fetchedTopic ? `Title: ${fetchedTopic.title}` : 'null');
         
         if (!fetchedTopic) {
-          console.warn('[useForumTopicData] fetchTopicDetails returned null in fetchData. Topic likely not found or error occurred during fetch.');
+          console.warn('[useForumTopicData] fetchTopicDetails returned null. Topic likely not found.');
           setLoadingData(false); 
           return; 
         }
@@ -73,12 +86,12 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
         }
         
         if (pageToFetch === 1 && currentTopic && currentTopic.id !== viewCountUpdatedForTopic) {
-           console.log('[useForumTopicData] Attempting to update view count on initial load/page 1.');
+           console.log('[useForumTopicData] Updating view count on initial load.');
            await executeUpdateTopicViewCount(currentTopic.id, supabase);
            setViewCountUpdatedForTopic(currentTopic.id);
         }
       } else if (pageToFetch === 1 && currentTopic && currentTopic.id !== viewCountUpdatedForTopic) {
-        console.log('[useForumTopicData] Attempting to update view count on navigating to page 1 for existing topic.');
+        console.log('[useForumTopicData] Updating view count on page 1 navigation.');
         await executeUpdateTopicViewCount(currentTopic.id, supabase);
         setViewCountUpdatedForTopic(currentTopic.id);
       }
@@ -87,6 +100,7 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
         console.log(`[useForumTopicData] Fetching posts for topic ID: ${currentTopic.id}, page: ${pageToFetch}`);
         const { posts: newPosts, totalCount } = await fetchTopicPosts(currentTopic.id, pageToFetch, supabase, toast);
         
+        // Only update posts if they've actually changed
         let postsChanged = posts.length !== newPosts.length;
         if (!postsChanged && posts.length > 0 && newPosts.length > 0) {
             const oldFirstPostSignature = posts[0].profile?.forum_signature;
@@ -100,7 +114,7 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
         
         if (postsChanged) {
             setPosts(newPosts);
-            console.log(`[useForumTopicData] Posts updated.`);
+            console.log(`[useForumTopicData] Posts updated: ${newPosts.length} posts loaded`);
         } else {
             console.log(`[useForumTopicData] Posts data unchanged, not re-setting state.`);
         }
@@ -109,15 +123,15 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
         const calculatedTotalPages = Math.max(1, Math.ceil(totalCount / POSTS_PER_PAGE));
         setTotalPages(calculatedTotalPages);
 
-        console.log(`[useForumTopicData] Data loaded - Topic: ${currentTopic.title}, Page: ${pageToFetch}/${calculatedTotalPages}, Posts count: ${newPosts.length}`);
+        console.log(`[useForumTopicData] Data loaded successfully - Topic: ${currentTopic.title}, Page: ${pageToFetch}/${calculatedTotalPages}`);
       } else {
-        console.warn('[useForumTopicData] currentTopic is null after attempting to fetch/load. Posts will not be fetched.');
+        console.warn('[useForumTopicData] currentTopic is null after fetch attempt.');
       }
     } catch (err: any) {
-      console.error('[useForumTopicData] Error in fetchData main try-catch:', err);
+      console.error('[useForumTopicData] Error in fetchData:', err);
       if (err.message !== 'Topic not found' && err.code !== 'PGRST201' && !err.toastShown) {
         toast({
-            title: "Error processing topic data",
+            title: "Error loading topic",
             description: err.message || "An unexpected error occurred.",
             variant: "destructive",
         });
@@ -138,14 +152,6 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
 
   useEffect(() => {
     console.log(`[useForumTopicData] Effect triggered - TopicSlug: ${paramTopicSlug}, CurrentPageFromProp: ${currentPageFromProp}`);
-    if (topic && paramTopicSlug && paramTopicSlug !== topic.slug) {
-        console.log(`[useForumTopicData] Topic slug changed from ${topic.slug} to ${paramTopicSlug}. Resetting topic state for new fetch.`);
-        setTopic(null); 
-        setPosts([]); 
-        setTotalPosts(0);
-        setTotalPages(1);
-        setViewCountUpdatedForTopic(null); 
-    }
     
     if (paramTopicSlug) {
         fetchData(currentPageFromProp);
@@ -156,20 +162,22 @@ export const useForumTopicData = (currentPageFromProp: number): UseForumTopicDat
         setPosts([]);
         setError("Topic slug not available in URL.");
     }
-  }, [paramTopicSlug, currentPageFromProp, topic?.slug]);
+  }, [paramTopicSlug, currentPageFromProp, fetchData]);
 
   const refreshData = useCallback(async () => {
-    console.log('[useForumTopicData] Refreshing data (full)...');
+    console.log('[useForumTopicData] Refreshing data (full reset)...');
+    // Clear all state to force fresh fetch
     setTopic(null); 
     setPosts([]);
     setTotalPosts(0);
     setTotalPages(1);
     setViewCountUpdatedForTopic(null);
+    setError(null);
     
     if (paramTopicSlug) {
         await fetchData(currentPageFromProp); 
     } else {
-        console.warn("[useForumTopicData] refreshData called but paramTopicSlug is undefined. Not fetching.");
+        console.warn("[useForumTopicData] refreshData called but paramTopicSlug is undefined.");
         setLoadingData(false);
         setError("Cannot refresh: Topic slug not available.");
     }
