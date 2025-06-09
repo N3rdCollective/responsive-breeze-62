@@ -1,9 +1,9 @@
 
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, MessagesSquare } from 'lucide-react';
+import { Loader2, MessagesSquare, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 
@@ -23,13 +23,26 @@ const ForumCategories = () => {
   const [categories, setCategories] = useState<ForumCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<Record<string, { topics: number, posts: number }>>({});
+  const [retryAttempt, setRetryAttempt] = useState(0);
+  const [searchParams] = useSearchParams();
+
+  // Check if we need to refresh (e.g., after topic deletion)
+  const refreshParam = searchParams.get('refresh');
 
   useEffect(() => {
-    console.log('[ForumCategories] useEffect triggered. Initial loading state:', loading);
+    console.log('[ForumCategories] useEffect triggered. Refresh param:', refreshParam, 'Retry attempt:', retryAttempt);
+    
     const fetchCategories = async () => {
       console.log('[ForumCategories] Starting fetchCategories.');
-      setLoading(true); // Explicitly set loading true at the start of fetch
+      setLoading(true);
+      
       try {
+        // Add a small delay if this is triggered by a refresh parameter (after deletion)
+        if (refreshParam && retryAttempt === 0) {
+          console.log('[ForumCategories] Refresh parameter detected, adding delay to ensure DB consistency');
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+        
         // Fetch categories
         console.log('[ForumCategories] Fetching categories from Supabase.');
         const { data: categoriesData, error: categoriesError } = await supabase
@@ -63,7 +76,7 @@ const ForumCategories = () => {
             
           if (topicsError) {
             console.error(`[ForumCategories] Error fetching topics count for category ${category.id}:`, topicsError.message);
-            throw topicsError; // Re-throw to be caught by the main catch block
+            throw topicsError;
           }
           
           // Get posts count for topics in this category
@@ -82,7 +95,7 @@ const ForumCategories = () => {
               
             if (postsError) {
               console.error(`[ForumCategories] Error fetching posts count for category ${category.id}:`, postsError.message);
-              throw postsError; // Re-throw
+              throw postsError;
             }
             postsCount = pCount || 0;
           }
@@ -107,15 +120,25 @@ const ForumCategories = () => {
         console.log('[ForumCategories] Setting categories and stats. Categories:', categoriesData, 'StatsMap:', statsMap);
         setStats(statsMap);
         setCategories(categoriesData);
+        setRetryAttempt(0); // Reset retry counter on success
         
       } catch (error: any) {
         console.error('[ForumCategories] Overall error in fetchCategories:', error.message);
+        
+        // If this is the first attempt and we have a refresh param, try once more
+        if (refreshParam && retryAttempt === 0) {
+          console.log('[ForumCategories] First attempt failed after deletion, retrying once more');
+          setRetryAttempt(1);
+          // Don't show error toast yet, will retry
+          return;
+        }
+        
         toast({
           title: "Error loading forum categories",
-          description: "We couldn't load the forum categories. Please try again.",
+          description: "We couldn't load the forum categories. Please try refreshing the page.",
           variant: "destructive"
         });
-        setCategories([]); // Ensure categories are empty on error
+        setCategories([]);
         setStats({});
       } finally {
         console.log('[ForumCategories] Fetch finished. Setting loading to false.');
@@ -124,7 +147,12 @@ const ForumCategories = () => {
     };
 
     fetchCategories();
-  }, []); // Empty dependency array means this runs once on mount
+  }, [refreshParam, retryAttempt]);
+
+  const handleRetry = () => {
+    console.log('[ForumCategories] Manual retry triggered');
+    setRetryAttempt(prev => prev + 1);
+  };
 
   console.log('[ForumCategories] Rendering. Loading state:', loading, 'Categories count:', categories.length);
 
@@ -146,6 +174,10 @@ const ForumCategories = () => {
           <p className="text-muted-foreground mb-4">
             There are no forum categories available right now.
           </p>
+          <Button onClick={handleRetry} variant="outline" className="mt-2">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Retry Loading
+          </Button>
         </CardContent>
       </Card>
     );
@@ -188,4 +220,3 @@ const ForumCategories = () => {
 };
 
 export default ForumCategories;
-

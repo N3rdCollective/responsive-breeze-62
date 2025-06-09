@@ -1,6 +1,6 @@
 
 import { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,6 +11,7 @@ import { Search } from "lucide-react";
 const MembersPage = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   
   useEffect(() => {
     if (!loading && !user) {
@@ -18,6 +19,15 @@ const MembersPage = () => {
       navigate("/auth");
     }
   }, [user, loading, navigate]);
+
+  // Check if we're returning from a forum action (like topic deletion)
+  const refreshParam = searchParams.get('refresh');
+  
+  useEffect(() => {
+    if (refreshParam) {
+      console.log('[MembersPage] Refresh parameter detected, forum data should reload automatically');
+    }
+  }, [refreshParam]);
   
   if (loading) {
     return (
@@ -60,8 +70,8 @@ const MembersPage = () => {
             
           </Tabs>
 
-          {/* Link to the dedicated search page - MOVED TO BOTTOM */}
-          <div className="mt-8 flex justify-center"> {/* Added mt-8 for spacing */}
+          {/* Link to the dedicated search page */}
+          <div className="mt-8 flex justify-center">
             <Button asChild variant="default" size="lg">
               <Link to="/forum/initiate-search">
                 <Search className="mr-2 h-5 w-5" />

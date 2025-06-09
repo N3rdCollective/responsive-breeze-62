@@ -133,12 +133,17 @@ const TopicModerationToolbar: React.FC<TopicModerationToolbarProps> = ({
       
       setDeleteDialogOpen(false);
       
-      console.log('[TopicModerationToolbar] Topic deleted, navigating back to category');
-      // Navigate back to category
+      console.log('[TopicModerationToolbar] Topic deleted, waiting before navigation to prevent race condition');
+      
+      // Add a delay before navigation to ensure database operations complete
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      console.log('[TopicModerationToolbar] Navigating back to forum with cache-busting parameter');
+      // Navigate back to forum with a timestamp to force refresh
       if (topic.category?.slug) {
-        navigate(`/members/forum/${topic.category.slug}`);
+        navigate(`/members/forum/${topic.category.slug}?refresh=${Date.now()}`);
       } else {
-        navigate('/members');
+        navigate(`/members?refresh=${Date.now()}`);
       }
     } catch (err: any) {
       console.error('[TopicModerationToolbar] Error in handleDeleteTopic:', err);
