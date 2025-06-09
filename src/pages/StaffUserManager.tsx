@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
+import { useStaffPermissions } from "@/hooks/staff/useStaffPermissions";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, Clock, Ban } from "lucide-react";
@@ -23,7 +23,7 @@ import { useUserManagerDialogs } from "@/hooks/admin/useUserManagerDialogs";
 
 const StaffUserManager = () => {
   const navigate = useNavigate();
-  const { userRole, isLoading: authLoading } = useStaffAuth(); 
+  const { isStaff, role, hasPermission, loading: permissionsLoading } = useStaffPermissions(); 
   const { toast } = useToast();
   
   // Use the real user management hook
@@ -100,18 +100,21 @@ const StaffUserManager = () => {
       description: "User data has been updated.",
     });
   }, [refreshUsers, toast]);
+
+  // Check authorization using the new permission system
+  const isAuthorized = isStaff && (role === 'admin' || role === 'super_admin' || hasPermission('user.view'));
   
   const authAndLoadingState = (
     <UserAuthAndLoadingStates
-      authLoading={authLoading}
-      dataLoading={isLoading && !authLoading && (userRole && ['admin', 'super_admin'].includes(userRole))}
-      isAuthorized={!authLoading && userRole && ['admin', 'super_admin'].includes(userRole)}
+      authLoading={permissionsLoading}
+      dataLoading={isLoading && !permissionsLoading && isAuthorized}
+      isAuthorized={!permissionsLoading && isAuthorized}
       onGoToHomepage={() => navigate('/')}
     />
   );
 
   // Show error state if there's an error loading users
-  if (error && !authLoading && userRole && ['admin', 'super_admin'].includes(userRole)) {
+  if (error && !permissionsLoading && isAuthorized) {
     return (
       <>
         <TitleUpdater title="Manage Users - Staff Panel" />
@@ -128,7 +131,7 @@ const StaffUserManager = () => {
     );
   }
 
-  if (authLoading || isLoading || (!authLoading && (!userRole || !['admin', 'super_admin'].includes(userRole)))) {
+  if (permissionsLoading || isLoading || (!permissionsLoading && !isAuthorized)) {
     return authAndLoadingState;
   }
 

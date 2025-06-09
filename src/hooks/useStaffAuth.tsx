@@ -1,50 +1,65 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
-// Import the actual hooks and types from their correct locations in the /staff directory
-import { useAuthState as useStaffAuthStateHook, StaffAuthState } from "./staff/useAuthState"; // Assuming StaffAuthState includes staffName, staffId, userRole, isLoading, permissions
+import { useStaffPermissions } from "./staff/useStaffPermissions";
 import { useLogout as useStaffLogoutHook } from "./staff/useLogout";
 
-// Define the context type using the imported StaffAuthState from ./staff/useAuthState
-interface StaffAuthContextType extends StaffAuthState {
+// Define the context type using the staff permissions system
+interface StaffAuthContextType {
+  staffName: string | null;
+  staffId: string | null;
+  userRole: string | null;
+  isLoading: boolean;
+  isAdmin: boolean;
+  isAuthenticated: boolean;
+  permissions: string[];
+  hasPermission: (permission: string) => boolean;
+  validateAction: (actionType: string, resourceType?: string, targetId?: string) => Promise<boolean>;
   handleLogout: () => Promise<void>;
 }
 
-// Define a default value for the context.
-// This represents the state when no StaffAuthProvider is an ancestor,
-// effectively meaning "no staff member is currently authenticated in this context."
+// Define a default value for the context
 const defaultStaffAuthContextValue: StaffAuthContextType = {
-  // Default values for StaffAuthState fields
   staffName: null,
   staffId: null,
   userRole: null,
   isLoading: false,
-  isAdmin: false, // Added missing property
-  isAuthenticated: false, // Added missing property
-  permissions: {}, 
-  
-  // Default handleLogout function for when the provider is not available
+  isAdmin: false,
+  isAuthenticated: false,
+  permissions: [],
+  hasPermission: () => false,
+  validateAction: async () => false,
   handleLogout: async () => {
-    console.warn(
-      "Attempted to call staff logout, but StaffAuthProvider is not available in the current component tree. This usually means you are not on a staff-protected page or no staff is logged in."
-    );
-    // This function should ideally not be called if no staff is logged in.
-    // A simple console warning is a safe default.
+    console.warn("Attempted to call staff logout, but StaffAuthProvider is not available.");
   },
 };
 
 // Create the context with the default value
 const StaffAuthContext = createContext<StaffAuthContextType>(defaultStaffAuthContextValue);
 
-// Provider component (remains largely the same)
+// Provider component using the new secure permission system
 export const StaffAuthProvider = ({ children }: { children: ReactNode }) => {
-  // useStaffAuthStateHook will provide the actual state of the logged-in staff member,
-  // or a state indicating no staff is logged in if that's the case.
-  const authState = useStaffAuthStateHook({}); 
-  const handleLogout = useStaffLogoutHook(authState.staffName);
+  const { 
+    isStaff, 
+    role, 
+    permissions, 
+    loading, 
+    hasPermission, 
+    validateAction 
+  } = useStaffPermissions();
+  
+  const handleLogout = useStaffLogoutHook(null); // We'll get the staff name from permissions if needed
 
   const value: StaffAuthContextType = {
-    ...authState, // Spreads the actual staff auth state (e.g., name, role, permissions)
-    handleLogout, // Provides the actual logout function
+    staffName: null, // This could be derived from user profile if needed
+    staffId: null, // This could be derived from auth if needed
+    userRole: role,
+    isLoading: loading,
+    isAdmin: role === 'admin' || role === 'super_admin',
+    isAuthenticated: isStaff,
+    permissions,
+    hasPermission,
+    validateAction,
+    handleLogout,
   };
 
   return (
@@ -55,11 +70,9 @@ export const StaffAuthProvider = ({ children }: { children: ReactNode }) => {
 };
 
 // Hook to consume the context
-// No undefined check is needed anymore because the context is initialized with a default value.
 export const useStaffAuth = (): StaffAuthContextType => {
   return useContext(StaffAuthContext);
 };
 
-// Export the imported StaffAuthState type (from ./staff/useAuthState) for convenience
-export type { StaffAuthState };
-
+// Export types for convenience
+export type { StaffAuthContextType as StaffAuthState };

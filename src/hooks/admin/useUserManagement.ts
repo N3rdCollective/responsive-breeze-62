@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useStaffPermissions } from '@/hooks/staff/useStaffPermissions';
 import { User, UserAction } from './utils/userTypes';
 import { fetchUserData } from './utils/userDataFetcher';
 import { searchUsers as searchUsersUtil } from './utils/userSearchUtils';
@@ -8,13 +9,14 @@ import { useUserActions } from './useUserActions';
 import { useUserMessages } from './useUserMessages';
 
 /**
- * Main hook for user management with optimistic updates to prevent UI freezing
+ * Main hook for user management with server-side security validation
  */
 export const useUserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { hasPermission, validateAction } = useStaffPermissions();
   
   // Import sub-hooks for actions and messaging
   const { updateUserStatus: actionUpdateUserStatus, createUserAction, getUserActions } = useUserActions();
@@ -25,6 +27,15 @@ export const useUserManagement = () => {
       setLoading(true);
       setError(null);
       console.log("fetchUsers called in useUserManagement");
+
+      // Check permission before fetching user data
+      if (!hasPermission('user.view')) {
+        const canView = await validateAction('view', 'user');
+        if (!canView) {
+          setError('Insufficient permissions to view user data');
+          return;
+        }
+      }
 
       const { users: fetchedUsers, error: fetchError } = await fetchUserData();
       
@@ -51,10 +62,16 @@ export const useUserManagement = () => {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [toast, hasPermission, validateAction]);
 
-  // Optimistic update wrapper for updateUserStatus - simplified to avoid rollback issues
+  // Optimistic update wrapper for updateUserStatus with server-side validation
   const updateUserStatus = useCallback(async (userId: string, status: User['status'], reason: string, actionType: 'suspend' | 'ban' | 'unban') => {
+    // Pre-validate action before optimistic update
+    const canPerform = await validateAction(actionType, 'user', userId);
+    if (!canPerform) {
+      return false;
+    }
+
     // Optimistically update the local state immediately
     setUsers(prevUsers => 
       prevUsers.map(user => 
@@ -85,7 +102,7 @@ export const useUserManagement = () => {
       );
       return false;
     }
-  }, [actionUpdateUserStatus]);
+  }, [actionUpdateUserStatus, validateAction]);
 
   // Memoized search function to prevent recreation
   const searchUsersLocal = useCallback((allUsers: User[], searchTermLocal: string, statusFilterLocal: string, roleFilterLocal: string) => {

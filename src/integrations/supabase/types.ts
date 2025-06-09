@@ -1085,6 +1085,35 @@ export type Database = {
         }
         Relationships: []
       }
+      role_permissions: {
+        Row: {
+          created_at: string | null
+          id: string
+          permission_id: string
+          role: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          permission_id: string
+          role: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          permission_id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "staff_permissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shows: {
         Row: {
           artwork_url: string | null
@@ -1253,6 +1282,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      staff_permissions: {
+        Row: {
+          action_type: string
+          created_at: string | null
+          description: string | null
+          id: string
+          permission_name: string
+          resource_type: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          permission_name: string
+          resource_type: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          permission_name?: string
+          resource_type?: string
+        }
+        Relationships: []
       }
       system_settings: {
         Row: {
@@ -1512,8 +1568,21 @@ export type Database = {
         Args: { topic_id_param: string }
         Returns: undefined
       }
+      staff_has_permission: {
+        Args: { user_id: string; permission_name: string }
+        Returns: boolean
+      }
       staff_has_role: {
         Args: { user_id: string; required_roles: string[] }
+        Returns: boolean
+      }
+      validate_staff_action: {
+        Args: {
+          staff_id: string
+          action_type: string
+          resource_type?: string
+          target_id?: string
+        }
         Returns: boolean
       }
     }

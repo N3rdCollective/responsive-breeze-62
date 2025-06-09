@@ -2,19 +2,27 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useStaffPermissions } from '@/hooks/staff/useStaffPermissions';
 
 /**
- * Hook for handling user messaging operations
+ * Hook for handling user messaging operations with server-side validation
  */
 export const useUserMessages = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { validateAction } = useStaffPermissions();
 
-  // Send message to user - memoized to prevent recreation
+  // Send message to user with server-side permission validation
   const sendUserMessage = useCallback(async (userId: string, subject: string, content: string): Promise<boolean> => {
     setLoading(true);
     try {
       console.log(`Sending message to user ${userId}: Subject: "${subject}"`);
+      
+      // Server-side permission validation
+      const canMessage = await validateAction('message', 'user', userId);
+      if (!canMessage) {
+        return false;
+      }
       
       // Get current staff member
       const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
@@ -23,10 +31,10 @@ export const useUserMessages = () => {
         throw new Error('Not authenticated as staff member');
       }
 
-      // Get staff details
+      // Get staff details with additional validation
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
-        .select('id')
+        .select('id, role')
         .eq('id', currentUser.id)
         .single();
 
@@ -70,7 +78,7 @@ export const useUserMessages = () => {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [toast, validateAction]);
 
   return {
     sendUserMessage,

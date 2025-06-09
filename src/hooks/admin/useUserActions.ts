@@ -2,21 +2,30 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useStaffPermissions } from '@/hooks/staff/useStaffPermissions';
 import { UserAction } from './utils/userTypes';
 
 /**
  * Hook for handling user action-related operations (suspend, ban, etc.)
+ * Now with server-side permission validation
  */
 export const useUserActions = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { validateAction } = useStaffPermissions();
 
-  // Update user status with real database calls
+  // Update user status with server-side validation
   const updateUserStatus = async (userId: string, status: 'active' | 'suspended' | 'banned', reason: string, actionType: 'suspend' | 'ban' | 'unban') => {
     setLoading(true);
     try {
       console.log(`Attempting to update user ${userId} to status ${status} with reason: ${reason} using action ${actionType}`);
       
+      // Server-side permission validation first
+      const canPerform = await validateAction(actionType, 'user', userId);
+      if (!canPerform) {
+        return false;
+      }
+
       // Update the user's status in the profiles table
       const { error: updateError } = await supabase
         .from('profiles')
@@ -51,7 +60,7 @@ export const useUserActions = () => {
     }
   };
 
-  // Create user action with real database calls
+  // Create user action with server-side validation
   const createUserAction = async (
     userId: string, 
     actionType: UserAction['action_type'], 
@@ -59,6 +68,12 @@ export const useUserActions = () => {
     expiresAt?: string
   ): Promise<boolean> => {
     try {
+      // Validate permission to create user actions
+      const canCreate = await validateAction('create', 'user_action');
+      if (!canCreate) {
+        return false;
+      }
+
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       
       if (!currentUser) {
@@ -91,9 +106,15 @@ export const useUserActions = () => {
     }
   };
 
-  // Get user actions history with real database calls
+  // Get user actions history with permission validation
   const getUserActions = async (userId: string): Promise<UserAction[]> => {
     try {
+      // Validate permission to view user actions
+      const canView = await validateAction('view', 'user', userId);
+      if (!canView) {
+        return [];
+      }
+
       console.log(`Fetching actions for user ${userId}`);
       
       const { data, error: fetchError } = await supabase
