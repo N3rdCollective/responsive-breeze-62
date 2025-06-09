@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { User, UserAction } from './utils/userTypes';
 import { fetchUserData } from './utils/userDataFetcher';
@@ -20,7 +19,8 @@ export const useUserManagement = () => {
   const { updateUserStatus: actionUpdateUserStatus, createUserAction, getUserActions } = useUserActions();
   const { sendUserMessage } = useUserMessages();
 
-  const fetchUsers = useCallback(async () => {
+  // Remove useCallback to prevent unstable dependencies
+  const fetchUsers = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -51,7 +51,7 @@ export const useUserManagement = () => {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  };
 
   // Wrapper for updateUserStatus that refreshes user data after update
   const updateUserStatus = async (userId: string, status: User['status'], reason: string, actionType: 'suspend' | 'ban' | 'unban') => {
@@ -70,20 +70,22 @@ export const useUserManagement = () => {
     return success;
   };
 
-  // Local search function
-  const searchUsersLocal = useCallback((allUsers: User[], searchTermLocal: string, statusFilterLocal: string, roleFilterLocal: string) => {
+  // Local search function - keep existing implementation
+  const searchUsersLocal = (allUsers: User[], searchTermLocal: string, statusFilterLocal: string, roleFilterLocal: string) => {
     return searchUsersUtil(allUsers, searchTermLocal, statusFilterLocal, roleFilterLocal);
-  }, []);
+  };
   
-  const refreshUsers = useCallback(() => {
+  // Simplified refresh function without useCallback
+  const refreshUsers = () => {
     console.log("refreshUsers called in useUserManagement");
     fetchUsers();
-  }, [fetchUsers]);
+  };
 
+  // Stable useEffect for initial load
   useEffect(() => {
     console.log("Initial fetchUsers call in useEffect, useUserManagement");
     fetchUsers();
-  }, [fetchUsers]);
+  }, []); // Empty dependency array for initial load only
 
   return {
     users,
