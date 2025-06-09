@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStaffAuth } from '@/hooks/useStaffAuth';
@@ -16,9 +15,7 @@ interface AnalyticsData {
   unique_visitors: number;
   page_path: string;
   visit_count: number;
-  device_breakdown: {
-    [key: string]: number;
-  };
+  device_breakdown: any; // Changed from { [key: string]: number } to any to match Json type
 }
 
 const StaffAnalytics = () => {
@@ -110,9 +107,9 @@ const StaffAnalytics = () => {
       visits: item.visit_count
     }));
 
-  // Device breakdown data
+  // Device breakdown data - safely handle the Json type
   const deviceData = analytics.length > 0 && analytics[0].device_breakdown 
-    ? Object.entries(analytics[0].device_breakdown).map(([device, count]) => ({
+    ? Object.entries(analytics[0].device_breakdown as Record<string, number>).map(([device, count]) => ({
         device: device.charAt(0).toUpperCase() + device.slice(1),
         count: count
       }))
