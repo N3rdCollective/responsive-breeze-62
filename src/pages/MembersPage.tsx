@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ForumCategories from "@/components/forum/ForumCategories";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, RefreshCw } from "lucide-react";
 
 const MembersPage = () => {
   const { user, loading } = useAuth();
@@ -20,14 +20,25 @@ const MembersPage = () => {
     }
   }, [user, loading, navigate]);
 
-  // Check if we're returning from a forum action (like topic deletion)
+  // Check for refresh indicators from topic deletion or other operations
   const refreshParam = searchParams.get('refresh');
+  const clearParam = searchParams.get('clear');
+  const updatedParam = searchParams.get('updated');
+  const manualRefreshParam = searchParams.get('manual_refresh');
   
   useEffect(() => {
-    if (refreshParam) {
-      console.log('[MembersPage] Refresh parameter detected, forum data should reload automatically');
+    if (refreshParam || clearParam || updatedParam) {
+      console.log('[MembersPage] Refresh parameters detected, forum data should reload automatically', {
+        refresh: refreshParam,
+        clear: clearParam,
+        updated: updatedParam
+      });
     }
-  }, [refreshParam]);
+    
+    if (manualRefreshParam) {
+      console.log('[MembersPage] Manual refresh parameter detected');
+    }
+  }, [refreshParam, clearParam, updatedParam, manualRefreshParam]);
   
   if (loading) {
     return (
@@ -41,6 +52,11 @@ const MembersPage = () => {
   if (!user) {
     return null; // Will redirect in the useEffect
   }
+
+  const handleForceRefresh = () => {
+    console.log('[MembersPage] Force refresh triggered by user');
+    window.location.href = '/members?force_refresh=' + Date.now();
+  };
   
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -52,6 +68,21 @@ const MembersPage = () => {
               Rappin' Lounge Forum
             </h1>
             <p className="mt-2 text-gray-600 dark:text-gray-400">Connect with other members of the community</p>
+            
+            {/* Show refresh option if there were recent changes */}
+            {(refreshParam || clearParam || updatedParam) && (
+              <div className="mt-4">
+                <Button 
+                  onClick={handleForceRefresh} 
+                  variant="outline" 
+                  size="sm"
+                  className="text-xs"
+                >
+                  <RefreshCw className="mr-1 h-3 w-3" />
+                  Force Refresh
+                </Button>
+              </div>
+            )}
           </div>
           
           <Tabs defaultValue="categories" className="w-full">

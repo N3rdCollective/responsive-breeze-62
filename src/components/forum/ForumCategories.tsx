@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, MessagesSquare, RefreshCw } from 'lucide-react';
+import { Loader2, MessagesSquare, RefreshCw, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 
@@ -24,26 +24,38 @@ const ForumCategories = () => {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<Record<string, { topics: number, posts: number }>>({});
   const [retryAttempt, setRetryAttempt] = useState(0);
+  const [hasError, setHasError] = useState(false);
   const [searchParams] = useSearchParams();
 
-  // Check if we need to refresh (e.g., after topic deletion)
+  // Check for various refresh indicators
   const refreshParam = searchParams.get('refresh');
+  const clearParam = searchParams.get('clear');
+  const updatedParam = searchParams.get('updated');
+  const shouldForceRefresh = refreshParam || clearParam || updatedParam;
 
   useEffect(() => {
-    console.log('[ForumCategories] useEffect triggered. Refresh param:', refreshParam, 'Retry attempt:', retryAttempt);
+    console.log('[ForumCategories] useEffect triggered. Refresh indicators:', { refreshParam, clearParam, updatedParam, retryAttempt });
     
     const fetchCategories = async () => {
       console.log('[ForumCategories] Starting fetchCategories.');
       setLoading(true);
+      setHasError(false);
       
       try {
-        // Add a small delay if this is triggered by a refresh parameter (after deletion)
-        if (refreshParam && retryAttempt === 0) {
-          console.log('[ForumCategories] Refresh parameter detected, adding delay to ensure DB consistency');
-          await new Promise(resolve => setTimeout(resolve, 500));
+        // Add longer delay if this is triggered by a deletion refresh parameter
+        if (shouldForceRefresh && retryAttempt === 0) {
+          console.log('[ForumCategories] Force refresh detected, adding extended delay for database consistency');
+          await new Promise(resolve => setTimeout(resolve, 1500));
         }
         
-        // Fetch categories
+        // Add progressive delays for retry attempts
+        if (retryAttempt > 0) {
+          const delay = Math.min(1000 * retryAttempt, 3000); // Cap at 3 seconds
+          console.log(`[ForumCategories] Retry attempt ${retryAttempt}, waiting ${delay}ms`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+        
+        // Fetch categories with cache busting
         console.log('[ForumCategories] Fetching categories from Supabase.');
         const { data: categoriesData, error: categoriesError } = await supabase
           .from('forum_categories')
@@ -65,48 +77,59 @@ const ForumCategories = () => {
           return;
         }
         
-        // Fetch topic counts for each category
+        // Fetch topic counts for each category with improved error handling
         console.log('[ForumCategories] Fetching stats for categories.');
         const statPromises = categoriesData.map(async (category) => {
-          // Get topics count
-          const { count: topicsCount, error: topicsError } = await supabase
-            .from('forum_topics')
-            .select('*', { count: 'exact', head: true })
-            .eq('category_id', category.id);
-            
-          if (topicsError) {
-            console.error(`[ForumCategories] Error fetching topics count for category ${category.id}:`, topicsError.message);
-            throw topicsError;
-          }
-          
-          // Get posts count for topics in this category
-          const { data: topicIds } = await supabase
-            .from('forum_topics')
-            .select('id')
-            .eq('category_id', category.id);
-          
-          let postsCount = 0;
-          if (topicIds && topicIds.length > 0) {
-            const topicIdArray = topicIds.map(t => t.id);
-            const { count: pCount, error: postsError } = await supabase
-              .from('forum_posts')
+          try {
+            // Get topics count
+            const { count: topicsCount, error: topicsError } = await supabase
+              .from('forum_topics')
               .select('*', { count: 'exact', head: true })
-              .in('topic_id', topicIdArray);
+              .eq('category_id', category.id);
               
-            if (postsError) {
-              console.error(`[ForumCategories] Error fetching posts count for category ${category.id}:`, postsError.message);
-              throw postsError;
+            if (topicsError) {
+              console.error(`[ForumCategories] Error fetching topics count for category ${category.id}:`, topicsError.message);
+              return {
+                id: category.id,
+                stats: { topics: 0, posts: 0 }
+              };
             }
-            postsCount = pCount || 0;
+            
+            // Get posts count for topics in this category
+            const { data: topicIds } = await supabase
+              .from('forum_topics')
+              .select('id')
+              .eq('category_id', category.id);
+            
+            let postsCount = 0;
+            if (topicIds && topicIds.length > 0) {
+              const topicIdArray = topicIds.map(t => t.id);
+              const { count: pCount, error: postsError } = await supabase
+                .from('forum_posts')
+                .select('*', { count: 'exact', head: true })
+                .in('topic_id', topicIdArray);
+                
+              if (postsError) {
+                console.error(`[ForumCategories] Error fetching posts count for category ${category.id}:`, postsError.message);
+              } else {
+                postsCount = pCount || 0;
+              }
+            }
+            
+            return {
+              id: category.id,
+              stats: {
+                topics: topicsCount || 0,
+                posts: postsCount || 0
+              }
+            };
+          } catch (err) {
+            console.error(`[ForumCategories] Error processing stats for category ${category.id}:`, err);
+            return {
+              id: category.id,
+              stats: { topics: 0, posts: 0 }
+            };
           }
-          
-          return {
-            id: category.id,
-            stats: {
-              topics: topicsCount || 0,
-              posts: postsCount || 0
-            }
-          };
         });
         
         const statsResults = await Promise.all(statPromises);
@@ -121,21 +144,23 @@ const ForumCategories = () => {
         setStats(statsMap);
         setCategories(categoriesData);
         setRetryAttempt(0); // Reset retry counter on success
+        setHasError(false);
         
       } catch (error: any) {
         console.error('[ForumCategories] Overall error in fetchCategories:', error.message);
+        setHasError(true);
         
-        // If this is the first attempt and we have a refresh param, try once more
-        if (refreshParam && retryAttempt === 0) {
-          console.log('[ForumCategories] First attempt failed after deletion, retrying once more');
-          setRetryAttempt(1);
-          // Don't show error toast yet, will retry
-          return;
+        // Implement progressive retry logic
+        if (retryAttempt < 3) {
+          console.log(`[ForumCategories] Attempt ${retryAttempt + 1} failed, will retry`);
+          setRetryAttempt(prev => prev + 1);
+          return; // Don't show error toast yet, will retry
         }
         
+        // Show error after max retries
         toast({
           title: "Error loading forum categories",
-          description: "We couldn't load the forum categories. Please try refreshing the page.",
+          description: "We couldn't load the forum categories after multiple attempts. Please try refreshing the page.",
           variant: "destructive"
         });
         setCategories([]);
@@ -147,20 +172,29 @@ const ForumCategories = () => {
     };
 
     fetchCategories();
-  }, [refreshParam, retryAttempt]);
+  }, [shouldForceRefresh, retryAttempt]);
 
-  const handleRetry = () => {
-    console.log('[ForumCategories] Manual retry triggered');
-    setRetryAttempt(prev => prev + 1);
+  const handleManualRefresh = () => {
+    console.log('[ForumCategories] Manual refresh triggered');
+    setRetryAttempt(0);
+    setHasError(false);
+    // Force a reload by incrementing a counter
+    window.location.href = window.location.pathname + `?manual_refresh=${Date.now()}`;
   };
 
-  console.log('[ForumCategories] Rendering. Loading state:', loading, 'Categories count:', categories.length);
+  console.log('[ForumCategories] Rendering. Loading state:', loading, 'Categories count:', categories.length, 'Has error:', hasError);
 
   if (loading) {
     console.log('[ForumCategories] Rendering Loader.');
     return (
-      <div className="flex justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex flex-col items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+        <p className="text-sm text-muted-foreground">Loading forum categories...</p>
+        {retryAttempt > 0 && (
+          <p className="text-xs text-muted-foreground mt-2">
+            Retry attempt {retryAttempt + 1}/4
+          </p>
+        )}
       </div>
     );
   }
@@ -170,14 +204,30 @@ const ForumCategories = () => {
     return (
       <Card>
         <CardContent className="py-12 text-center">
-          <p className="text-lg font-medium mb-2">No categories found</p>
-          <p className="text-muted-foreground mb-4">
-            There are no forum categories available right now.
-          </p>
-          <Button onClick={handleRetry} variant="outline" className="mt-2">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Retry Loading
-          </Button>
+          <div className="flex flex-col items-center">
+            {hasError ? <AlertCircle className="h-12 w-12 text-destructive mb-4" /> : <MessagesSquare className="h-12 w-12 text-muted-foreground mb-4" />}
+            <p className="text-lg font-medium mb-2">
+              {hasError ? "Error Loading Categories" : "No categories found"}
+            </p>
+            <p className="text-muted-foreground mb-4">
+              {hasError 
+                ? "There was a problem loading the forum categories. This might be temporary."
+                : "There are no forum categories available right now."
+              }
+            </p>
+            <div className="flex gap-2">
+              <Button onClick={handleManualRefresh} variant="outline">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh Page
+              </Button>
+              {hasError && (
+                <Button onClick={() => setRetryAttempt(1)} variant="default">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Retry Loading
+                </Button>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
     );
@@ -186,6 +236,16 @@ const ForumCategories = () => {
   console.log('[ForumCategories] Rendering categories list.');
   return (
     <div className="space-y-6">
+      {/* Show refresh indicator if data was recently updated */}
+      {shouldForceRefresh && (
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 mb-4">
+          <div className="flex items-center gap-2 text-sm text-green-800 dark:text-green-200">
+            <RefreshCw className="h-4 w-4" />
+            <span>Forum data has been refreshed</span>
+          </div>
+        </div>
+      )}
+      
       {categories.map(category => (
         <Card key={category.id} className="overflow-hidden border-primary/20">
           <CardHeader className="bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80">

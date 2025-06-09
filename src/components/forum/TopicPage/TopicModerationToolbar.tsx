@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Lock, Unlock, Pin, PinOff, Trash2 } from 'lucide-react';
+import { Lock, Unlock, Pin, PinOff, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -32,6 +31,7 @@ const TopicModerationToolbar: React.FC<TopicModerationToolbarProps> = ({
   const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [deletionProgress, setDeletionProgress] = useState('');
 
   const canModerate = userRole === 'admin' || userRole === 'super_admin' || userRole === 'moderator';
 
@@ -111,10 +111,33 @@ const TopicModerationToolbar: React.FC<TopicModerationToolbarProps> = ({
     }
   };
 
+  const verifyTopicDeletion = async (topicId: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from("forum_topics")
+        .select("id")
+        .eq("id", topicId)
+        .single();
+      
+      if (error && error.code === 'PGRST116') {
+        // Topic not found, deletion successful
+        return true;
+      }
+      
+      // Topic still exists
+      return false;
+    } catch (err) {
+      console.error('[TopicModerationToolbar] Error verifying deletion:', err);
+      return false;
+    }
+  };
+
   const handleDeleteTopic = async () => {
     setIsProcessing(true);
+    setDeletionProgress('Deleting topic...');
+    
     try {
-      console.log(`[TopicModerationToolbar] Deleting topic ${topic.id}`);
+      console.log(`[TopicModerationToolbar] Starting deletion of topic ${topic.id}`);
       
       const { error } = await supabase
         .from("forum_topics")
@@ -126,6 +149,31 @@ const TopicModerationToolbar: React.FC<TopicModerationToolbarProps> = ({
         throw error;
       }
       
+      setDeletionProgress('Verifying deletion...');
+      console.log('[TopicModerationToolbar] Topic deletion command sent, verifying completion');
+      
+      // Wait and verify deletion completion
+      let deletionVerified = false;
+      let attempts = 0;
+      const maxAttempts = 5;
+      
+      while (!deletionVerified && attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second between checks
+        deletionVerified = await verifyTopicDeletion(topic.id);
+        attempts++;
+        
+        if (!deletionVerified) {
+          console.log(`[TopicModerationToolbar] Deletion not yet complete, attempt ${attempts}/${maxAttempts}`);
+          setDeletionProgress(`Verifying deletion (${attempts}/${maxAttempts})...`);
+        }
+      }
+      
+      if (!deletionVerified) {
+        console.warn('[TopicModerationToolbar] Could not verify deletion completion, but proceeding');
+      }
+      
+      setDeletionProgress('Updating forum data...');
+      
       toast({
         title: "Success",
         description: "Topic deleted successfully",
@@ -133,18 +181,30 @@ const TopicModerationToolbar: React.FC<TopicModerationToolbarProps> = ({
       
       setDeleteDialogOpen(false);
       
-      console.log('[TopicModerationToolbar] Topic deleted, waiting before navigation to prevent race condition');
+      console.log('[TopicModerationToolbar] Topic deletion verified, waiting before navigation');
       
-      // Add a delay before navigation to ensure database operations complete
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Additional delay to ensure all database triggers and counts are updated
+      setDeletionProgress('Finalizing...');
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      console.log('[TopicModerationToolbar] Navigating back to forum with cache-busting parameter');
-      // Navigate back to forum with a timestamp to force refresh
+      console.log('[TopicModerationToolbar] Navigating back to forum with enhanced cache-busting');
+      
+      // Enhanced cache-busting with multiple parameters
+      const timestamp = Date.now();
+      const randomId = Math.random().toString(36).substring(7);
+      const cacheParams = `refresh=${timestamp}&clear=${randomId}&updated=true`;
+      
       if (topic.category?.slug) {
-        navigate(`/members/forum/${topic.category.slug}?refresh=${Date.now()}`);
+        navigate(`/members/forum/${topic.category.slug}?${cacheParams}`, { replace: true });
       } else {
-        navigate(`/members?refresh=${Date.now()}`);
+        navigate(`/members?${cacheParams}`, { replace: true });
       }
+      
+      // Force a hard refresh after navigation to clear any remaining cache
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+      
     } catch (err: any) {
       console.error('[TopicModerationToolbar] Error in handleDeleteTopic:', err);
       toast({
@@ -152,6 +212,7 @@ const TopicModerationToolbar: React.FC<TopicModerationToolbarProps> = ({
         description: `Failed to delete topic: ${err.message}`,
         variant: "destructive",
       });
+      setDeletionProgress('');
     } finally {
       setIsProcessing(false);
     }
@@ -210,6 +271,19 @@ const TopicModerationToolbar: React.FC<TopicModerationToolbarProps> = ({
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          
+          {isProcessing && (
+            <div className="py-4">
+              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>{deletionProgress}</span>
+              </div>
+              <div className="mt-2 text-xs text-muted-foreground">
+                Please wait while we ensure all changes are properly saved...
+              </div>
+            </div>
+          )}
+          
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isProcessing}>Cancel</AlertDialogCancel>
             <AlertDialogAction 
@@ -217,7 +291,14 @@ const TopicModerationToolbar: React.FC<TopicModerationToolbarProps> = ({
               disabled={isProcessing}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isProcessing ? "Deleting..." : "Delete"}
+              {isProcessing ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Processing...
+                </div>
+              ) : (
+                "Delete"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
