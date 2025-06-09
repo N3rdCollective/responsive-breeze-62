@@ -31,19 +31,20 @@ const StaffRouteProtection: React.FC<StaffRouteProtectionProps> = ({
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-lg text-muted-foreground">Verifying staff access...</p>
+          <p className="text-sm text-muted-foreground mt-2">This may take a moment...</p>
         </div>
       </div>
     );
   }
 
-  // Redirect to login if not authenticated (only after loading is complete)
-  if (!isAuthenticated) {
-    console.log('❌ Not authenticated, redirecting to login');
+  // Only redirect after loading is complete and we're certain user is not authenticated
+  if (!isLoading && !isAuthenticated) {
+    console.log('❌ Not authenticated after loading complete, redirecting to login');
     return <Navigate to="/staff/login" replace />;
   }
 
-  // Check role-based permissions if required roles are specified
-  if (requiredRoles.length > 0 && userRole && !requiredRoles.includes(userRole)) {
+  // Check role-based permissions if required roles are specified and user is authenticated
+  if (isAuthenticated && requiredRoles.length > 0 && userRole && !requiredRoles.includes(userRole)) {
     console.log('❌ Role check failed:', { userRole, requiredRoles });
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -74,9 +75,21 @@ const StaffRouteProtection: React.FC<StaffRouteProtectionProps> = ({
     );
   }
 
-  // Render protected content if all checks pass
-  console.log('✅ Access granted, rendering protected content');
-  return <>{children}</>;
+  // Only render protected content if authenticated (or still loading)
+  if (isAuthenticated || isLoading) {
+    console.log('✅ Access granted, rendering protected content');
+    return <>{children}</>;
+  }
+
+  // Fallback loading state
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+        <p className="text-lg text-muted-foreground">Loading...</p>
+      </div>
+    </div>
+  );
 };
 
 export default StaffRouteProtection;

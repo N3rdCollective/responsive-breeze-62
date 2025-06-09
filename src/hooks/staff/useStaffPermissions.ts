@@ -46,18 +46,36 @@ export const useStaffPermissions = (): StaffPermissions => {
 
       console.log('✅ Authenticated user found:', user.id);
 
-      // Add a small delay to ensure RLS context is established
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Add a longer delay to ensure RLS context is fully established
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Get staff member details
+      // Get staff member details with better error handling
+      console.log('🔍 Fetching staff data...');
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
         .select('role')
         .eq('id', user.id)
         .single();
 
-      if (staffError || !staffData) {
-        console.log('❌ Staff data not found or error:', staffError);
+      if (staffError) {
+        console.log('❌ Staff query error:', staffError);
+        if (staffError.code === 'PGRST116') {
+          // No rows returned - user is not staff
+          console.log('❌ User is not a staff member');
+        } else {
+          console.error('❌ Unexpected staff query error:', staffError);
+        }
+        setState({
+          isStaff: false,
+          role: null,
+          permissions: [],
+          loading: false,
+        });
+        return;
+      }
+
+      if (!staffData) {
+        console.log('❌ No staff data returned');
         setState({
           isStaff: false,
           role: null,
@@ -69,7 +87,8 @@ export const useStaffPermissions = (): StaffPermissions => {
 
       console.log('✅ Staff data found:', staffData);
 
-      // Get permissions for this role
+      // Get permissions for this role with better error handling
+      console.log('🔍 Fetching role permissions...');
       const { data: rolePermissions, error: permissionsError } = await supabase
         .from('role_permissions')
         .select(`
@@ -81,6 +100,7 @@ export const useStaffPermissions = (): StaffPermissions => {
 
       if (permissionsError) {
         console.error('⚠️ Error fetching role permissions:', permissionsError);
+        // Continue even if permissions fail - user is still staff
         setState({
           isStaff: true,
           role: staffData.role,
@@ -95,7 +115,7 @@ export const useStaffPermissions = (): StaffPermissions => {
         ?.map((rp: any) => rp.staff_permissions?.permission_name)
         ?.filter(Boolean) || [];
 
-      console.log('✅ Staff permissions loaded:', {
+      console.log('✅ Staff permissions loaded successfully:', {
         role: staffData.role,
         permissions,
         isStaff: true
@@ -184,10 +204,10 @@ export const useStaffPermissions = (): StaffPermissions => {
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('🔄 Auth state changed:', event);
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        // Add delay to ensure RLS context is ready
+        // Add longer delay to ensure RLS context is ready
         setTimeout(() => {
           loadPermissions();
-        }, 200);
+        }, 1000);
       } else if (event === 'SIGNED_OUT') {
         setState({
           isStaff: false,

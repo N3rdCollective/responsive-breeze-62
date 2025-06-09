@@ -1568,6 +1568,10 @@ export type Database = {
         Args: { topic_id_param: string }
         Returns: undefined
       }
+      is_staff_admin: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
       staff_has_permission: {
         Args: { user_id: string; permission_name: string }
         Returns: boolean

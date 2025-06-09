@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,15 +51,42 @@ const StaffLogin = () => {
       if (data.user) {
         console.log('✅ Login successful, user:', data.user.id);
         
-        // Check if user is staff
+        // Wait longer for RLS context to be fully established
+        console.log('⏳ Waiting for RLS context to be established...');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Check if user is staff with better error handling
+        console.log('🔍 Verifying staff status...');
         const { data: staffData, error: staffError } = await supabase
           .from('staff')
           .select('id, role')
           .eq('id', data.user.id)
           .single();
 
-        if (staffError || !staffData) {
-          console.error('❌ User is not staff:', staffError);
+        if (staffError) {
+          console.error('❌ Staff verification error:', staffError);
+          if (staffError.code === 'PGRST116') {
+            // No rows returned - user is not staff
+            await supabase.auth.signOut();
+            toast({
+              title: "Access Denied",
+              description: "This account does not have staff access.",
+              variant: "destructive",
+            });
+          } else {
+            // Other error
+            await supabase.auth.signOut();
+            toast({
+              title: "Verification Error",
+              description: "Unable to verify staff access. Please try again.",
+              variant: "destructive",
+            });
+          }
+          return;
+        }
+
+        if (!staffData) {
+          console.error('❌ No staff data returned');
           await supabase.auth.signOut();
           toast({
             title: "Access Denied",
@@ -77,11 +103,11 @@ const StaffLogin = () => {
           description: "You have successfully logged in to the staff panel.",
         });
 
-        // Add a delay to ensure authentication context is properly established
+        // Add even longer delay to ensure authentication context is properly established
         setTimeout(() => {
           console.log('🔄 Redirecting to staff panel...');
           navigate("/staff/panel");
-        }, 500);
+        }, 1500);
       }
     } catch (error: any) {
       console.error('❌ Unexpected login error:', error);
