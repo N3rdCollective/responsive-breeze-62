@@ -1,4 +1,3 @@
-
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -57,6 +56,7 @@ const StaffActivityLogs = lazy(() => import("./pages/StaffActivityLogs"));
 const StaffSponsors = lazy(() => import("./pages/StaffSponsors"));
 const StaffSystemSettings = lazy(() => import("./pages/StaffSystemSettings"));
 const StaffAboutEditor = lazy(() => import("./pages/StaffAboutEditor"));
+const StaffAnalytics = lazy(() => import("./pages/StaffAnalytics"));
 
 const queryClient = new QueryClient();
 
@@ -86,6 +86,7 @@ function App() {
                     </Suspense>
                   }>
                     <Route path="panel" element={<UnifiedStaffDashboard />} />
+                    <Route path="analytics" element={<StaffAnalytics />} />
                     <Route path="news" element={<StaffNewsPage />} />
                     <Route path="news/editor" element={<NewsEditor />} />
                     <Route path="news/editor/:id" element={<NewsEditor />} />

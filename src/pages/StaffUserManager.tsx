@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
@@ -15,11 +16,14 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { AlertCircle, CheckCircle, Clock, Ban } from "lucide-react";
+import { AlertCircle, CheckCircle, Clock, Ban, AlertTriangle } from "lucide-react";
 import TitleUpdater from "@/components/TitleUpdater";
 
+// Import the enhanced user management hook
+import { useUserManagement, type User } from "@/hooks/admin/useUserManagement";
+
 // New imports for refactored components
-import type { User, ActionDialogHandler, MessageDialogHandler } from "@/components/staff/user-manager/types";
+import type { ActionDialogHandler, MessageDialogHandler } from "@/components/staff/user-manager/types";
 import UserAuthAndLoadingStates from "@/components/staff/user-manager/UserAuthAndLoadingStates";
 import UserManagerHeader from "@/components/staff/user-manager/UserManagerHeader";
 import UserStatsCards from "@/components/staff/user-manager/UserStatsCards";
@@ -30,8 +34,17 @@ const StaffUserManager = () => {
   const { userRole, isLoading: authLoading } = useStaffAuth(); 
   const { toast } = useToast();
   
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Use the real user management hook instead of local state
+  const {
+    users,
+    loading: isLoading,
+    error,
+    updateUserStatus,
+    sendUserMessage,
+    refreshUsers,
+    searchUsers
+  } = useUserManagement();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterRole, setFilterRole] = useState('all');
@@ -50,98 +63,9 @@ const StaffUserManager = () => {
   const [messageSubject, setMessageSubject] = useState('');
   const [messageContent, setMessageContent] = useState('');
 
-  // Function to load users data
-  const loadUsers = async () => {
-    setIsLoading(true);
-    const mockUsers: User[] = [
-      {
-        id: '1',
-        username: 'john_doe',
-        display_name: 'John Doe',
-        email: 'john@example.com',
-        profile_picture: 'https://randomuser.me/api/portraits/men/1.jpg',
-        role: 'user',
-        status: 'active',
-        forum_post_count: 45,
-        pending_report_count: 0,
-        last_active: '2024-05-15T10:30:00Z',
-        created_at: '2023-06-01T09:00:00Z',
-        forum_signature: null,
-        timeline_post_count: 0,
-      },
-      {
-        id: '2',
-        username: 'jane_smith',
-        display_name: 'Jane Smith',
-        email: 'jane@example.com',
-        profile_picture: 'https://randomuser.me/api/portraits/women/2.jpg',
-        role: 'moderator',
-        status: 'active',
-        forum_post_count: 128,
-        pending_report_count: 2,
-        last_active: '2024-05-14T15:45:00Z',
-        created_at: '2023-03-15T14:20:00Z',
-        forum_signature: "Be kind",
-        timeline_post_count: 10,
-      },
-      {
-        id: '3',
-        username: 'bob_wilson',
-        display_name: 'Bob Wilson',
-        email: 'bob@example.com',
-        role: 'user',
-        status: 'suspended',
-        forum_post_count: 23,
-        pending_report_count: 5,
-        last_active: '2024-05-10T08:20:00Z',
-        created_at: '2023-08-20T11:30:00Z',
-        forum_signature: null,
-        timeline_post_count: 2,
-      },
-      {
-        id: '4',
-        username: 'alice_jones',
-        display_name: 'Alice Jones',
-        email: 'alice@example.com',
-        profile_picture: 'https://randomuser.me/api/portraits/women/4.jpg',
-        role: 'admin',
-        status: 'active',
-        forum_post_count: 89,
-        pending_report_count: 0,
-        last_active: '2024-05-16T12:15:00Z',
-        created_at: '2023-01-10T14:45:00Z',
-        forum_signature: "Admin on duty",
-        timeline_post_count: 5,
-      }
-    ];
-    
-    setTimeout(() => {
-      setUsers(mockUsers);
-      setIsLoading(false);
-    }, 500); // Reduced delay for better UX
-  };
+  // Filter users using the search utility from the hook
+  const filteredUsers = searchUsers(users, searchTerm, filterStatus, filterRole);
 
-  useEffect(() => {
-    // Load users when component mounts and user is authorized
-    if (!authLoading && userRole && ['admin', 'super_admin'].includes(userRole)) {
-      loadUsers();
-    } else if (!authLoading) {
-      setIsLoading(false);
-    }
-  }, [authLoading, userRole]);
-
-  const filteredUsers = users.filter(user => {
-    const statusMatch = filterStatus === 'all' || user.status === filterStatus;
-    const roleMatch = filterRole === 'all' || user.role === filterRole;
-    const searchLower = searchTerm.toLowerCase();
-    const searchMatch = searchTerm === '' || 
-      user.username.toLowerCase().includes(searchLower) ||
-      user.display_name.toLowerCase().includes(searchLower) ||
-      user.email.toLowerCase().includes(searchLower);
-    return statusMatch && roleMatch && searchMatch;
-  });
-
-  // Using role type from User interface
   const getRoleBadge = (role: User['role']) => {
     const variants = {
       admin: 'destructive' as const,
@@ -151,22 +75,11 @@ const StaffUserManager = () => {
     return <Badge variant={variants[role] || 'secondary'}>{role.charAt(0).toUpperCase() + role.slice(1)}</Badge>;
   };
   
-  // Using status type from User interface
-  // Following the user's last provided code for icons and styling.
   const getStatusBadge = (status: User['status']) => {
-    // Original from prompt:
-    // active: { variant: 'default' as const, icon: CheckCircle, text: 'Active', className: 'bg-green-500 hover:bg-green-600' },
-    // suspended: { variant: 'secondary' as const, icon: Clock, text: 'Suspended', className: 'bg-yellow-500 hover:bg-yellow-600 text-black' },
-    // banned: { variant: 'destructive' as const, icon: Ban, text: 'Banned', className: '' }
-    // User's pasted code (which I follow for refactor source):
-    // active: { variant: 'default' as const, icon: CheckCircle, text: 'Active' },
-    // suspended: { variant: 'destructive' as const, icon: Clock, text: 'Suspended' },
-    // banned: { variant: 'destructive' as const, icon: AlertCircle, text: 'Banned' }
-
     const config = {
       active: { variant: 'default' as const, icon: CheckCircle, text: 'Active', className: 'bg-green-500 hover:bg-green-600' },
-      suspended: { variant: 'secondary' as const, icon: Clock, text: 'Suspended', className: 'bg-yellow-500 hover:bg-yellow-600 text-black' }, // Reverted to original sensible styling
-      banned: { variant: 'destructive' as const, icon: Ban, text: 'Banned', className: '' } // Reverted to original sensible styling & icon
+      suspended: { variant: 'secondary' as const, icon: Clock, text: 'Suspended', className: 'bg-yellow-500 hover:bg-yellow-600 text-black' },
+      banned: { variant: 'destructive' as const, icon: Ban, text: 'Banned', className: '' }
     };
     const selectedConfig = config[status] || config.active;
     const { variant, icon: Icon, text, className } = selectedConfig;
@@ -177,7 +90,6 @@ const StaffUserManager = () => {
       </Badge>
     );
   };
-  
 
   const openActionDialog: ActionDialogHandler = (action, user) => {
     setActionReason('');
@@ -205,23 +117,24 @@ const StaffUserManager = () => {
       let newStatus: User['status'] = 'active';
       if (actionDialog.action === 'suspend') newStatus = 'suspended';
       if (actionDialog.action === 'ban') newStatus = 'banned';
+      if (actionDialog.action === 'unban') newStatus = 'active';
       
-      // Update the user status immediately
-      setUsers(prev => prev.map(user => 
-        user.id === actionDialog.user!.id ? { ...user, status: newStatus } : user
-      ));
+      const success = await updateUserStatus(
+        actionDialog.user.id, 
+        newStatus, 
+        actionReason, 
+        actionDialog.action as 'suspend' | 'ban' | 'unban'
+      );
       
-      // Close dialog and reset state
-      setActionDialog({ open: false, action: null, user: null });
-      setActionReason('');
-      
-      toast({
-        title: "User action completed",
-        description: `User ${actionDialog.user.display_name} has been ${actionDialog.action === 'unban' ? 'restored' : actionDialog.action + 'ed'}. Reason: ${actionReason}`,
-      });
-
-      // Reload users to ensure consistency
-      await loadUsers();
+      if (success) {
+        setActionDialog({ open: false, action: null, user: null });
+        setActionReason('');
+        
+        toast({
+          title: "User action completed",
+          description: `User ${actionDialog.user.display_name} has been ${actionDialog.action === 'unban' ? 'restored' : actionDialog.action + 'ed'}. Reason: ${actionReason}`,
+        });
+      }
     } catch (error) {
       console.error("Error performing user action:", error);
       toast({
@@ -229,8 +142,6 @@ const StaffUserManager = () => {
         description: "Failed to complete user action. Please try again.",
         variant: "destructive"
       });
-      // Reload users in case of error to ensure UI consistency
-      await loadUsers();
     }
   };
 
@@ -244,15 +155,19 @@ const StaffUserManager = () => {
       });
       return;
     }
+    
     try {
-      console.log(`Simulating message send to ${messageDialog.user.username}: Subject: "${messageSubject}", Content: "${messageContent}"`);
-      setMessageDialog({ open: false, user: null });
-      setMessageSubject('');
-      setMessageContent('');
-      toast({
-        title: "Message sent",
-        description: `Your message has been sent to ${messageDialog.user.display_name}.`,
-      });
+      const success = await sendUserMessage(messageDialog.user.id, messageSubject, messageContent);
+      
+      if (success) {
+        setMessageDialog({ open: false, user: null });
+        setMessageSubject('');
+        setMessageContent('');
+        toast({
+          title: "Message sent",
+          description: `Your message has been sent to ${messageDialog.user.display_name}.`,
+        });
+      }
     } catch (error) {
       console.error("Error sending message:", error);
       toast({
@@ -263,8 +178,8 @@ const StaffUserManager = () => {
     }
   };
 
-  const refreshUsers = async () => {
-    await loadUsers();
+  const handleRefresh = async () => {
+    await refreshUsers();
     toast({
       title: "Data refreshed",
       description: "User data has been updated.",
@@ -280,6 +195,24 @@ const StaffUserManager = () => {
     />
   );
 
+  // Show error state if there's an error loading users
+  if (error && !authLoading && userRole && ['admin', 'super_admin'].includes(userRole)) {
+    return (
+      <>
+        <TitleUpdater title="Manage Users - Staff Panel" />
+        <div className="min-h-screen bg-background text-foreground">
+          <main className="container mx-auto px-4 py-20">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-destructive mb-4">Error Loading Users</h1>
+              <p className="text-muted-foreground mb-4">{error}</p>
+              <Button onClick={handleRefresh}>Try Again</Button>
+            </div>
+          </main>
+        </div>
+      </>
+    );
+  }
+
   if (authLoading || isLoading || (!authLoading && (!userRole || !['admin', 'super_admin'].includes(userRole)))) {
     return authAndLoadingState;
   }
@@ -291,7 +224,7 @@ const StaffUserManager = () => {
         <main className="container mx-auto px-4 py-20">
           <UserManagerHeader
             onBackToDashboard={() => navigate('/staff/panel')}
-            onRefreshData={refreshUsers}
+            onRefreshData={handleRefresh}
           />
           <UserStatsCards users={users} />
           <UserTableCard
@@ -319,6 +252,7 @@ const StaffUserManager = () => {
                   {actionDialog.action === 'suspend' && `Temporarily suspend ${actionDialog.user?.display_name}.`}
                   {actionDialog.action === 'ban' && `Permanently ban ${actionDialog.user?.display_name}.`}
                   {actionDialog.action === 'unban' && `Restore access for ${actionDialog.user?.display_name}.`}
+                  {actionDialog.action === 'warn' && `Send a warning to ${actionDialog.user?.display_name}.`}
                 </DialogDescription>
               </DialogHeader>
               {actionDialog.user && (

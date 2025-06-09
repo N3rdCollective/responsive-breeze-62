@@ -23,12 +23,14 @@ import {
   ShieldCheck, 
   MessageSquare,
   LogOut,
-  ArrowLeft
+  ArrowLeft,
+  BarChart3
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const mainNavigationItems = [
   { title: 'Dashboard', href: '/staff/panel', icon: LayoutDashboard },
+  { title: 'Analytics', href: '/staff/analytics', icon: BarChart3 },
   { title: 'Featured Videos', href: '/staff/panel?tab=videos', icon: Video },
   { title: 'News', href: '/staff/news/editor', icon: Newspaper },
   { title: 'Shows', href: '/staff/shows', icon: Radio },
