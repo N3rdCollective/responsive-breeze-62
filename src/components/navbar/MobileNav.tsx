@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { useScrollToTopNavigation } from '@/hooks/useScrollToTopNavigation';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Menu, Mail, User, LogOut, Bell, LogIn } from 'lucide-react';
@@ -9,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUnifiedMessages } from '@/hooks/useUnifiedMessages';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import { Separator } from '@/components/ui/separator';
+import ScrollToTopLink from '@/components/ui/scroll-to-top-link';
 
 interface MobileNavProps {
   isScrolled: boolean;
@@ -18,7 +20,7 @@ interface MobileNavProps {
 
 const MobileNav = ({ isScrolled, isHomePage, onAuthModalOpen }: MobileNavProps) => {
   const location = useLocation();
-  const navigate = useNavigate();
+  const navigate = useScrollToTopNavigation();
   const { user, logout } = useAuth();
   const { totalUnreadCount } = useUnifiedMessages();
   const [open, setOpen] = React.useState(false);
@@ -55,7 +57,6 @@ const MobileNav = ({ isScrolled, isHomePage, onAuthModalOpen }: MobileNavProps) 
 
   const handleMessagesClick = () => {
     navigate("/messages");
-    window.scrollTo(0, 0);
   };
 
   return (
@@ -100,7 +101,7 @@ const MobileNav = ({ isScrolled, isHomePage, onAuthModalOpen }: MobileNavProps) 
         <SheetContent side="left" className="w-64">
           <nav className="flex flex-col gap-4 mt-6">
             {navItems.map((item) => (
-              <Link
+              <ScrollToTopLink
                 key={item.href}
                 to={item.href}
                 onClick={() => setOpen(false)}
@@ -109,21 +110,21 @@ const MobileNav = ({ isScrolled, isHomePage, onAuthModalOpen }: MobileNavProps) 
                 }`}
               >
                 {item.label}
-              </Link>
+              </ScrollToTopLink>
             ))}
             
             <Separator />
             
             {user ? (
               <>
-                <Link
+                <ScrollToTopLink
                   to="/profile"
                   onClick={() => setOpen(false)}
                   className="flex items-center text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
                 >
                   <User className="mr-2 h-4 w-4" />
                   Profile
-                </Link>
+                </ScrollToTopLink>
                 <button
                   onClick={handleLogout}
                   className="flex items-center text-sm font-medium transition-colors hover:text-primary text-muted-foreground text-left"

@@ -1,3 +1,4 @@
+
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -65,7 +66,7 @@ function App() {
       <ThemeProvider defaultTheme="dark">
         <TooltipProvider>
           <AuthProvider>
-            <BrowserRouter>
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <div className="min-h-screen bg-background flex flex-col w-full">
                 <Routes>
                   {/* Staff Routes */}

@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useScrollToTopNavigation } from "@/hooks/useScrollToTopNavigation";
 import DesktopNav from "./navbar/DesktopNav";
 import MobileNav from "./navbar/MobileNav";
 import AuthModal from "@/components/auth/AuthModal";
@@ -25,7 +26,7 @@ import { Badge } from "@/components/ui/badge";
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
+  const navigate = useScrollToTopNavigation();
   const [mounted, setMounted] = useState(false);
   
   const { user, logout: userLogout } = useAuth();
@@ -65,7 +66,6 @@ const Navbar = () => {
 
   const handleMessagesClick = () => {
     navigate("/messages");
-    window.scrollTo(0, 0);
   };
 
   const getUserInitials = () => {

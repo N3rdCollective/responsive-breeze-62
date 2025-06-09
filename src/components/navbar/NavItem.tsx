@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
-import { cn } from "@/lib/utils"; // Import cn
-import React from "react"; // Import React for React.ElementType
-import { Badge } from "@/components/ui/badge"; // Import Badge
+
+import React from "react";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import ScrollToTopLink from "@/components/ui/scroll-to-top-link";
 
 interface NavItemProps {
   path: string;
@@ -13,16 +14,15 @@ interface NavItemProps {
   className?: string; 
   icon?: React.ElementType; 
   iconOnly?: boolean;
-  badgeCount?: number; // Added badgeCount prop
+  badgeCount?: number;
 }
 
 const NavItem = ({ path, label, isActive, isHomePage, isScrolled, onClick, className, icon: IconComponent, iconOnly, badgeCount }: NavItemProps) => {
   const handleClick = () => {
     if (onClick) {
       onClick();
-    } else {
-      window.scrollTo(0, 0);
     }
+    // Scroll to top will be handled by ScrollToTopLink
   };
 
   const baseStyling = isActive
@@ -31,7 +31,7 @@ const NavItem = ({ path, label, isActive, isHomePage, isScrolled, onClick, class
       ? 'text-white hover:text-[#FFD700]'
       : 'text-[#333333] dark:text-white hover:text-[#FFD700] dark:hover:text-[#FFD700]';
   
-  const commonClasses = 'font-medium transition-colors duration-200 flex items-center relative'; // Added relative for badge positioning
+  const commonClasses = 'font-medium transition-colors duration-200 flex items-center relative';
 
   const iconElement = IconComponent && <IconComponent className="h-4 w-4" />;
   
@@ -50,9 +50,9 @@ const NavItem = ({ path, label, isActive, isHomePage, isScrolled, onClick, class
           variant="destructive"
           className={cn(
             "absolute -top-1 -right-1 h-4 w-4 min-w-[1rem] p-0 flex items-center justify-center text-xs rounded-full",
-            iconOnly ? "-right-2 -top-2" : "ml-1" // Adjust position for iconOnly or labeled items
+            iconOnly ? "-right-2 -top-2" : "ml-1"
           )}
-          style={{ lineHeight: '1' }} // Ensure text is centered in small badge
+          style={{ lineHeight: '1' }}
         >
           {badgeCount > 9 ? '9+' : badgeCount}
         </Badge>
@@ -76,14 +76,14 @@ const NavItem = ({ path, label, isActive, isHomePage, isScrolled, onClick, class
   }
 
   return (
-    <Link
+    <ScrollToTopLink
       to={path}
       onClick={handleClick}
       className={cn(baseStyling, commonClasses, className)}
       {...accessibilityProps}
     >
       {content}
-    </Link>
+    </ScrollToTopLink>
   );
 };
 

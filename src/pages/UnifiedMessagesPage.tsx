@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { useScrollToTopNavigation } from '@/hooks/useScrollToTopNavigation';
 import { useConversations } from '@/hooks/useConversations';
 import { useUserMessages } from '@/hooks/useUserMessages';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,7 +25,7 @@ interface UserMessage {
 
 const UnifiedMessagesPage: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useScrollToTopNavigation();
   const location = useLocation();
   const { toast } = useToast();
   
