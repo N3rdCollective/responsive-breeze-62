@@ -6,6 +6,8 @@ import ForumPostCard from './ForumPostCard';
 import ReplyFormCard from './ReplyFormCard';
 import TopicHeaderDisplay from './TopicHeaderDisplay';
 import PollDisplay from './PollDisplay';
+import TopicModerationToolbar from './TopicModerationToolbar';
+import { useStaffPermissions } from '@/hooks/forum/useStaffPermissions';
 
 interface TopicViewProps {
   topic: ForumTopic;
@@ -36,6 +38,7 @@ interface TopicViewProps {
     reportedUserId: string,
     contentPreview?: string
   ) => void;
+  onRefreshTopic: () => Promise<void>; // Add this new prop
 }
 
 const TopicView: React.FC<TopicViewProps> = ({
@@ -62,7 +65,9 @@ const TopicView: React.FC<TopicViewProps> = ({
   handlePollVote,
   isSubmittingVote,
   onOpenReportDialog, // Destructure prop
+  onRefreshTopic, // Add this destructured prop
 }) => {
+  const { role, canModerate, loading: staffLoading } = useStaffPermissions();
 
   const handleReportTopic = () => {
     onOpenReportDialog('topic', topic.id, topic.user_id, topic.title);
@@ -77,6 +82,15 @@ const TopicView: React.FC<TopicViewProps> = ({
         onReportTopic={handleReportTopic} // Pass handler for topic reporting
         userCanReport={!!user} // Pass flag to enable/disable report button based on user login
       />
+
+      {/* Add moderation toolbar for staff */}
+      {!staffLoading && canModerate && (
+        <TopicModerationToolbar
+          topic={topic}
+          onTopicUpdate={onRefreshTopic}
+          userRole={role || ''}
+        />
+      )}
 
       {/* Render PollDisplay if poll data exists */}
       {topic.poll && (

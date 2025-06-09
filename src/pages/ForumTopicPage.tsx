@@ -156,6 +156,7 @@ const ForumTopicPage = () => {
               handlePollVote={handlePollVote}
               isSubmittingVote={isSubmittingVote}
               onOpenReportDialog={handleOpenReportDialog}
+              onRefreshTopic={refreshTopicData}
             />
             <TopicDialogs
               editingPost={editingPost}
