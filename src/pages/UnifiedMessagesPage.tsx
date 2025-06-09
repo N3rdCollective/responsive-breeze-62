@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -209,8 +208,8 @@ const UnifiedMessagesPage: React.FC = () => {
     <>
       <TitleUpdater title="Messages" />
       <div className="min-h-screen flex flex-col bg-background">
-        <div className="pt-16 flex-1 flex flex-col h-[calc(100vh-4rem)]">
-          <div className="w-full h-full flex flex-col">
+        <div className="pt-16 flex-1 flex flex-col max-h-screen">
+          <div className="w-full h-full flex flex-col min-h-0">
             <MessagesPageHeader totalUnreadCount={totalUnreadCount} />
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
@@ -235,7 +234,7 @@ const UnifiedMessagesPage: React.FC = () => {
                 </TabsList>
               </div>
 
-              <TabsContent value="conversations" className="flex-1 flex mt-0 min-h-0">
+              <TabsContent value="conversations" className="flex-1 flex mt-0 min-h-0 overflow-hidden">
                 <ConversationsTab
                   conversations={conversations}
                   currentUserId={user.id}
@@ -247,7 +246,7 @@ const UnifiedMessagesPage: React.FC = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="notifications" className="flex-1 mt-0 min-h-0">
+              <TabsContent value="notifications" className="flex-1 mt-0 min-h-0 overflow-hidden">
                 <NotificationsTab
                   adminMessages={adminMessages}
                   adminMessagesLoading={adminMessagesLoading}

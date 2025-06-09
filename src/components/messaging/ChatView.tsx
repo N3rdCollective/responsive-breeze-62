@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useMessages } from '@/hooks/useMessages';
 import { useAuth } from '@/hooks/useAuth';
@@ -51,8 +50,6 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
     if (inputTrimmed) {
       sendTypingEvent(true);
     } else {
-      // Also send stop if there's no text and previously might have been typing
-      // The hook's internal isCurrentUserTypingRef handles not sending redundant TYPING_STOP
       sendTypingEvent(false);
     }
   }, [currentMessageInput, sendTypingEvent, conversationId]);
@@ -62,14 +59,12 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
     setCurrentMessageInput(''); 
     resetFileState(); 
     resetTypingIndicatorState();
-  }, [conversationId, resetFileState, resetTypingIndicatorState]); // Added resetTypingIndicatorState
+  }, [conversationId, resetFileState, resetTypingIndicatorState]);
 
   const handleSendMessageWrapper = useCallback(async (content: string) => {
     const sendStartTime = Date.now();
-    // console.log(`ChatView: handleSendMessage called at ${new Date(sendStartTime).toISOString()}`);
 
-    const contentToSend = content.trim(); // Input value from MessageInputBar
-    // selectedFile is from useFileHandler in ChatView
+    const contentToSend = content.trim();
     if ((contentToSend === '' && !selectedFile) || !currentUserId || !otherParticipantId) {
       console.error("ChatView: Cannot send message. Missing data (handleSendMessageWrapper).");
       toast({
@@ -82,19 +77,12 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
     
     const finalContent = contentToSend === '' && selectedFile ? "[Image]" : contentToSend;
 
-    // console.log("ChatView: Attempting to send message with (handleSendMessageWrapper):", {
-    //   content: finalContent,
-    //   fileName: selectedFile?.name,
-    // });
-
     sendMessage(
       { content: finalContent, media_file: selectedFile, otherParticipantId: otherParticipantId },
       {
         onSuccess: () => {
-          // console.log(`ChatView: Message sent successfully (mutation onSuccess).`);
           setCurrentMessageInput(''); 
           resetFileState(); 
-          // Typing event stop is handled by currentMessageInput change effect
         },
         onError: (error) => {
           console.error(`ChatView: Error sending message (mutation onError). Error:`, error);
@@ -108,7 +96,6 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
     );
   }, [currentUserId, otherParticipantId, conversationId, sendMessage, toast, resetFileState, selectedFile]);
 
-
   if (!conversationId) {
      return (
       <div className="flex flex-col h-full items-center justify-center text-muted-foreground p-4">
@@ -120,7 +107,7 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
   }
   
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0 overflow-hidden">
       <MessageList
         messages={messages}
         isLoading={messagesLoading}
