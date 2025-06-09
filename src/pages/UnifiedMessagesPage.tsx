@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -28,6 +27,11 @@ const UnifiedMessagesPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   
   // Conversation state
   const { 
@@ -208,8 +212,8 @@ const UnifiedMessagesPage: React.FC = () => {
   return (
     <>
       <TitleUpdater title="Messages" />
-      <div className="flex flex-col bg-background" style={{ height: 'calc(100vh - 64px)', marginTop: '64px' }}>
-        <div className="flex flex-col h-full min-h-0">
+      <div className="flex flex-col bg-background min-h-screen pt-16">
+        <div className="flex flex-col flex-1 min-h-0">
           <MessagesPageHeader totalUnreadCount={totalUnreadCount} />
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
