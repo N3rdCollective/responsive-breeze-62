@@ -1494,7 +1494,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      can_manage_staff: {
+      check_staff_admin_role: {
         Args: { user_id: string }
         Returns: boolean
       }
@@ -1567,10 +1567,6 @@ export type Database = {
       increment_topic_view_count: {
         Args: { topic_id_param: string }
         Returns: undefined
-      }
-      is_staff_admin: {
-        Args: { user_id: string }
-        Returns: boolean
       }
       staff_has_permission: {
         Args: { user_id: string; permission_name: string }

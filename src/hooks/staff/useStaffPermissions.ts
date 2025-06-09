@@ -46,10 +46,7 @@ export const useStaffPermissions = (): StaffPermissions => {
 
       console.log('✅ Authenticated user found:', user.id);
 
-      // Add a longer delay to ensure RLS context is fully established
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Get staff member details with better error handling
+      // Get staff member details with the new simplified query
       console.log('🔍 Fetching staff data...');
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
@@ -87,7 +84,7 @@ export const useStaffPermissions = (): StaffPermissions => {
 
       console.log('✅ Staff data found:', staffData);
 
-      // Get permissions for this role with better error handling
+      // Get permissions for this role
       console.log('🔍 Fetching role permissions...');
       const { data: rolePermissions, error: permissionsError } = await supabase
         .from('role_permissions')
@@ -204,10 +201,10 @@ export const useStaffPermissions = (): StaffPermissions => {
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('🔄 Auth state changed:', event);
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        // Add longer delay to ensure RLS context is ready
+        // Small delay to ensure RLS context is ready
         setTimeout(() => {
           loadPermissions();
-        }, 1000);
+        }, 100);
       } else if (event === 'SIGNED_OUT') {
         setState({
           isStaff: false,
