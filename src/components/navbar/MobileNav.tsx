@@ -53,6 +53,11 @@ const MobileNav = ({ isScrolled, isHomePage, onAuthModalOpen }: MobileNavProps) 
     }
   };
 
+  const handleMessagesClick = () => {
+    navigate("/messages");
+    window.scrollTo(0, 0);
+  };
+
   return (
     <div className="md:hidden flex items-center space-x-2">
       {/* Mobile User Controls - Only for authenticated users */}
@@ -64,7 +69,7 @@ const MobileNav = ({ isScrolled, isHomePage, onAuthModalOpen }: MobileNavProps) 
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/messages")}
+            onClick={handleMessagesClick}
             className={`relative h-9 w-9 ${
               isHomePage && !isScrolled 
                 ? "text-white hover:text-primary dark:text-primary dark:hover:text-white" 

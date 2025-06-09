@@ -63,6 +63,11 @@ const Navbar = () => {
     }
   };
 
+  const handleMessagesClick = () => {
+    navigate("/messages");
+    window.scrollTo(0, 0);
+  };
+
   const getUserInitials = () => {
     if (user?.email) {
       return user.email.substring(0, 2).toUpperCase();
@@ -108,7 +113,7 @@ const Navbar = () => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => navigate("/messages")}
+                    onClick={handleMessagesClick}
                     className={`relative ${
                       isHomePage && !isScrolled 
                         ? "text-white hover:text-primary dark:text-primary dark:hover:text-white hover:bg-white/10 dark:hover:bg-black/10" 
