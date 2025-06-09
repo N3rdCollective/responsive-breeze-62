@@ -42,15 +42,10 @@ export const useStaffPermissions = (): StaffPermissions => {
         return;
       }
 
-      // Get staff member details and permissions
+      // Get staff member details
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
-        .select(`
-          role,
-          role_permissions:role_permissions!inner(
-            staff_permissions:staff_permissions(permission_name)
-          )
-        `)
+        .select('role')
         .eq('id', user.id)
         .single();
 
@@ -64,8 +59,29 @@ export const useStaffPermissions = (): StaffPermissions => {
         return;
       }
 
+      // Get permissions for this role
+      const { data: rolePermissions, error: permissionsError } = await supabase
+        .from('role_permissions')
+        .select(`
+          staff_permissions (
+            permission_name
+          )
+        `)
+        .eq('role', staffData.role);
+
+      if (permissionsError) {
+        console.error('Error fetching role permissions:', permissionsError);
+        setState({
+          isStaff: true,
+          role: staffData.role,
+          permissions: [],
+          loading: false,
+        });
+        return;
+      }
+
       // Extract permissions from the nested data
-      const permissions = staffData.role_permissions
+      const permissions = rolePermissions
         ?.map((rp: any) => rp.staff_permissions?.permission_name)
         ?.filter(Boolean) || [];
 
