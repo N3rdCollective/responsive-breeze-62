@@ -44,7 +44,7 @@ export const StaffAuthProvider = ({ children }: { children: ReactNode }) => {
     isStaff, 
     role, 
     permissions, 
-    loading, 
+    loading: permissionsLoading, 
     hasPermission, 
     validateAction 
   } = useStaffPermissions();
@@ -52,9 +52,11 @@ export const StaffAuthProvider = ({ children }: { children: ReactNode }) => {
   const [staffData, setStaffData] = useState<{
     staffName: string | null;
     staffId: string | null;
+    dataLoading: boolean;
   }>({
     staffName: null,
     staffId: null,
+    dataLoading: true,
   });
   
   const handleLogout = useStaffLogoutHook(staffData.staffName);
@@ -62,11 +64,36 @@ export const StaffAuthProvider = ({ children }: { children: ReactNode }) => {
   // Fetch staff details when authentication is confirmed
   useEffect(() => {
     const fetchStaffDetails = async () => {
-      if (!isStaff || loading) return;
+      console.log('🔍 Fetching staff details...', { isStaff, permissionsLoading });
+      
+      if (permissionsLoading) {
+        console.log('⏳ Still loading permissions, waiting...');
+        return;
+      }
+      
+      if (!isStaff) {
+        console.log('❌ Not a staff member, clearing data');
+        setStaffData({
+          staffName: null,
+          staffId: null,
+          dataLoading: false,
+        });
+        return;
+      }
       
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        if (!user) {
+          console.log('❌ No authenticated user');
+          setStaffData({
+            staffName: null,
+            staffId: null,
+            dataLoading: false,
+          });
+          return;
+        }
+
+        console.log('✅ Fetching staff details for user:', user.id);
 
         const { data: staffDetails, error } = await supabase
           .from('staff')
@@ -75,31 +102,60 @@ export const StaffAuthProvider = ({ children }: { children: ReactNode }) => {
           .single();
 
         if (error) {
-          console.error('Error fetching staff details:', error);
+          console.error('❌ Error fetching staff details:', error);
+          setStaffData({
+            staffName: null,
+            staffId: null,
+            dataLoading: false,
+          });
           return;
         }
 
         if (staffDetails) {
+          const staffName = staffDetails.display_name || staffDetails.first_name || staffDetails.email || 'Staff Member';
+          console.log('✅ Staff details loaded:', { staffName, role });
           setStaffData({
-            staffName: staffDetails.display_name || staffDetails.first_name || staffDetails.email || 'Staff Member',
+            staffName,
             staffId: staffDetails.id,
+            dataLoading: false,
           });
         }
       } catch (error) {
-        console.error('Error in fetchStaffDetails:', error);
+        console.error('❌ Error in fetchStaffDetails:', error);
+        setStaffData({
+          staffName: null,
+          staffId: null,
+          dataLoading: false,
+        });
       }
     };
 
     fetchStaffDetails();
-  }, [isStaff, loading]);
+  }, [isStaff, permissionsLoading]);
+
+  // Calculate overall loading state - we're loading if either permissions or staff data is loading
+  const isLoading = permissionsLoading || (isStaff && staffData.dataLoading);
+  
+  // Only consider authenticated if we have confirmed staff status and permissions are loaded
+  const isAuthenticated = !permissionsLoading && isStaff;
+
+  console.log('🔄 StaffAuth state:', {
+    isStaff,
+    role,
+    permissionsLoading,
+    dataLoading: staffData.dataLoading,
+    isLoading,
+    isAuthenticated,
+    permissions: permissions.length
+  });
 
   const value: StaffAuthContextType = {
     staffName: staffData.staffName,
     staffId: staffData.staffId,
     userRole: role,
-    isLoading: loading,
+    isLoading,
     isAdmin: role === 'admin' || role === 'super_admin',
-    isAuthenticated: isStaff,
+    isAuthenticated,
     permissions,
     hasPermission,
     validateAction,

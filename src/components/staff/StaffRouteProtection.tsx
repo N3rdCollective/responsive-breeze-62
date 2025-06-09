@@ -16,8 +16,16 @@ const StaffRouteProtection: React.FC<StaffRouteProtectionProps> = ({
 }) => {
   const { isLoading, isAuthenticated, userRole, handleLogout } = useStaffAuth();
 
+  console.log('🛡️ StaffRouteProtection check:', {
+    isLoading,
+    isAuthenticated,
+    userRole,
+    requiredRoles
+  });
+
   // Show loading spinner while checking authentication
   if (isLoading) {
+    console.log('⏳ Still loading, showing spinner...');
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -28,13 +36,15 @@ const StaffRouteProtection: React.FC<StaffRouteProtectionProps> = ({
     );
   }
 
-  // Redirect to login if not authenticated
+  // Redirect to login if not authenticated (only after loading is complete)
   if (!isAuthenticated) {
+    console.log('❌ Not authenticated, redirecting to login');
     return <Navigate to="/staff/login" replace />;
   }
 
   // Check role-based permissions if required roles are specified
   if (requiredRoles.length > 0 && userRole && !requiredRoles.includes(userRole)) {
+    console.log('❌ Role check failed:', { userRole, requiredRoles });
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center max-w-md mx-auto p-6">
@@ -65,6 +75,7 @@ const StaffRouteProtection: React.FC<StaffRouteProtectionProps> = ({
   }
 
   // Render protected content if all checks pass
+  console.log('✅ Access granted, rendering protected content');
   return <>{children}</>;
 };
 
