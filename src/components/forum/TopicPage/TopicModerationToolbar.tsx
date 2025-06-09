@@ -54,7 +54,20 @@ const TopicModerationToolbar: React.FC<TopicModerationToolbarProps> = ({
       
       if (error) {
         console.error('[TopicModerationToolbar] Sticky toggle error:', error);
-        throw error;
+        if (error.code === 'PGRST301') {
+          toast({
+            title: "Permission Denied",
+            description: "You don't have permission to modify this topic.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: `Failed to update topic: ${error.message}`,
+            variant: "destructive",
+          });
+        }
+        return;
       }
       
       toast({
@@ -90,7 +103,20 @@ const TopicModerationToolbar: React.FC<TopicModerationToolbarProps> = ({
       
       if (error) {
         console.error('[TopicModerationToolbar] Lock toggle error:', error);
-        throw error;
+        if (error.code === 'PGRST301') {
+          toast({
+            title: "Permission Denied",
+            description: "You don't have permission to modify this topic.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: `Failed to update topic: ${error.message}`,
+            variant: "destructive",
+          });
+        }
+        return;
       }
       
       toast({
@@ -152,7 +178,20 @@ const TopicModerationToolbar: React.FC<TopicModerationToolbarProps> = ({
       
       if (error) {
         console.error('[TopicModerationToolbar] Delete error:', error);
-        throw error;
+        if (error.code === 'PGRST301') {
+          toast({
+            title: "Permission Denied",
+            description: "You don't have permission to delete this topic.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: `Failed to delete topic: ${error.message}`,
+            variant: "destructive",
+          });
+        }
+        return;
       }
       
       // Step 2: Verify deletion
@@ -225,11 +264,19 @@ const TopicModerationToolbar: React.FC<TopicModerationToolbarProps> = ({
       
     } catch (err: any) {
       console.error('[TopicModerationToolbar] Error in handleDeleteTopic:', err);
-      toast({
-        title: "Error",
-        description: `Failed to delete topic: ${err.message}`,
-        variant: "destructive",
-      });
+      if (err.code === 'PGRST301') {
+        toast({
+          title: "Permission Denied",
+          description: "You don't have permission to delete this topic.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: `Failed to delete topic: ${err.message}`,
+          variant: "destructive",
+        });
+      }
       setDeletionStep('');
       setDeletionComplete(false);
     } finally {
