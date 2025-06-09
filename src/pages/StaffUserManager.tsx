@@ -45,21 +45,24 @@ const StaffUserManager = () => {
     searchUsers
   } = useUserManagement();
   
+  // Initialize state with stable initial values
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterRole, setFilterRole] = useState('all');
   
-  const [actionDialog, setActionDialog] = useState<{
-    open: boolean;
-    action: 'suspend' | 'ban' | 'unban' | 'warn' | null;
-    user: User | null;
-  }>({ open: false, action: null, user: null });
+  // Action dialog state with stable initial structure
+  const [actionDialog, setActionDialog] = useState({
+    open: false,
+    action: null as 'suspend' | 'ban' | 'unban' | 'warn' | null,
+    user: null as User | null
+  });
   const [actionReason, setActionReason] = useState('');
   
-  const [messageDialog, setMessageDialog] = useState<{
-    open: boolean;
-    user: User | null;
-  }>({ open: false, user: null });
+  // Message dialog state with stable initial structure
+  const [messageDialog, setMessageDialog] = useState({
+    open: false,
+    user: null as User | null
+  });
   const [messageSubject, setMessageSubject] = useState('');
   const [messageContent, setMessageContent] = useState('');
 
