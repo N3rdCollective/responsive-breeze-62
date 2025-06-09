@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
 import { Button } from "@/components/ui/button";
@@ -68,19 +68,22 @@ const StaffUserManager = () => {
   const [messageContent, setMessageContent] = useState('');
   const [messageLoading, setMessageLoading] = useState(false);
 
-  // Filter users using the search utility from the hook
-  const filteredUsers = searchUsers(users, searchTerm, filterStatus, filterRole);
+  // Memoize filtered users to prevent recalculation on every render
+  const filteredUsers = useMemo(() => {
+    return searchUsers(users, searchTerm, filterStatus, filterRole);
+  }, [users, searchTerm, filterStatus, filterRole, searchUsers]);
 
-  const getRoleBadge = (role: User['role']) => {
+  // Memoize badge functions to prevent recreation
+  const getRoleBadge = useCallback((role: User['role']) => {
     const variants = {
       admin: 'destructive' as const,
       moderator: 'default' as const,
       user: 'secondary' as const
     };
     return <Badge variant={variants[role] || 'secondary'}>{role.charAt(0).toUpperCase() + role.slice(1)}</Badge>;
-  };
+  }, []);
   
-  const getStatusBadge = (status: User['status']) => {
+  const getStatusBadge = useCallback((status: User['status']) => {
     const config = {
       active: { variant: 'default' as const, icon: CheckCircle, text: 'Active', className: 'bg-green-500 hover:bg-green-600' },
       suspended: { variant: 'secondary' as const, icon: Clock, text: 'Suspended', className: 'bg-yellow-500 hover:bg-yellow-600 text-black' },
@@ -94,20 +97,21 @@ const StaffUserManager = () => {
         {text}
       </Badge>
     );
-  };
+  }, []);
 
-  const openActionDialog: ActionDialogHandler = (action, user) => {
+  // Memoize dialog handlers to prevent recreation
+  const openActionDialog: ActionDialogHandler = useCallback((action, user) => {
     setActionReason('');
     setActionDialog({ open: true, action, user });
-  };
+  }, []);
   
-  const openMessageDialog: MessageDialogHandler = (user) => {
+  const openMessageDialog: MessageDialogHandler = useCallback((user) => {
     setMessageSubject('');
     setMessageContent('');
     setMessageDialog({ open: true, user });
-  };
+  }, []);
 
-  const handleUserAction = async () => {
+  const handleUserAction = useCallback(async () => {
     if (!actionDialog.user || !actionDialog.action || actionLoading) return;
     if (!actionReason.trim()) {
       toast({
@@ -133,7 +137,7 @@ const StaffUserManager = () => {
       );
       
       if (success) {
-        // Reset dialog state
+        // Batch state resets together
         setActionDialog({ open: false, action: null, user: null });
         setActionReason('');
         
@@ -152,9 +156,9 @@ const StaffUserManager = () => {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [actionDialog, actionReason, actionLoading, updateUserStatus, toast]);
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = useCallback(async () => {
     if (!messageDialog.user || messageLoading) return;
     if (!messageSubject.trim() || !messageContent.trim()) {
       toast({
@@ -170,7 +174,7 @@ const StaffUserManager = () => {
       const success = await sendUserMessage(messageDialog.user.id, messageSubject, messageContent);
       
       if (success) {
-        // Properly reset all message dialog state
+        // Batch state resets together
         setMessageDialog({ open: false, user: null });
         setMessageSubject('');
         setMessageContent('');
@@ -190,15 +194,27 @@ const StaffUserManager = () => {
     } finally {
       setMessageLoading(false);
     }
-  };
+  }, [messageDialog, messageSubject, messageContent, messageLoading, sendUserMessage, toast]);
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     await refreshUsers();
     toast({
       title: "Data refreshed",
       description: "User data has been updated.",
     });
-  };
+  }, [refreshUsers, toast]);
+
+  // Memoize dialog close handlers
+  const closeActionDialog = useCallback(() => {
+    setActionDialog({ open: false, action: null, user: null });
+    setActionReason('');
+  }, []);
+
+  const closeMessageDialog = useCallback(() => {
+    setMessageDialog({ open: false, user: null });
+    setMessageSubject('');
+    setMessageContent('');
+  }, []);
   
   const authAndLoadingState = (
     <UserAuthAndLoadingStates
@@ -256,15 +272,7 @@ const StaffUserManager = () => {
           />
 
           {/* User Action Dialog */}
-          <Dialog 
-            open={actionDialog.open} 
-            onOpenChange={(open) => {
-              if (!open) {
-                setActionDialog({ open: false, action: null, user: null });
-                setActionReason('');
-              }
-            }}
-          >
+          <Dialog open={actionDialog.open} onOpenChange={(open) => !open && closeActionDialog()}>
             <DialogContent className="sm:max-w-[450px]">
               <DialogHeader>
                 <DialogTitle className="capitalize">
@@ -313,14 +321,7 @@ const StaffUserManager = () => {
                 </div>
               )}
               <DialogFooter>
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setActionDialog({ open: false, action: null, user: null });
-                    setActionReason('');
-                  }}
-                  disabled={actionLoading}
-                >
+                <Button variant="outline" onClick={closeActionDialog} disabled={actionLoading}>
                   Cancel
                 </Button>
                 <Button 
@@ -335,16 +336,7 @@ const StaffUserManager = () => {
           </Dialog>
 
           {/* Message Dialog */}
-          <Dialog 
-            open={messageDialog.open} 
-            onOpenChange={(open) => {
-              if (!open) {
-                setMessageDialog({ open: false, user: null });
-                setMessageSubject('');
-                setMessageContent('');
-              }
-            }}
-          >
+          <Dialog open={messageDialog.open} onOpenChange={(open) => !open && closeMessageDialog()}>
             <DialogContent className="sm:max-w-[525px]">
               <DialogHeader>
                 <DialogTitle>Send Message to {messageDialog.user?.display_name}</DialogTitle>
@@ -399,15 +391,7 @@ const StaffUserManager = () => {
                   </div>
               )}
               <DialogFooter>
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setMessageDialog({ open: false, user: null });
-                    setMessageSubject('');
-                    setMessageContent('');
-                  }}
-                  disabled={messageLoading}
-                >
+                <Button variant="outline" onClick={closeMessageDialog} disabled={messageLoading}>
                   Cancel
                 </Button>
                 <Button 

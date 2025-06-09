@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -10,8 +10,8 @@ export const useUserMessages = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  // Send message to user
-  const sendUserMessage = async (userId: string, subject: string, content: string): Promise<boolean> => {
+  // Send message to user - memoized to prevent recreation
+  const sendUserMessage = useCallback(async (userId: string, subject: string, content: string): Promise<boolean> => {
     setLoading(true);
     try {
       console.log(`Sending message to user ${userId}: Subject: "${subject}"`);
@@ -70,7 +70,7 @@ export const useUserMessages = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   return {
     sendUserMessage,

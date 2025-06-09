@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { User, UserAction } from './utils/userTypes';
 import { fetchUserData } from './utils/userDataFetcher';
@@ -20,7 +20,7 @@ export const useUserManagement = () => {
   const { updateUserStatus: actionUpdateUserStatus, createUserAction, getUserActions } = useUserActions();
   const { sendUserMessage } = useUserMessages();
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -51,10 +51,10 @@ export const useUserManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
-  // Optimistic update wrapper for updateUserStatus
-  const updateUserStatus = async (userId: string, status: User['status'], reason: string, actionType: 'suspend' | 'ban' | 'unban') => {
+  // Optimistic update wrapper for updateUserStatus - simplified to avoid rollback issues
+  const updateUserStatus = useCallback(async (userId: string, status: User['status'], reason: string, actionType: 'suspend' | 'ban' | 'unban') => {
     // Optimistically update the local state immediately
     setUsers(prevUsers => 
       prevUsers.map(user => 
@@ -66,47 +66,43 @@ export const useUserManagement = () => {
       const success = await actionUpdateUserStatus(userId, status, reason, actionType);
       
       if (!success) {
-        // Rollback optimistic update on failure
-        const { users: freshUsers } = await fetchUserData();
-        if (freshUsers) {
-          setUsers(freshUsers);
-        }
+        // Simple rollback without expensive refetch
+        setUsers(prevUsers => 
+          prevUsers.map(user => 
+            user.id === userId ? { ...user, status: user.status === status ? 'active' : user.status } : user
+          )
+        );
       }
       
       return success;
     } catch (error) {
       console.error("Error in optimistic updateUserStatus:", error);
-      // Rollback optimistic update on error
-      const { users: freshUsers } = await fetchUserData();
-      if (freshUsers) {
-        setUsers(freshUsers);
-      }
+      // Simple rollback on error
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          user.id === userId ? { ...user, status: 'active' } : user
+        )
+      );
       return false;
     }
-  };
+  }, [actionUpdateUserStatus]);
 
-  // Wrapper for sendUserMessage that doesn't require refresh
-  const sendMessage = async (userId: string, subject: string, content: string) => {
-    const success = await sendUserMessage(userId, subject, content);
-    return success;
-  };
-
-  // Local search function
-  const searchUsersLocal = (allUsers: User[], searchTermLocal: string, statusFilterLocal: string, roleFilterLocal: string) => {
+  // Memoized search function to prevent recreation
+  const searchUsersLocal = useCallback((allUsers: User[], searchTermLocal: string, statusFilterLocal: string, roleFilterLocal: string) => {
     return searchUsersUtil(allUsers, searchTermLocal, statusFilterLocal, roleFilterLocal);
-  };
+  }, []);
   
   // Refresh function that doesn't disrupt UI state
-  const refreshUsers = async () => {
+  const refreshUsers = useCallback(async () => {
     console.log("refreshUsers called in useUserManagement");
     await fetchUsers();
-  };
+  }, [fetchUsers]);
 
   // Initial load
   useEffect(() => {
     console.log("Initial fetchUsers call in useEffect, useUserManagement");
     fetchUsers();
-  }, []); // Empty dependency array for initial load only
+  }, [fetchUsers]);
 
   return {
     users,
@@ -114,7 +110,7 @@ export const useUserManagement = () => {
     error,
     updateUserStatus,
     createUserAction,
-    sendUserMessage: sendMessage,
+    sendUserMessage,
     getUserActions,
     searchUsers: searchUsersLocal,
     refreshUsers,
