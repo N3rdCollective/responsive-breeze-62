@@ -57,7 +57,7 @@ const PollDisplay: React.FC<PollDisplayProps> = ({ poll, onVote, currentUserId, 
                 } ${
                   isSelectedByCurrentUser 
                     ? 'border-primary bg-primary/10 dark:bg-primary/20 ring-1 ring-primary' 
-                    : isLeading && userHasVoted
+                    : isLeading
                     ? 'border-yellow-400 dark:border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20'
                     : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800'
                 }`}
@@ -67,13 +67,13 @@ const PollDisplay: React.FC<PollDisplayProps> = ({ poll, onVote, currentUserId, 
                     <span className={`text-sm sm:text-base ${
                       isSelectedByCurrentUser 
                         ? 'font-semibold text-primary dark:text-primary-light' 
-                        : isLeading && userHasVoted
+                        : isLeading
                         ? 'font-semibold text-yellow-700 dark:text-yellow-400'
                         : 'text-gray-700 dark:text-gray-300'
                     }`}>
                       {option.option_text}
                     </span>
-                    {isLeading && userHasVoted && (
+                    {isLeading && (
                       <div className="flex items-center gap-1">
                         <Crown className="h-4 w-4 text-yellow-500" />
                         <Badge 
@@ -89,21 +89,21 @@ const PollDisplay: React.FC<PollDisplayProps> = ({ poll, onVote, currentUserId, 
                       </div>
                     )}
                   </div>
-                  {userHasVoted && (
+                  {(userHasVoted || totalVotes > 0) && (
                     <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                       {option.vote_count} votes ({percentage.toFixed(0)}%)
                     </span>
                   )}
                 </div>
                 
-                {/* Progress bar shown after voting or if results are public */}
-                {(userHasVoted || poll.ends_at) && (
+                {/* Progress bar shown after voting or if there are any votes */}
+                {(userHasVoted || totalVotes > 0) && (
                   <div className="mt-1.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 sm:h-2.5">
                     <div 
                       className={`h-full rounded-full transition-all duration-500 ease-out ${
                         isSelectedByCurrentUser 
                           ? 'bg-primary' 
-                          : isLeading && userHasVoted
+                          : isLeading
                           ? 'bg-gradient-to-r from-yellow-400 to-yellow-500'
                           : 'bg-gray-400 dark:bg-gray-500'
                       }`}
