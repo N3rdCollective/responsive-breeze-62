@@ -133,6 +133,7 @@ const StaffUserManager = () => {
       );
       
       if (success) {
+        // Reset dialog state
         setActionDialog({ open: false, action: null, user: null });
         setActionReason('');
         
@@ -169,9 +170,11 @@ const StaffUserManager = () => {
       const success = await sendUserMessage(messageDialog.user.id, messageSubject, messageContent);
       
       if (success) {
+        // Properly reset all message dialog state
         setMessageDialog({ open: false, user: null });
         setMessageSubject('');
         setMessageContent('');
+        
         toast({
           title: "Message sent",
           description: `Your message has been sent to ${messageDialog.user.display_name}.`,
@@ -253,7 +256,15 @@ const StaffUserManager = () => {
           />
 
           {/* User Action Dialog */}
-          <Dialog open={actionDialog.open} onOpenChange={(open) => setActionDialog(prev => ({...prev, open}))}>
+          <Dialog 
+            open={actionDialog.open} 
+            onOpenChange={(open) => {
+              if (!open) {
+                setActionDialog({ open: false, action: null, user: null });
+                setActionReason('');
+              }
+            }}
+          >
             <DialogContent className="sm:max-w-[450px]">
               <DialogHeader>
                 <DialogTitle className="capitalize">
@@ -304,7 +315,10 @@ const StaffUserManager = () => {
               <DialogFooter>
                 <Button 
                   variant="outline" 
-                  onClick={() => setActionDialog({ open: false, action: null, user: null })}
+                  onClick={() => {
+                    setActionDialog({ open: false, action: null, user: null });
+                    setActionReason('');
+                  }}
                   disabled={actionLoading}
                 >
                   Cancel
@@ -321,7 +335,16 @@ const StaffUserManager = () => {
           </Dialog>
 
           {/* Message Dialog */}
-          <Dialog open={messageDialog.open} onOpenChange={(open) => setMessageDialog(prev => ({...prev, open}))}>
+          <Dialog 
+            open={messageDialog.open} 
+            onOpenChange={(open) => {
+              if (!open) {
+                setMessageDialog({ open: false, user: null });
+                setMessageSubject('');
+                setMessageContent('');
+              }
+            }}
+          >
             <DialogContent className="sm:max-w-[525px]">
               <DialogHeader>
                 <DialogTitle>Send Message to {messageDialog.user?.display_name}</DialogTitle>
@@ -378,7 +401,11 @@ const StaffUserManager = () => {
               <DialogFooter>
                 <Button 
                   variant="outline" 
-                  onClick={() => setMessageDialog({ open: false, user: null })}
+                  onClick={() => {
+                    setMessageDialog({ open: false, user: null });
+                    setMessageSubject('');
+                    setMessageContent('');
+                  }}
                   disabled={messageLoading}
                 >
                   Cancel
