@@ -12,10 +12,10 @@ export const fetchUserData = async (): Promise<{
   try {
     console.log("Fetching user data");
     
-    // Fetch base user data from profiles, including new fields
+    // Fetch base user data from profiles, including status and last_active
     const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, username, display_name, profile_picture, created_at, role, updated_at, forum_signature, forum_post_count') // Added forum_signature, forum_post_count
+      .select('id, username, display_name, profile_picture, created_at, role, updated_at, forum_signature, forum_post_count, status, last_active') // Added status and last_active
       .order('created_at', { ascending: false });
 
     if (profilesError) {
@@ -31,11 +31,6 @@ export const fetchUserData = async (): Promise<{
     let mappedUsers: User[] = [];
 
     if (userIds.length > 0) {
-      // Forum post counts are now directly on the profile table, but this fetches specific post details if needed.
-      // The trigger updates `forum_post_count` on profiles, so direct fetching from `forum_posts` for count is redundant here.
-      // However, if you need a list of post IDs or other post data, this is useful.
-      // For this mapping, we'll use the `forum_post_count` from `profilesData`.
-      
       // Timeline post counts (if still needed separately, or if it's a different count)
       const { data: timelinePostCountsData, error: timelinePostCountsError } = await supabase
         .from('timeline_posts')
@@ -58,12 +53,15 @@ export const fetchUserData = async (): Promise<{
       }
       
       mappedUsers = profilesData.map(profile => {
-        // `forum_post_count` is now directly on `profile`
         const timeline_post_count = timelinePostCountsData?.filter(p => p.user_id === profile.id).length || 0;
         const pending_report_count = pendingReportCountsData?.filter(p => p.reported_user_id === profile.id).length || 0;
 
-        const profileStatus = (profile as any).status || 'active';
-        const profileLastActive = (profile as any).last_active || profile.updated_at || profile.created_at;
+        // Use the actual status from the database, fallback to 'active' if null
+        const profileStatus = profile.status || 'active';
+        // Use last_active from database, fallback to updated_at or created_at
+        const profileLastActive = profile.last_active || profile.updated_at || profile.created_at;
+
+        console.log(`User ${profile.username} status from DB:`, profileStatus); // Debug log
 
         return {
           id: profile.id,
@@ -77,13 +75,14 @@ export const fetchUserData = async (): Promise<{
           forum_signature: profile.forum_signature || null, // Add forum signature
           timeline_post_count,
           pending_report_count,
-          status: profileStatus as User['status'],
+          status: profileStatus as User['status'], // Use the status from database
           role: (profile.role as User['role']) || 'user',
         };
       });
     }
     
     console.log("Users fetched and mapped:", mappedUsers.length);
+    console.log("User statuses:", mappedUsers.map(u => ({ username: u.username, status: u.status }))); // Debug log
     return { users: mappedUsers, error: null };
   } catch (err: any) {
     console.error('Error in fetchUserData:', err);
