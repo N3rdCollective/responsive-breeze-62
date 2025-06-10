@@ -20,18 +20,18 @@ export const useUserActions = () => {
     try {
       console.log(`🔄 Attempting to update user ${userId} to status ${status} with reason: ${reason} using action ${actionType}`);
       
-      // Map action types to proper permission names
+      // Map action types to proper permission names for the validation call
       const permissionMap = {
-        'suspend': 'user.suspend',
-        'ban': 'user.ban', 
-        'unban': 'user.unban'
+        'suspend': 'suspend',
+        'ban': 'ban', 
+        'unban': 'unban'
       };
       
-      const permissionName = permissionMap[actionType];
-      console.log(`🔐 Checking permission: ${permissionName} for action: ${actionType}`);
+      const actionForValidation = permissionMap[actionType];
+      console.log(`🔐 Validating action: ${actionForValidation} for resource: user, target: ${userId}`);
       
-      // Server-side permission validation first
-      const canPerform = await validateAction(actionType, 'user', userId);
+      // Server-side permission validation with proper parameters
+      const canPerform = await validateAction(actionForValidation, 'user', userId);
       console.log(`✅ Permission validation result: ${canPerform}`);
       
       if (!canPerform) {

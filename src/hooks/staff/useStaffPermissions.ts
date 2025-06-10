@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -173,19 +172,22 @@ export const useStaffPermissions = (): StaffPermissions => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
+        console.error('❌ No authenticated user for permission validation');
         throw new Error('Not authenticated');
       }
 
-      // Call the server-side validation function
+      console.log(`🔐 Validating action: actionType="${actionType}", resourceType="${resourceType}", targetId="${targetId}"`);
+
+      // Call the server-side validation function with correct parameters
       const { data, error } = await supabase.rpc('validate_staff_action', {
         staff_id: user.id,
         action_type: actionType,
-        resource_type: resourceType,
-        target_id: targetId
+        resource_type: resourceType || null,
+        target_id: targetId || null
       });
 
       if (error) {
-        console.error('Permission validation error:', error);
+        console.error('❌ Permission validation error:', error);
         toast({
           title: "Permission Error",
           description: "Failed to validate permissions. Please try again.",
@@ -194,7 +196,10 @@ export const useStaffPermissions = (): StaffPermissions => {
         return false;
       }
 
+      console.log(`🔐 Permission validation result: ${data}`);
+
       if (!data) {
+        console.warn(`❌ Permission denied: ${actionType} on ${resourceType}`);
         toast({
           title: "Access Denied",
           description: `You don't have permission to ${actionType} ${resourceType || 'this resource'}.`,
@@ -204,7 +209,7 @@ export const useStaffPermissions = (): StaffPermissions => {
 
       return Boolean(data);
     } catch (error) {
-      console.error('Error validating action:', error);
+      console.error('❌ Error validating action:', error);
       toast({
         title: "Permission Error",
         description: "Failed to validate permissions. Please try again.",
