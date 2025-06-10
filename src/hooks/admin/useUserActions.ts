@@ -18,14 +18,33 @@ export const useUserActions = () => {
   const updateUserStatus = async (userId: string, status: 'active' | 'suspended' | 'banned', reason: string, actionType: 'suspend' | 'ban' | 'unban') => {
     setLoading(true);
     try {
-      console.log(`Attempting to update user ${userId} to status ${status} with reason: ${reason} using action ${actionType}`);
+      console.log(`🔄 Attempting to update user ${userId} to status ${status} with reason: ${reason} using action ${actionType}`);
+      
+      // Map action types to proper permission names
+      const permissionMap = {
+        'suspend': 'user.suspend',
+        'ban': 'user.ban', 
+        'unban': 'user.unban'
+      };
+      
+      const permissionName = permissionMap[actionType];
+      console.log(`🔐 Checking permission: ${permissionName} for action: ${actionType}`);
       
       // Server-side permission validation first
       const canPerform = await validateAction(actionType, 'user', userId);
+      console.log(`✅ Permission validation result: ${canPerform}`);
+      
       if (!canPerform) {
+        console.error(`❌ Permission denied for action: ${actionType}`);
+        toast({
+          title: "Permission Denied",
+          description: `You don't have permission to ${actionType} users.`,
+          variant: "destructive"
+        });
         return false;
       }
 
+      console.log(`📝 Updating user status in profiles table...`);
       // Update the user's status in the profiles table
       const { error: updateError } = await supabase
         .from('profiles')
@@ -33,14 +52,18 @@ export const useUserActions = () => {
         .eq('id', userId);
 
       if (updateError) {
-        console.error("Error updating user status in DB:", updateError);
+        console.error("❌ Error updating user status in DB:", updateError);
         throw updateError;
       }
 
+      console.log(`📋 Logging action in user_actions table...`);
       // Log the action in user_actions table
-      await createUserAction(userId, actionType, reason);
+      const actionLogged = await createUserAction(userId, actionType, reason);
+      if (!actionLogged) {
+        console.warn(`⚠️ Failed to log action, but user status was updated`);
+      }
       
-      console.log(`Successfully updated user ${userId} status to ${status}`);
+      console.log(`✅ Successfully updated user ${userId} status to ${status}`);
       
       toast({
         title: `User ${status === 'active' ? 'Restored' : status === 'suspended' ? 'Suspended' : 'Banned'}`,
@@ -48,7 +71,7 @@ export const useUserActions = () => {
       });
       return true;
     } catch (err: any) {
-      console.error('Error in updateUserStatus:', err);
+      console.error('❌ Error in updateUserStatus:', err);
       toast({
         title: "Error updating user status",
         description: `Could not update user status. ${err.message}`,
@@ -68,19 +91,22 @@ export const useUserActions = () => {
     expiresAt?: string
   ): Promise<boolean> => {
     try {
+      console.log(`📝 Creating user action log...`);
       // Validate permission to create user actions
       const canCreate = await validateAction('create', 'user_action');
       if (!canCreate) {
+        console.error(`❌ No permission to create user actions`);
         return false;
       }
 
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       
       if (!currentUser) {
+        console.error(`❌ No authenticated moderator found`);
         throw new Error('No authenticated moderator found');
       }
 
-      console.log(`Creating user action for ${userId}: ${actionType}. Moderator: ${currentUser.id}`);
+      console.log(`📝 Creating user action for ${userId}: ${actionType}. Moderator: ${currentUser.id}`);
       
       // Insert the action into user_actions table
       const { error: insertError } = await supabase
@@ -94,14 +120,14 @@ export const useUserActions = () => {
         });
 
       if (insertError) {
-        console.error("Error inserting user action:", insertError);
+        console.error("❌ Error inserting user action:", insertError);
         throw insertError;
       }
 
-      console.log("User action logged successfully");
+      console.log("✅ User action logged successfully");
       return true;
     } catch (err: any) {
-      console.error('Error in createUserAction:', err);
+      console.error('❌ Error in createUserAction:', err);
       return false;
     }
   };
@@ -112,10 +138,11 @@ export const useUserActions = () => {
       // Validate permission to view user actions
       const canView = await validateAction('view', 'user', userId);
       if (!canView) {
+        console.error(`❌ No permission to view user actions for ${userId}`);
         return [];
       }
 
-      console.log(`Fetching actions for user ${userId}`);
+      console.log(`🔍 Fetching actions for user ${userId}`);
       
       const { data, error: fetchError } = await supabase
         .from('user_actions')
@@ -127,13 +154,14 @@ export const useUserActions = () => {
         .order('created_at', { ascending: false });
 
       if (fetchError) {
-        console.error(`Error fetching user actions for ${userId}:`, fetchError);
+        console.error(`❌ Error fetching user actions for ${userId}:`, fetchError);
         throw fetchError;
       }
       
+      console.log(`✅ Found ${data?.length || 0} actions for user ${userId}`);
       return (data as UserAction[]) || [];
     } catch (err: any) {
-      console.error('Error in getUserActions:', err);
+      console.error('❌ Error in getUserActions:', err);
       toast({
         title: "Error Fetching User Actions",
         description: `Could not load actions history. ${err.message}`,

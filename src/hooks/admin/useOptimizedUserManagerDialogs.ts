@@ -71,6 +71,7 @@ export const useOptimizedUserManagerDialogs = (
     
     // Check if action already in progress
     if (actionQueueRef.current.has(userId)) {
+      console.log(`⚠️ Action already in progress for user ${userId}`);
       return;
     }
 
@@ -79,11 +80,15 @@ export const useOptimizedUserManagerDialogs = (
     setActionLoading(true);
     setUserActionLoading(userId, actionDialog.action, true);
 
+    console.log(`🔄 Starting ${actionDialog.action} action for user ${userId} with reason: ${actionReason}`);
+
     try {
       let newStatus: User['status'] = 'active';
       if (actionDialog.action === 'suspend') newStatus = 'suspended';
       if (actionDialog.action === 'ban') newStatus = 'banned';
       if (actionDialog.action === 'unban') newStatus = 'active';
+      
+      console.log(`📝 Calling updateUserStatus with status: ${newStatus}, action: ${actionDialog.action}`);
       
       const success = await updateUserStatus(
         userId, 
@@ -93,6 +98,7 @@ export const useOptimizedUserManagerDialogs = (
       );
       
       if (success) {
+        console.log(`✅ User action completed successfully for ${userId}`);
         closeActionDialog();
         clearUserActionState(userId);
         toast({
@@ -100,10 +106,16 @@ export const useOptimizedUserManagerDialogs = (
           description: `User ${actionDialog.user.display_name} has been ${actionDialog.action === 'unban' ? 'restored' : actionDialog.action + 'ed'}`,
         });
       } else {
+        console.error(`❌ User action failed for ${userId}`);
         setUserActionError(userId, "Action failed");
+        toast({
+          title: "Action Failed",
+          description: "The user action could not be completed. Please try again.",
+          variant: "destructive"
+        });
       }
     } catch (error) {
-      console.error("Error performing user action:", error);
+      console.error("❌ Error performing user action:", error);
       setUserActionError(userId, "Action failed");
       toast({
         title: "Error",
