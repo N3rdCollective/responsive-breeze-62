@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -32,7 +31,7 @@ const mainNavigationItems = [
   { title: 'Dashboard', href: '/staff/panel', icon: LayoutDashboard },
   { title: 'Analytics', href: '/staff/analytics', icon: BarChart3 },
   { title: 'Featured Videos', href: '/staff/panel?tab=videos', icon: Video },
-  { title: 'News', href: '/staff/news/editor', icon: Newspaper },
+  { title: 'News', href: '/staff/news', icon: Newspaper },
   { title: 'Shows', href: '/staff/shows', icon: Radio },
   { title: 'Users', href: '/staff/users', icon: Users },
   { title: 'Forum', href: '/staff/forum', icon: MessageSquare },
