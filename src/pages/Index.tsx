@@ -2,7 +2,6 @@
 import React from "react";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero"; 
-import Footer from "@/components/Footer";
 import LiveShowBanner from "@/components/LiveShowBanner";
 import HomeNewsSection from "@/components/home/HomeNewsSection";
 import PersonalitySlider from "@/components/home/PersonalitySlider";
@@ -79,8 +78,6 @@ const Index = () => {
         subtitle={homepageContent.cta_section_subtitle}
         buttonText={homepageContent.cta_button_text}
       />
-      
-      <Footer />
     </div>
   );
 };
