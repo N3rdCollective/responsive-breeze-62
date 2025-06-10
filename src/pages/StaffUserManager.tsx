@@ -29,7 +29,7 @@ const StaffUserManager = () => {
   // Use the real user management hook
   const {
     users,
-    loading: isLoading,
+    loading: usersLoading,
     error,
     updateUserStatus,
     sendUserMessage,
@@ -104,6 +104,9 @@ const StaffUserManager = () => {
   // Check authorization using the new permission system
   const isAuthorized = isStaff && (role === 'admin' || role === 'super_admin' || hasPermission('user.view'));
   
+  // Calculate overall loading state - coordinate both permissions and user data loading
+  const isLoading = permissionsLoading || (usersLoading && !permissionsLoading && isAuthorized);
+
   const authAndLoadingState = (
     <UserAuthAndLoadingStates
       authLoading={permissionsLoading}
@@ -131,7 +134,8 @@ const StaffUserManager = () => {
     );
   }
 
-  if (permissionsLoading || isLoading || (!permissionsLoading && !isAuthorized)) {
+  // Show loading state while permissions are loading or while authorized and data is loading
+  if (isLoading || (!permissionsLoading && !isAuthorized)) {
     return authAndLoadingState;
   }
 

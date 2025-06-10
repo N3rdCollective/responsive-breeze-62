@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -26,10 +26,20 @@ export const useStaffPermissions = (): StaffPermissions => {
   });
   
   const { toast } = useToast();
+  const loadingRef = useRef(false);
+  const lastUserIdRef = useRef<string | null>(null);
 
-  // Load staff permissions from server
+  // Load staff permissions from server with debouncing
   const loadPermissions = useCallback(async () => {
+    // Prevent concurrent loading
+    if (loadingRef.current) {
+      console.log('🔄 Permission loading already in progress, skipping...');
+      return;
+    }
+
     console.log('🔍 Loading staff permissions...');
+    loadingRef.current = true;
+    
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -41,12 +51,21 @@ export const useStaffPermissions = (): StaffPermissions => {
           permissions: [],
           loading: false,
         });
+        lastUserIdRef.current = null;
+        return;
+      }
+
+      // Skip if we already loaded permissions for this user
+      if (lastUserIdRef.current === user.id && state.loading === false) {
+        console.log('✅ Permissions already loaded for user:', user.id);
+        loadingRef.current = false;
         return;
       }
 
       console.log('✅ Authenticated user found:', user.id);
+      lastUserIdRef.current = user.id;
 
-      // Get staff member details with the new simplified query
+      // Get staff member details
       console.log('🔍 Fetching staff data...');
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
@@ -57,7 +76,6 @@ export const useStaffPermissions = (): StaffPermissions => {
       if (staffError) {
         console.log('❌ Staff query error:', staffError);
         if (staffError.code === 'PGRST116') {
-          // No rows returned - user is not staff
           console.log('❌ User is not a staff member');
         } else {
           console.error('❌ Unexpected staff query error:', staffError);
@@ -133,8 +151,10 @@ export const useStaffPermissions = (): StaffPermissions => {
         permissions: [],
         loading: false,
       });
+    } finally {
+      loadingRef.current = false;
     }
-  }, []);
+  }, [state.loading]);
 
   // Check if staff has a specific permission (client-side cache check)
   const hasPermission = useCallback((permission: string): boolean => {
@@ -195,16 +215,29 @@ export const useStaffPermissions = (): StaffPermissions => {
   }, [toast]);
 
   useEffect(() => {
-    loadPermissions();
+    let mounted = true;
+    
+    const initializePermissions = async () => {
+      if (mounted) {
+        await loadPermissions();
+      }
+    };
 
-    // Listen for auth changes
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+    initializePermissions();
+
+    // Listen for auth changes with debouncing
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('🔄 Auth state changed:', event);
+      
+      if (!mounted) return;
+      
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        // Small delay to ensure RLS context is ready
-        setTimeout(() => {
-          loadPermissions();
-        }, 100);
+        // Small delay to ensure RLS context is ready and prevent rapid successive calls
+        setTimeout(async () => {
+          if (mounted) {
+            await loadPermissions();
+          }
+        }, 200);
       } else if (event === 'SIGNED_OUT') {
         setState({
           isStaff: false,
@@ -212,13 +245,15 @@ export const useStaffPermissions = (): StaffPermissions => {
           permissions: [],
           loading: false,
         });
+        lastUserIdRef.current = null;
       }
     });
 
     return () => {
+      mounted = false;
       authListener.subscription.unsubscribe();
     };
-  }, [loadPermissions]);
+  }, []);
 
   return {
     ...state,
