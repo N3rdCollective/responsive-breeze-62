@@ -18,8 +18,8 @@ import UserTableCard from "@/components/staff/user-manager/UserTableCard";
 import UserActionDialog from "@/components/staff/user-manager/UserActionDialog";
 import UserMessageDialog from "@/components/staff/user-manager/UserMessageDialog";
 
-// Import custom hook for dialog management
-import { useUserManagerDialogs } from "@/hooks/admin/useUserManagerDialogs";
+// Import the optimized hook for dialog management
+import { useOptimizedUserManagerDialogs } from "@/hooks/admin/useOptimizedUserManagerDialogs";
 
 const StaffUserManager = () => {
   const navigate = useNavigate();
@@ -42,7 +42,7 @@ const StaffUserManager = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterRole, setFilterRole] = useState('all');
 
-  // Use the custom hook for dialog management
+  // Use the optimized hook for dialog management
   const {
     actionDialog,
     actionReason,
@@ -60,7 +60,8 @@ const StaffUserManager = () => {
     openMessageDialog,
     closeMessageDialog,
     handleSendMessage,
-  } = useUserManagerDialogs(updateUserStatus, sendUserMessage);
+    isUserActionInProgress,
+  } = useOptimizedUserManagerDialogs(updateUserStatus, sendUserMessage);
 
   // Memoize filtered users to prevent recalculation on every render
   const filteredUsers = useMemo(() => {
@@ -161,6 +162,7 @@ const StaffUserManager = () => {
             getStatusBadge={getStatusBadge}
             onOpenActionDialog={openActionDialog}
             onOpenMessageDialog={openMessageDialog}
+            isUserActionInProgress={isUserActionInProgress}
           />
 
           <UserActionDialog
