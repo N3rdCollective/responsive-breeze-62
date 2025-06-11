@@ -123,7 +123,10 @@ const StaffUserEditor = () => {
 
     setSaving(true);
     try {
-      const { error } = await supabase
+      console.log('Saving user data:', formData);
+      
+      // Update the user profile in the database
+      const { data, error } = await supabase
         .from('profiles')
         .update({
           username: formData.username,
@@ -136,14 +139,21 @@ const StaffUserEditor = () => {
           forum_signature: formData.forum_signature,
           updated_at: new Date().toISOString()
         })
-        .eq('id', userId);
+        .eq('id', userId)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database update error:', error);
+        throw error;
+      }
+
+      console.log('User updated successfully:', data);
 
       // Log the activity
       await logActivity(
         'edit_user',
-        `User profile updated: ${formData.username}`,
+        `User profile updated: ${formData.username || formData.display_name}`,
         'user',
         userId,
         {
@@ -157,12 +167,27 @@ const StaffUserEditor = () => {
         description: "User profile updated successfully"
       });
 
+      // Update local state with the saved data
+      const updatedUser: UserProfile = {
+        ...user,
+        username: data.username,
+        display_name: data.display_name,
+        email: data.email,
+        bio: data.bio,
+        status: data.status as 'active' | 'suspended' | 'banned',
+        role: data.role as 'user' | 'moderator' | 'admin',
+        is_public: data.is_public,
+        forum_signature: data.forum_signature
+      };
+      setUser(updatedUser);
+
+      // Optionally navigate back to the users list
       navigate('/staff/users');
     } catch (error: any) {
       console.error('Error updating user:', error);
       toast({
         title: "Error",
-        description: "Failed to update user profile",
+        description: `Failed to update user profile: ${error.message}`,
         variant: "destructive"
       });
     } finally {
