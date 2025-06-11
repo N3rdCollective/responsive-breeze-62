@@ -21,11 +21,11 @@ export const useUsernameCheck = () => {
     setUsernameAvailable(null);
     
     try {
-      // Use case-insensitive comparison with lower() function
+      // Use case-insensitive comparison with explicit typing to avoid deep instantiation
       const { data, error } = await supabase
         .from('profiles')
         .select('username')
-        .eq('lower(username)', username.toLowerCase())
+        .ilike('username', username)
         .single();
 
       // Only process if this is still the latest request

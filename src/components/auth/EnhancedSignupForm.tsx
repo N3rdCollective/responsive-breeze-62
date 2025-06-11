@@ -72,7 +72,7 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
       const usernameError = validateUsername(formData.username);
       if (usernameError) {
         newErrors.username = usernameError;
-      } else if (usernameAvailable === false) {
+      } else if (usernameAvailable !== null && !usernameAvailable) {
         newErrors.username = 'Username is not available';
       }
 
@@ -151,14 +151,14 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
           toast({ title: "Checking username...", variant: "default" });
           return;
         }
-        if (usernameAvailable === false) {
+        if (usernameAvailable !== null && !usernameAvailable) {
           setErrors(prev => ({ ...prev, username: "Username is not available" }));
           return;
         }
         if (usernameAvailable === null && formData.username) {
           await checkUsernameAvailability(formData.username);
           // Re-validate after username check
-          if (usernameAvailable === false) {
+          if (usernameAvailable !== null && !usernameAvailable) {
             return;
           }
         }
@@ -193,7 +193,7 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
       return;
     }
     
-    if (usernameAvailable === false) {
+    if (usernameAvailable !== null && !usernameAvailable) {
       setErrors(prev => ({ ...prev, username: "Username is not available. Please choose another." }));
       setCurrentStep(2);
       return;
@@ -340,15 +340,15 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
                   value={formData.username}
                   onChange={(e) => handleInputChange('username', e.target.value)}
                   placeholder="johndoe123"
-                  className={`pl-10 pr-10 ${errors.username ? 'border-red-500' : ''} ${usernameAvailable === false ? 'border-red-500' : usernameAvailable === true ? 'border-green-500' : ''}`}
-                  aria-invalid={!!errors.username || usernameAvailable === false}
+                  className={`pl-10 pr-10 ${errors.username ? 'border-red-500' : ''} ${usernameAvailable !== null && !usernameAvailable ? 'border-red-500' : usernameAvailable === true ? 'border-green-500' : ''}`}
+                  aria-invalid={!!errors.username || (usernameAvailable !== null && !usernameAvailable)}
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
                   {isCheckingUsername ? (
                     <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                   ) : usernameAvailable === true ? (
                     <Check className="h-4 w-4 text-green-500" />
-                  ) : usernameAvailable === false ? (
+                  ) : (usernameAvailable !== null && !usernameAvailable) ? (
                     <X className="h-4 w-4 text-red-500" />
                   ) : null}
                 </div>
@@ -541,3 +541,5 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
 };
 
 export default EnhancedSignupForm;
+
+</edits_to_apply>
