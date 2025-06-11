@@ -65,6 +65,9 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
   const totalSteps = 3;
   const progress = (currentStep / totalSteps) * 100;
 
+  // Extract username to avoid deep type instantiation
+  const currentUsername = formData.username;
+
   const calculatePasswordStrength = (password: string) => {
     let strength = 0;
     const checks = {
@@ -192,15 +195,15 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
   
   useEffect(() => {
     const handler = setTimeout(() => {
-      if (formData.username && currentStep === 2) {
-        checkUsernameAvailability(formData.username);
+      if (currentUsername && currentStep === 2) {
+        checkUsernameAvailability(currentUsername);
       }
     }, 500);
 
     return () => {
       clearTimeout(handler);
     };
-  }, [formData.username, currentStep]);
+  }, [currentUsername, currentStep]);
 
   const handleInputChange = (field: keyof FormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
