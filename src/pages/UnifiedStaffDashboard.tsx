@@ -29,6 +29,9 @@ import {
   Plus,
   RefreshCw,
   Search,
+  CheckCircle,
+  Clock,
+  Ban,
 } from "lucide-react";
 
 // Import existing components
@@ -46,13 +49,13 @@ import SendMessageDialog from '@/components/staff/users/SendMessageDialog';
 import ReportedContentSection from '@/components/staff/moderator-dashboard/ReportedContentSection';
 import ReportDetails from '@/components/staff/moderator-dashboard/ReportDetails';
 
-// Import database hooks
+// Import database hooks with fixed types
 import { useContentReports, ContentReport } from '@/hooks/moderation/useContentReports';
 import { useModerationStats } from '@/hooks/moderation/useModerationStats';
-import { useUserManagement, UserManagementUser } from '@/hooks/admin/useUserManagement';
+import { useUserManagement, type UserManagementUser } from '@/hooks/admin/useUserManagement';
 import { useStaffActivityLogger } from '@/hooks/useStaffActivityLogger';
 
-// Type alias for convenience
+// Define User type locally to avoid conflicts
 type User = UserManagementUser;
 
 const UnifiedStaffDashboard = () => {
@@ -181,7 +184,6 @@ const UnifiedStaffDashboard = () => {
       }
 
       let newStatus: 'pending' | 'resolved' | 'rejected' = 'resolved';
-      let actionCompleted = false;
       let mainActionSuccessful = false;
 
       switch (action) {
@@ -297,9 +299,7 @@ const UnifiedStaffDashboard = () => {
           break;
       }
       
-      actionCompleted = mainActionSuccessful; // If main action succeeded, consider it completed for UI update
-
-      if (actionCompleted) {
+      if (mainActionSuccessful) {
         setSelectedFlagId(null);
         setModerationNote('');
         if (refreshStats) refreshStats();
@@ -319,6 +319,31 @@ const UnifiedStaffDashboard = () => {
     setIsManageStaffOpen(true);
   };
 
+  const handleQuickAction = (action: string) => {
+    switch (action) {
+      case 'new-post':
+        window.location.href = '/staff/news/editor'; 
+        break;
+      case 'manage-shows':
+        setActiveTab('shows');
+        break;
+      case 'manage-videos':
+        window.location.href = '/staff/videos';
+        break;
+      case 'view-reports':
+        setActiveTab('moderation');
+        break;
+      case 'manage-staff':
+        handleManageUsers();
+        break;
+      case 'manage-users': 
+        setActiveTab('users');
+        break;
+      default:
+        break;
+    }
+  };
+  
   const selectedReportData = selectedFlagId ? reports.find(r => r.id === selectedFlagId) : null;
 
   const openUserActionDialog = (action: 'suspend' | 'ban' | 'unban', user: User) => {
@@ -383,7 +408,7 @@ const UnifiedStaffDashboard = () => {
   
   const filteredUsers = useCallback((): User[] => {
     if (!allUsers || usersLoading) return [];
-    return searchUsersHook(allUsers as UserManagementUser[], userSearchTerm, userFilterStatus, userFilterRole);
+    return searchUsersHook(allUsers, userSearchTerm, userFilterStatus, userFilterRole);
   }, [allUsers, userSearchTerm, userFilterStatus, userFilterRole, searchUsersHook, usersLoading]);
 
   if (authLoading) {
@@ -394,8 +419,8 @@ const UnifiedStaffDashboard = () => {
     );
   }
 
-  // Stats Overview only (removed Quick Actions)
-  const StatsOverview = () => (
+  // Stats Overview and Quick Actions combined
+  const StatsAndQuickActions = () => (
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -458,6 +483,52 @@ const UnifiedStaffDashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Quick Actions Bar */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Plus className="h-5 w-5" />
+            Quick Actions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+            <Button variant="outline" onClick={() => handleQuickAction('new-post')} className="h-20 flex-col gap-2">
+              <FileText className="h-6 w-6" />
+              <span className="text-sm text-center">New Post</span>
+            </Button>
+            <Button variant="outline" onClick={() => handleQuickAction('manage-shows')} className="h-20 flex-col gap-2">
+              <Radio className="h-6 w-6" />
+              <span className="text-sm text-center">Manage Shows</span>
+            </Button>
+            <Button variant="outline" onClick={() => handleQuickAction('manage-videos')} className="h-20 flex-col gap-2">
+              <FileText className="h-6 w-6" />
+              <span className="text-sm text-center">Featured Videos</span>
+            </Button>
+             <Button variant="outline" onClick={() => handleQuickAction('manage-users')} className="h-20 flex-col gap-2">
+              <Users className="h-6 w-6" /> 
+              <span className="text-sm text-center">Manage Users</span>
+            </Button>
+            <Button 
+              variant={!statsLoading && dashboardStats.pendingReports > 0 ? "destructive" : "outline"} 
+              onClick={() => handleQuickAction('view-reports')} 
+              className="h-20 flex-col gap-2"
+            >
+              <Flag className="h-6 w-6" />
+              <span className="text-sm text-center">
+                {!statsLoading && dashboardStats.pendingReports > 0 ? `${dashboardStats.pendingReports} Reports` : 'View Reports'}
+              </span>
+            </Button>
+            {isAdmin && (
+              <Button variant="outline" onClick={() => handleQuickAction('manage-staff')} className="h-20 flex-col gap-2">
+                <Settings className="h-6 w-6" /> 
+                <span className="text-sm text-center">Manage Staff</span>
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 
@@ -469,11 +540,19 @@ const UnifiedStaffDashboard = () => {
   };
 
   const getStatusBadge = (status: User['status']) => {
-    let className = "capitalize text-white ";
-    if (status === 'active') className += 'bg-green-500 hover:bg-green-600';
-    else if (status === 'suspended') className += 'bg-yellow-500 hover:bg-yellow-600';
-    else if (status === 'banned') className += 'bg-red-500 hover:bg-red-600';
-    return <Badge className={className}>{status}</Badge>;
+    const config = {
+      active: { variant: 'default' as const, icon: CheckCircle, text: 'Active', className: 'bg-green-500 hover:bg-green-600' },
+      suspended: { variant: 'secondary' as const, icon: Clock, text: 'Suspended', className: 'bg-yellow-500 hover:bg-yellow-600 text-black' },
+      banned: { variant: 'destructive' as const, icon: Ban, text: 'Banned', className: '' }
+    };
+    const selectedConfig = config[status] || config.active;
+    const { variant, icon: Icon, text, className } = selectedConfig;
+    return (
+      <Badge variant={variant} className={`flex items-center gap-1 ${className || ''}`}>
+        <Icon className="h-3 w-3" />
+        {text}
+      </Badge>
+    );
   };
 
   return (
@@ -521,7 +600,7 @@ const UnifiedStaffDashboard = () => {
             </div>
           </div>
 
-          <StatsOverview />
+          <StatsAndQuickActions />
 
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
             <div className="border-b dark:border-gray-700">
@@ -655,19 +734,25 @@ const UnifiedStaffDashboard = () => {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                       <div>
                           <p className="text-sm text-muted-foreground">Total Users</p>
-                          <p className="text-2xl font-bold">{usersLoading ? '...' : (allUsers as UserManagementUser[]).length}</p>
+                          <p className="text-2xl font-bold">{usersLoading ? '...' : allUsers.length}</p>
                       </div>
                       <div>
                           <p className="text-sm text-muted-foreground">Active</p>
-                          <p className="text-2xl font-bold text-green-600">{usersLoading ? '...' : (allUsers as UserManagementUser[]).filter(u=>u.status === 'active').length}</p>
+                          <p className="text-2xl font-bold text-green-600">
+                            {usersLoading ? '...' : allUsers.filter(u => u.status === 'active').length}
+                          </p>
                       </div>
                       <div>
                           <p className="text-sm text-muted-foreground">Suspended</p>
-                          <p className="text-2xl font-bold text-yellow-600">{usersLoading ? '...' : (allUsers as UserManagementUser[]).filter(u=>u.status === 'suspended').length}</p>
+                          <p className="text-2xl font-bold text-yellow-600">
+                            {usersLoading ? '...' : allUsers.filter(u => u.status === 'suspended').length}
+                          </p>
                       </div>
                       <div>
                           <p className="text-sm text-muted-foreground">Banned</p>
-                          <p className="text-2xl font-bold text-red-600">{usersLoading ? '...' : (allUsers as UserManagementUser[]).filter(u=>u.status === 'banned').length}</p>
+                          <p className="text-2xl font-bold text-red-600">
+                            {usersLoading ? '...' : allUsers.filter(u => u.status === 'banned').length}
+                          </p>
                       </div>
                   </div>
                   <Separator />
@@ -866,5 +951,3 @@ const UnifiedStaffDashboard = () => {
 };
 
 export default UnifiedStaffDashboard;
-
-</edits_to_apply>
