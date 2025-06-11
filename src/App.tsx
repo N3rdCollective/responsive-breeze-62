@@ -59,6 +59,7 @@ const StaffSponsors = lazy(() => import("./pages/StaffSponsors"));
 const StaffSystemSettings = lazy(() => import("./pages/StaffSystemSettings"));
 const StaffAboutEditor = lazy(() => import("./pages/StaffAboutEditor"));
 const StaffAnalytics = lazy(() => import("./pages/StaffAnalytics"));
+const StaffVideosPage = lazy(() => import("./pages/StaffVideosPage"));
 
 const queryClient = new QueryClient();
 
@@ -81,6 +82,7 @@ function App() {
                           <Route path="*" element={<StaffLayout />}>
                             <Route path="panel" element={<UnifiedStaffDashboard />} />
                             <Route path="analytics" element={<StaffAnalytics />} />
+                            <Route path="videos" element={<StaffVideosPage />} />
                             <Route path="news" element={<StaffNewsPage />} />
                             <Route path="news/editor" element={<NewsEditor />} />
                             <Route path="news/editor/:id" element={<NewsEditor />} />
