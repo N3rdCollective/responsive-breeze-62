@@ -210,8 +210,8 @@ export const useUserManagement = () => {
     } catch (error: any) {
       console.error('[useUserManagement] Error updating user status:', error);
       
-      // ✅ On error, invalidate cache to refetch from server
-      queryClient.invalidateQueries(['users']);
+      // ✅ FIXED: On error, invalidate cache to refetch from server using correct format
+      queryClient.invalidateQueries({ queryKey: ['users'] });
       
       toast({
         title: "Update Failed",
