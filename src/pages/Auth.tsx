@@ -59,6 +59,8 @@ const Auth = () => {
     console.log("Switching to sign up mode");
     setIsSignUp(true);
     setError("");
+    setEmail("");
+    setPassword("");
   };
 
   const switchToSignIn = () => {
@@ -67,78 +69,82 @@ const Auth = () => {
     setError("");
   };
 
+  if (isSignUp) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md">
+          <EnhancedSignupForm onSwitchToSignIn={switchToSignIn} />
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
-        {!isSignUp ? (
-          <>
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl">Welcome back</CardTitle>
-              <CardDescription>Sign in to your account</CardDescription>
-            </CardHeader>
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl">Welcome back</CardTitle>
+          <CardDescription>Sign in to your account</CardDescription>
+        </CardHeader>
 
-            <form onSubmit={handleSignInSubmit}>
-              <CardContent className="space-y-4">
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
+        <form onSubmit={handleSignInSubmit}>
+          <CardContent className="space-y-4">
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
-              </CardContent>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </div>
+          </CardContent>
 
-              <CardFooter className="flex flex-col space-y-4">
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Signing in...
-                    </>
-                  ) : (
-                    "Sign In"
-                  )}
-                </Button>
+          <CardFooter className="flex flex-col space-y-4">
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                "Sign In"
+              )}
+            </Button>
 
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full"
-                  onClick={switchToSignUp}
-                  disabled={isLoading}
-                >
-                  Don't have an account? Sign up
-                </Button>
-              </CardFooter>
-            </form>
-          </>
-        ) : (
-          <EnhancedSignupForm onSwitchToSignIn={switchToSignIn} />
-        )}
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full"
+              onClick={switchToSignUp}
+              disabled={isLoading}
+            >
+              Don't have an account? Sign up
+            </Button>
+          </CardFooter>
+        </form>
       </Card>
     </div>
   );
