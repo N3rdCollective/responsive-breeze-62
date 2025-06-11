@@ -21,6 +21,7 @@ import {
   getPasswordStrengthText 
 } from './EnhancedSignupForm/validation';
 import { useUsernameCheck } from './EnhancedSignupForm/useUsernameCheck';
+import { useEmailCheck } from './EnhancedSignupForm/useEmailCheck';
 
 const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignIn }) => {
   console.log("EnhancedSignupForm component rendering");
@@ -51,6 +52,13 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
     resetUsernameCheck
   } = useUsernameCheck();
 
+  const {
+    emailAvailable,
+    isCheckingEmail,
+    checkEmailAvailability,
+    resetEmailCheck
+  } = useEmailCheck();
+
   const totalSteps = 3;
   const progress = (currentStep / totalSteps) * 100;
 
@@ -65,7 +73,11 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
       if (!formData.firstName) newErrors.firstName = 'First name is required';
       if (!formData.lastName) newErrors.lastName = 'Last name is required';
       const emailError = validateEmail(formData.email);
-      if (emailError) newErrors.email = emailError;
+      if (emailError) {
+        newErrors.email = emailError;
+      } else if (emailAvailable !== null && !emailAvailable) {
+        newErrors.email = 'Email is already registered';
+      }
     }
 
     if (step >= 2) {
@@ -116,6 +128,19 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
     return !Object.values(newErrors).some(error => error);
   };
   
+  // Debounced email checking effect
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (formData.email && currentStep === 1) {
+        checkEmailAvailability(formData.email);
+      }
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [formData.email, currentStep]);
+  
   // Debounced username checking effect - FIXED: removed checkUsernameAvailability from dependencies
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -138,14 +163,34 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
       return rest;
     });
 
-    // Reset username availability when username changes
+    // Reset availability checks when fields change
     if (field === 'username' && typeof value === 'string') {
       resetUsernameCheck();
+    }
+    if (field === 'email' && typeof value === 'string') {
+      resetEmailCheck();
     }
   };
 
   const handleNext = async () => {
     if (validateStep(currentStep)) {
+      if (currentStep === 1) {
+        if (isCheckingEmail) {
+          toast({ title: "Checking email...", variant: "default" });
+          return;
+        }
+        if (emailAvailable !== null && !emailAvailable) {
+          setErrors(prev => ({ ...prev, email: "Email is already registered" }));
+          return;
+        }
+        if (emailAvailable === null && formData.email) {
+          await checkEmailAvailability(formData.email);
+          // Re-validate after email check
+          if (emailAvailable !== null && !emailAvailable) {
+            return;
+          }
+        }
+      }
       if (currentStep === 2) {
         if (isCheckingUsername) {
           toast({ title: "Checking username...", variant: "default" });
@@ -184,12 +229,18 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
 
     if (!validateStep(totalSteps)) return;
     
-    if (isCheckingUsername) {
+    if (isCheckingEmail || isCheckingUsername) {
       toast({ 
         title: "Please wait", 
-        description: "Still verifying username.", 
+        description: "Still verifying email and username.", 
         variant: "default" 
       });
+      return;
+    }
+    
+    if (emailAvailable !== null && !emailAvailable) {
+      setErrors(prev => ({ ...prev, email: "Email is already registered. Please use a different email." }));
+      setCurrentStep(1);
       return;
     }
     
@@ -314,11 +365,23 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   placeholder="john@example.com"
-                  className={`pl-10 ${errors.email ? 'border-red-500' : ''}`}
-                  aria-invalid={!!errors.email}
+                  className={`pl-10 pr-10 ${errors.email ? 'border-red-500' : ''} ${emailAvailable !== null && !emailAvailable ? 'border-red-500' : emailAvailable === true ? 'border-green-500' : ''}`}
+                  aria-invalid={!!errors.email || (emailAvailable !== null && !emailAvailable)}
                 />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {isCheckingEmail ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  ) : emailAvailable === true ? (
+                    <Check className="h-4 w-4 text-green-500" />
+                  ) : (emailAvailable !== null && !emailAvailable) ? (
+                    <X className="h-4 w-4 text-red-500" />
+                  ) : null}
+                </div>
               </div>
               {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+              {emailAvailable === true && !errors.email && (
+                <p className="text-green-500 text-xs mt-1">Email is available</p>
+              )}
             </div>
           </div>
         )}
@@ -504,14 +567,14 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
           
           <div>
             {currentStep < totalSteps ? (
-              <Button onClick={handleNext} className="gap-2" disabled={isLoading || (currentStep === 2 && isCheckingUsername)}>
+              <Button onClick={handleNext} className="gap-2" disabled={isLoading || (currentStep === 1 && isCheckingEmail) || (currentStep === 2 && isCheckingUsername)}>
                 Next
                 <ArrowRight className="h-4 w-4" />
               </Button>
             ) : (
               <Button 
                 onClick={handleSubmit} 
-                disabled={isLoading || isCheckingUsername}
+                disabled={isLoading || isCheckingEmail || isCheckingUsername}
                 className="gap-2"
               >
                 {isLoading ? (
