@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -48,6 +49,15 @@ const StaffSidebar = () => {
     navigate('/staff/login');
   };
 
+  // Helper function to check if a navigation item is active
+  const isItemActive = (href: string) => {
+    if (href === '/staff/panel?tab=videos') {
+      // Special case for videos tab - check both pathname and search params
+      return location.pathname === '/staff/panel' && location.search === '?tab=videos';
+    }
+    return location.pathname === href;
+  };
+
   return (
     <Sidebar className="border-r bg-background w-64 lg:w-72">
       <SidebarHeader className="p-3 sm:p-4 border-b">
@@ -76,7 +86,7 @@ const StaffSidebar = () => {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
                     asChild 
-                    className={`w-full ${location.pathname === item.href ? 'bg-primary/10 text-primary' : 'hover:bg-muted'}`}
+                    className={`w-full ${isItemActive(item.href) ? 'bg-primary/10 text-primary' : 'hover:bg-muted'}`}
                   >
                     <Link to={item.href} className="flex items-center gap-3 px-3 py-2 rounded-md transition-colors">
                       <item.icon className="h-4 w-4 flex-shrink-0" />

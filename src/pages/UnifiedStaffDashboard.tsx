@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
+import { useSearchParams, useLocation } from "react-router-dom";
 import ManageStaffModal from "@/components/ManageStaffModal";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
 import StaffProfileEditor from "@/components/staff/StaffProfileEditor";
@@ -58,15 +59,37 @@ import { useStaffActivityLogger } from '@/hooks/useStaffActivityLogger';
 
 const UnifiedStaffDashboard = () => {
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const [isManageStaffOpen, setIsManageStaffOpen] = useState(false);
   const [isProfileEditorOpen, setIsProfileEditorOpen] = useState(false);
   const { staffName, isAdmin, isLoading: authLoading, handleLogout, userRole } = useStaffAuth();
   const { logActivity } = useStaffActivityLogger();
   
   const [activeTab, setActiveTab] = useState(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('tab') || 'content'; // Default to 'content'
+    return searchParams.get('tab') || 'content'; // Default to 'content'
   });
+
+  // Listen for URL parameter changes
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && tabParam !== activeTab) {
+      setActiveTab(tabParam);
+    } else if (!tabParam && activeTab !== 'content') {
+      setActiveTab('content');
+    }
+  }, [searchParams, activeTab]);
+
+  // Update URL when tab changes
+  const handleTabChange = (newTab: string) => {
+    setActiveTab(newTab);
+    if (newTab === 'content') {
+      searchParams.delete('tab');
+    } else {
+      searchParams.set('tab', newTab);
+    }
+    setSearchParams(searchParams, { replace: true });
+  };
   
   // Moderation dashboard state
   const [selectedFlagId, setSelectedFlagId] = useState<string | null>(null);
@@ -574,7 +597,7 @@ const UnifiedStaffDashboard = () => {
 
           <StatsAndQuickActions />
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
             <div className="border-b dark:border-gray-700">
               <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 h-auto p-1 bg-muted dark:bg-gray-800 rounded-md">
                 <TabsTrigger value="content" className="flex items-center gap-2 py-2.5 sm:py-3 data-[state=active]:bg-background dark:data-[state=active]:bg-gray-950 data-[state=active]:shadow-sm">
@@ -941,3 +964,5 @@ const UnifiedStaffDashboard = () => {
 };
 
 export default UnifiedStaffDashboard;
+
+</initial_code>
