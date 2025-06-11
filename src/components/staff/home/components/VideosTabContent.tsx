@@ -17,6 +17,7 @@ const VideosTabContent: React.FC = () => {
     newVideoId,
     setNewVideoId,
     isValidating: isAddingVideo,
+    isReordering,
     errorVideoId,
     setErrorVideoId,
     handleUpdateVideoField,
@@ -31,7 +32,7 @@ const VideosTabContent: React.FC = () => {
     refreshAllVideoTitles
   } = useVideoTitleRefresh();
 
-  const isProcessing = isAddingVideo || isRefreshing;
+  const isProcessing = isAddingVideo || isRefreshing || isReordering;
 
   if (isLoading) {
     return (
@@ -83,6 +84,7 @@ const VideosTabContent: React.FC = () => {
                     index={index}
                     isFirst={index === 0}
                     isLast={index === featuredVideos.length - 1}
+                    isReordering={isReordering}
                     onMoveVideo={moveVideo}
                     onRefreshTitle={refreshVideoTitle}
                     onRemoveVideo={handleRemoveVideo}

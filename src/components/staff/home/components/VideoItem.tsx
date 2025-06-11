@@ -11,6 +11,7 @@ interface VideoItemProps {
   index: number;
   isFirst: boolean;
   isLast: boolean;
+  isReordering?: boolean;
   onMoveVideo: (index: number, direction: 'up' | 'down') => void;
   onRefreshTitle: (index: number) => void;
   onRemoveVideo: (index: number) => void;
@@ -22,6 +23,7 @@ const VideoItem: React.FC<VideoItemProps> = ({
   index,
   isFirst,
   isLast,
+  isReordering = false,
   onMoveVideo,
   onRefreshTitle,
   onRemoveVideo,
@@ -46,8 +48,9 @@ const VideoItem: React.FC<VideoItemProps> = ({
             variant="ghost"
             size="icon"
             onClick={() => onMoveVideo(index, 'up')}
-            disabled={isFirst}
+            disabled={isFirst || isReordering}
             className="h-8 w-8"
+            title={isReordering ? "Reordering..." : "Move up"}
           >
             <Move className="h-4 w-4 rotate-90" />
           </Button>
@@ -55,8 +58,9 @@ const VideoItem: React.FC<VideoItemProps> = ({
             variant="ghost"
             size="icon"
             onClick={() => onMoveVideo(index, 'down')}
-            disabled={isLast}
+            disabled={isLast || isReordering}
             className="h-8 w-8"
+            title={isReordering ? "Reordering..." : "Move down"}
           >
             <Move className="h-4 w-4 -rotate-90" />
           </Button>
@@ -66,6 +70,7 @@ const VideoItem: React.FC<VideoItemProps> = ({
             onClick={() => onRefreshTitle(index)}
             title="Refresh title from YouTube"
             className="h-8 w-8"
+            disabled={isReordering}
           >
             <RefreshCw className="h-4 w-4" />
           </Button>
@@ -74,6 +79,7 @@ const VideoItem: React.FC<VideoItemProps> = ({
             size="icon"
             onClick={() => onRemoveVideo(index)}
             className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+            disabled={isReordering}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -86,6 +92,7 @@ const VideoItem: React.FC<VideoItemProps> = ({
           value={video.youtube_id}
           className="mt-1"
           onChange={(e) => onUpdateField(index, 'youtube_id', e.target.value)}
+          disabled={isReordering}
         />
       </div>
       <div>
@@ -98,6 +105,7 @@ const VideoItem: React.FC<VideoItemProps> = ({
           value={video.title}
           className="mt-1"
           onChange={(e) => onUpdateField(index, 'title', e.target.value)}
+          disabled={isReordering}
         />
       </div>
     </div>

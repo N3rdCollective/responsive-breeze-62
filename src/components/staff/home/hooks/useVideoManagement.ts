@@ -11,6 +11,7 @@ export const useVideoManagement = () => {
   const { toast } = useToast();
   const [newVideoId, setNewVideoId] = useState("");
   const [isValidating, setIsValidating] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
   const [errorVideoId, setErrorVideoId] = useState("");
   const { updateVideoField, fetchYoutubeVideoInfo } = useVideoUtils();
 
@@ -102,24 +103,69 @@ export const useVideoManagement = () => {
   const moveVideo = async (index: number, direction: 'up' | 'down') => {
     if (
       (direction === 'up' && index === 0) || 
-      (direction === 'down' && index === featuredVideos.length - 1)
+      (direction === 'down' && index === featuredVideos.length - 1) ||
+      isReordering
     ) {
       return;
     }
 
     const newIndex = direction === 'up' ? index - 1 : index + 1;
     
-    setFeaturedVideos(prev => {
-      const videos = [...prev];
+    setIsReordering(true);
+    
+    // Optimistically update the UI first
+    const newVideos = [...featuredVideos];
+    const currentVideo = newVideos[index];
+    const swapVideo = newVideos[newIndex];
+    
+    // Swap display orders
+    const tempOrder = currentVideo.display_order;
+    currentVideo.display_order = swapVideo.display_order;
+    swapVideo.display_order = tempOrder;
+    
+    // Swap positions in array
+    [newVideos[index], newVideos[newIndex]] = [newVideos[newIndex], newVideos[index]];
+    
+    setFeaturedVideos(newVideos);
+
+    try {
+      // Update both videos in the database
+      const updates = [
+        supabase
+          .from("featured_videos")
+          .update({ display_order: currentVideo.display_order })
+          .eq("id", currentVideo.id),
+        supabase
+          .from("featured_videos")
+          .update({ display_order: swapVideo.display_order })
+          .eq("id", swapVideo.id)
+      ];
+
+      const results = await Promise.all(updates);
       
-      const temp = videos[index].display_order;
-      videos[index].display_order = videos[newIndex].display_order;
-      videos[newIndex].display_order = temp;
+      // Check for any errors
+      for (const result of results) {
+        if (result.error) throw result.error;
+      }
+
+      toast({
+        title: "Order updated",
+        description: "Video order has been saved successfully",
+      });
+    } catch (error) {
+      console.error("Error updating video order:", error);
       
-      [videos[index], videos[newIndex]] = [videos[newIndex], videos[index]];
+      // Revert the optimistic update on error
+      setFeaturedVideos(featuredVideos);
       
-      return videos;
-    });
+      toast({
+        title: "Error",
+        description: "Failed to update video order. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsReordering(false);
+    }
   };
 
   return {
@@ -127,6 +173,7 @@ export const useVideoManagement = () => {
     newVideoId,
     setNewVideoId,
     isValidating,
+    isReordering,
     errorVideoId,
     setErrorVideoId,
     handleUpdateVideoField: updateVideoField,
