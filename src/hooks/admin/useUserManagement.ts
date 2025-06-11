@@ -1,173 +1,307 @@
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useCallback, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useStaffPermissions } from '@/hooks/staff/useStaffPermissions';
-import { User, UserAction } from './utils/userTypes';
-import { fetchUserData } from './utils/userDataFetcher';
-import { searchUsers as searchUsersUtil } from './utils/userSearchUtils';
-import { useUserActions } from './useUserActions';
-import { useUserMessages } from './useUserMessages';
 
-/**
- * Main hook for user management with server-side security validation
- */
+export interface User {
+  id: string;
+  email: string;
+  username: string;
+  display_name: string;
+  status: 'active' | 'suspended' | 'banned';
+  role: 'user' | 'moderator' | 'admin';
+  created_at: string;
+  last_active: string | null;
+  profile_picture: string | null;
+  forum_post_count: number;
+  timeline_post_count: number;
+  pending_report_count: number;
+}
+
 export const useUserManagement = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const { hasPermission, validateAction, loading: permissionsLoading } = useStaffPermissions();
+  const queryClient = useQueryClient();
+  const { hasPermission, validateAction } = useStaffPermissions();
   
-  // Track if we've already fetched data to prevent duplicate fetches
-  const hasInitiallyFetchedRef = useRef(false);
-  const fetchInProgressRef = useRef(false);
-  
-  // Import sub-hooks for actions and messaging
-  const { updateUserStatus: actionUpdateUserStatus, createUserAction, getUserActions } = useUserActions();
-  const { sendUserMessage } = useUserMessages();
-
-  const fetchUsers = useCallback(async () => {
-    // Prevent concurrent fetches
-    if (fetchInProgressRef.current) {
-      console.log("🔄 User fetch already in progress, skipping...");
-      return;
-    }
-
-    // Don't fetch if permissions are still loading
-    if (permissionsLoading) {
-      console.log("⏳ Permissions still loading, deferring user fetch...");
-      return;
-    }
-
-    fetchInProgressRef.current = true;
-    
-    try {
-      setLoading(true);
-      setError(null);
-      console.log("🔍 fetchUsers called in useUserManagement");
-
-      // Check permission before fetching user data
+  // Use React Query for optimized data fetching
+  const {
+    data: users = [],
+    isLoading: loading,
+    error,
+    refetch: refetchUsers
+  } = useQuery({
+    queryKey: ['users'],
+    queryFn: async (): Promise<User[]> => {
+      console.log('[useUserManagement] Fetching users from database');
+      
+      // Check permission before fetching
       if (!hasPermission('user.view')) {
         const canView = await validateAction('view', 'user');
         if (!canView) {
-          setError('Insufficient permissions to view user data');
-          return;
+          throw new Error('Insufficient permissions to view user data');
+        }
+      }
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          email,
+          username,
+          display_name,
+          status,
+          role,
+          created_at,
+          last_active,
+          profile_picture,
+          forum_post_count,
+          timeline_post_count,
+          pending_report_count
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('[useUserManagement] Error fetching users:', error);
+        throw new Error(`Failed to fetch users: ${error.message}`);
+      }
+
+      console.log(`[useUserManagement] Successfully fetched ${data?.length || 0} users`);
+      return data as User[];
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
+    retry: 2,
+    retryDelay: 1000,
+    enabled: true, // Always enabled, permission check is inside queryFn
+  });
+
+  // Memoized search function
+  const searchUsers = useCallback((
+    userList: User[],
+    searchTerm: string,
+    filterStatus: string,
+    filterRole: string
+  ): User[] => {
+    if (!userList || userList.length === 0) return [];
+    
+    return userList.filter(user => {
+      const statusMatch = filterStatus === 'all' || user.status === filterStatus;
+      const roleMatch = filterRole === 'all' || user.role === filterRole;
+      
+      const searchLower = searchTerm.toLowerCase().trim();
+      const searchMatch = !searchTerm || 
+        user.email?.toLowerCase().includes(searchLower) ||
+        user.username?.toLowerCase().includes(searchLower) ||
+        user.display_name?.toLowerCase().includes(searchLower);
+      
+      return statusMatch && roleMatch && searchMatch;
+    });
+  }, []);
+
+  // Optimized user status update with permission validation
+  const updateUserStatus = useCallback(async (
+    userId: string,
+    status: User['status'],
+    reason: string,
+    actionType: 'suspend' | 'ban' | 'unban'
+  ): Promise<boolean> => {
+    if (!userId || !status || !reason.trim()) {
+      toast({
+        title: "Invalid Input",
+        description: "User ID, status, and reason are required",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    console.log(`[useUserManagement] Updating user ${userId} status to ${status}`);
+    
+    try {
+      // Server-side permission validation
+      const canPerform = await validateAction(actionType, 'user', userId);
+      if (!canPerform) {
+        toast({
+          title: "Permission Denied",
+          description: `You don't have permission to ${actionType} users.`,
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      // Optimistic update
+      queryClient.setQueryData(['users'], (oldUsers: User[] | undefined) => {
+        if (!oldUsers) return oldUsers;
+        return oldUsers.map(user => 
+          user.id === userId 
+            ? { ...user, status }
+            : user
+        );
+      });
+
+      // Update user status in database
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ status })
+        .eq('id', userId);
+
+      if (updateError) {
+        console.error('[useUserManagement] Database update failed:', updateError);
+        // Rollback optimistic update
+        queryClient.setQueryData(['users'], (oldUsers: User[] | undefined) => {
+          if (!oldUsers) return oldUsers;
+          return oldUsers.map(user => 
+            user.id === userId 
+              ? { ...user, status: user.status === status ? 'active' : user.status }
+              : user
+          );
+        });
+        throw new Error(`Failed to update user status: ${updateError.message}`);
+      }
+
+      // Log the action in user_actions table
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (currentUser) {
+        const { error: actionError } = await supabase
+          .from('user_actions')
+          .insert({
+            user_id: userId,
+            action_type: actionType,
+            reason,
+            moderator_id: currentUser.id
+          });
+
+        if (actionError) {
+          console.warn('[useUserManagement] Failed to log action:', actionError);
         }
       }
 
-      const { users: fetchedUsers, error: fetchError } = await fetchUserData();
+      const actionName = actionType === 'suspend' ? 'suspended' : 
+                         actionType === 'ban' ? 'banned' : 'restored';
       
-      if (fetchError) {
-        setError(fetchError);
-        toast({
-          title: "Error loading users",
-          description: `Could not load user data. ${fetchError}`,
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      setUsers(fetchedUsers);
-      hasInitiallyFetchedRef.current = true;
-      
-    } catch (err: any) {
-      console.error('Error in fetchUsers:', err);
-      setError(err.message);
       toast({
-        title: "Error loading users",
-        description: `Could not load user data. ${err.message}`,
+        title: "User Updated",
+        description: `User has been ${actionName} successfully`,
+      });
+
+      console.log(`[useUserManagement] User ${userId} status updated successfully`);
+      return true;
+
+    } catch (error: any) {
+      console.error('[useUserManagement] Error updating user status:', error);
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update user status",
         variant: "destructive"
       });
-    } finally {
-      setLoading(false);
-      fetchInProgressRef.current = false;
+      return false;
     }
-  }, [toast, hasPermission, validateAction, permissionsLoading]);
+  }, [queryClient, toast, validateAction]);
 
-  // Optimistic update wrapper for updateUserStatus with server-side validation
-  const updateUserStatus = useCallback(async (userId: string, status: User['status'], reason: string, actionType: 'suspend' | 'ban' | 'unban') => {
-    // Pre-validate action before optimistic update
-    const canPerform = await validateAction(actionType, 'user', userId);
-    if (!canPerform) {
+  // Optimized send message function with permission validation
+  const sendUserMessage = useCallback(async (
+    userId: string,
+    subject: string,
+    content: string
+  ): Promise<boolean> => {
+    if (!userId || !subject.trim() || !content.trim()) {
+      toast({
+        title: "Invalid Input",
+        description: "User ID, subject, and content are required",
+        variant: "destructive"
+      });
       return false;
     }
 
-    // Optimistically update the local state immediately
-    setUsers(prevUsers => 
-      prevUsers.map(user => 
-        user.id === userId ? { ...user, status } : user
-      )
-    );
-
-    try {
-      const success = await actionUpdateUserStatus(userId, status, reason, actionType);
-      
-      if (!success) {
-        // Simple rollback without expensive refetch
-        setUsers(prevUsers => 
-          prevUsers.map(user => 
-            user.id === userId ? { ...user, status: user.status === status ? 'active' : user.status } : user
-          )
-        );
-      }
-      
-      return success;
-    } catch (error) {
-      console.error("Error in optimistic updateUserStatus:", error);
-      // Simple rollback on error
-      setUsers(prevUsers => 
-        prevUsers.map(user => 
-          user.id === userId ? { ...user, status: 'active' } : user
-        )
-      );
-      return false;
-    }
-  }, [actionUpdateUserStatus, validateAction]);
-
-  // Memoized search function to prevent recreation
-  const searchUsersLocal = useCallback((allUsers: User[], searchTermLocal: string, statusFilterLocal: string, roleFilterLocal: string) => {
-    return searchUsersUtil(allUsers, searchTermLocal, statusFilterLocal, roleFilterLocal);
-  }, []);
-  
-  // Refresh function that doesn't disrupt UI state
-  const refreshUsers = useCallback(async () => {
-    console.log("🔄 refreshUsers called in useUserManagement");
-    hasInitiallyFetchedRef.current = false; // Allow fresh fetch
-    await fetchUsers();
-  }, [fetchUsers]);
-
-  // Initial load - only fetch once permissions are loaded
-  useEffect(() => {
-    let mounted = true;
+    console.log(`[useUserManagement] Sending message to user ${userId}`);
     
-    const initializeUsers = async () => {
-      // Only fetch if permissions are loaded and we haven't fetched yet
-      if (!permissionsLoading && !hasInitiallyFetchedRef.current && mounted) {
-        console.log("✅ Initial fetchUsers call in useEffect, useUserManagement");
-        await fetchUsers();
+    try {
+      // Server-side permission validation
+      const canMessage = await validateAction('message', 'user', userId);
+      if (!canMessage) {
+        toast({
+          title: "Permission Denied",
+          description: "You don't have permission to send messages to users.",
+          variant: "destructive"
+        });
+        return false;
       }
-    };
 
-    initializeUsers();
+      // Get current staff member
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) {
+        throw new Error('Not authenticated as staff member');
+      }
 
-    return () => {
-      mounted = false;
-    };
-  }, [permissionsLoading, fetchUsers]);
+      // Insert message into user_messages table (using correct field names)
+      const { error: messageError } = await supabase
+        .from('user_messages')
+        .insert({
+          recipient_id: userId,
+          sender_id: currentUser.id,
+          subject: subject.trim(),
+          message: content.trim(),
+          message_type: 'admin',
+          is_read: false
+        });
+
+      if (messageError) {
+        console.error('[useUserManagement] Message send failed:', messageError);
+        throw new Error(`Failed to send message: ${messageError.message}`);
+      }
+
+      toast({
+        title: "Message Sent",
+        description: "Message has been sent to the user successfully",
+      });
+
+      console.log(`[useUserManagement] Message sent successfully to user ${userId}`);
+      return true;
+
+    } catch (error: any) {
+      console.error('[useUserManagement] Error sending message:', error);
+      toast({
+        title: "Send Failed", 
+        description: error.message || "Failed to send message",
+        variant: "destructive"
+      });
+      return false;
+    }
+  }, [toast, validateAction]);
+
+  // Optimized refresh function
+  const refreshUsers = useCallback(async () => {
+    console.log('[useUserManagement] Manually refreshing users');
+    try {
+      await refetchUsers();
+      console.log('[useUserManagement] Users refreshed successfully');
+    } catch (error) {
+      console.error('[useUserManagement] Error refreshing users:', error);
+      toast({
+        title: "Refresh Failed",
+        description: "Failed to refresh user data",
+        variant: "destructive"
+      });
+    }
+  }, [refetchUsers, toast]);
+
+  // Memoized error message
+  const errorMessage = useMemo(() => {
+    if (!error) return null;
+    return error instanceof Error ? error.message : 'An unknown error occurred';
+  }, [error]);
 
   return {
     users,
     loading,
-    error,
+    error: errorMessage,
     updateUserStatus,
-    createUserAction,
     sendUserMessage,
-    getUserActions,
-    searchUsers: searchUsersLocal,
     refreshUsers,
-    fetchUsers 
+    searchUsers,
   };
 };
 
-// Re-export the types for convenience
-export type { User, UserAction } from './utils/userTypes';
+// Re-export types for convenience
+export type { User };

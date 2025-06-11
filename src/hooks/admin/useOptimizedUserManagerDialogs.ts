@@ -1,205 +1,217 @@
 
-import { useState, useCallback, useRef } from "react";
-import { useToast } from "@/hooks/use-toast";
-import type { User } from "@/hooks/admin/useUserManagement";
-import { useUserActionStates } from "./useUserActionStates";
+import { useState, useCallback, useMemo } from 'react';
+import { useToast } from '@/hooks/use-toast';
+
+export interface User {
+  id: string;
+  email: string;
+  username: string;
+  display_name: string;
+  status: 'active' | 'suspended' | 'banned';
+  role: 'user' | 'moderator' | 'admin';
+  created_at: string;
+  last_active: string | null;
+  profile_picture: string | null;
+  forum_post_count: number;
+  timeline_post_count: number;
+  pending_report_count: number;
+}
+
+interface ActionDialogState {
+  open: boolean;
+  action: 'suspend' | 'ban' | 'unban' | null;
+  user: User | null;
+}
+
+interface MessageDialogState {
+  open: boolean;
+  user: User | null;
+}
+
+type UpdateUserStatusFn = (
+  userId: string,
+  status: User['status'],
+  reason: string,
+  actionType: 'suspend' | 'ban' | 'unban'
+) => Promise<boolean>;
+
+type SendUserMessageFn = (
+  userId: string,
+  subject: string,
+  content: string
+) => Promise<boolean>;
 
 export const useOptimizedUserManagerDialogs = (
-  updateUserStatus: (userId: string, status: User['status'], reason: string, actionType: 'suspend' | 'ban' | 'unban') => Promise<boolean>,
-  sendUserMessage: (userId: string, subject: string, content: string) => Promise<boolean>
+  updateUserStatus: UpdateUserStatusFn,
+  sendUserMessage: SendUserMessageFn
 ) => {
   const { toast } = useToast();
-  const { setUserActionLoading, setUserActionError, clearUserActionState } = useUserActionStates();
-  
-  // Action queue to prevent concurrent actions on the same user
-  const actionQueueRef = useRef<Set<string>>(new Set());
   
   // Action dialog state
-  const [actionDialog, setActionDialog] = useState({
+  const [actionDialog, setActionDialog] = useState<ActionDialogState>({
     open: false,
-    action: null as 'suspend' | 'ban' | 'unban' | 'warn' | null,
-    user: null as User | null
+    action: null,
+    user: null,
   });
+  
   const [actionReason, setActionReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   
   // Message dialog state
-  const [messageDialog, setMessageDialog] = useState({
+  const [messageDialog, setMessageDialog] = useState<MessageDialogState>({
     open: false,
-    user: null as User | null
+    user: null,
   });
+  
   const [messageSubject, setMessageSubject] = useState('');
   const [messageContent, setMessageContent] = useState('');
   const [messageLoading, setMessageLoading] = useState(false);
 
-  // Check if user action is in progress
+  // Track users currently being processed to prevent double-actions
+  const [usersInProgress, setUsersInProgress] = useState<Set<string>>(new Set());
+
+  // Memoized check for if a user action is in progress
   const isUserActionInProgress = useCallback((userId: string) => {
-    return actionQueueRef.current.has(userId);
-  }, []);
+    return usersInProgress.has(userId);
+  }, [usersInProgress]);
 
   // Action dialog handlers
-  const openActionDialog = useCallback((action: 'suspend' | 'ban' | 'unban' | 'warn', user: User) => {
+  const openActionDialog = useCallback((action: 'suspend' | 'ban' | 'unban', user: User) => {
     if (isUserActionInProgress(user.id)) {
       toast({
         title: "Action in Progress",
-        description: "Please wait for the current action to complete",
+        description: "Another action is already being performed on this user",
         variant: "destructive"
       });
       return;
     }
-    setActionReason('');
+    
     setActionDialog({ open: true, action, user });
+    setActionReason('');
   }, [isUserActionInProgress, toast]);
 
   const closeActionDialog = useCallback(() => {
+    if (actionLoading) return; // Prevent closing during action
+    
     setActionDialog({ open: false, action: null, user: null });
     setActionReason('');
-  }, []);
+  }, [actionLoading]);
 
   const handleUserAction = useCallback(async () => {
-    if (!actionDialog.user || !actionDialog.action || actionLoading) return;
-    if (!actionReason.trim()) {
+    const { user, action } = actionDialog;
+    
+    if (!user || !action || !actionReason.trim()) {
       toast({
-        title: "Validation Error",
-        description: "Please provide a reason for this action",
+        title: "Missing Information",
+        description: "A reason is required for this action",
         variant: "destructive"
       });
       return;
     }
 
-    const userId = actionDialog.user.id;
-    
-    // Check if action already in progress
-    if (actionQueueRef.current.has(userId)) {
-      console.log(`⚠️ Action already in progress for user ${userId}`);
+    if (isUserActionInProgress(user.id)) {
+      toast({
+        title: "Action in Progress",
+        description: "Another action is already being performed on this user",
+        variant: "destructive"
+      });
       return;
     }
 
-    // Add to action queue
-    actionQueueRef.current.add(userId);
     setActionLoading(true);
-    setUserActionLoading(userId, actionDialog.action, true);
-
-    console.log(`🔄 Starting ${actionDialog.action} action for user ${userId} with reason: ${actionReason}`);
+    setUsersInProgress(prev => new Set(prev).add(user.id));
 
     try {
-      let newStatus: User['status'] = 'active';
-      if (actionDialog.action === 'suspend') newStatus = 'suspended';
-      if (actionDialog.action === 'ban') newStatus = 'banned';
-      if (actionDialog.action === 'unban') newStatus = 'active';
+      let targetStatus: User['status'];
       
-      console.log(`📝 Calling updateUserStatus with status: ${newStatus}, action: ${actionDialog.action}`);
-      
-      const success = await updateUserStatus(
-        userId, 
-        newStatus, 
-        actionReason, 
-        actionDialog.action as 'suspend' | 'ban' | 'unban'
-      );
-      
+      switch (action) {
+        case 'suspend':
+          targetStatus = 'suspended';
+          break;
+        case 'ban':
+          targetStatus = 'banned';
+          break;
+        case 'unban':
+          targetStatus = 'active';
+          break;
+        default:
+          throw new Error('Invalid action type');
+      }
+
+      const success = await updateUserStatus(user.id, targetStatus, actionReason.trim(), action);
+
       if (success) {
-        console.log(`✅ User action completed successfully for ${userId}`);
-        closeActionDialog();
-        clearUserActionState(userId);
-        toast({
-          title: "User action completed",
-          description: `User ${actionDialog.user.display_name} has been ${actionDialog.action === 'unban' ? 'restored' : actionDialog.action + 'ed'}`,
-        });
-      } else {
-        console.error(`❌ User action failed for ${userId}`);
-        setUserActionError(userId, "Action failed");
-        toast({
-          title: "Action Failed",
-          description: "The user action could not be completed. Please try again.",
-          variant: "destructive"
-        });
+        setActionDialog({ open: false, action: null, user: null });
+        setActionReason('');
       }
     } catch (error) {
-      console.error("❌ Error performing user action:", error);
-      setUserActionError(userId, "Action failed");
+      console.error('[useOptimizedUserManagerDialogs] Error in user action:', error);
       toast({
-        title: "Error",
-        description: "Failed to complete user action. Please try again.",
+        title: "Action Failed",
+        description: "Failed to perform user action. Please try again.",
         variant: "destructive"
       });
     } finally {
       setActionLoading(false);
-      actionQueueRef.current.delete(userId);
+      setUsersInProgress(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(user.id);
+        return newSet;
+      });
     }
-  }, [actionDialog, actionReason, actionLoading, updateUserStatus, toast, closeActionDialog, setUserActionLoading, setUserActionError, clearUserActionState]);
+  }, [actionDialog, actionReason, updateUserStatus, toast, isUserActionInProgress]);
 
   // Message dialog handlers
   const openMessageDialog = useCallback((user: User) => {
-    if (isUserActionInProgress(user.id)) {
-      toast({
-        title: "Action in Progress",
-        description: "Please wait for the current action to complete",
-        variant: "destructive"
-      });
-      return;
-    }
-    setMessageSubject('');
-    setMessageContent('');
     setMessageDialog({ open: true, user });
-  }, [isUserActionInProgress, toast]);
-
-  const closeMessageDialog = useCallback(() => {
-    setMessageDialog({ open: false, user: null });
     setMessageSubject('');
     setMessageContent('');
   }, []);
 
+  const closeMessageDialog = useCallback(() => {
+    if (messageLoading) return; // Prevent closing during send
+    
+    setMessageDialog({ open: false, user: null });
+    setMessageSubject('');
+    setMessageContent('');
+  }, [messageLoading]);
+
   const handleSendMessage = useCallback(async () => {
-    if (!messageDialog.user || messageLoading) return;
-    if (!messageSubject.trim() || !messageContent.trim()) {
+    const { user } = messageDialog;
+    
+    if (!user || !messageSubject.trim() || !messageContent.trim()) {
       toast({
-        title: "Validation Error",
-        description: "Please fill in both subject and message",
+        title: "Missing Information",
+        description: "Subject and message content are required",
         variant: "destructive"
       });
       return;
     }
 
-    const userId = messageDialog.user.id;
-    
-    // Check if action already in progress
-    if (actionQueueRef.current.has(userId)) {
-      return;
-    }
-
-    // Add to action queue
-    actionQueueRef.current.add(userId);
     setMessageLoading(true);
-    setUserActionLoading(userId, 'message', true);
-    
+
     try {
-      const success = await sendUserMessage(userId, messageSubject, messageContent);
-      
+      const success = await sendUserMessage(user.id, messageSubject.trim(), messageContent.trim());
+
       if (success) {
-        closeMessageDialog();
-        clearUserActionState(userId);
-        toast({
-          title: "Message sent",
-          description: `Your message has been sent to ${messageDialog.user.display_name}.`,
-        });
-      } else {
-        setUserActionError(userId, "Message failed to send");
+        setMessageDialog({ open: false, user: null });
+        setMessageSubject('');
+        setMessageContent('');
       }
     } catch (error) {
-      console.error("Error sending message:", error);
-      setUserActionError(userId, "Message failed to send");
+      console.error('[useOptimizedUserManagerDialogs] Error sending message:', error);
       toast({
-        title: "Error",
+        title: "Send Failed",
         description: "Failed to send message. Please try again.",
         variant: "destructive"
       });
     } finally {
       setMessageLoading(false);
-      actionQueueRef.current.delete(userId);
     }
-  }, [messageDialog, messageSubject, messageContent, messageLoading, sendUserMessage, toast, closeMessageDialog, setUserActionLoading, setUserActionError, clearUserActionState]);
+  }, [messageDialog, messageSubject, messageContent, sendUserMessage, toast]);
 
-  return {
+  // Memoized return object to prevent unnecessary re-renders
+  return useMemo(() => ({
     // Action dialog
     actionDialog,
     actionReason,
@@ -220,7 +232,22 @@ export const useOptimizedUserManagerDialogs = (
     closeMessageDialog,
     handleSendMessage,
     
-    // Action state helpers
-    isUserActionInProgress
-  };
+    // Utility
+    isUserActionInProgress,
+  }), [
+    actionDialog,
+    actionReason,
+    actionLoading,
+    openActionDialog,
+    closeActionDialog,
+    handleUserAction,
+    messageDialog,
+    messageSubject,
+    messageContent,
+    messageLoading,
+    openMessageDialog,
+    closeMessageDialog,
+    handleSendMessage,
+    isUserActionInProgress,
+  ]);
 };

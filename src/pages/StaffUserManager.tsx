@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, Clock, Ban } from "lucide-react";
 import TitleUpdater from "@/components/TitleUpdater";
 
-// Import the enhanced user management hook
+// Import the optimized user management hook
 import { useUserManagement, type User } from "@/hooks/admin/useUserManagement";
 
 // Import refactored components
@@ -23,10 +23,10 @@ import { useOptimizedUserManagerDialogs } from "@/hooks/admin/useOptimizedUserMa
 
 const StaffUserManager = () => {
   const navigate = useNavigate();
-  const { isStaff, role, hasPermission, loading: permissionsLoading } = useStaffPermissions(); 
+  const { isStaff, role, loading: permissionsLoading } = useStaffPermissions(); 
   const { toast } = useToast();
   
-  // Use the real user management hook
+  // Use the optimized user management hook
   const {
     users,
     loading: usersLoading,
@@ -37,7 +37,7 @@ const StaffUserManager = () => {
     searchUsers
   } = useUserManagement();
   
-  // Initialize state with stable initial values
+  // Stable state values with memoization to prevent unnecessary re-renders
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterRole, setFilterRole] = useState('all');
@@ -63,12 +63,12 @@ const StaffUserManager = () => {
     isUserActionInProgress,
   } = useOptimizedUserManagerDialogs(updateUserStatus, sendUserMessage);
 
-  // Memoize filtered users to prevent recalculation on every render
+  // Memoized filtered users to prevent recalculation on every render
   const filteredUsers = useMemo(() => {
     return searchUsers(users, searchTerm, filterStatus, filterRole);
   }, [users, searchTerm, filterStatus, filterRole, searchUsers]);
 
-  // Memoize badge functions to prevent recreation
+  // Memoized badge functions to prevent recreation
   const getRoleBadge = useCallback((role: User['role']) => {
     const variants = {
       admin: 'destructive' as const,
@@ -94,6 +94,7 @@ const StaffUserManager = () => {
     );
   }, []);
 
+  // Optimized refresh handler
   const handleRefresh = useCallback(async () => {
     await refreshUsers();
     toast({
@@ -102,22 +103,27 @@ const StaffUserManager = () => {
     });
   }, [refreshUsers, toast]);
 
-  // Check authorization using the new permission system
-  const isAuthorized = isStaff && (role === 'admin' || role === 'super_admin' || hasPermission('user.view'));
-  
-  // Calculate overall loading state - coordinate both permissions and user data loading
-  const isLoading = permissionsLoading || (usersLoading && !permissionsLoading && isAuthorized);
+  // Memoized authorization check
+  const isAuthorized = useMemo(() => {
+    return !permissionsLoading && isStaff && (role === 'admin' || role === 'super_admin');
+  }, [permissionsLoading, isStaff, role]);
 
-  const authAndLoadingState = (
+  // Memoized loading state calculation
+  const isLoading = useMemo(() => {
+    return permissionsLoading || (usersLoading && !permissionsLoading && isAuthorized);
+  }, [permissionsLoading, usersLoading, isAuthorized]);
+
+  // Memoized auth and loading state component
+  const authAndLoadingState = useMemo(() => (
     <UserAuthAndLoadingStates
       authLoading={permissionsLoading}
       dataLoading={isLoading && !permissionsLoading && isAuthorized}
-      isAuthorized={!permissionsLoading && isAuthorized}
+      isAuthorized={isAuthorized}
       onGoToHomepage={() => navigate('/')}
     />
-  );
+  ), [permissionsLoading, isLoading, isAuthorized, navigate]);
 
-  // Show error state if there's an error loading users
+  // Early returns for error and loading states
   if (error && !permissionsLoading && isAuthorized) {
     return (
       <>
@@ -127,7 +133,12 @@ const StaffUserManager = () => {
             <div className="text-center">
               <h1 className="text-2xl font-bold text-destructive mb-4">Error Loading Users</h1>
               <p className="text-muted-foreground mb-4">{error}</p>
-              <button onClick={handleRefresh}>Try Again</button>
+              <button 
+                onClick={handleRefresh}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+              >
+                Try Again
+              </button>
             </div>
           </main>
         </div>
@@ -135,7 +146,6 @@ const StaffUserManager = () => {
     );
   }
 
-  // Show loading state while permissions are loading or while authorized and data is loading
   if (isLoading || (!permissionsLoading && !isAuthorized)) {
     return authAndLoadingState;
   }

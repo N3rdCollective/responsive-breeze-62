@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Eye, MessageSquare, Mail, UserX, Ban, UserCheck, Users, AlertTriangle, Loader2 } from "lucide-react";
 import type { User, ActionDialogHandler, MessageDialogHandler } from "./types";
-import { useUserActionStates } from "@/hooks/admin/useUserActionStates";
 
 interface OptimizedUserTableContentProps {
   users: User[];
@@ -39,8 +38,6 @@ const OptimizedUserTableContent: React.FC<OptimizedUserTableContentProps> = ({
   onOpenMessageDialog,
   isUserActionInProgress,
 }) => {
-  const { getUserActionState } = useUserActionStates();
-
   if (users.length === 0) {
     return (
       <div className="h-24 text-center flex flex-col items-center justify-center text-muted-foreground">
@@ -59,18 +56,17 @@ const OptimizedUserTableContent: React.FC<OptimizedUserTableContentProps> = ({
             <TableHead>Role</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-center">Forum Posts</TableHead>
-            <TableHead className="text-center">Pending Reports</TableHead>
+            <TableHead className="text-center">Reports</TableHead>
             <TableHead>Last Active</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {users.map((user) => {
-            const actionState = getUserActionState(user.id);
             const isActionInProgress = isUserActionInProgress(user.id);
             
             return (
-              <TableRow key={user.id} className={actionState.isLoading ? "opacity-75" : ""}>
+              <TableRow key={user.id} className={isActionInProgress ? "opacity-75" : ""}>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0 relative">
@@ -85,7 +81,7 @@ const OptimizedUserTableContent: React.FC<OptimizedUserTableContentProps> = ({
                           {user.display_name.charAt(0).toUpperCase()}
                         </span>
                       )}
-                      {actionState.isLoading && (
+                      {isActionInProgress && (
                         <div className="absolute inset-0 bg-background/80 rounded-full flex items-center justify-center">
                           <Loader2 className="h-4 w-4 animate-spin" />
                         </div>
@@ -95,13 +91,8 @@ const OptimizedUserTableContent: React.FC<OptimizedUserTableContentProps> = ({
                       <p className="font-semibold">{user.display_name}</p>
                       <p className="text-xs text-muted-foreground">@{user.username}</p>
                       <p className="text-xs text-muted-foreground">{user.email}</p>
-                      {actionState.isLoading && (
-                        <p className="text-xs text-primary">
-                          {actionState.action === 'message' ? 'Sending message...' : `Processing ${actionState.action}...`}
-                        </p>
-                      )}
-                      {actionState.error && (
-                        <p className="text-xs text-destructive">{actionState.error}</p>
+                      {isActionInProgress && (
+                        <p className="text-xs text-primary">Processing action...</p>
                       )}
                     </div>
                   </div>
@@ -119,7 +110,7 @@ const OptimizedUserTableContent: React.FC<OptimizedUserTableContentProps> = ({
                   )}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                  {new Date(user.last_active).toLocaleDateString()}
+                  {user.last_active ? new Date(user.last_active).toLocaleDateString() : 'N/A'}
                 </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
@@ -130,7 +121,7 @@ const OptimizedUserTableContent: React.FC<OptimizedUserTableContentProps> = ({
                         className="h-8 w-8"
                         disabled={isActionInProgress}
                       >
-                        {actionState.isLoading ? (
+                        {isActionInProgress ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
                           <MoreHorizontal className="h-4 w-4" />
@@ -161,14 +152,6 @@ const OptimizedUserTableContent: React.FC<OptimizedUserTableContentProps> = ({
                         Send Message
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="text-orange-600 focus:text-orange-700 focus:bg-orange-100 dark:text-orange-400 dark:focus:text-orange-300 dark:focus:bg-orange-500/30"
-                        onClick={() => onOpenActionDialog('warn', user)}
-                        disabled={isActionInProgress}
-                      >
-                        <AlertTriangle className="mr-2 h-4 w-4" />
-                        Warn User
-                      </DropdownMenuItem>
                       {user.status === 'active' && (
                         <>
                           <DropdownMenuItem
