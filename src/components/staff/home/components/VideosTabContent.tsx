@@ -5,10 +5,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { RefreshCw } from "lucide-react";
 import { useVideoManagement } from "../hooks/useVideoManagement";
 import { useVideoTitleRefresh } from "../hooks/useVideoTitleRefresh";
+import { useHomeSettings } from "../context/HomeSettingsContext";
 import VideoItem from "./VideoItem";
 import AddVideoForm from "./AddVideoForm";
+import LoadingSpinner from "@/components/staff/LoadingSpinner";
 
 const VideosTabContent: React.FC = () => {
+  const { isLoading } = useHomeSettings();
   const {
     featuredVideos,
     newVideoId,
@@ -29,6 +32,15 @@ const VideosTabContent: React.FC = () => {
   } = useVideoTitleRefresh();
 
   const isProcessing = isAddingVideo || isRefreshing;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <LoadingSpinner />
+        <span className="ml-2 text-muted-foreground">Loading featured videos...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -59,19 +71,25 @@ const VideosTabContent: React.FC = () => {
         <Card>
           <CardContent className="pt-4">
             <div className="space-y-4">
-              {featuredVideos.map((video, index) => (
-                <VideoItem
-                  key={`${video.id}-${index}`}
-                  video={video}
-                  index={index}
-                  isFirst={index === 0}
-                  isLast={index === featuredVideos.length - 1}
-                  onMoveVideo={moveVideo}
-                  onRefreshTitle={refreshVideoTitle}
-                  onRemoveVideo={handleRemoveVideo}
-                  onUpdateField={handleUpdateVideoField}
-                />
-              ))}
+              {featuredVideos.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No featured videos found. Add your first video below.</p>
+                </div>
+              ) : (
+                featuredVideos.map((video, index) => (
+                  <VideoItem
+                    key={`${video.id}-${index}`}
+                    video={video}
+                    index={index}
+                    isFirst={index === 0}
+                    isLast={index === featuredVideos.length - 1}
+                    onMoveVideo={moveVideo}
+                    onRefreshTitle={refreshVideoTitle}
+                    onRemoveVideo={handleRemoveVideo}
+                    onUpdateField={handleUpdateVideoField}
+                  />
+                ))
+              )}
 
               <AddVideoForm
                 newVideoId={newVideoId}
@@ -90,4 +108,3 @@ const VideosTabContent: React.FC = () => {
 };
 
 export default VideosTabContent;
-

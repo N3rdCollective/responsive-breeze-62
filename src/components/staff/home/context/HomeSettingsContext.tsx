@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface VideoData {
   id: string;
@@ -37,6 +39,7 @@ interface HomeSettingsContextType {
   setFeaturedVideos: React.Dispatch<React.SetStateAction<VideoData[]>>;
   isSaving: boolean;
   setIsSaving: React.Dispatch<React.SetStateAction<boolean>>;
+  isLoading: boolean;
 }
 
 const HomeSettingsContext = createContext<HomeSettingsContextType | undefined>(undefined);
@@ -45,6 +48,46 @@ export const HomeSettingsProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [settings, setSettings] = useState<HomeSettings>(defaultSettings);
   const [featuredVideos, setFeaturedVideos] = useState<VideoData[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch initial data when the provider mounts
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch home settings
+        const { data: settingsData, error: settingsError } = await supabase
+          .from("home_settings")
+          .select("*")
+          .maybeSingle();
+
+        if (settingsError) {
+          console.error("Error fetching home settings:", settingsError);
+        } else if (settingsData) {
+          setSettings(settingsData as HomeSettings);
+        }
+
+        // Fetch featured videos
+        const { data: videosData, error: videosError } = await supabase
+          .from("featured_videos")
+          .select("*")
+          .order("display_order", { ascending: true })
+          .eq("is_active", true);
+
+        if (videosError) {
+          console.error("Error fetching featured videos:", videosError);
+        } else if (videosData) {
+          setFeaturedVideos(videosData || []);
+        }
+      } catch (error) {
+        console.error("Error in fetchInitialData:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchInitialData();
+  }, []);
 
   return (
     <HomeSettingsContext.Provider value={{ 
@@ -53,7 +96,8 @@ export const HomeSettingsProvider: React.FC<{ children: ReactNode }> = ({ childr
       featuredVideos, 
       setFeaturedVideos, 
       isSaving, 
-      setIsSaving 
+      setIsSaving,
+      isLoading
     }}>
       {children}
     </HomeSettingsContext.Provider>
