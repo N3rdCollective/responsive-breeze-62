@@ -116,7 +116,7 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
     return !Object.values(newErrors).some(error => error);
   };
   
-  // Debounced username checking effect
+  // Debounced username checking effect - FIXED: removed checkUsernameAvailability from dependencies
   useEffect(() => {
     const handler = setTimeout(() => {
       if (formData.username && currentStep === 2) {
@@ -127,7 +127,7 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
     return () => {
       clearTimeout(handler);
     };
-  }, [formData.username, currentStep, checkUsernameAvailability]);
+  }, [formData.username, currentStep]); // Only depend on actual state that should trigger the check
 
   const handleInputChange = (field: keyof FormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));

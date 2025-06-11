@@ -1,5 +1,5 @@
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { validateUsername } from './validation';
 
@@ -8,7 +8,7 @@ export const useUsernameCheck = () => {
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const usernameCheckRef = useRef<string>('');
 
-  const checkUsernameAvailability = async (username: string) => {
+  const checkUsernameAvailability = useCallback(async (username: string) => {
     const usernameValidationError = validateUsername(username);
     if (usernameValidationError || !username) {
       setUsernameAvailable(null);
@@ -48,12 +48,16 @@ export const useUsernameCheck = () => {
         setIsCheckingUsername(false);
       }
     }
-  };
+  }, []); // No dependencies needed since we use supabase client and validateUsername directly
+
+  const resetUsernameCheck = useCallback(() => {
+    setUsernameAvailable(null);
+  }, []);
 
   return {
     usernameAvailable,
     isCheckingUsername,
     checkUsernameAvailability,
-    resetUsernameCheck: () => setUsernameAvailable(null)
+    resetUsernameCheck
   };
 };
