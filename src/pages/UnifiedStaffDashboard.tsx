@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useSearchParams, useLocation } from "react-router-dom";
@@ -427,7 +428,7 @@ const UnifiedStaffDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Monthly Listeners</p>
-                <p className="text-2xl font-bold">1.2M</p> {/* Example static data */}
+                <p className="text-2xl font-bold">1.2M</p>
                 <p className="text-xs text-green-600 flex items-center mt-1">
                   <TrendingUp className="h-3 w-3 mr-1" />
                   +12% from last month
