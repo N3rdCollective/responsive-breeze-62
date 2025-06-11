@@ -19,7 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, MessageSquare, Mail, UserX, Ban, UserCheck, Users, edit } from "lucide-react";
+import { MoreHorizontal, Eye, MessageSquare, Mail, UserX, Ban, UserCheck, Users, Edit } from "lucide-react";
 import type { UserManagementUser } from "@/hooks/admin/useUserManagement";
 
 type User = UserManagementUser;
@@ -125,7 +125,7 @@ const OptimizedUserTableContent: React.FC<OptimizedUserTableContentProps> = ({
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem onClick={() => navigate(`/staff/users/edit/${user.id}`)}>
-                      <edit className="mr-2 h-4 w-4" />
+                      <Edit className="mr-2 h-4 w-4" />
                       Edit User
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => alert(`View profile for ${user.username}`)}>

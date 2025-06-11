@@ -17,6 +17,20 @@ import { useStaffActivityLogger } from "@/hooks/useStaffActivityLogger";
 
 interface UserProfile {
   id: string;
+  username: string | null;
+  display_name: string | null;
+  email: string | null;
+  bio: string | null;
+  status: 'active' | 'suspended' | 'banned';
+  role: 'user' | 'moderator' | 'admin';
+  is_public: boolean | null;
+  forum_signature: string | null;
+  created_at: string;
+  forum_post_count?: number;
+  timeline_post_count?: number;
+}
+
+interface FormData {
   username: string;
   display_name: string;
   email: string;
@@ -25,7 +39,6 @@ interface UserProfile {
   role: 'user' | 'moderator' | 'admin';
   is_public: boolean;
   forum_signature: string;
-  created_at: string;
 }
 
 const StaffUserEditor = () => {
@@ -38,13 +51,13 @@ const StaffUserEditor = () => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     username: '',
     display_name: '',
     email: '',
     bio: '',
-    status: 'active' as const,
-    role: 'user' as const,
+    status: 'active',
+    role: 'user',
     is_public: true,
     forum_signature: ''
   });
@@ -70,8 +83,8 @@ const StaffUserEditor = () => {
           display_name: data.display_name || '',
           email: data.email || '',
           bio: data.bio || '',
-          status: data.status || 'active',
-          role: data.role || 'user',
+          status: (data.status as 'active' | 'suspended' | 'banned') || 'active',
+          role: (data.role as 'user' | 'moderator' | 'admin') || 'user',
           is_public: data.is_public ?? true,
           forum_signature: data.forum_signature || ''
         });
@@ -190,7 +203,7 @@ const StaffUserEditor = () => {
             </Button>
             <h1 className="text-3xl font-bold">Edit User Profile</h1>
             <p className="text-muted-foreground">
-              Editing profile for {user.display_name || user.username}
+              Editing profile for {user?.display_name || user?.username}
             </p>
           </div>
 
@@ -329,15 +342,15 @@ const StaffUserEditor = () => {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="text-center p-4 bg-muted rounded-lg">
-                  <p className="text-2xl font-bold">{user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</p>
+                  <p className="text-2xl font-bold">{user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</p>
                   <p className="text-sm text-muted-foreground">Member Since</p>
                 </div>
                 <div className="text-center p-4 bg-muted rounded-lg">
-                  <p className="text-2xl font-bold">{(user as any).forum_post_count || 0}</p>
+                  <p className="text-2xl font-bold">{user?.forum_post_count || 0}</p>
                   <p className="text-sm text-muted-foreground">Forum Posts</p>
                 </div>
                 <div className="text-center p-4 bg-muted rounded-lg">
-                  <p className="text-2xl font-bold">{(user as any).timeline_post_count || 0}</p>
+                  <p className="text-2xl font-bold">{user?.timeline_post_count || 0}</p>
                   <p className="text-sm text-muted-foreground">Timeline Posts</p>
                 </div>
               </div>
