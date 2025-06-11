@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -32,7 +31,7 @@ const PublicProfilePage: React.FC = () => {
           // Load by userId (legacy route format /profile/:userId) 
           const { data, error } = await supabase
             .from('profiles')
-            .select('id, username, display_name, bio, role, created_at, is_public, profile_picture')
+            .select('id, username, display_name, bio, role, created_at, is_public, profile_picture, forum_signature, forum_post_count')
             .eq('id', userId)
             .single();
           
@@ -47,7 +46,9 @@ const PublicProfilePage: React.FC = () => {
               role: data.role,
               created_at: data.created_at,
               is_public: data.is_public,
-              avatar_url: data.profile_picture
+              avatar_url: data.profile_picture,
+              forum_signature: data.forum_signature || null,
+              forum_post_count: data.forum_post_count || 0,
             });
           }
         } else {
