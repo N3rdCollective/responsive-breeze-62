@@ -15,23 +15,19 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, MessageSquare, Mail, UserX, Ban, UserCheck, Users, Edit } from "lucide-react";
+import { MoreHorizontal, Edit, Users } from "lucide-react";
 import type { UserManagementUser } from "@/hooks/admin/useUserManagement";
 
 type User = UserManagementUser;
-type ActionDialogHandler = (action: 'suspend' | 'ban' | 'unban', user: User) => void;
-type MessageDialogHandler = (user: User) => void;
 
 interface OptimizedUserTableContentProps {
   users: User[];
   getRoleBadge: (role: User['role']) => JSX.Element;
   getStatusBadge: (status: User['status']) => JSX.Element;
-  onOpenActionDialog: ActionDialogHandler;
-  onOpenMessageDialog: MessageDialogHandler;
+  onOpenActionDialog: (action: 'suspend' | 'ban' | 'unban', user: User) => void;
+  onOpenMessageDialog: (user: User) => void;
   isUserActionInProgress: (userId: string) => boolean;
 }
 
@@ -39,9 +35,6 @@ const OptimizedUserTableContent: React.FC<OptimizedUserTableContentProps> = ({
   users,
   getRoleBadge,
   getStatusBadge,
-  onOpenActionDialog,
-  onOpenMessageDialog,
-  isUserActionInProgress,
 }) => {
   const navigate = useNavigate();
 
@@ -113,64 +106,15 @@ const OptimizedUserTableContent: React.FC<OptimizedUserTableContentProps> = ({
               <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8"
-                      disabled={isUserActionInProgress(user.id)}
-                    >
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem onClick={() => navigate(`/staff/users/edit/${user.id}`)}>
                       <Edit className="mr-2 h-4 w-4" />
                       Edit User
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => alert(`View profile for ${user.username}`)}>
-                      <Eye className="mr-2 h-4 w-4" />
-                      View Profile
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => alert(`View posts by ${user.username}`)}>
-                      <MessageSquare className="mr-2 h-4 w-4" />
-                      View Posts
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onOpenMessageDialog(user)}>
-                      <Mail className="mr-2 h-4 w-4" />
-                      Send Message
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    {user.status === 'active' && (
-                      <>
-                        <DropdownMenuItem
-                          className="text-yellow-600 focus:text-yellow-700 focus:bg-yellow-100 dark:text-yellow-400 dark:focus:text-yellow-300 dark:focus:bg-yellow-500/30"
-                          onClick={() => onOpenActionDialog('suspend', user)}
-                          disabled={isUserActionInProgress(user.id)}
-                        >
-                          <UserX className="mr-2 h-4 w-4" />
-                          Suspend User
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-red-600 focus:text-red-700 focus:bg-red-100 dark:text-red-400 dark:focus:text-red-300 dark:focus:bg-red-500/30"
-                          onClick={() => onOpenActionDialog('ban', user)}
-                          disabled={isUserActionInProgress(user.id)}
-                        >
-                          <Ban className="mr-2 h-4 w-4" />
-                          Ban User
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                    {(user.status === 'suspended' || user.status === 'banned') && (
-                      <DropdownMenuItem
-                        className="text-green-600 focus:text-green-700 focus:bg-green-100 dark:text-green-400 dark:focus:text-green-300 dark:focus:bg-green-500/30"
-                        onClick={() => onOpenActionDialog('unban', user)}
-                        disabled={isUserActionInProgress(user.id)}
-                      >
-                        <UserCheck className="mr-2 h-4 w-4" />
-                        Restore User
-                      </DropdownMenuItem>
-                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>
