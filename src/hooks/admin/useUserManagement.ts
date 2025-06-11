@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useStaffPermissions } from '@/hooks/staff/useStaffPermissions';
 
-export interface User {
+export interface UserManagementUser {
   id: string;
   email: string;
   username: string;
@@ -33,7 +33,7 @@ export const useUserManagement = () => {
     refetch: refetchUsers
   } = useQuery({
     queryKey: ['users'],
-    queryFn: async (): Promise<User[]> => {
+    queryFn: async (): Promise<UserManagementUser[]> => {
       console.log('[useUserManagement] Fetching users from database');
       
       // Check permission before fetching
@@ -68,10 +68,10 @@ export const useUserManagement = () => {
       }
 
       console.log(`[useUserManagement] Successfully fetched ${data?.length || 0} users`);
-      return data as User[];
+      return data as UserManagementUser[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (replaces cacheTime)
     retry: 2,
     retryDelay: 1000,
     enabled: true, // Always enabled, permission check is inside queryFn
@@ -79,11 +79,11 @@ export const useUserManagement = () => {
 
   // Memoized search function
   const searchUsers = useCallback((
-    userList: User[],
+    userList: UserManagementUser[],
     searchTerm: string,
     filterStatus: string,
     filterRole: string
-  ): User[] => {
+  ): UserManagementUser[] => {
     if (!userList || userList.length === 0) return [];
     
     return userList.filter(user => {
@@ -103,7 +103,7 @@ export const useUserManagement = () => {
   // Optimized user status update with permission validation
   const updateUserStatus = useCallback(async (
     userId: string,
-    status: User['status'],
+    status: UserManagementUser['status'],
     reason: string,
     actionType: 'suspend' | 'ban' | 'unban'
   ): Promise<boolean> => {
@@ -131,7 +131,7 @@ export const useUserManagement = () => {
       }
 
       // Optimistic update
-      queryClient.setQueryData(['users'], (oldUsers: User[] | undefined) => {
+      queryClient.setQueryData(['users'], (oldUsers: UserManagementUser[] | undefined) => {
         if (!oldUsers) return oldUsers;
         return oldUsers.map(user => 
           user.id === userId 
@@ -149,7 +149,7 @@ export const useUserManagement = () => {
       if (updateError) {
         console.error('[useUserManagement] Database update failed:', updateError);
         // Rollback optimistic update
-        queryClient.setQueryData(['users'], (oldUsers: User[] | undefined) => {
+        queryClient.setQueryData(['users'], (oldUsers: UserManagementUser[] | undefined) => {
           if (!oldUsers) return oldUsers;
           return oldUsers.map(user => 
             user.id === userId 
@@ -293,7 +293,7 @@ export const useUserManagement = () => {
   }, [error]);
 
   return {
-    users,
+    users: users as UserManagementUser[],
     loading,
     error: errorMessage,
     updateUserStatus,
@@ -303,5 +303,5 @@ export const useUserManagement = () => {
   };
 };
 
-// Re-export types for convenience
-export type { User };
+// Export type for external use
+export type { UserManagementUser };

@@ -1,14 +1,14 @@
 
 import React, { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useStaffPermissions } from "@/hooks/staff/useStaffPermissions";
+import { useStaffAuth } from "@/hooks/useStaffAuth";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, Clock, Ban } from "lucide-react";
 import TitleUpdater from "@/components/TitleUpdater";
 
-// Import the optimized user management hook
-import { useUserManagement, type User } from "@/hooks/admin/useUserManagement";
+// Import the FIXED user management hook
+import { useUserManagement, type UserManagementUser } from "@/hooks/admin/useUserManagement";
 
 // Import refactored components
 import UserAuthAndLoadingStates from "@/components/staff/user-manager/UserAuthAndLoadingStates";
@@ -18,15 +18,18 @@ import UserTableCard from "@/components/staff/user-manager/UserTableCard";
 import UserActionDialog from "@/components/staff/user-manager/UserActionDialog";
 import UserMessageDialog from "@/components/staff/user-manager/UserMessageDialog";
 
-// Import the optimized hook for dialog management
+// Import the OPTIMIZED hook for dialog management
 import { useOptimizedUserManagerDialogs } from "@/hooks/admin/useOptimizedUserManagerDialogs";
+
+// Type alias for convenience
+type User = UserManagementUser;
 
 const StaffUserManager = () => {
   const navigate = useNavigate();
-  const { isStaff, role, loading: permissionsLoading } = useStaffPermissions(); 
+  const { userRole, isLoading: authLoading } = useStaffAuth(); 
   const { toast } = useToast();
   
-  // Use the optimized user management hook
+  // Use the FIXED user management hook
   const {
     users,
     loading: usersLoading,
@@ -39,10 +42,10 @@ const StaffUserManager = () => {
   
   // Stable state values with memoization to prevent unnecessary re-renders
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterRole, setFilterRole] = useState('all');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'suspended' | 'banned'>('all');
+  const [filterRole, setFilterRole] = useState<'all' | 'user' | 'moderator' | 'admin'>('all');
 
-  // Use the optimized hook for dialog management
+  // Use the OPTIMIZED hook for dialog management
   const {
     actionDialog,
     actionReason,
@@ -65,7 +68,7 @@ const StaffUserManager = () => {
 
   // Memoized filtered users to prevent recalculation on every render
   const filteredUsers = useMemo(() => {
-    return searchUsers(users, searchTerm, filterStatus, filterRole);
+    return searchUsers(users as UserManagementUser[], searchTerm, filterStatus, filterRole);
   }, [users, searchTerm, filterStatus, filterRole, searchUsers]);
 
   // Memoized badge functions to prevent recreation
@@ -105,26 +108,26 @@ const StaffUserManager = () => {
 
   // Memoized authorization check
   const isAuthorized = useMemo(() => {
-    return !permissionsLoading && isStaff && (role === 'admin' || role === 'super_admin');
-  }, [permissionsLoading, isStaff, role]);
+    return !authLoading && userRole && ['admin', 'super_admin'].includes(userRole);
+  }, [authLoading, userRole]);
 
   // Memoized loading state calculation
   const isLoading = useMemo(() => {
-    return permissionsLoading || (usersLoading && !permissionsLoading && isAuthorized);
-  }, [permissionsLoading, usersLoading, isAuthorized]);
+    return authLoading || (usersLoading && !authLoading && isAuthorized);
+  }, [authLoading, usersLoading, isAuthorized]);
 
   // Memoized auth and loading state component
   const authAndLoadingState = useMemo(() => (
     <UserAuthAndLoadingStates
-      authLoading={permissionsLoading}
-      dataLoading={isLoading && !permissionsLoading && isAuthorized}
+      authLoading={authLoading}
+      dataLoading={isLoading && !authLoading && isAuthorized}
       isAuthorized={isAuthorized}
       onGoToHomepage={() => navigate('/')}
     />
-  ), [permissionsLoading, isLoading, isAuthorized, navigate]);
+  ), [authLoading, isLoading, isAuthorized, navigate]);
 
   // Early returns for error and loading states
-  if (error && !permissionsLoading && isAuthorized) {
+  if (error && !authLoading && isAuthorized) {
     return (
       <>
         <TitleUpdater title="Manage Users - Staff Panel" />
@@ -146,7 +149,7 @@ const StaffUserManager = () => {
     );
   }
 
-  if (isLoading || (!permissionsLoading && !isAuthorized)) {
+  if (isLoading || (!authLoading && !isAuthorized)) {
     return authAndLoadingState;
   }
 
@@ -159,7 +162,7 @@ const StaffUserManager = () => {
             onBackToDashboard={() => navigate('/staff/panel')}
             onRefreshData={handleRefresh}
           />
-          <UserStatsCards users={users} />
+          <UserStatsCards users={users as UserManagementUser[]} />
           <UserTableCard
             filteredUsers={filteredUsers}
             searchTerm={searchTerm}

@@ -1,36 +1,22 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
-
-export interface User {
-  id: string;
-  email: string;
-  username: string;
-  display_name: string;
-  status: 'active' | 'suspended' | 'banned';
-  role: 'user' | 'moderator' | 'admin';
-  created_at: string;
-  last_active: string | null;
-  profile_picture: string | null;
-  forum_post_count: number;
-  timeline_post_count: number;
-  pending_report_count: number;
-}
+import { UserManagementUser } from './useUserManagement';
 
 interface ActionDialogState {
   open: boolean;
   action: 'suspend' | 'ban' | 'unban' | null;
-  user: User | null;
+  user: UserManagementUser | null;
 }
 
 interface MessageDialogState {
   open: boolean;
-  user: User | null;
+  user: UserManagementUser | null;
 }
 
 type UpdateUserStatusFn = (
   userId: string,
-  status: User['status'],
+  status: UserManagementUser['status'],
   reason: string,
   actionType: 'suspend' | 'ban' | 'unban'
 ) => Promise<boolean>;
@@ -76,7 +62,7 @@ export const useOptimizedUserManagerDialogs = (
   }, [usersInProgress]);
 
   // Action dialog handlers
-  const openActionDialog = useCallback((action: 'suspend' | 'ban' | 'unban', user: User) => {
+  const openActionDialog = useCallback((action: 'suspend' | 'ban' | 'unban', user: UserManagementUser) => {
     if (isUserActionInProgress(user.id)) {
       toast({
         title: "Action in Progress",
@@ -122,7 +108,7 @@ export const useOptimizedUserManagerDialogs = (
     setUsersInProgress(prev => new Set(prev).add(user.id));
 
     try {
-      let targetStatus: User['status'];
+      let targetStatus: UserManagementUser['status'];
       
       switch (action) {
         case 'suspend':
@@ -162,7 +148,7 @@ export const useOptimizedUserManagerDialogs = (
   }, [actionDialog, actionReason, updateUserStatus, toast, isUserActionInProgress]);
 
   // Message dialog handlers
-  const openMessageDialog = useCallback((user: User) => {
+  const openMessageDialog = useCallback((user: UserManagementUser) => {
     setMessageDialog({ open: true, user });
     setMessageSubject('');
     setMessageContent('');

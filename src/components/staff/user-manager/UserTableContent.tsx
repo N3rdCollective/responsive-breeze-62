@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, MessageSquare, Mail, UserX, Ban, UserCheck, Users, AlertTriangle } from "lucide-react"; // Added AlertTriangle
+import { MoreHorizontal, Eye, MessageSquare, Mail, UserX, Ban, UserCheck, Users } from "lucide-react";
 import type { User, ActionDialogHandler, MessageDialogHandler } from "./types";
 
 interface UserTableContentProps {
@@ -56,8 +56,8 @@ const UserTableContent: React.FC<UserTableContentProps> = ({
             <TableHead className="min-w-[200px]">User</TableHead>
             <TableHead>Role</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead className="text-center">Forum Posts</TableHead> {/* Updated Header Text */}
-            <TableHead className="text-center">Pending Reports</TableHead> {/* Updated Header Text */}
+            <TableHead className="text-center">Forum Posts</TableHead>
+            <TableHead className="text-center">Pending Reports</TableHead>
             <TableHead>Last Active</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -89,18 +89,18 @@ const UserTableContent: React.FC<UserTableContentProps> = ({
               </TableCell>
               <TableCell>{getRoleBadge(user.role)}</TableCell>
               <TableCell>{getStatusBadge(user.status)}</TableCell>
-              <TableCell className="text-center">{user.forum_post_count}</TableCell> {/* Changed from post_count */}
+              <TableCell className="text-center">{user.forum_post_count}</TableCell>
               <TableCell className="text-center">
-                {user.pending_report_count > 0 ? ( /* Changed from report_count */
+                {user.pending_report_count > 0 ? (
                   <Badge variant="destructive" className="text-xs">
-                    {user.pending_report_count} {/* Changed from report_count */}
+                    {user.pending_report_count}
                   </Badge>
                 ) : (
                   <span className="text-muted-foreground">0</span>
                 )}
               </TableCell>
               <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                {new Date(user.last_active).toLocaleDateString()}
+                {user.last_active ? new Date(user.last_active).toLocaleDateString() : 'N/A'}
               </TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
@@ -124,14 +124,6 @@ const UserTableContent: React.FC<UserTableContentProps> = ({
                       Send Message
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                     {/* Warn action added here */}
-                    <DropdownMenuItem
-                      className="text-orange-600 focus:text-orange-700 focus:bg-orange-100 dark:text-orange-400 dark:focus:text-orange-300 dark:focus:bg-orange-500/30"
-                      onClick={() => onOpenActionDialog('warn', user)}
-                    >
-                      <AlertTriangle className="mr-2 h-4 w-4" />
-                      Warn User
-                    </DropdownMenuItem>
                     {user.status === 'active' && (
                       <>
                         <DropdownMenuItem

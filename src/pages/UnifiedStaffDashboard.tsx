@@ -49,8 +49,11 @@ import ReportDetails from '@/components/staff/moderator-dashboard/ReportDetails'
 // Import database hooks
 import { useContentReports, ContentReport } from '@/hooks/moderation/useContentReports';
 import { useModerationStats } from '@/hooks/moderation/useModerationStats';
-import { useUserManagement, User } from '@/hooks/admin/useUserManagement';
+import { useUserManagement, UserManagementUser } from '@/hooks/admin/useUserManagement';
 import { useStaffActivityLogger } from '@/hooks/useStaffActivityLogger';
+
+// Type alias for convenience
+type User = UserManagementUser;
 
 const UnifiedStaffDashboard = () => {
   const { toast } = useToast();
@@ -378,11 +381,10 @@ const UnifiedStaffDashboard = () => {
     }
   };
   
-  const filteredUsers = useCallback(() => {
+  const filteredUsers = useCallback((): User[] => {
     if (!allUsers || usersLoading) return [];
-    return searchUsersHook(allUsers, userSearchTerm, userFilterStatus, userFilterRole);
+    return searchUsersHook(allUsers as UserManagementUser[], userSearchTerm, userFilterStatus, userFilterRole);
   }, [allUsers, userSearchTerm, userFilterStatus, userFilterRole, searchUsersHook, usersLoading]);
-
 
   if (authLoading) {
     return (
@@ -653,19 +655,19 @@ const UnifiedStaffDashboard = () => {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                       <div>
                           <p className="text-sm text-muted-foreground">Total Users</p>
-                          <p className="text-2xl font-bold">{usersLoading ? '...' : allUsers.length}</p>
+                          <p className="text-2xl font-bold">{usersLoading ? '...' : (allUsers as UserManagementUser[]).length}</p>
                       </div>
                       <div>
                           <p className="text-sm text-muted-foreground">Active</p>
-                          <p className="text-2xl font-bold text-green-600">{usersLoading ? '...' : allUsers.filter(u=>u.status === 'active').length}</p>
+                          <p className="text-2xl font-bold text-green-600">{usersLoading ? '...' : (allUsers as UserManagementUser[]).filter(u=>u.status === 'active').length}</p>
                       </div>
                       <div>
                           <p className="text-sm text-muted-foreground">Suspended</p>
-                          <p className="text-2xl font-bold text-yellow-600">{usersLoading ? '...' : allUsers.filter(u=>u.status === 'suspended').length}</p>
+                          <p className="text-2xl font-bold text-yellow-600">{usersLoading ? '...' : (allUsers as UserManagementUser[]).filter(u=>u.status === 'suspended').length}</p>
                       </div>
                       <div>
                           <p className="text-sm text-muted-foreground">Banned</p>
-                          <p className="text-2xl font-bold text-red-600">{usersLoading ? '...' : allUsers.filter(u=>u.status === 'banned').length}</p>
+                          <p className="text-2xl font-bold text-red-600">{usersLoading ? '...' : (allUsers as UserManagementUser[]).filter(u=>u.status === 'banned').length}</p>
                       </div>
                   </div>
                   <Separator />
@@ -864,3 +866,5 @@ const UnifiedStaffDashboard = () => {
 };
 
 export default UnifiedStaffDashboard;
+
+</edits_to_apply>
