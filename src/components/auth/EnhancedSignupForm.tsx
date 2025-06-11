@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -11,91 +11,22 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-
-interface FormData {
-  email: string;
-  username: string;
-  password: string;
-  confirmPassword: string;
-  firstName: string;
-  lastName: string;
-  acceptTerms: boolean;
-  acceptMarketing: boolean;
-}
-
-interface ValidationErrors {
-  email?: string;
-  username?: string;
-  password?: string;
-  confirmPassword?: string;
-  firstName?: string;
-  lastName?: string;
-  acceptTerms?: string;
-  apiError?: string;
-}
-
-interface EnhancedSignupFormProps {
-  onSwitchToSignIn: () => void;
-}
-
-// Extract password strength calculation to avoid circular dependencies
-const calculatePasswordStrength = (password: string) => {
-  let strength = 0;
-  const checks = {
-    length: password.length >= 8,
-    lowercase: /[a-z]/.test(password),
-    uppercase: /[A-Z]/.test(password),
-    numbers: /\d/.test(password),
-    special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
-  };
-  strength = Object.values(checks).filter(Boolean).length;
-  return { strength, checks };
-};
-
-// Extract validation functions to avoid circular dependencies
-const validateEmail = (email: string): string => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!email) return 'Email is required';
-  if (!emailRegex.test(email)) return 'Please enter a valid email address';
-  return '';
-};
-
-const validateUsername = (username: string): string => {
-  if (!username) return 'Username is required';
-  if (username.length < 3) return 'Username must be at least 3 characters';
-  if (username.length > 20) return 'Username must be less than 20 characters';
-  if (!/^[a-zA-Z0-9_]+$/.test(username)) return 'Username can only contain letters, numbers, and underscores';
-  return '';
-};
-
-const validatePassword = (password: string, passwordStrength: number): string => {
-  if (!password) return 'Password is required';
-  if (password.length < 8) return 'Password must be at least 8 characters';
-  if (passwordStrength < 3 && password.length > 0) return 'Password is too weak. Include uppercase, lowercase, numbers, and special characters.';
-  return '';
-};
-
-const getPasswordStrengthColor = (strength: number): string => {
-  if (strength <= 1) return 'bg-red-500';
-  if (strength <= 2) return 'bg-yellow-500';
-  if (strength <= 3) return 'bg-blue-500';
-  return 'bg-green-500';
-};
-
-const getPasswordStrengthText = (strength: number): string => {
-  if (strength <= 1) return 'Very Weak';
-  if (strength <= 2) return 'Weak';
-  if (strength <= 3) return 'Fair';
-  if (strength <= 4) return 'Good';
-  return 'Strong';
-};
+import { FormData, ValidationErrors, EnhancedSignupFormProps } from './EnhancedSignupForm/types';
+import { 
+  calculatePasswordStrength, 
+  validateEmail, 
+  validateUsername, 
+  validatePassword,
+  getPasswordStrengthColor,
+  getPasswordStrengthText 
+} from './EnhancedSignupForm/validation';
+import { useUsernameCheck } from './EnhancedSignupForm/useUsernameCheck';
 
 const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignIn }) => {
   console.log("EnhancedSignupForm component rendering");
   
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState<FormData>({
@@ -109,13 +40,16 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
     acceptMarketing: false,
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
-  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
 
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Use ref to track the latest username check request
-  const usernameCheckRef = useRef<string>('');
+  const {
+    usernameAvailable,
+    isCheckingUsername,
+    checkUsernameAvailability,
+    resetUsernameCheck
+  } = useUsernameCheck();
 
   const totalSteps = 3;
   const progress = (currentStep / totalSteps) * 100;
@@ -123,7 +57,7 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
   // Calculate password strength
   const { strength: passwordStrength, checks: passwordChecks } = calculatePasswordStrength(formData.password);
 
-  // Simple validation function without useCallback to avoid circular dependencies
+  // Simple validation function
   const validateStep = (step: number): boolean => {
     const newErrors: ValidationErrors = {};
 
@@ -181,57 +115,6 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
 
     return !Object.values(newErrors).some(error => error);
   };
-
-  const checkUsernameAvailability = useCallback(async (username: string) => {
-    const usernameValidationError = validateUsername(username);
-    if (usernameValidationError || !username) {
-      setUsernameAvailable(null);
-      return;
-    }
-
-    // Set this as the current request
-    usernameCheckRef.current = username;
-    setIsCheckingUsername(true);
-    setUsernameAvailable(null);
-    
-    try {
-      // Use case-insensitive comparison with lower() function
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('lower(username)', username.toLowerCase())
-        .single();
-
-      // Only process if this is still the latest request
-      if (usernameCheckRef.current === username) {
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error checking username:', error);
-          setUsernameAvailable(null);
-        } else {
-          const isAvailable = !data;
-          setUsernameAvailable(isAvailable);
-          
-          if (!isAvailable) {
-            setErrors(prev => ({ ...prev, username: 'Username is not available' }));
-          } else {
-            setErrors(prev => {
-              const { username: _, ...rest } = prev;
-              return rest;
-            });
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Exception checking username:', error);
-      if (usernameCheckRef.current === username) {
-        setUsernameAvailable(null);
-      }
-    } finally {
-      if (usernameCheckRef.current === username) {
-        setIsCheckingUsername(false);
-      }
-    }
-  }, []);
   
   // Debounced username checking effect
   useEffect(() => {
@@ -246,7 +129,7 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
     };
   }, [formData.username, currentStep, checkUsernameAvailability]);
 
-  const handleInputChange = useCallback((field: keyof FormData, value: string | boolean) => {
+  const handleInputChange = (field: keyof FormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
     // Clear specific field error and API error
@@ -257,9 +140,9 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
 
     // Reset username availability when username changes
     if (field === 'username' && typeof value === 'string') {
-      setUsernameAvailable(null);
+      resetUsernameCheck();
     }
-  }, []);
+  };
 
   const handleNext = async () => {
     if (validateStep(currentStep)) {
