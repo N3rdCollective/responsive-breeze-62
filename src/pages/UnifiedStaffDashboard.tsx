@@ -330,7 +330,7 @@ const UnifiedStaffDashboard = () => {
         setActiveTab('shows');
         break;
       case 'manage-videos':
-        setActiveTab('videos');
+        window.location.href = '/staff/videos';
         break;
       case 'view-reports':
         setActiveTab('moderation');
@@ -599,16 +599,11 @@ const UnifiedStaffDashboard = () => {
 
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
             <div className="border-b dark:border-gray-700">
-              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 h-auto p-1 bg-muted dark:bg-gray-800 rounded-md">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 h-auto p-1 bg-muted dark:bg-gray-800 rounded-md">
                 <TabsTrigger value="content" className="flex items-center gap-2 py-2.5 sm:py-3 data-[state=active]:bg-background dark:data-[state=active]:bg-gray-950 data-[state=active]:shadow-sm">
                   <FileText className="h-4 w-4" />
                   <span className="hidden sm:inline">Content</span>
                    <span className="sm:hidden">Content</span>
-                </TabsTrigger>
-                <TabsTrigger value="videos" className="flex items-center gap-2 py-2.5 sm:py-3 data-[state=active]:bg-background dark:data-[state=active]:bg-gray-950 data-[state=active]:shadow-sm">
-                  <Video className="h-4 w-4" />
-                  <span className="hidden sm:inline">Videos</span>
-                  <span className="sm:hidden">Videos</span>
                 </TabsTrigger>
                 <TabsTrigger value="shows" className="flex items-center gap-2 py-2.5 sm:py-3 data-[state=active]:bg-background dark:data-[state=active]:bg-gray-950 data-[state=active]:shadow-sm">
                   <Radio className="h-4 w-4" />
@@ -653,25 +648,6 @@ const UnifiedStaffDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <ContentManagementCard userRole={userRole} />
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="videos" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Video className="h-5 w-5" />
-                    Featured Videos Management
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Manage YouTube videos displayed in the Hero section and Featured Music Videos gallery.
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <HomeSettingsProvider>
-                    <VideosTabContent />
-                  </HomeSettingsProvider>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -964,3 +940,5 @@ const UnifiedStaffDashboard = () => {
 };
 
 export default UnifiedStaffDashboard;
+
+</edits_to_apply>

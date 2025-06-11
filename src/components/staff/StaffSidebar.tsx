@@ -31,7 +31,7 @@ import { Button } from '@/components/ui/button';
 const mainNavigationItems = [
   { title: 'Dashboard', href: '/staff/panel', icon: LayoutDashboard },
   { title: 'Analytics', href: '/staff/analytics', icon: BarChart3 },
-  { title: 'Featured Videos', href: '/staff/panel?tab=videos', icon: Video },
+  { title: 'Featured Videos', href: '/staff/videos', icon: Video },
   { title: 'News', href: '/staff/news', icon: Newspaper },
   { title: 'Shows', href: '/staff/shows', icon: Radio },
   { title: 'Users', href: '/staff/users', icon: Users },
@@ -51,10 +51,6 @@ const StaffSidebar = () => {
 
   // Helper function to check if a navigation item is active
   const isItemActive = (href: string) => {
-    if (href === '/staff/panel?tab=videos') {
-      // Special case for videos tab - check both pathname and search params
-      return location.pathname === '/staff/panel' && location.search === '?tab=videos';
-    }
     return location.pathname === href;
   };
 
