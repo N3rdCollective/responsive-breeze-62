@@ -39,6 +39,8 @@ interface EnhancedSignupFormProps {
 }
 
 const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignIn }) => {
+  console.log("EnhancedSignupForm component rendering");
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
@@ -102,7 +104,7 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
 
   const validateStep = (step: number) => {
     const newErrors: ValidationErrors = {};
-    if (errors.apiError) newErrors.apiError = errors.apiError; // preserve API error
+    if (errors.apiError) newErrors.apiError = errors.apiError;
 
     if (step >= 1) {
       if (!formData.firstName) newErrors.firstName = 'First name is required';
@@ -116,7 +118,6 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
       if (usernameError) newErrors.username = usernameError;
       else if (usernameAvailable === false) newErrors.username = 'Username is not available';
 
-
       const passwordError = validatePassword(formData.password);
       if (passwordError) newErrors.password = passwordError;
       
@@ -128,7 +129,6 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
     }
     
     const stepErrors = { ...errors, ...newErrors };
-    // Filter out errors from future steps
     const relevantErrors: ValidationErrors = {};
     if (step === 1) {
         relevantErrors.firstName = stepErrors.firstName;
@@ -142,7 +142,6 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
         relevantErrors.acceptTerms = stepErrors.acceptTerms;
     }
     if (stepErrors.apiError) relevantErrors.apiError = stepErrors.apiError;
-
 
     setErrors(relevantErrors);
     return !Object.values(relevantErrors).some(error => error);
@@ -169,16 +168,15 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
         .eq('username', username)
         .single();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116: "single row not found" is OK
+      if (error && error.code !== 'PGRST116') {
         console.error('Error checking username:', error);
-        setUsernameAvailable(null); // Indeterminate
+        setUsernameAvailable(null);
       } else {
-        setUsernameAvailable(!data); // Available if no data found
+        setUsernameAvailable(!data);
         if (data) {
           setErrors(prev => ({ ...prev, username: 'Username is not available' }));
         } else {
-           // Clear only username error if it was 'Username is not available'
-          if(errors.username === 'Username is not available') {
+           if(errors.username === 'Username is not available') {
             setErrors(prev => ({ ...prev, username: undefined }));
           }
         }
@@ -191,32 +189,29 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
     }
   };
   
-  // Debounce username check
   useEffect(() => {
     const handler = setTimeout(() => {
-      if (formData.username && currentStep === 2) { // Only check if on step 2 and username has value
+      if (formData.username && currentStep === 2) {
         checkUsernameAvailability(formData.username);
       }
-    }, 500); // 500ms debounce
+    }, 500);
 
     return () => {
       clearTimeout(handler);
     };
   }, [formData.username, currentStep]);
 
-
   const handleInputChange = (field: keyof FormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setErrors(prev => ({ ...prev, [field as keyof ValidationErrors]: undefined, apiError: undefined }));
 
     if (field === 'username' && typeof value === 'string') {
-      setUsernameAvailable(null); // Reset on change, useEffect will trigger check
+      setUsernameAvailable(null);
     }
   };
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
-       // If step 2 and username is being checked or not available, don't proceed
       if (currentStep === 2) {
         if (isCheckingUsername) {
             toast({ title: "Checking username...", variant: "default" });
@@ -226,15 +221,13 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
             setErrors(prev => ({...prev, username: "Username is not available"}));
             return;
         }
-         // Re-validate username specifically if it was previously null (e.g. user typed fast)
         if (usernameAvailable === null && formData.username) {
           checkUsernameAvailability(formData.username).then(() => {
-            // After check completes, re-validate and then potentially move
-            if (validateStep(currentStep) && usernameAvailable) { // Check usernameAvailable state AFTER check
+            if (validateStep(currentStep) && usernameAvailable) {
               setCurrentStep(prev => Math.min(prev + 1, totalSteps));
             }
           });
-          return; // Don't proceed immediately
+          return;
         }
       }
       setCurrentStep(prev => Math.min(prev + 1, totalSteps));
@@ -255,10 +248,9 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
     }
     if (usernameAvailable === false) {
         setErrors(prev => ({ ...prev, username: "Username is not available. Please choose another."}));
-        setCurrentStep(2); // Go back to username step
+        setCurrentStep(2);
         return;
     }
-
 
     setIsLoading(true);
     try {
@@ -271,8 +263,7 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
             last_name: formData.lastName,
             username: formData.username,
             display_name: `${formData.firstName} ${formData.lastName}`,
-            user_role: "user", // Default role
-            // marketing_preference: formData.acceptMarketing (if you add this to profiles table)
+            user_role: "user",
           }
         }
       });
@@ -284,9 +275,8 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
           title: "Account created successfully!",
           description: "Please check your email for verification instructions.",
         });
-        navigate("/"); // Or to a welcome page, or /profile
+        navigate("/");
       } else {
-        // Handle cases where user might be null but no error (e.g. email confirmation required)
          toast({
           title: "Registration submitted",
           description: "Please check your email for verification instructions to complete your signup.",
@@ -309,7 +299,7 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
   };
 
   const getPasswordStrengthColor = (strength: number) => {
-    if (strength <= 1) return 'bg-red-500'; // Adjusted thresholds
+    if (strength <= 1) return 'bg-red-500';
     if (strength <= 2) return 'bg-yellow-500';
     if (strength <= 3) return 'bg-blue-500';
     return 'bg-green-500';
@@ -323,8 +313,10 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
     return 'Strong';
   };
 
+  console.log("EnhancedSignupForm rendering with currentStep:", currentStep);
+
   return (
-    <Card className="w-full"> {/* Removed max-w-md to fit Auth.tsx styling */}
+    <>
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold">Create Your Account</CardTitle>
         <CardDescription className="text-muted-foreground">Step {currentStep} of {totalSteps}</CardDescription>
@@ -338,6 +330,7 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
                 <AlertDescription>{errors.apiError}</AlertDescription>
             </Alert>
         )}
+        
         {/* Step 1: Personal Information */}
         {currentStep === 1 && (
           <div className="space-y-4">
@@ -375,7 +368,7 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
             </div>
 
             <div>
-              <Label htmlFor="email-enhanced">Email Address</Label> {/* Changed id to avoid conflict with main Auth page */}
+              <Label htmlFor="email-enhanced">Email Address</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -402,7 +395,7 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
             </div>
 
             <div>
-              <Label htmlFor="username-enhanced">Username</Label> {/* Changed id */}
+              <Label htmlFor="username-enhanced">Username</Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -427,7 +420,7 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
             </div>
 
             <div>
-              <Label htmlFor="password-enhanced">Password</Label> {/* Changed id */}
+              <Label htmlFor="password-enhanced">Password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -483,7 +476,7 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
             </div>
 
             <div>
-              <Label htmlFor="confirmPassword-enhanced">Confirm Password</Label> {/* Changed id */}
+              <Label htmlFor="confirmPassword-enhanced">Confirm Password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -560,14 +553,14 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
           </div>
         )}
       </CardContent>
+      
       <CardFooter className="flex flex-col space-y-4">
-        {/* Navigation Buttons */}
         <div className="flex w-full justify-between">
           {currentStep > 1 ? (
             <Button variant="outline" onClick={handleBack} disabled={isLoading}>
               Back
             </Button>
-          ) : <div />} {/* Placeholder to keep Next/Submit button to the right */}
+          ) : <div />}
           
           <div>
             {currentStep < totalSteps ? (
@@ -594,7 +587,6 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
           </div>
         </div>
 
-        {/* Sign In Link */}
         <div className="text-center pt-4 border-t w-full">
           <p className="text-sm text-muted-foreground">
             Already have an account?{' '}
@@ -604,7 +596,7 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
           </p>
         </div>
       </CardFooter>
-    </Card>
+    </>
   );
 };
 

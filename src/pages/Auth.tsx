@@ -9,16 +9,18 @@ import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import EnhancedSignupForm from "@/components/auth/EnhancedSignupForm"; // Import the new form
+import EnhancedSignupForm from "@/components/auth/EnhancedSignupForm";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false); // Default to Sign In view
+  const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  console.log("Auth component render - isSignUp:", isSignUp);
 
   const handleSignInSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,13 +56,15 @@ const Auth = () => {
   };
 
   const switchToSignUp = () => {
+    console.log("Switching to sign up mode");
     setIsSignUp(true);
-    setError(""); // Clear errors when switching mode
+    setError("");
   };
 
   const switchToSignIn = () => {
+    console.log("Switching to sign in mode");
     setIsSignUp(false);
-    setError(""); // Clear errors when switching mode
+    setError("");
   };
 
   return (
@@ -133,8 +137,6 @@ const Auth = () => {
             </form>
           </>
         ) : (
-          // Render EnhancedSignupForm when isSignUp is true
-          // It has its own CardHeader, CardContent, CardFooter
           <EnhancedSignupForm onSwitchToSignIn={switchToSignIn} />
         )}
       </Card>
