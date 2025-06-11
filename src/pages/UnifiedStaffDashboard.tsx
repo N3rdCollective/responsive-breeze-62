@@ -29,7 +29,6 @@ import {
   Plus,
   RefreshCw,
   Search,
-  Video,
 } from "lucide-react";
 
 // Import existing components
@@ -46,10 +45,6 @@ import SendMessageDialog from '@/components/staff/users/SendMessageDialog';
 // Import moderation components
 import ReportedContentSection from '@/components/staff/moderator-dashboard/ReportedContentSection';
 import ReportDetails from '@/components/staff/moderator-dashboard/ReportDetails';
-
-// Import video management components
-import { HomeSettingsProvider } from "@/components/staff/home/context/HomeSettingsContext";
-import VideosTabContent from "@/components/staff/home/components/VideosTabContent";
 
 // Import database hooks
 import { useContentReports, ContentReport } from '@/hooks/moderation/useContentReports';
@@ -506,7 +501,7 @@ const UnifiedStaffDashboard = () => {
               <span className="text-sm text-center">Manage Shows</span>
             </Button>
             <Button variant="outline" onClick={() => handleQuickAction('manage-videos')} className="h-20 flex-col gap-2">
-              <Video className="h-6 w-6" />
+              <FileText className="h-6 w-6" />
               <span className="text-sm text-center">Featured Videos</span>
             </Button>
              <Button variant="outline" onClick={() => handleQuickAction('manage-users')} className="h-20 flex-col gap-2">
@@ -599,7 +594,7 @@ const UnifiedStaffDashboard = () => {
 
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
             <div className="border-b dark:border-gray-700">
-              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 h-auto p-1 bg-muted dark:bg-gray-800 rounded-md">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 h-auto p-1 bg-muted dark:bg-gray-800 rounded-md">
                 <TabsTrigger value="content" className="flex items-center gap-2 py-2.5 sm:py-3 data-[state=active]:bg-background dark:data-[state=active]:bg-gray-950 data-[state=active]:shadow-sm">
                   <FileText className="h-4 w-4" />
                   <span className="hidden sm:inline">Content</span>
@@ -940,5 +935,3 @@ const UnifiedStaffDashboard = () => {
 };
 
 export default UnifiedStaffDashboard;
-
-</edits_to_apply>
