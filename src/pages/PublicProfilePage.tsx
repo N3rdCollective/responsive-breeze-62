@@ -10,34 +10,64 @@ import { Button } from '@/components/ui/button';
 import { Loader2, UserCircle, AlertTriangle, EyeOff, ChevronLeft } from 'lucide-react';
 import { fetchPublicUserProfileByUsername, PublicUserProfileData } from '@/services/profileService';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
 
 const PublicProfilePage: React.FC = () => {
-  const { username } = useParams<{ username: string }>();
+  const { username, userId } = useParams<{ username?: string; userId?: string }>();
   const [profile, setProfile] = useState<PublicUserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (username) {
-      const loadProfile = async () => {
-        setLoading(true);
-        setError(null);
-        try {
+    const loadProfile = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        if (username) {
+          // Load by username (new route format /u/:username)
           const data = await fetchPublicUserProfileByUsername(username);
           setProfile(data);
-        } catch (err) {
-          console.error("Error fetching public profile:", err);
-          setError("Failed to load profile. Please try again later.");
-        } finally {
-          setLoading(false);
+        } else if (userId) {
+          // Load by userId (legacy route format /profile/:userId) 
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('id, username, display_name, bio, role, created_at, is_public, profile_picture')
+            .eq('id', userId)
+            .single();
+          
+          if (error) throw error;
+          
+          if (data) {
+            setProfile({
+              id: data.id,
+              username: data.username,
+              display_name: data.display_name,
+              bio: data.bio,
+              role: data.role,
+              created_at: data.created_at,
+              is_public: data.is_public,
+              avatar_url: data.profile_picture
+            });
+          }
+        } else {
+          throw new Error('No username or user ID provided');
         }
-      };
+      } catch (err) {
+        console.error("Error fetching public profile:", err);
+        setError("Failed to load profile. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (username || userId) {
       loadProfile();
     } else {
-      setError("No username provided.");
+      setError("No username or user ID provided.");
       setLoading(false);
     }
-  }, [username]);
+  }, [username, userId]);
 
   const getInitials = (name?: string | null) => {
     if (!name) return '';
@@ -85,7 +115,7 @@ const PublicProfilePage: React.FC = () => {
         <div className="flex flex-col items-center justify-center min-h-screen pt-20 pb-10 text-center">
           <UserCircle className="h-12 w-12 text-muted-foreground mb-4" />
           <h2 className="text-2xl font-semibold mb-2">Profile Not Found</h2>
-          <p className="text-muted-foreground">The user profile for @{username} could not be found.</p>
+          <p className="text-muted-foreground">The user profile for @{username || userId} could not be found.</p>
           <Button asChild variant="link" className="mt-4">
             <Link to="/">Go back to Home</Link>
           </Button>
@@ -122,13 +152,12 @@ const PublicProfilePage: React.FC = () => {
     }
   }
 
-
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       <div className="container mx-auto px-4 py-10 pt-20">
         <Button variant="ghost" asChild className="mb-6">
-          <Link to="/members"> {/* Or previous page if possible */}
+          <Link to="/members">
             <ChevronLeft className="mr-2 h-4 w-4" />
             Back
           </Link>
@@ -156,7 +185,6 @@ const PublicProfilePage: React.FC = () => {
                 <div>
                   <span className="font-semibold">Joined:</span> {joinDateFormatted}
                 </div>
-                {/* Add more fields like post count here later if available */}
               </CardContent>
             </Card>
           </div>
@@ -172,10 +200,8 @@ const PublicProfilePage: React.FC = () => {
                 ) : (
                   <p className="text-muted-foreground italic">This user hasn't shared a bio yet.</p>
                 )}
-                {/* Placeholder for user activity/posts feed later */}
               </CardContent>
             </Card>
-            {/* Could add other cards here for e.g. recent activity, favorite genres if public etc. */}
           </div>
         </div>
       </div>

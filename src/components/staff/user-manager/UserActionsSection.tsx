@@ -42,7 +42,7 @@ const UserActionsSection: React.FC<UserActionsSectionProps> = ({ user, onUserUpd
 
   const handleViewProfile = () => {
     if (user.username) {
-      window.open(`/profile/${user.id}`, '_blank');
+      window.open(`/u/${user.username}`, '_blank');
     } else {
       toast({
         title: "Unable to view profile",

@@ -1,4 +1,3 @@
-
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -126,6 +125,7 @@ function App() {
                               <Route path="/auth" element={<Auth />} />
                               <Route path="/profile" element={<ProfilePage />} />
                               <Route path="/profile/:userId" element={<PublicProfilePage />} />
+                              <Route path="/u/:username" element={<PublicProfilePage />} />
                               <Route path="/messages" element={<UnifiedMessagesPage />} />
                               <Route path="/members" element={<MembersPage />} />
                               <Route path="/members/forum/:categorySlug" element={<ForumCategoryPage />} />
