@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useSearchParams, useLocation } from "react-router-dom";
@@ -317,31 +316,6 @@ const UnifiedStaffDashboard = () => {
     setIsManageStaffOpen(true);
   };
 
-  const handleQuickAction = (action: string) => {
-    switch (action) {
-      case 'new-post':
-        window.location.href = '/staff/news/editor'; 
-        break;
-      case 'manage-shows':
-        setActiveTab('shows');
-        break;
-      case 'manage-videos':
-        window.location.href = '/staff/videos';
-        break;
-      case 'view-reports':
-        setActiveTab('moderation');
-        break;
-      case 'manage-staff':
-        handleManageUsers();
-        break;
-      case 'manage-users': 
-        setActiveTab('users');
-        break;
-      default:
-        break;
-    }
-  };
-  
   const selectedReportData = selectedFlagId ? reports.find(r => r.id === selectedFlagId) : null;
 
   const openUserActionDialog = (action: 'suspend' | 'ban' | 'unban', user: User) => {
@@ -418,8 +392,8 @@ const UnifiedStaffDashboard = () => {
     );
   }
 
-  // Stats Overview and Quick Actions combined
-  const StatsAndQuickActions = () => (
+  // Stats Overview only (removed Quick Actions)
+  const StatsOverview = () => (
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -482,52 +456,6 @@ const UnifiedStaffDashboard = () => {
           </CardContent>
         </Card>
       </div>
-
-      {/* Quick Actions Bar */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plus className="h-5 w-5" />
-            Quick Actions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-            <Button variant="outline" onClick={() => handleQuickAction('new-post')} className="h-20 flex-col gap-2">
-              <FileText className="h-6 w-6" />
-              <span className="text-sm text-center">New Post</span>
-            </Button>
-            <Button variant="outline" onClick={() => handleQuickAction('manage-shows')} className="h-20 flex-col gap-2">
-              <Radio className="h-6 w-6" />
-              <span className="text-sm text-center">Manage Shows</span>
-            </Button>
-            <Button variant="outline" onClick={() => handleQuickAction('manage-videos')} className="h-20 flex-col gap-2">
-              <FileText className="h-6 w-6" />
-              <span className="text-sm text-center">Featured Videos</span>
-            </Button>
-             <Button variant="outline" onClick={() => handleQuickAction('manage-users')} className="h-20 flex-col gap-2">
-              <Users className="h-6 w-6" /> 
-              <span className="text-sm text-center">Manage Users</span>
-            </Button>
-            <Button 
-              variant={!statsLoading && dashboardStats.pendingReports > 0 ? "destructive" : "outline"} 
-              onClick={() => handleQuickAction('view-reports')} 
-              className="h-20 flex-col gap-2"
-            >
-              <Flag className="h-6 w-6" />
-              <span className="text-sm text-center">
-                {!statsLoading && dashboardStats.pendingReports > 0 ? `${dashboardStats.pendingReports} Reports` : 'View Reports'}
-              </span>
-            </Button>
-            {isAdmin && (
-              <Button variant="outline" onClick={() => handleQuickAction('manage-staff')} className="h-20 flex-col gap-2">
-                <Settings className="h-6 w-6" /> 
-                <span className="text-sm text-center">Manage Staff</span>
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 
@@ -591,7 +519,7 @@ const UnifiedStaffDashboard = () => {
             </div>
           </div>
 
-          <StatsAndQuickActions />
+          <StatsOverview />
 
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
             <div className="border-b dark:border-gray-700">
@@ -936,3 +864,5 @@ const UnifiedStaffDashboard = () => {
 };
 
 export default UnifiedStaffDashboard;
+
+</edits_to_apply>

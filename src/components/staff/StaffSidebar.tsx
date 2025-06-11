@@ -31,8 +31,8 @@ import { Button } from '@/components/ui/button';
 const mainNavigationItems = [
   { title: 'Dashboard', href: '/staff/panel', icon: LayoutDashboard },
   { title: 'Analytics', href: '/staff/analytics', icon: BarChart3 },
-  { title: 'Featured Videos', href: '/staff/videos', icon: Video },
   { title: 'News', href: '/staff/news', icon: Newspaper },
+  { title: 'Featured Videos', href: '/staff/videos', icon: Video },
   { title: 'Shows', href: '/staff/shows', icon: Radio },
   { title: 'Users', href: '/staff/users', icon: Users },
   { title: 'Forum', href: '/staff/forum', icon: MessageSquare },
