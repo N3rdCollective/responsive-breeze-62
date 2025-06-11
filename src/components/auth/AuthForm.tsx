@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -5,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import AuthErrorAlert from "@/components/auth/AuthErrorAlert";
 import AuthFormFields from "@/components/auth/AuthFormFields";
 import AuthFormActions from "@/components/auth/AuthFormActions";
+import EnhancedSignupForm from "@/components/auth/EnhancedSignupForm";
 
 interface AuthFormProps {
   onSuccess?: () => void;
@@ -25,64 +27,24 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, isSignUp, setIsSignUp })
     setError("");
     setIsLoading(true);
     
-    console.log(`AuthForm: Attempting to ${isSignUp ? 'sign up' : 'sign in'} user with email: ${email}`);
+    console.log(`AuthForm: Attempting to sign in user with email: ${email}`);
 
     try {
-      if (isSignUp) {
-        const defaultUsername = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').substring(0, 20);
-        const defaultDisplayName = email.split('@')[0];
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-        const { data, error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              username: defaultUsername,
-              display_name: defaultDisplayName,
-              first_name: null, 
-              last_name: null,
-              user_role: "user"
-            }
-          }
+      if (signInError) throw signInError;
+
+      if (data?.user) {
+        console.log("Sign in successful:", data.user);
+        toast({
+          title: "Welcome back!",
+          description: "You have been successfully logged in.",
         });
-
-        if (signUpError) throw signUpError;
-        
-        console.log("AuthForm: Sign up response:", data);
-
-        if (data?.user) {
-          toast({
-            title: "Account created successfully",
-            description: "Please check your email for verification. You're now logged in.",
-          });
-          if (onSuccess) onSuccess();
-          navigate("/profile"); 
-        } else {
-          toast({
-            title: "Registration submitted",
-            description: "Please check your email for verification instructions to complete your signup.",
-            duration: 7000,
-          });
-          if (onSuccess) onSuccess();
-          navigate("/");
-        }
-      } else {
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (signInError) throw signInError;
-
-        if (data?.user) {
-          console.log("Sign in successful:", data.user);
-          toast({
-            title: "Welcome back!",
-            description: "You have been successfully logged in.",
-          });
-          if (onSuccess) onSuccess();
-          navigate("/profile");
-        }
+        if (onSuccess) onSuccess();
+        navigate("/profile");
       }
     } catch (authError: any) {
       console.error("AuthForm: Auth error:", authError);
@@ -97,6 +59,18 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, isSignUp, setIsSignUp })
     }
   };
 
+  const switchToSignIn = () => {
+    setIsSignUp(false);
+  };
+
+  if (isSignUp) {
+    return (
+      <div className="space-y-1">
+        <EnhancedSignupForm onSwitchToSignIn={switchToSignIn} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-1">
       <form onSubmit={handleSubmit} className="pt-4">
@@ -107,14 +81,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, isSignUp, setIsSignUp })
             setEmail={setEmail}
             password={password}
             setPassword={setPassword}
-            isSignUp={isSignUp}
+            isSignUp={false}
             isLoading={isLoading}
           />
         </div>
         <div className="flex flex-col space-y-4 mt-6">
           <AuthFormActions
             isLoading={isLoading}
-            isSignUp={isSignUp}
+            isSignUp={false}
             setIsSignUp={setIsSignUp}
           />
         </div>
