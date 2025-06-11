@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Table,
   TableBody,
@@ -18,7 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, MessageSquare, Mail, UserX, Ban, UserCheck, Users } from "lucide-react";
+import { MoreHorizontal, Eye, MessageSquare, Mail, UserX, Ban, UserCheck, Users, edit } from "lucide-react";
 import type { UserManagementUser } from "@/hooks/admin/useUserManagement";
 
 type User = UserManagementUser;
@@ -42,6 +43,8 @@ const OptimizedUserTableContent: React.FC<OptimizedUserTableContentProps> = ({
   onOpenMessageDialog,
   isUserActionInProgress,
 }) => {
+  const navigate = useNavigate();
+
   if (users.length === 0) {
     return (
       <div className="h-24 text-center flex flex-col items-center justify-center text-muted-foreground">
@@ -121,6 +124,10 @@ const OptimizedUserTableContent: React.FC<OptimizedUserTableContentProps> = ({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={() => navigate(`/staff/users/edit/${user.id}`)}>
+                      <edit className="mr-2 h-4 w-4" />
+                      Edit User
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => alert(`View profile for ${user.username}`)}>
                       <Eye className="mr-2 h-4 w-4" />
                       View Profile

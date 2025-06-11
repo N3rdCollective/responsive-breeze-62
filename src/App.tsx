@@ -52,6 +52,7 @@ const StaffPersonalities = lazy(() => import("./pages/StaffPersonalities"));
 const StaffFeaturedArtists = lazy(() => import("./pages/StaffFeaturedArtists"));
 const StaffShowsManager = lazy(() => import("./pages/StaffShowsManager"));
 const StaffUserManager = lazy(() => import("./pages/StaffUserManager"));
+const StaffUserEditor = lazy(() => import("./pages/StaffUserEditor"));
 const StaffForumManagementPage = lazy(() => import("./pages/StaffForumManagementPage"));
 const StaffModeratorDashboard = lazy(() => import("./pages/StaffModeratorDashboard"));
 const StaffActivityLogs = lazy(() => import("./pages/StaffActivityLogs"));
@@ -91,6 +92,7 @@ function App() {
                             <Route path="featured-artists" element={<StaffFeaturedArtists />} />
                             <Route path="shows" element={<StaffShowsManager />} />
                             <Route path="users" element={<StaffUserManager />} />
+                            <Route path="users/edit/:userId" element={<StaffUserEditor />} />
                             <Route path="forum" element={<StaffForumManagementPage />} />
                             <Route path="moderation" element={<StaffModeratorDashboard />} />
                             <Route path="activity" element={<StaffActivityLogs />} />
