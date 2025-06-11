@@ -104,7 +104,7 @@ const StaffSidebar = () => {
                   className="w-full hover:bg-muted"
                 >
                   <button 
-                    onClick={() => window.open('/', '_blank')}
+                    onClick={() => navigate('/')}
                     className="flex items-center gap-3 px-3 py-2 rounded-md transition-colors w-full text-left"
                   >
                     <ArrowLeft className="h-4 w-4 flex-shrink-0" />
