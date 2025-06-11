@@ -1,50 +1,53 @@
+
 import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useStaffPermissions } from '@/hooks/staff/useStaffPermissions';
+import { useStaffActivityLogger } from '@/hooks/useStaffActivityLogger';
 
 export interface UserManagementUser {
   id: string;
   email: string;
-  username: string;
-  display_name: string;
+  username: string | null;
+  display_name: string | null;
   status: 'active' | 'suspended' | 'banned';
   role: 'user' | 'moderator' | 'admin';
   created_at: string;
-  last_active: string | null;
-  profile_picture: string | null;
-  forum_post_count: number;
-  timeline_post_count: number;
-  pending_report_count: number;
+  last_seen?: string;
+  profile_picture?: string | null;
 }
 
-// Export User as an alias for backward compatibility
+// Export User as a separate type alias to avoid conflicts
 export type User = UserManagementUser;
+
+interface UserStatusUpdate {
+  userId: string;
+  status: User['status'];
+  reason: string;
+  actionType: 'suspend' | 'ban' | 'unban';
+}
+
+interface UserMessage {
+  userId: string;
+  subject: string;
+  content: string;
+}
 
 export const useUserManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { hasPermission, validateAction } = useStaffPermissions();
+  const { logActivity } = useStaffActivityLogger();
   
-  // Use React Query for optimized data fetching
+  // Use React Query for data fetching with proper cache management
   const {
     data: users = [],
     isLoading: loading,
     error,
     refetch: refetchUsers
-  } = useQuery({
+  } = useQuery<UserManagementUser[], Error>({
     queryKey: ['users'],
     queryFn: async (): Promise<UserManagementUser[]> => {
       console.log('[useUserManagement] Fetching users from database');
-      
-      // Check permission before fetching
-      if (!hasPermission('user.view')) {
-        const canView = await validateAction('view', 'user');
-        if (!canView) {
-          throw new Error('Insufficient permissions to view user data');
-        }
-      }
       
       const { data, error } = await supabase
         .from('profiles')
@@ -56,11 +59,8 @@ export const useUserManagement = () => {
           status,
           role,
           created_at,
-          last_active,
-          profile_picture,
-          forum_post_count,
-          timeline_post_count,
-          pending_report_count
+          last_seen,
+          profile_picture
         `)
         .order('created_at', { ascending: false });
 
@@ -73,13 +73,12 @@ export const useUserManagement = () => {
       return data as UserManagementUser[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (replaces cacheTime)
+    gcTime: 10 * 60 * 1000, // 10 minutes (replaces cacheTime in v5)
     retry: 2,
     retryDelay: 1000,
-    enabled: true, // Always enabled, permission check is inside queryFn
   });
 
-  // Memoized search function
+  // Memoized search function to prevent infinite loops
   const searchUsers = useCallback((
     userList: UserManagementUser[],
     searchTerm: string,
@@ -89,9 +88,13 @@ export const useUserManagement = () => {
     if (!userList || userList.length === 0) return [];
     
     return userList.filter(user => {
+      // Status filter
       const statusMatch = filterStatus === 'all' || user.status === filterStatus;
+      
+      // Role filter  
       const roleMatch = filterRole === 'all' || user.role === filterRole;
       
+      // Search term filter
       const searchLower = searchTerm.toLowerCase().trim();
       const searchMatch = !searchTerm || 
         user.email?.toLowerCase().includes(searchLower) ||
@@ -100,9 +103,9 @@ export const useUserManagement = () => {
       
       return statusMatch && roleMatch && searchMatch;
     });
-  }, []);
+  }, []); // Empty dependencies since this is a pure function
 
-  // Optimized user status update with permission validation
+  // Optimized user status update function
   const updateUserStatus = useCallback(async (
     userId: string,
     status: UserManagementUser['status'],
@@ -121,66 +124,48 @@ export const useUserManagement = () => {
     console.log(`[useUserManagement] Updating user ${userId} status to ${status}`);
     
     try {
-      // Server-side permission validation
-      const canPerform = await validateAction(actionType, 'user', userId);
-      if (!canPerform) {
-        toast({
-          title: "Permission Denied",
-          description: `You don't have permission to ${actionType} users.`,
-          variant: "destructive"
-        });
-        return false;
-      }
-
-      // Optimistic update
-      queryClient.setQueryData(['users'], (oldUsers: UserManagementUser[] | undefined) => {
-        if (!oldUsers) return oldUsers;
-        return oldUsers.map(user => 
-          user.id === userId 
-            ? { ...user, status }
-            : user
-        );
-      });
-
-      // Update user status in database
+      // First update the user status in the database
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ status })
+        .update({ 
+          status,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', userId);
 
       if (updateError) {
         console.error('[useUserManagement] Database update failed:', updateError);
-        // Rollback optimistic update
-        queryClient.setQueryData(['users'], (oldUsers: UserManagementUser[] | undefined) => {
-          if (!oldUsers) return oldUsers;
-          return oldUsers.map(user => 
-            user.id === userId 
-              ? { ...user, status: user.status === status ? 'active' : user.status }
-              : user
-          );
-        });
         throw new Error(`Failed to update user status: ${updateError.message}`);
       }
 
-      // Log the action in user_actions table
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      if (currentUser) {
-        const { error: actionError } = await supabase
-          .from('user_actions')
-          .insert({
-            user_id: userId,
-            action_type: actionType,
-            reason,
-            moderator_id: currentUser.id
-          });
-
-        if (actionError) {
-          console.warn('[useUserManagement] Failed to log action:', actionError);
+      // Log the activity
+      await logActivity(
+        actionType === 'suspend' ? 'suspend_user' : 
+        actionType === 'ban' ? 'ban_user' : 'unban_user',
+        `User status changed to ${status}. Reason: ${reason}`,
+        'user',
+        userId,
+        { 
+          previousStatus: users.find(u => u.id === userId)?.status,
+          newStatus: status,
+          reason,
+          actionType
         }
-      }
+      );
 
+      // Update the cache optimistically
+      queryClient.setQueryData(['users'], (oldUsers: UserManagementUser[] | undefined) => {
+        if (!oldUsers) return oldUsers;
+        return oldUsers.map(user => 
+          user.id === userId 
+            ? { ...user, status, updated_at: new Date().toISOString() }
+            : user
+        );
+      });
+
+      // Show success message
       const actionName = actionType === 'suspend' ? 'suspended' : 
-                         actionType === 'ban' ? 'banned' : 'restored';
+                         actionType === 'ban' ? 'banned' : 'unbanned';
       
       toast({
         title: "User Updated",
@@ -199,9 +184,9 @@ export const useUserManagement = () => {
       });
       return false;
     }
-  }, [queryClient, toast, validateAction]);
+  }, [users, logActivity, queryClient, toast]);
 
-  // Optimized send message function with permission validation
+  // Optimized send message function
   const sendUserMessage = useCallback(async (
     userId: string,
     subject: string,
@@ -219,32 +204,14 @@ export const useUserManagement = () => {
     console.log(`[useUserManagement] Sending message to user ${userId}`);
     
     try {
-      // Server-side permission validation
-      const canMessage = await validateAction('message', 'user', userId);
-      if (!canMessage) {
-        toast({
-          title: "Permission Denied",
-          description: "You don't have permission to send messages to users.",
-          variant: "destructive"
-        });
-        return false;
-      }
-
-      // Get current staff member
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      if (!currentUser) {
-        throw new Error('Not authenticated as staff member');
-      }
-
-      // Insert message into user_messages table (using correct field names)
+      // Insert message into user_messages table
       const { error: messageError } = await supabase
         .from('user_messages')
         .insert({
-          recipient_id: userId,
-          sender_id: currentUser.id,
+          user_id: userId,
           subject: subject.trim(),
-          message: content.trim(),
-          message_type: 'admin',
+          content: content.trim(),
+          sent_at: new Date().toISOString(),
           is_read: false
         });
 
@@ -252,6 +219,15 @@ export const useUserManagement = () => {
         console.error('[useUserManagement] Message send failed:', messageError);
         throw new Error(`Failed to send message: ${messageError.message}`);
       }
+
+      // Log the activity
+      await logActivity(
+        'send_user_message',
+        `Message sent to user: "${subject}"`,
+        'user',
+        userId,
+        { subject, contentLength: content.length }
+      );
 
       toast({
         title: "Message Sent",
@@ -270,7 +246,7 @@ export const useUserManagement = () => {
       });
       return false;
     }
-  }, [toast, validateAction]);
+  }, [logActivity, toast]);
 
   // Optimized refresh function
   const refreshUsers = useCallback(async () => {
@@ -295,7 +271,7 @@ export const useUserManagement = () => {
   }, [error]);
 
   return {
-    users: users as UserManagementUser[],
+    users,
     loading,
     error: errorMessage,
     updateUserStatus,
@@ -304,6 +280,3 @@ export const useUserManagement = () => {
     searchUsers,
   };
 };
-
-// Export type for external use
-export type { UserManagementUser };
