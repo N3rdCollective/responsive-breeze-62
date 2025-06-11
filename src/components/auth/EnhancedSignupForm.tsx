@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -38,6 +38,58 @@ interface EnhancedSignupFormProps {
   onSwitchToSignIn: () => void;
 }
 
+// Extract password strength calculation to avoid circular dependencies
+const calculatePasswordStrength = (password: string) => {
+  let strength = 0;
+  const checks = {
+    length: password.length >= 8,
+    lowercase: /[a-z]/.test(password),
+    uppercase: /[A-Z]/.test(password),
+    numbers: /\d/.test(password),
+    special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+  };
+  strength = Object.values(checks).filter(Boolean).length;
+  return { strength, checks };
+};
+
+// Extract validation functions to avoid circular dependencies
+const validateEmail = (email: string): string => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email) return 'Email is required';
+  if (!emailRegex.test(email)) return 'Please enter a valid email address';
+  return '';
+};
+
+const validateUsername = (username: string): string => {
+  if (!username) return 'Username is required';
+  if (username.length < 3) return 'Username must be at least 3 characters';
+  if (username.length > 20) return 'Username must be less than 20 characters';
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) return 'Username can only contain letters, numbers, and underscores';
+  return '';
+};
+
+const validatePassword = (password: string, passwordStrength: number): string => {
+  if (!password) return 'Password is required';
+  if (password.length < 8) return 'Password must be at least 8 characters';
+  if (passwordStrength < 3 && password.length > 0) return 'Password is too weak. Include uppercase, lowercase, numbers, and special characters.';
+  return '';
+};
+
+const getPasswordStrengthColor = (strength: number): string => {
+  if (strength <= 1) return 'bg-red-500';
+  if (strength <= 2) return 'bg-yellow-500';
+  if (strength <= 3) return 'bg-blue-500';
+  return 'bg-green-500';
+};
+
+const getPasswordStrengthText = (strength: number): string => {
+  if (strength <= 1) return 'Very Weak';
+  if (strength <= 2) return 'Weak';
+  if (strength <= 3) return 'Fair';
+  if (strength <= 4) return 'Good';
+  return 'Strong';
+};
+
 const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignIn }) => {
   console.log("EnhancedSignupForm component rendering");
   
@@ -61,53 +113,19 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
 
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  // Use ref to track the latest username check request
+  const usernameCheckRef = useRef<string>('');
 
   const totalSteps = 3;
   const progress = (currentStep / totalSteps) * 100;
 
-  // Extract username to avoid deep type instantiation
-  const currentUsername = formData.username;
-
-  const calculatePasswordStrength = (password: string) => {
-    let strength = 0;
-    const checks = {
-      length: password.length >= 8,
-      lowercase: /[a-z]/.test(password),
-      uppercase: /[A-Z]/.test(password),
-      numbers: /\d/.test(password),
-      special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
-    };
-    strength = Object.values(checks).filter(Boolean).length;
-    return { strength, checks };
-  };
-
+  // Calculate password strength
   const { strength: passwordStrength, checks: passwordChecks } = calculatePasswordStrength(formData.password);
 
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email) return 'Email is required';
-    if (!emailRegex.test(email)) return 'Please enter a valid email address';
-    return '';
-  };
-
-  const validateUsername = (username: string) => {
-    if (!username) return 'Username is required';
-    if (username.length < 3) return 'Username must be at least 3 characters';
-    if (username.length > 20) return 'Username must be less than 20 characters';
-    if (!/^[a-zA-Z0-9_]+$/.test(username)) return 'Username can only contain letters, numbers, and underscores';
-    return '';
-  };
-
-  const validatePassword = (password: string) => {
-    if (!password) return 'Password is required';
-    if (password.length < 8) return 'Password must be at least 8 characters';
-    if (passwordStrength < 3 && password.length > 0) return 'Password is too weak. Include uppercase, lowercase, numbers, and special characters.';
-    return '';
-  };
-
-  const validateStep = (step: number) => {
+  // Simple validation function without useCallback to avoid circular dependencies
+  const validateStep = (step: number): boolean => {
     const newErrors: ValidationErrors = {};
-    if (errors.apiError) newErrors.apiError = errors.apiError;
 
     if (step >= 1) {
       if (!formData.firstName) newErrors.firstName = 'First name is required';
@@ -118,52 +136,64 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
 
     if (step >= 2) {
       const usernameError = validateUsername(formData.username);
-      if (usernameError) newErrors.username = usernameError;
-      else if (usernameAvailable === false) newErrors.username = 'Username is not available';
+      if (usernameError) {
+        newErrors.username = usernameError;
+      } else if (usernameAvailable === false) {
+        newErrors.username = 'Username is not available';
+      }
 
-      const passwordError = validatePassword(formData.password);
+      const passwordError = validatePassword(formData.password, passwordStrength);
       if (passwordError) newErrors.password = passwordError;
       
-      if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Passwords do not match';
+      }
     }
 
     if (step >= 3) {
       if (!formData.acceptTerms) newErrors.acceptTerms = 'You must accept the terms and conditions';
     }
     
-    const stepErrors = { ...errors, ...newErrors };
-    const relevantErrors: ValidationErrors = {};
-    if (step === 1) {
-        relevantErrors.firstName = stepErrors.firstName;
-        relevantErrors.lastName = stepErrors.lastName;
-        relevantErrors.email = stepErrors.email;
-    } else if (step === 2) {
-        relevantErrors.username = stepErrors.username;
-        relevantErrors.password = stepErrors.password;
-        relevantErrors.confirmPassword = stepErrors.confirmPassword;
-    } else if (step === 3) {
-        relevantErrors.acceptTerms = stepErrors.acceptTerms;
-    }
-    if (stepErrors.apiError) relevantErrors.apiError = stepErrors.apiError;
+    // Update errors state
+    setErrors(prevErrors => {
+      const updatedErrors: ValidationErrors = {};
+      
+      // Keep API error if it exists
+      if (prevErrors.apiError) {
+        updatedErrors.apiError = prevErrors.apiError;
+      }
+      
+      // Add relevant step errors
+      if (step === 1) {
+        if (newErrors.firstName) updatedErrors.firstName = newErrors.firstName;
+        if (newErrors.lastName) updatedErrors.lastName = newErrors.lastName;
+        if (newErrors.email) updatedErrors.email = newErrors.email;
+      } else if (step === 2) {
+        if (newErrors.username) updatedErrors.username = newErrors.username;
+        if (newErrors.password) updatedErrors.password = newErrors.password;
+        if (newErrors.confirmPassword) updatedErrors.confirmPassword = newErrors.confirmPassword;
+      } else if (step === 3) {
+        if (newErrors.acceptTerms) updatedErrors.acceptTerms = newErrors.acceptTerms;
+      }
+      
+      return updatedErrors;
+    });
 
-    setErrors(relevantErrors);
-    return !Object.values(relevantErrors).some(error => error);
+    return !Object.values(newErrors).some(error => error);
   };
 
-  const checkUsernameAvailability = async (username: string) => {
+  const checkUsernameAvailability = useCallback(async (username: string) => {
     const usernameValidationError = validateUsername(username);
-    if (usernameValidationError) {
-      setErrors(prev => ({ ...prev, username: usernameValidationError }));
+    if (usernameValidationError || !username) {
       setUsernameAvailable(null);
       return;
     }
-    if (!username) {
-        setUsernameAvailable(null);
-        return;
-    }
 
+    // Set this as the current request
+    usernameCheckRef.current = username;
     setIsCheckingUsername(true);
     setUsernameAvailable(null);
+    
     try {
       // Use case-insensitive comparison with lower() function
       const { data, error } = await supabase
@@ -172,66 +202,82 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
         .eq('lower(username)', username.toLowerCase())
         .single();
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error checking username:', error);
-        setUsernameAvailable(null);
-      } else {
-        setUsernameAvailable(!data);
-        if (data) {
-          setErrors(prev => ({ ...prev, username: 'Username is not available' }));
+      // Only process if this is still the latest request
+      if (usernameCheckRef.current === username) {
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error checking username:', error);
+          setUsernameAvailable(null);
         } else {
-           if(errors.username === 'Username is not available') {
-            setErrors(prev => ({ ...prev, username: undefined }));
+          const isAvailable = !data;
+          setUsernameAvailable(isAvailable);
+          
+          if (!isAvailable) {
+            setErrors(prev => ({ ...prev, username: 'Username is not available' }));
+          } else {
+            setErrors(prev => {
+              const { username: _, ...rest } = prev;
+              return rest;
+            });
           }
         }
       }
-    } catch (e) {
-      console.error('Exception checking username:', e);
-      setUsernameAvailable(null);
+    } catch (error) {
+      console.error('Exception checking username:', error);
+      if (usernameCheckRef.current === username) {
+        setUsernameAvailable(null);
+      }
     } finally {
-      setIsCheckingUsername(false);
+      if (usernameCheckRef.current === username) {
+        setIsCheckingUsername(false);
+      }
     }
-  };
+  }, []);
   
+  // Debounced username checking effect
   useEffect(() => {
     const handler = setTimeout(() => {
-      if (currentUsername && currentStep === 2) {
-        checkUsernameAvailability(currentUsername);
+      if (formData.username && currentStep === 2) {
+        checkUsernameAvailability(formData.username);
       }
     }, 500);
 
     return () => {
       clearTimeout(handler);
     };
-  }, [currentUsername, currentStep]);
+  }, [formData.username, currentStep, checkUsernameAvailability]);
 
-  const handleInputChange = (field: keyof FormData, value: string | boolean) => {
+  const handleInputChange = useCallback((field: keyof FormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    setErrors(prev => ({ ...prev, [field as keyof ValidationErrors]: undefined, apiError: undefined }));
+    
+    // Clear specific field error and API error
+    setErrors(prev => {
+      const { [field as keyof ValidationErrors]: _, apiError, ...rest } = prev;
+      return rest;
+    });
 
+    // Reset username availability when username changes
     if (field === 'username' && typeof value === 'string') {
       setUsernameAvailable(null);
     }
-  };
+  }, []);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (validateStep(currentStep)) {
       if (currentStep === 2) {
         if (isCheckingUsername) {
-            toast({ title: "Checking username...", variant: "default" });
-            return;
+          toast({ title: "Checking username...", variant: "default" });
+          return;
         }
         if (usernameAvailable === false) {
-            setErrors(prev => ({...prev, username: "Username is not available"}));
-            return;
+          setErrors(prev => ({ ...prev, username: "Username is not available" }));
+          return;
         }
         if (usernameAvailable === null && formData.username) {
-          checkUsernameAvailability(formData.username).then(() => {
-            if (validateStep(currentStep) && usernameAvailable) {
-              setCurrentStep(prev => Math.min(prev + 1, totalSteps));
-            }
-          });
-          return;
+          await checkUsernameAvailability(formData.username);
+          // Re-validate after username check
+          if (usernameAvailable === false) {
+            return;
+          }
         }
       }
       setCurrentStep(prev => Math.min(prev + 1, totalSteps));
@@ -240,23 +286,38 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
 
   const handleBack = () => {
     setCurrentStep(prev => Math.max(prev - 1, 1));
-    setErrors(prev => ({ ...prev, apiError: undefined }));
+    setErrors(prev => {
+      const { apiError, ...rest } = prev;
+      return rest;
+    });
   };
 
   const handleSubmit = async () => {
-    setErrors(prev => ({ ...prev, apiError: undefined }));
+    // Clear API error before validation
+    setErrors(prev => {
+      const { apiError, ...rest } = prev;
+      return rest;
+    });
+
     if (!validateStep(totalSteps)) return;
+    
     if (isCheckingUsername) {
-        toast({ title: "Please wait", description: "Still verifying username.", variant: "default" });
-        return;
+      toast({ 
+        title: "Please wait", 
+        description: "Still verifying username.", 
+        variant: "default" 
+      });
+      return;
     }
+    
     if (usernameAvailable === false) {
-        setErrors(prev => ({ ...prev, username: "Username is not available. Please choose another."}));
-        setCurrentStep(2);
-        return;
+      setErrors(prev => ({ ...prev, username: "Username is not available. Please choose another." }));
+      setCurrentStep(2);
+      return;
     }
 
     setIsLoading(true);
+    
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
@@ -272,7 +333,9 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
         }
       });
 
-      if (signUpError) throw signUpError;
+      if (signUpError) {
+        throw signUpError;
+      }
 
       if (data?.user) {
         toast({
@@ -281,40 +344,27 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
         });
         navigate("/");
       } else {
-         toast({
+        toast({
           title: "Registration submitted",
           description: "Please check your email for verification instructions to complete your signup.",
           duration: 7000,
         });
-        navigate("/"); 
+        navigate("/");
       }
 
-    } catch (error: any) {
+    } catch (error) {
       console.error('Signup error:', error);
-      setErrors(prev => ({ ...prev, apiError: error.message || "An unexpected error occurred. Please try again." }));
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred. Please try again.";
+      
+      setErrors(prev => ({ ...prev, apiError: errorMessage }));
       toast({
         title: "Signup Failed",
-        description: error.message || "Could not create your account.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const getPasswordStrengthColor = (strength: number) => {
-    if (strength <= 1) return 'bg-red-500';
-    if (strength <= 2) return 'bg-yellow-500';
-    if (strength <= 3) return 'bg-blue-500';
-    return 'bg-green-500';
-  };
-
-  const getPasswordStrengthText = (strength: number) => {
-    if (strength <= 1) return 'Very Weak';
-    if (strength <= 2) return 'Weak';
-    if (strength <= 3) return 'Fair';
-    if (strength <= 4) return 'Good';
-    return 'Strong';
   };
 
   console.log("EnhancedSignupForm rendering with currentStep:", currentStep);
@@ -329,10 +379,10 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
 
       <CardContent className="space-y-6">
         {errors.apiError && (
-            <Alert variant="destructive" className="mb-4">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{errors.apiError}</AlertDescription>
-            </Alert>
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{errors.apiError}</AlertDescription>
+          </Alert>
         )}
         
         {/* Step 1: Personal Information */}
@@ -365,7 +415,7 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
                   onChange={(e) => handleInputChange('lastName', e.target.value)}
                   placeholder="Doe"
                   className={errors.lastName ? 'border-red-500' : ''}
-                   aria-invalid={!!errors.lastName}
+                  aria-invalid={!!errors.lastName}
                 />
                 {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
               </div>
@@ -382,7 +432,7 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   placeholder="john@example.com"
                   className={`pl-10 ${errors.email ? 'border-red-500' : ''}`}
-                   aria-invalid={!!errors.email}
+                  aria-invalid={!!errors.email}
                 />
               </div>
               {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
@@ -411,10 +461,13 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
                   aria-invalid={!!errors.username || usernameAvailable === false}
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    {isCheckingUsername ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> :
-                     usernameAvailable === true ? <Check className="h-4 w-4 text-green-500" /> :
-                     usernameAvailable === false ? <X className="h-4 w-4 text-red-500" /> : null
-                    }
+                  {isCheckingUsername ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  ) : usernameAvailable === true ? (
+                    <Check className="h-4 w-4 text-green-500" />
+                  ) : usernameAvailable === false ? (
+                    <X className="h-4 w-4 text-red-500" />
+                  ) : null}
                 </div>
               </div>
               {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
