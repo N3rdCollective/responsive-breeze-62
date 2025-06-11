@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
@@ -68,13 +69,19 @@ const StaffUserEditor = () => {
     if (!userId || !isAuthorized) return;
     
     try {
+      console.log(`[StaffUserEditor] Refreshing user data for ${userId}`);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('[StaffUserEditor] Error refreshing user:', error);
+        throw error;
+      }
+
+      console.log('[StaffUserEditor] User data refreshed:', data);
 
       const userProfile: UserProfile = {
         id: data.id,
@@ -103,7 +110,7 @@ const StaffUserEditor = () => {
         forum_signature: userProfile.forum_signature || ''
       });
     } catch (error: any) {
-      console.error('Error refreshing user data:', error);
+      console.error('[StaffUserEditor] Error refreshing user data:', error);
       toast({
         title: "Error",
         description: "Failed to refresh user data",
@@ -172,20 +179,20 @@ const StaffUserEditor = () => {
 
     setSaving(true);
     try {
-      console.log('Saving user data:', formData);
+      console.log('[StaffUserEditor] Saving user profile data:', formData);
       
       // Update the user profile in the database
       const { data, error } = await supabase
         .from('profiles')
         .update({
-          username: formData.username,
-          display_name: formData.display_name,
-          email: formData.email,
-          bio: formData.bio,
+          username: formData.username || null,
+          display_name: formData.display_name || null,
+          email: formData.email || null,
+          bio: formData.bio || null,
           status: formData.status,
           role: formData.role,
           is_public: formData.is_public,
-          forum_signature: formData.forum_signature,
+          forum_signature: formData.forum_signature || null,
           updated_at: new Date().toISOString()
         })
         .eq('id', userId)
@@ -193,11 +200,11 @@ const StaffUserEditor = () => {
         .single();
 
       if (error) {
-        console.error('Database update error:', error);
+        console.error('[StaffUserEditor] Database update error:', error);
         throw error;
       }
 
-      console.log('User updated successfully:', data);
+      console.log('[StaffUserEditor] User profile updated successfully:', data);
 
       // Log the activity
       await logActivity(
@@ -230,10 +237,8 @@ const StaffUserEditor = () => {
       };
       setUser(updatedUser);
 
-      // Optionally navigate back to the users list
-      navigate('/staff/users');
     } catch (error: any) {
-      console.error('Error updating user:', error);
+      console.error('[StaffUserEditor] Error updating user:', error);
       toast({
         title: "Error",
         description: `Failed to update user profile: ${error.message}`,

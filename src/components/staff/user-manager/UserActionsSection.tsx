@@ -11,6 +11,8 @@ import { Eye, MessageSquare, Mail, UserX, Ban, UserCheck, ExternalLink, Send, Lo
 import { useToast } from "@/hooks/use-toast";
 import { useUserActions } from "@/hooks/admin/useUserActions";
 import { useUserMessages } from "@/hooks/admin/useUserMessages";
+import { supabase } from "@/integrations/supabase/client";
+import { useStaffActivityLogger } from "@/hooks/useStaffActivityLogger";
 
 interface UserProfile {
   id: string;
@@ -28,14 +30,15 @@ interface UserActionsSectionProps {
 
 const UserActionsSection: React.FC<UserActionsSectionProps> = ({ user, onUserUpdated }) => {
   const { toast } = useToast();
-  const { updateUserStatus, loading: actionLoading } = useUserActions();
-  const { sendUserMessage, loading: messageLoading } = useUserMessages();
+  const { logActivity } = useStaffActivityLogger();
   
   const [actionReason, setActionReason] = useState('');
   const [messageSubject, setMessageSubject] = useState('');
   const [messageContent, setMessageContent] = useState('');
   const [showMessageForm, setShowMessageForm] = useState(false);
   const [showActionForm, setShowActionForm] = useState<'suspend' | 'ban' | 'unban' | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [messageLoading, setMessageLoading] = useState(false);
 
   const handleViewProfile = () => {
     if (user.username) {
@@ -67,15 +70,62 @@ const UserActionsSection: React.FC<UserActionsSectionProps> = ({ user, onUserUpd
       return;
     }
 
-    const success = await sendUserMessage(user.id, messageSubject, messageContent);
-    if (success) {
+    setMessageLoading(true);
+    try {
+      console.log(`[UserActionsSection] Sending message to user ${user.id}`);
+      
+      // Get current user (staff member)
+      const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !currentUser) {
+        throw new Error('Not authenticated as staff member');
+      }
+
+      // Insert message into user_messages table
+      const { error: messageError } = await supabase
+        .from('user_messages')
+        .insert({
+          recipient_id: user.id,
+          sender_id: currentUser.id,
+          subject: messageSubject.trim(),
+          message: messageContent.trim(),
+          created_at: new Date().toISOString(),
+          is_read: false
+        });
+
+      if (messageError) {
+        console.error('[UserActionsSection] Message send failed:', messageError);
+        throw messageError;
+      }
+
+      // Log the activity
+      await logActivity(
+        'send_user_message',
+        `Message sent to user: "${messageSubject}"`,
+        'user',
+        user.id,
+        { subject: messageSubject, contentLength: messageContent.length }
+      );
+
       setMessageSubject('');
       setMessageContent('');
       setShowMessageForm(false);
+      
       toast({
         title: "Message Sent",
         description: `Administrative message sent to ${user.display_name || user.username}`,
       });
+
+      console.log(`[UserActionsSection] Message sent successfully to user ${user.id}`);
+    } catch (error: any) {
+      console.error('[UserActionsSection] Error sending message:', error);
+      toast({
+        title: "Error",
+        description: `Failed to send message: ${error.message}`,
+        variant: "destructive"
+      });
+    } finally {
+      setMessageLoading(false);
     }
   };
 
@@ -89,17 +139,80 @@ const UserActionsSection: React.FC<UserActionsSectionProps> = ({ user, onUserUpd
       return;
     }
 
-    const newStatus = actionType === 'unban' ? 'active' : actionType === 'suspend' ? 'suspended' : 'banned';
-    const success = await updateUserStatus(user.id, newStatus, actionReason, actionType);
-    
-    if (success) {
+    setActionLoading(true);
+    try {
+      console.log(`[UserActionsSection] Performing ${actionType} action on user ${user.id}`);
+      
+      const newStatus = actionType === 'unban' ? 'active' : actionType === 'suspend' ? 'suspended' : 'banned';
+      
+      // Update user status in profiles table
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ 
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (updateError) {
+        console.error('[UserActionsSection] Error updating user status:', updateError);
+        throw updateError;
+      }
+
+      // Get current user for logging
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      
+      // Log the action in user_actions table
+      if (currentUser) {
+        const { error: actionLogError } = await supabase
+          .from('user_actions')
+          .insert({
+            user_id: user.id,
+            action_type: actionType,
+            reason: actionReason,
+            moderator_id: currentUser.id,
+            created_at: new Date().toISOString()
+          });
+
+        if (actionLogError) {
+          console.warn('[UserActionsSection] Failed to log user action:', actionLogError);
+        }
+      }
+
+      // Log staff activity
+      await logActivity(
+        actionType === 'suspend' ? 'suspend_user' : 
+        actionType === 'ban' ? 'ban_user' : 'unban_user',
+        `User status changed to ${newStatus}. Reason: ${actionReason}`,
+        'user',
+        user.id,
+        { 
+          previousStatus: user.status,
+          newStatus,
+          reason: actionReason,
+          actionType
+        }
+      );
+
       setActionReason('');
       setShowActionForm(null);
-      onUserUpdated();
+      onUserUpdated(); // Refresh user data
+      
       toast({
         title: "User Status Updated",
         description: `User has been ${actionType === 'unban' ? 'restored' : actionType + 'ed'} successfully`,
       });
+
+      console.log(`[UserActionsSection] ${actionType} action completed successfully for user ${user.id}`);
+    } catch (error: any) {
+      console.error(`[UserActionsSection] Error performing ${actionType} action:`, error);
+      toast({
+        title: "Error",
+        description: `Failed to ${actionType} user: ${error.message}`,
+        variant: "destructive"
+      });
+    } finally {
+      setActionLoading(false);
     }
   };
 
