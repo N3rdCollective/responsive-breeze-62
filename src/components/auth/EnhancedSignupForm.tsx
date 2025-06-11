@@ -602,5 +602,3 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
 };
 
 export default EnhancedSignupForm;
-
-</edits_to_apply>
