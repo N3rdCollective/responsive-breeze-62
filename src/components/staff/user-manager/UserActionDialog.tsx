@@ -11,12 +11,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { User } from "@/hooks/admin/useUserManagement";
+import type { UserManagementUser } from "@/hooks/admin/useUserManagement";
 
 interface UserActionDialogProps {
   isOpen: boolean;
   action: 'suspend' | 'ban' | 'unban' | 'warn' | null;
-  user: User | null;
+  user: UserManagementUser | null;
   reason: string;
   onReasonChange: (reason: string) => void;
   onConfirm: () => void;

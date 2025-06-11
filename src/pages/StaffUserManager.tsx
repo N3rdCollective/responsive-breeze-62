@@ -168,9 +168,9 @@ const StaffUserManager = () => {
             searchTerm={searchTerm}
             onSearchTermChange={setSearchTerm}
             filterStatus={filterStatus}
-            onFilterStatusChange={setFilterStatus}
+            onFilterStatusChange={(status: string) => setFilterStatus(status as typeof filterStatus)}
             filterRole={filterRole}
-            onFilterRoleChange={setFilterRole}
+            onFilterRoleChange={(role: string) => setFilterRole(role as typeof filterRole)}
             getRoleBadge={getRoleBadge}
             getStatusBadge={getStatusBadge}
             onOpenActionDialog={openActionDialog}

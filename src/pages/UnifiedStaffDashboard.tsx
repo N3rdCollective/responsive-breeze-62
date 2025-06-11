@@ -55,7 +55,7 @@ import { useModerationStats } from '@/hooks/moderation/useModerationStats';
 import { useUserManagement, type UserManagementUser } from '@/hooks/admin/useUserManagement';
 import { useStaffActivityLogger } from '@/hooks/useStaffActivityLogger';
 
-// Define User type locally to avoid conflicts
+// Use the correct User type
 type User = UserManagementUser;
 
 const UnifiedStaffDashboard = () => {
@@ -408,7 +408,7 @@ const UnifiedStaffDashboard = () => {
   
   const filteredUsers = useCallback((): User[] => {
     if (!allUsers || usersLoading) return [];
-    return searchUsersHook(allUsers, userSearchTerm, userFilterStatus, userFilterRole);
+    return searchUsersHook(allUsers as UserManagementUser[], userSearchTerm, userFilterStatus, userFilterRole);
   }, [allUsers, userSearchTerm, userFilterStatus, userFilterRole, searchUsersHook, usersLoading]);
 
   if (authLoading) {
@@ -697,7 +697,7 @@ const UnifiedStaffDashboard = () => {
                         className="pl-8 w-full"
                       />
                     </div>
-                    <Select value={userFilterStatus} onValueChange={(value) => setUserFilterStatus(value as User['status'] | 'all')}>
+                    <Select value={userFilterStatus} onValueChange={(value) => setUserFilterStatus(value as typeof userFilterStatus)}>
                       <SelectTrigger className="w-full sm:w-[140px]">
                         <SelectValue placeholder="Status" />
                       </SelectTrigger>
@@ -708,7 +708,7 @@ const UnifiedStaffDashboard = () => {
                         <SelectItem value="banned">Banned</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Select value={userFilterRole} onValueChange={(value) => setUserFilterRole(value as User['role'] | 'all')}>
+                    <Select value={userFilterRole} onValueChange={(value) => setUserFilterRole(value as typeof userFilterRole)}>
                       <SelectTrigger className="w-full sm:w-[140px]">
                         <SelectValue placeholder="Role" />
                       </SelectTrigger>

@@ -11,13 +11,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { User } from '@/hooks/admin/useUserManagement';
+import { UserManagementUser } from '@/hooks/admin/useUserManagement';
 
 interface UserActionDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   action: 'suspend' | 'ban' | 'unban' | null;
-  user: User | null;
+  user: UserManagementUser | null;
   reason: string;
   onReasonChange: (reason: string) => void;
   onConfirm: () => void;
@@ -106,4 +106,3 @@ const UserActionDialog: React.FC<UserActionDialogProps> = ({
 };
 
 export default UserActionDialog;
-

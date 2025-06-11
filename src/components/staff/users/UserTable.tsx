@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { Link } from 'react-router-dom'; // Import Link
+import { Link } from 'react-router-dom';
 import {
   Table,
   TableBody,
@@ -11,18 +12,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, Ban, UserCheck, UserX, Mail, MessageSquare, Users } from 'lucide-react'; // Added MessageSquare
-import { User } from '@/hooks/admin/useUserManagement';
+import { MoreHorizontal, Eye, Ban, UserCheck, UserX, Mail, MessageSquare, Users } from 'lucide-react';
+import { UserManagementUser } from '@/hooks/admin/useUserManagement';
 import LoadingSpinner from '@/components/staff/LoadingSpinner';
 
 interface UserTableProps {
-  users: User[];
+  users: UserManagementUser[];
   isLoading: boolean;
-  // error: string | null; // error is handled in parent
-  onOpenActionDialog: (action: 'suspend' | 'ban' | 'unban', user: User) => void;
-  onOpenMessageDialog: (user: User) => void;
-  getRoleBadge: (role: User['role']) => JSX.Element;
-  getStatusBadge: (status: User['status']) => JSX.Element;
+  onOpenActionDialog: (action: 'suspend' | 'ban' | 'unban', user: UserManagementUser) => void;
+  onOpenMessageDialog: (user: UserManagementUser) => void;
+  getRoleBadge: (role: UserManagementUser['role']) => JSX.Element;
+  getStatusBadge: (status: UserManagementUser['status']) => JSX.Element;
 }
 
 const UserTable: React.FC<UserTableProps> = ({

@@ -12,11 +12,11 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import type { User } from "@/hooks/admin/useUserManagement";
+import type { UserManagementUser } from "@/hooks/admin/useUserManagement";
 
 interface UserMessageDialogProps {
   isOpen: boolean;
-  user: User | null;
+  user: UserManagementUser | null;
   subject: string;
   content: string;
   onSubjectChange: (subject: string) => void;

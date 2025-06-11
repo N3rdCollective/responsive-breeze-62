@@ -12,12 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { User } from '@/hooks/admin/useUserManagement';
+import { UserManagementUser } from '@/hooks/admin/useUserManagement';
 
 interface SendMessageDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  user: User | null;
+  user: UserManagementUser | null;
   subject: string;
   onSubjectChange: (subject: string) => void;
   content: string;
