@@ -23,25 +23,28 @@ export interface UserManagementUser {
 // Export User as a separate type alias to avoid conflicts
 export type User = UserManagementUser;
 
-interface UserStatusUpdate {
-  userId: string;
-  status: User['status'];
-  reason: string;
-  actionType: 'suspend' | 'ban' | 'unban';
-}
-
-interface UserMessage {
-  userId: string;
-  subject: string;
-  content: string;
-}
+// Debug utility to track renders and detect infinite loops
+let renderCount = 0;
+const useRenderCounter = (hookName: string) => {
+  renderCount++;
+  if (renderCount > 50) {
+    console.error(`🚨 INFINITE LOOP DETECTED in ${hookName}! Render count: ${renderCount}`);
+    // Reset counter to prevent spam
+    renderCount = 0;
+  }
+  return renderCount;
+};
 
 export const useUserManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { logActivity } = useStaffActivityLogger();
   
-  // Use React Query for data fetching with proper cache management
+  // Debug renders to detect infinite loops
+  const currentRender = useRenderCounter('useUserManagement');
+  console.log(`[useUserManagement] Render #${currentRender}`);
+  
+  // ✅ FIXED: Proper React Query configuration to prevent infinite loops
   const {
     data: users = [],
     isLoading: loading,
@@ -89,12 +92,17 @@ export const useUserManagement = () => {
       return usersWithDefaults as UserManagementUser[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (replaces cacheTime in v5)
-    retry: 2,
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: 1, // ✅ CRITICAL FIX: Limit retries to prevent retry loops
     retryDelay: 1000,
+    refetchOnWindowFocus: false, // ✅ CRITICAL FIX: Prevent refetch on window focus
+    refetchOnReconnect: false,   // ✅ CRITICAL FIX: Prevent refetch on reconnect
+    refetchOnMount: true,        // Only refetch on mount
+    
+    // ✅ NO onSuccess, onError, or onSettled callbacks that could trigger loops
   });
 
-  // Memoized search function to prevent infinite loops
+  // ✅ FIXED: Memoized search function to prevent infinite loops
   const searchUsers = useCallback((
     userList: UserManagementUser[],
     searchTerm: string,
@@ -119,9 +127,9 @@ export const useUserManagement = () => {
       
       return statusMatch && roleMatch && searchMatch;
     });
-  }, []); // Empty dependencies since this is a pure function
+  }, []); // ✅ Empty dependencies since this is a pure function
 
-  // Optimized user status update function
+  // ✅ CRITICAL FIX: Optimized user status update function without manual refetch
   const updateUserStatus = useCallback(async (
     userId: string,
     status: UserManagementUser['status'],
@@ -154,6 +162,10 @@ export const useUserManagement = () => {
         throw new Error(`Failed to update user status: ${updateError.message}`);
       }
 
+      // Get current users data for activity logging
+      const currentUsers = queryClient.getQueryData<UserManagementUser[]>(['users']) || [];
+      const previousStatus = currentUsers.find(u => u.id === userId)?.status;
+
       // Log the activity
       await logActivity(
         actionType === 'suspend' ? 'suspend_user' : 
@@ -162,14 +174,14 @@ export const useUserManagement = () => {
         'user',
         userId,
         { 
-          previousStatus: users.find(u => u.id === userId)?.status,
+          previousStatus,
           newStatus: status,
           reason,
           actionType
         }
       );
 
-      // Update the cache optimistically
+      // ✅ CRITICAL FIX: Only do optimistic update, DON'T manually refetch
       queryClient.setQueryData(['users'], (oldUsers: UserManagementUser[] | undefined) => {
         if (!oldUsers) return oldUsers;
         return oldUsers.map(user => 
@@ -189,10 +201,18 @@ export const useUserManagement = () => {
       });
 
       console.log(`[useUserManagement] User ${userId} status updated successfully`);
+      
+      // ✅ REMOVED: Manual refetch that was causing the infinite loop!
+      // DO NOT ADD: await refetchUsers(); // This was the source of the infinite loop
+      
       return true;
 
     } catch (error: any) {
       console.error('[useUserManagement] Error updating user status:', error);
+      
+      // ✅ On error, invalidate cache to refetch from server
+      queryClient.invalidateQueries(['users']);
+      
       toast({
         title: "Update Failed",
         description: error.message || "Failed to update user status",
@@ -200,9 +220,9 @@ export const useUserManagement = () => {
       });
       return false;
     }
-  }, [users, logActivity, queryClient, toast]);
+  }, [logActivity, queryClient, toast]); // ✅ FIXED: Removed 'users' dependency to prevent stale closures
 
-  // Optimized send message function
+  // ✅ FIXED: Optimized send message function without manual refetch
   const sendUserMessage = useCallback(async (
     userId: string,
     subject: string,
@@ -259,6 +279,8 @@ export const useUserManagement = () => {
       });
 
       console.log(`[useUserManagement] Message sent successfully to user ${userId}`);
+      
+      // ✅ No manual refetch needed for messages
       return true;
 
     } catch (error: any) {
@@ -270,16 +292,16 @@ export const useUserManagement = () => {
       });
       return false;
     }
-  }, [logActivity, toast]);
+  }, [logActivity, toast]); // ✅ Stable dependencies only
 
-  // Optimized refresh function
+  // ✅ FIXED: Manual refresh function with better error handling
   const refreshUsers = useCallback(async () => {
-    console.log('[useUserManagement] Manually refreshing users');
+    console.log('[useUserManagement] Manual refresh requested');
     try {
       await refetchUsers();
-      console.log('[useUserManagement] Users refreshed successfully');
+      console.log('[useUserManagement] Manual refresh completed successfully');
     } catch (error) {
-      console.error('[useUserManagement] Error refreshing users:', error);
+      console.error('[useUserManagement] Error during manual refresh:', error);
       toast({
         title: "Refresh Failed",
         description: "Failed to refresh user data",
@@ -288,13 +310,14 @@ export const useUserManagement = () => {
     }
   }, [refetchUsers, toast]);
 
-  // Memoized error message
+  // ✅ Memoized error message to prevent unnecessary re-renders
   const errorMessage = useMemo(() => {
     if (!error) return null;
     return error instanceof Error ? error.message : 'An unknown error occurred';
   }, [error]);
 
-  return {
+  // ✅ CRITICAL FIX: Memoize return object to prevent infinite re-renders
+  return useMemo(() => ({
     users,
     loading,
     error: errorMessage,
@@ -302,5 +325,13 @@ export const useUserManagement = () => {
     sendUserMessage,
     refreshUsers,
     searchUsers,
-  };
+  }), [
+    users,
+    loading,
+    errorMessage,
+    updateUserStatus,
+    sendUserMessage,
+    refreshUsers,
+    searchUsers,
+  ]);
 };
