@@ -220,11 +220,19 @@ export const useUserManagement = () => {
     console.log(`[useUserManagement] Sending message to user ${userId}`);
     
     try {
+      // Get current user (staff member)
+      const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !currentUser) {
+        throw new Error('Not authenticated as staff member');
+      }
+
       // Insert message into user_messages table
       const { error: messageError } = await supabase
         .from('user_messages')
         .insert({
           recipient_id: userId,
+          sender_id: currentUser.id,
           subject: subject.trim(),
           message: content.trim(),
           created_at: new Date().toISOString(),
