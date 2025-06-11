@@ -162,10 +162,11 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
     setIsCheckingUsername(true);
     setUsernameAvailable(null);
     try {
+      // Use case-insensitive comparison with lower() function
       const { data, error } = await supabase
         .from('profiles')
         .select('username')
-        .eq('username', username)
+        .eq('lower(username)', username.toLowerCase())
         .single();
 
       if (error && error.code !== 'PGRST116') {
@@ -601,3 +602,5 @@ const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSwitchToSignI
 };
 
 export default EnhancedSignupForm;
+
+</edits_to_apply>
