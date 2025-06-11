@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
@@ -77,16 +76,32 @@ const StaffUserEditor = () => {
 
         if (error) throw error;
 
-        setUser(data);
-        setFormData({
-          username: data.username || '',
-          display_name: data.display_name || '',
-          email: data.email || '',
-          bio: data.bio || '',
+        // Properly type cast the received data
+        const userProfile: UserProfile = {
+          id: data.id,
+          username: data.username,
+          display_name: data.display_name,
+          email: data.email,
+          bio: data.bio,
           status: (data.status as 'active' | 'suspended' | 'banned') || 'active',
           role: (data.role as 'user' | 'moderator' | 'admin') || 'user',
-          is_public: data.is_public ?? true,
-          forum_signature: data.forum_signature || ''
+          is_public: data.is_public,
+          forum_signature: data.forum_signature,
+          created_at: data.created_at,
+          forum_post_count: data.forum_post_count,
+          timeline_post_count: data.timeline_post_count
+        };
+
+        setUser(userProfile);
+        setFormData({
+          username: userProfile.username || '',
+          display_name: userProfile.display_name || '',
+          email: userProfile.email || '',
+          bio: userProfile.bio || '',
+          status: userProfile.status,
+          role: userProfile.role,
+          is_public: userProfile.is_public ?? true,
+          forum_signature: userProfile.forum_signature || ''
         });
       } catch (error: any) {
         console.error('Error fetching user:', error);
