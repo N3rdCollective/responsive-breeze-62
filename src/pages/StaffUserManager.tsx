@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, Clock, Ban } from "lucide-react";
 import TitleUpdater from "@/components/TitleUpdater";
 
-// Import the FIXED user management hook
+// Import the user management hook with correct types
 import { useUserManagement, type UserManagementUser } from "@/hooks/admin/useUserManagement";
 
 // Import refactored components
@@ -18,10 +18,10 @@ import UserTableCard from "@/components/staff/user-manager/UserTableCard";
 import UserActionDialog from "@/components/staff/user-manager/UserActionDialog";
 import UserMessageDialog from "@/components/staff/user-manager/UserMessageDialog";
 
-// Import the OPTIMIZED hook for dialog management
+// Import the optimized hook for dialog management
 import { useOptimizedUserManagerDialogs } from "@/hooks/admin/useOptimizedUserManagerDialogs";
 
-// Type alias for convenience
+// Use UserManagementUser as the base type
 type User = UserManagementUser;
 
 const StaffUserManager = () => {
@@ -29,7 +29,7 @@ const StaffUserManager = () => {
   const { userRole, isLoading: authLoading } = useStaffAuth(); 
   const { toast } = useToast();
   
-  // Use the FIXED user management hook
+  // Use the user management hook
   const {
     users,
     loading: usersLoading,
@@ -45,7 +45,7 @@ const StaffUserManager = () => {
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'suspended' | 'banned'>('all');
   const [filterRole, setFilterRole] = useState<'all' | 'user' | 'moderator' | 'admin'>('all');
 
-  // Use the OPTIMIZED hook for dialog management
+  // Use the optimized hook for dialog management
   const {
     actionDialog,
     actionReason,
@@ -68,7 +68,7 @@ const StaffUserManager = () => {
 
   // Memoized filtered users to prevent recalculation on every render
   const filteredUsers = useMemo(() => {
-    return searchUsers(users as UserManagementUser[], searchTerm, filterStatus, filterRole);
+    return searchUsers(users, searchTerm, filterStatus, filterRole);
   }, [users, searchTerm, filterStatus, filterRole, searchUsers]);
 
   // Memoized badge functions to prevent recreation
@@ -162,7 +162,7 @@ const StaffUserManager = () => {
             onBackToDashboard={() => navigate('/staff/panel')}
             onRefreshData={handleRefresh}
           />
-          <UserStatsCards users={users as UserManagementUser[]} />
+          <UserStatsCards users={users} />
           <UserTableCard
             filteredUsers={filteredUsers}
             searchTerm={searchTerm}

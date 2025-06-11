@@ -1,11 +1,14 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Users } from 'lucide-react';
 import OptimizedUserTableContent from './OptimizedUserTableContent';
-import type { User, ActionDialogHandler, MessageDialogHandler } from './types';
+import type { UserManagementUser } from '@/hooks/admin/useUserManagement';
+
+type User = UserManagementUser;
+type ActionDialogHandler = (action: 'suspend' | 'ban' | 'unban', user: User) => void;
+type MessageDialogHandler = (user: User) => void;
 
 interface UserTableCardProps {
   filteredUsers: User[];

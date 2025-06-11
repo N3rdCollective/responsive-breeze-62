@@ -13,8 +13,11 @@ export interface UserManagementUser {
   status: 'active' | 'suspended' | 'banned';
   role: 'user' | 'moderator' | 'admin';
   created_at: string;
-  last_seen?: string;
+  last_active?: string;
   profile_picture?: string | null;
+  forum_post_count: number;
+  timeline_post_count: number;
+  pending_report_count: number;
 }
 
 // Export User as a separate type alias to avoid conflicts
@@ -59,8 +62,11 @@ export const useUserManagement = () => {
           status,
           role,
           created_at,
-          last_seen,
-          profile_picture
+          last_active,
+          profile_picture,
+          forum_post_count,
+          timeline_post_count,
+          pending_report_count
         `)
         .order('created_at', { ascending: false });
 
@@ -70,7 +76,17 @@ export const useUserManagement = () => {
       }
 
       console.log(`[useUserManagement] Successfully fetched ${data?.length || 0} users`);
-      return data as UserManagementUser[];
+      
+      // Ensure all required fields are present with defaults
+      const usersWithDefaults = data?.map(user => ({
+        ...user,
+        forum_post_count: user.forum_post_count || 0,
+        timeline_post_count: user.timeline_post_count || 0,
+        pending_report_count: user.pending_report_count || 0,
+        email: user.email || 'N/A'
+      })) || [];
+      
+      return usersWithDefaults as UserManagementUser[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes (replaces cacheTime in v5)
@@ -208,10 +224,10 @@ export const useUserManagement = () => {
       const { error: messageError } = await supabase
         .from('user_messages')
         .insert({
-          user_id: userId,
+          recipient_id: userId,
           subject: subject.trim(),
-          content: content.trim(),
-          sent_at: new Date().toISOString(),
+          message: content.trim(),
+          created_at: new Date().toISOString(),
           is_read: false
         });
 
