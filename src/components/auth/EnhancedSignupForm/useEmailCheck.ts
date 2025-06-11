@@ -21,31 +21,20 @@ export const useEmailCheck = () => {
     setEmailAvailable(null);
     
     try {
-      // Check if email exists in auth.users table
-      const { data: authData, error: authError } = await supabase.auth.admin.getUserByEmail(email);
-      
-      // If we can't check auth.users, fall back to checking profiles table
-      if (authError) {
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('email')
-          .ilike('email', email)
-          .single();
+      // Check if email exists in profiles table (which is populated from auth.users)
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('email')
+        .ilike('email', email)
+        .single();
 
-        // Only process if this is still the latest request
-        if (emailCheckRef.current === email) {
-          if (profileError && profileError.code !== 'PGRST116') {
-            console.error('Error checking email in profiles:', profileError);
-            setEmailAvailable(null);
-          } else {
-            const isAvailable = !profileData;
-            setEmailAvailable(isAvailable);
-          }
-        }
-      } else {
-        // Only process if this is still the latest request
-        if (emailCheckRef.current === email) {
-          const isAvailable = !authData?.user;
+      // Only process if this is still the latest request
+      if (emailCheckRef.current === email) {
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error('Error checking email in profiles:', profileError);
+          setEmailAvailable(null);
+        } else {
+          const isAvailable = !profileData;
           setEmailAvailable(isAvailable);
         }
       }
