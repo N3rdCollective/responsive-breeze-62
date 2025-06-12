@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStaffAuth } from '@/hooks/useStaffAuth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Users, Eye, Globe, Smartphone, RefreshCw } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useToast } from '@/hooks/use-toast';
 import TitleUpdater from '@/components/TitleUpdater';
 import { useLiveAnalytics } from '@/hooks/analytics/useLiveAnalytics';
-import LiveIndicator from '@/components/analytics/LiveIndicator';
+import AnalyticsHeader from '@/components/analytics/AnalyticsHeader';
+import AnalyticsStatsCards from '@/components/analytics/AnalyticsStatsCards';
+import AnalyticsCharts from '@/components/analytics/AnalyticsCharts';
+import AnalyticsPageDetails from '@/components/analytics/AnalyticsPageDetails';
 
 const StaffAnalytics = () => {
   const navigate = useNavigate();
@@ -80,202 +80,40 @@ const StaffAnalytics = () => {
       }))
     : [];
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
-
   return (
     <>
       <TitleUpdater title="Analytics - Staff Panel" />
       <div className="min-h-screen bg-background text-foreground">
         <main className="container mx-auto px-4 py-6">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-2xl font-bold">Analytics Dashboard</h1>
-              <p className="text-muted-foreground">Website traffic and user analytics</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <LiveIndicator
-                isLive={isLive}
-                connectionStatus={connectionStatus}
-                lastUpdated={lastUpdated}
-                onToggle={toggleLiveUpdates}
-              />
-              <div className="flex items-center gap-2">
-                <select 
-                  value={dateRange} 
-                  onChange={(e) => setDateRange(e.target.value)}
-                  className="px-3 py-2 border rounded-md bg-background"
-                >
-                  <option value="7">Last 7 days</option>
-                  <option value="30">Last 30 days</option>
-                  <option value="90">Last 90 days</option>
-                </select>
-                <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>
-                  <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                  Refresh
-                </Button>
-              </div>
-            </div>
-          </div>
+          <AnalyticsHeader
+            dateRange={dateRange}
+            setDateRange={setDateRange}
+            isLive={isLive}
+            connectionStatus={connectionStatus}
+            lastUpdated={lastUpdated}
+            toggleLiveUpdates={toggleLiveUpdates}
+            handleRefresh={handleRefresh}
+            loading={loading}
+          />
 
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Card key={i}>
-                  <CardContent className="p-6">
-                    <div className="animate-pulse">
-                      <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
-                      <div className="h-8 bg-muted rounded w-1/2"></div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
+          <AnalyticsStatsCards
+            totalVisits={totalVisits}
+            totalUniqueVisitors={totalUniqueVisitors}
+            topPagesCount={topPagesData.length}
+            deviceTypesCount={deviceData.length}
+            isLive={isLive}
+            connectionStatus={connectionStatus}
+            loading={loading}
+          />
+
+          {!loading && (
             <>
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                <Card className={`transition-all duration-300 ${
-                  isLive && connectionStatus === 'connected' 
-                    ? 'ring-2 ring-green-500/20 shadow-lg' 
-                    : ''
-                }`}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Total Visits</p>
-                        <p className="text-2xl font-bold">{totalVisits.toLocaleString()}</p>
-                      </div>
-                      <Eye className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                  </CardContent>
-                </Card>
+              <AnalyticsCharts
+                topPagesData={topPagesData}
+                deviceData={deviceData}
+              />
 
-                <Card className={`transition-all duration-300 ${
-                  isLive && connectionStatus === 'connected' 
-                    ? 'ring-2 ring-green-500/20 shadow-lg' 
-                    : ''
-                }`}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Unique Visitors</p>
-                        <p className="text-2xl font-bold">{totalUniqueVisitors.toLocaleString()}</p>
-                      </div>
-                      <Users className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Top Pages</p>
-                        <p className="text-2xl font-bold">{topPagesData.length}</p>
-                      </div>
-                      <Globe className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Device Types</p>
-                        <p className="text-2xl font-bold">{deviceData.length}</p>
-                      </div>
-                      <Smartphone className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Charts */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Top Pages Chart */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Top Pages</CardTitle>
-                    <CardDescription>Most visited pages in the selected period</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {topPagesData.length > 0 ? (
-                      <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={topPagesData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="page" angle={-45} textAnchor="end" height={80} />
-                          <YAxis />
-                          <Tooltip />
-                          <Bar dataKey="visits" fill="#8884d8" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                        No page data available
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* Device Breakdown Chart */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Device Breakdown</CardTitle>
-                    <CardDescription>Visitor distribution by device type</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {deviceData.length > 0 ? (
-                      <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                          <Pie
-                            data={deviceData}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            label={({ device, percent }) => `${device} ${(percent * 100).toFixed(0)}%`}
-                            outerRadius={80}
-                            fill="#8884d8"
-                            dataKey="count"
-                          >
-                            {deviceData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                        No device data available
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Detailed Page List */}
-              {topPagesData.length > 0 && (
-                <Card className="mt-6">
-                  <CardHeader>
-                    <CardTitle>Page Details</CardTitle>
-                    <CardDescription>Detailed breakdown of page visits</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {analytics.filter(item => item.page_path && item.visit_count).slice(0, 10).map((item, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 border rounded">
-                          <div>
-                            <p className="font-medium">{item.page_path}</p>
-                          </div>
-                          <Badge variant="secondary">{item.visit_count} visits</Badge>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+              <AnalyticsPageDetails analytics={analytics} />
             </>
           )}
         </main>
