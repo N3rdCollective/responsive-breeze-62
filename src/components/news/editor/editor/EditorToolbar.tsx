@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Editor } from '@tiptap/react';
 import { 
@@ -8,6 +7,7 @@ import {
   ListOrdered,
   Link as LinkIcon, 
   Image as ImageIcon, 
+  Youtube,
   AlignLeft,
   AlignCenter,
   AlignRight,
@@ -37,6 +37,13 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor, disabled = false 
     const url = window.prompt('Enter image URL');
     if (url) {
       editor.chain().focus().setImage({ src: url }).run();
+    }
+  };
+
+  const insertVideo = () => {
+    const url = window.prompt('Enter video URL (YouTube, Vimeo, or embed URL)');
+    if (url) {
+      editor.chain().focus().setVideo({ src: url }).run();
     }
   };
 
@@ -198,6 +205,15 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor, disabled = false 
           aria-label="Insert Image"
         >
           <ImageIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={insertVideo}
+          disabled={disabled}
+          aria-label="Insert Video"
+        >
+          <Youtube className="h-4 w-4" />
         </Button>
       </div>
 

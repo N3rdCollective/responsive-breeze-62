@@ -7,6 +7,7 @@ import TextStyle from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import TextAlign from '@tiptap/extension-text-align';
 import Mention from '@tiptap/extension-mention';
+import { Video } from './VideoExtension';
 import { supabase } from '@/integrations/supabase/client';
 import { ReactRenderer } from '@tiptap/react';
 import tippy, { type Instance as TippyInstance, type Props as TippyProps } from 'tippy.js';
@@ -50,6 +51,11 @@ export const useEditorExtensions = (props?: EditorExtensionsProps) => {
       allowBase64: true,
       HTMLAttributes: {
         class: 'rounded-md max-w-full h-auto',
+      },
+    }),
+    Video.configure({
+      HTMLAttributes: {
+        class: 'w-full h-auto',
       },
     }),
     TextStyle,
