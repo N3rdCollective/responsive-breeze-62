@@ -2,7 +2,7 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Radio, RadioOff, Wifi, WifiOff } from 'lucide-react';
+import { Radio, Circle, Wifi, WifiOff } from 'lucide-react';
 
 interface LiveIndicatorProps {
   isLive: boolean;
@@ -18,7 +18,7 @@ const LiveIndicator: React.FC<LiveIndicatorProps> = ({
   onToggle
 }) => {
   const getStatusIcon = () => {
-    if (!isLive) return <RadioOff className="h-3 w-3" />;
+    if (!isLive) return <Circle className="h-3 w-3" />;
     
     switch (connectionStatus) {
       case 'connected':
@@ -28,7 +28,7 @@ const LiveIndicator: React.FC<LiveIndicatorProps> = ({
       case 'disconnected':
         return <WifiOff className="h-3 w-3 text-red-500" />;
       default:
-        return <RadioOff className="h-3 w-3" />;
+        return <Circle className="h-3 w-3" />;
     }
   };
 
