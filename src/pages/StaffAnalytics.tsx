@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStaffAuth } from '@/hooks/useStaffAuth';
@@ -90,15 +89,9 @@ const StaffAnalytics = () => {
         <main className="container mx-auto px-4 py-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm" onClick={() => navigate('/staff/panel')}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Dashboard
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold">Analytics Dashboard</h1>
-                <p className="text-muted-foreground">Website traffic and user analytics</p>
-              </div>
+            <div>
+              <h1 className="text-2xl font-bold">Analytics Dashboard</h1>
+              <p className="text-muted-foreground">Website traffic and user analytics</p>
             </div>
             <div className="flex items-center gap-4">
               <LiveIndicator

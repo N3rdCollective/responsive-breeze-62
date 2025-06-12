@@ -2,7 +2,7 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Radio, Circle, Wifi, WifiOff } from 'lucide-react';
+import { RefreshCw, Circle, Wifi, WifiOff } from 'lucide-react';
 
 interface LiveIndicatorProps {
   isLive: boolean;
@@ -22,7 +22,7 @@ const LiveIndicator: React.FC<LiveIndicatorProps> = ({
     
     switch (connectionStatus) {
       case 'connected':
-        return <Radio className="h-3 w-3 text-green-500" />;
+        return <RefreshCw className="h-3 w-3 text-green-500" />;
       case 'connecting':
         return <Wifi className="h-3 w-3 text-yellow-500 animate-pulse" />;
       case 'disconnected':
@@ -33,17 +33,17 @@ const LiveIndicator: React.FC<LiveIndicatorProps> = ({
   };
 
   const getStatusText = () => {
-    if (!isLive) return 'Offline';
+    if (!isLive) return 'Manual Refresh';
     
     switch (connectionStatus) {
       case 'connected':
-        return 'LIVE';
+        return 'Auto-Updating';
       case 'connecting':
         return 'Connecting...';
       case 'disconnected':
         return 'Disconnected';
       default:
-        return 'Offline';
+        return 'Manual Refresh';
     }
   };
 
@@ -109,7 +109,7 @@ const LiveIndicator: React.FC<LiveIndicatorProps> = ({
             : ''
         }`}
       >
-        {isLive ? 'Stop Live' : 'Go Live'}
+        {isLive ? 'Disable Auto-Refresh' : 'Enable Auto-Refresh'}
       </Button>
     </div>
   );
