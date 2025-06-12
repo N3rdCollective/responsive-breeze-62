@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStaffAuth } from '@/hooks/useStaffAuth';
@@ -8,62 +9,27 @@ import { ArrowLeft, Users, Eye, Globe, Smartphone, RefreshCw } from 'lucide-reac
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useToast } from '@/hooks/use-toast';
 import TitleUpdater from '@/components/TitleUpdater';
-import { supabase } from '@/integrations/supabase/client';
-
-interface AnalyticsData {
-  total_visits: number;
-  unique_visitors: number;
-  page_path: string;
-  visit_count: number;
-  device_breakdown: any; // Changed from { [key: string]: number } to any to match Json type
-}
+import { useLiveAnalytics } from '@/hooks/analytics/useLiveAnalytics';
+import LiveIndicator from '@/components/analytics/LiveIndicator';
 
 const StaffAnalytics = () => {
   const navigate = useNavigate();
   const { userRole, isLoading: authLoading } = useStaffAuth();
   const { toast } = useToast();
-  const [analytics, setAnalytics] = useState<AnalyticsData[]>([]);
-  const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState('30'); // days
 
-  const fetchAnalytics = async () => {
-    try {
-      setLoading(true);
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - parseInt(dateRange));
-      
-      const { data, error } = await supabase.rpc('get_analytics_summary', {
-        start_date: startDate.toISOString(),
-        end_date: new Date().toISOString()
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      setAnalytics(data || []);
-    } catch (error: any) {
-      console.error('Error fetching analytics:', error);
-      toast({
-        title: "Error loading analytics",
-        description: error.message || "Failed to load analytics data",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!authLoading && userRole && ['admin', 'super_admin'].includes(userRole)) {
-      fetchAnalytics();
-    } else if (!authLoading) {
-      setLoading(false);
-    }
-  }, [authLoading, userRole, dateRange]);
+  const {
+    analytics,
+    loading,
+    isLive,
+    lastUpdated,
+    connectionStatus,
+    toggleLiveUpdates,
+    refreshAnalytics
+  } = useLiveAnalytics(dateRange);
 
   const handleRefresh = () => {
-    fetchAnalytics();
+    refreshAnalytics();
     toast({
       title: "Analytics refreshed",
       description: "Data has been updated with the latest information.",
@@ -134,20 +100,28 @@ const StaffAnalytics = () => {
                 <p className="text-muted-foreground">Website traffic and user analytics</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <select 
-                value={dateRange} 
-                onChange={(e) => setDateRange(e.target.value)}
-                className="px-3 py-2 border rounded-md bg-background"
-              >
-                <option value="7">Last 7 days</option>
-                <option value="30">Last 30 days</option>
-                <option value="90">Last 90 days</option>
-              </select>
-              <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>
-                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
+            <div className="flex items-center gap-4">
+              <LiveIndicator
+                isLive={isLive}
+                connectionStatus={connectionStatus}
+                lastUpdated={lastUpdated}
+                onToggle={toggleLiveUpdates}
+              />
+              <div className="flex items-center gap-2">
+                <select 
+                  value={dateRange} 
+                  onChange={(e) => setDateRange(e.target.value)}
+                  className="px-3 py-2 border rounded-md bg-background"
+                >
+                  <option value="7">Last 7 days</option>
+                  <option value="30">Last 30 days</option>
+                  <option value="90">Last 90 days</option>
+                </select>
+                <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>
+                  <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -168,7 +142,11 @@ const StaffAnalytics = () => {
             <>
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                <Card>
+                <Card className={`transition-all duration-300 ${
+                  isLive && connectionStatus === 'connected' 
+                    ? 'ring-2 ring-green-500/20 shadow-lg' 
+                    : ''
+                }`}>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
@@ -180,7 +158,11 @@ const StaffAnalytics = () => {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className={`transition-all duration-300 ${
+                  isLive && connectionStatus === 'connected' 
+                    ? 'ring-2 ring-green-500/20 shadow-lg' 
+                    : ''
+                }`}>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
