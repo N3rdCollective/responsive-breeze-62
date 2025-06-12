@@ -81,9 +81,10 @@ export const Video = Node.create<VideoOptions>({
   addCommands() {
     return {
       setVideo: (options: { src: string }) => ({ commands }) => {
+        const embedUrl = convertToEmbedUrl(options.src);
         return commands.insertContent({
           type: this.name,
-          attrs: options,
+          attrs: { src: embedUrl },
         });
       },
     };
@@ -93,25 +94,33 @@ export const Video = Node.create<VideoOptions>({
 function convertToEmbedUrl(url: string): string {
   if (!url) return '';
 
-  // YouTube URLs
-  const youtubeRegex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/;
+  console.log('Converting URL:', url);
+
+  // YouTube URLs - more comprehensive regex
+  const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/;
   const youtubeMatch = url.match(youtubeRegex);
   if (youtubeMatch) {
-    return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+    const embedUrl = `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+    console.log('YouTube embed URL:', embedUrl);
+    return embedUrl;
   }
 
   // Vimeo URLs
-  const vimeoRegex = /(?:vimeo\.com\/)([0-9]+)/;
+  const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/([0-9]+)/;
   const vimeoMatch = url.match(vimeoRegex);
   if (vimeoMatch) {
-    return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+    const embedUrl = `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+    console.log('Vimeo embed URL:', embedUrl);
+    return embedUrl;
   }
 
-  // If it's already an embed URL or iframe src, return as is
-  if (url.includes('embed') || url.includes('player')) {
+  // If it's already an embed URL, return as is
+  if (url.includes('/embed/') || url.includes('player.vimeo.com')) {
+    console.log('Already embed URL:', url);
     return url;
   }
 
   // For other platforms, return the original URL (user might paste an embed URL directly)
+  console.log('Using original URL:', url);
   return url;
 }
