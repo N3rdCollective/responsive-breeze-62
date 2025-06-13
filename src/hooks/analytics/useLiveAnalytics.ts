@@ -40,7 +40,12 @@ export const useLiveAnalytics = (dateRange: string = '30') => {
         end_date: new Date().toISOString()
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Analytics fetch error:', error);
+        throw error;
+      }
+
+      console.log('Analytics data fetched:', data);
 
       setState(prev => ({
         ...prev,

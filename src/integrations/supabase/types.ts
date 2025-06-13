@@ -53,37 +53,31 @@ export type Database = {
       }
       analytics: {
         Row: {
-          country: string | null
-          device_type: string | null
+          created_at: string | null
+          device_info: Json | null
           id: string
           page_path: string
           referrer: string | null
           session_id: string | null
-          user_agent: string | null
           user_id: string | null
-          visit_date: string | null
         }
         Insert: {
-          country?: string | null
-          device_type?: string | null
+          created_at?: string | null
+          device_info?: Json | null
           id?: string
           page_path: string
           referrer?: string | null
           session_id?: string | null
-          user_agent?: string | null
           user_id?: string | null
-          visit_date?: string | null
         }
         Update: {
-          country?: string | null
-          device_type?: string | null
+          created_at?: string | null
+          device_info?: Json | null
           id?: string
           page_path?: string
           referrer?: string | null
           session_id?: string | null
-          user_agent?: string | null
           user_id?: string | null
-          visit_date?: string | null
         }
         Relationships: []
       }
@@ -1515,7 +1509,7 @@ export type Database = {
         Returns: string
       }
       get_analytics_summary: {
-        Args: { start_date?: string; end_date?: string }
+        Args: { start_date: string; end_date: string }
         Returns: {
           total_visits: number
           unique_visitors: number
