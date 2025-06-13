@@ -32,8 +32,11 @@ export const useLiveAnalytics = (dateRange: string = '30') => {
 
   const fetchAnalytics = useCallback(async () => {
     try {
+      setLoading(true);
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - parseInt(dateRange));
+      
+      console.log('Fetching analytics from:', startDate.toISOString(), 'to:', new Date().toISOString());
       
       const { data, error } = await supabase.rpc('get_analytics_summary', {
         start_date: startDate.toISOString(),
@@ -45,13 +48,34 @@ export const useLiveAnalytics = (dateRange: string = '30') => {
         throw error;
       }
 
-      console.log('Analytics data fetched:', data);
+      console.log('Raw analytics data:', data);
 
-      setState(prev => ({
-        ...prev,
-        data: data || [],
-        lastUpdated: new Date()
-      }));
+      // Process the data to handle the cross join structure
+      if (data && data.length > 0) {
+        // Group the data properly since it comes from cross joins
+        const processedData = data.map((row: any) => ({
+          total_visits: Number(row.total_visits) || 0,
+          unique_visitors: Number(row.unique_visitors) || 0,
+          page_path: row.page_path || '',
+          visit_count: Number(row.visit_count) || 0,
+          device_breakdown: row.device_breakdown || {}
+        }));
+
+        console.log('Processed analytics data:', processedData);
+        
+        setState(prev => ({
+          ...prev,
+          data: processedData,
+          lastUpdated: new Date()
+        }));
+      } else {
+        // No data found, set empty state
+        setState(prev => ({
+          ...prev,
+          data: [],
+          lastUpdated: new Date()
+        }));
+      }
     } catch (error: any) {
       console.error('Error fetching analytics:', error);
       toast({
@@ -59,6 +83,13 @@ export const useLiveAnalytics = (dateRange: string = '30') => {
         description: error.message || "Failed to load analytics data",
         variant: "destructive"
       });
+      
+      // Set empty data on error
+      setState(prev => ({
+        ...prev,
+        data: [],
+        lastUpdated: new Date()
+      }));
     } finally {
       setLoading(false);
     }
