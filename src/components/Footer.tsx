@@ -30,29 +30,29 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="footer-dark bg-[#1a1a1a] text-white py-12 border-t border-[#333] [&_*]:!text-white [&_a]:!text-gray-300 [&_a:hover]:!text-[#FFD700]">
+    <footer className="bg-muted/50 border-t border-border py-12">
       <div className="container mx-auto px-4">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <h3 className="text-xl font-bold text-[#FFD700]">
+            <h3 className="text-xl font-bold text-primary">
               {settings?.site_title || "Radio Station"}
             </h3>
-            <p className="text-gray-300 text-sm leading-relaxed">
+            <p className="text-muted-foreground text-sm leading-relaxed">
               {settings?.site_tagline || "Your favorite radio station bringing you the best music and entertainment."}
             </p>
           </div>
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-[#FFD700]">Quick Links</h3>
+            <h3 className="text-lg font-semibold text-primary">Quick Links</h3>
             <ul className="space-y-2">
               {quickLinks.map((link) => (
                 <li key={link.name}>
                   <Link 
                     to={link.href}
-                    className="text-gray-300 hover:text-[#FFD700] transition-colors text-sm"
+                    className="text-muted-foreground hover:text-primary transition-colors text-sm"
                   >
                     {link.name}
                   </Link>
@@ -63,14 +63,14 @@ const Footer = () => {
 
           {/* Contact Info */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-[#FFD700]">Contact Us</h3>
+            <h3 className="text-lg font-semibold text-primary">Contact Us</h3>
             <div className="space-y-3">
               {settings?.contact_email && (
                 <div className="flex items-center gap-2 text-sm">
-                  <Mail className="h-4 w-4 text-[#FFD700]" />
+                  <Mail className="h-4 w-4 text-primary" />
                   <a 
                     href={`mailto:${settings.contact_email}`}
-                    className="text-gray-300 hover:text-[#FFD700] transition-colors"
+                    className="text-muted-foreground hover:text-primary transition-colors"
                   >
                     {settings.contact_email}
                   </a>
@@ -78,10 +78,10 @@ const Footer = () => {
               )}
               {settings?.contact_phone && (
                 <div className="flex items-center gap-2 text-sm">
-                  <Phone className="h-4 w-4 text-[#FFD700]" />
+                  <Phone className="h-4 w-4 text-primary" />
                   <a 
                     href={`tel:${settings.contact_phone}`}
-                    className="text-gray-300 hover:text-[#FFD700] transition-colors"
+                    className="text-muted-foreground hover:text-primary transition-colors"
                   >
                     {settings.contact_phone}
                   </a>
@@ -92,7 +92,7 @@ const Footer = () => {
 
           {/* Social & Legal */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-[#FFD700]">Follow Us</h3>
+            <h3 className="text-lg font-semibold text-primary">Follow Us</h3>
             <div className="flex gap-3">
               {socialLinks.map((social) => (
                 <a
@@ -100,7 +100,7 @@ const Footer = () => {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 bg-[#333] hover:bg-[#FFD700] hover:text-black transition-all duration-200 rounded"
+                  className="p-2 bg-muted hover:bg-primary hover:text-primary-foreground transition-all duration-200 rounded"
                   aria-label={social.label}
                 >
                   <social.icon className="h-4 w-4" />
@@ -109,13 +109,13 @@ const Footer = () => {
             </div>
             
             <div className="pt-4">
-              <h4 className="text-sm font-medium text-[#FFD700] mb-2">Legal & Privacy</h4>
+              <h4 className="text-sm font-medium text-primary mb-2">Legal & Privacy</h4>
               <ul className="space-y-1">
                 {legalLinks.map((link) => (
                   <li key={link.name}>
                     <Link 
                       to={link.href}
-                      className="text-gray-300 hover:text-[#FFD700] transition-colors text-xs flex items-center gap-1"
+                      className="text-muted-foreground hover:text-primary transition-colors text-xs flex items-center gap-1"
                     >
                       {link.icon && <link.icon className="h-3 w-3" />}
                       {link.name}
@@ -131,8 +131,8 @@ const Footer = () => {
         <SponsorsSection />
 
         {/* Bottom Bar */}
-        <div className="mt-8 pt-6 border-t border-[#333] flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-gray-400 text-sm text-center sm:text-left">
+        <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-muted-foreground text-sm text-center sm:text-left">
             © {new Date().getFullYear()} {settings?.site_title || "Radio Station"}. All rights reserved.
             {settings?.copyright_text && (
               <span className="block sm:inline sm:ml-2">
@@ -140,7 +140,7 @@ const Footer = () => {
               </span>
             )}
           </p>
-          <p className="text-gray-500 text-xs">
+          <p className="text-muted-foreground/70 text-xs">
             Built with ❤️ for music lovers
           </p>
         </div>

@@ -26,10 +26,10 @@ const NavItem = ({ path, label, isActive, isHomePage, isScrolled, onClick, class
   };
 
   const baseStyling = isActive
-    ? 'text-[#FFD700] dark:text-[#FFD700]'
+    ? 'nav-link-active text-primary'
     : isHomePage && !isScrolled
-      ? 'text-white hover:text-[#FFD700]'
-      : 'text-[#333333] dark:text-white hover:text-[#FFD700] dark:hover:text-[#FFD700]';
+      ? 'text-white hover:text-primary'
+      : 'nav-link';
   
   const commonClasses = 'font-medium transition-colors duration-200 flex items-center relative';
 

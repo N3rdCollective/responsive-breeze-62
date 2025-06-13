@@ -71,62 +71,69 @@
     @apply bg-transparent border-0;
   }
   
-  /* Navigation improvements */
+  /* Navigation improvements with semantic tokens */
   .nav-link {
-    @apply text-gray-600 hover:text-gray-900 transition-colors duration-200;
-    @apply dark:text-muted-foreground dark:hover:text-foreground;
+    @apply text-muted-foreground hover:text-foreground transition-colors duration-200;
   }
   
   .nav-link-active {
-    @apply text-gray-900 font-medium;
-    @apply dark:text-foreground;
+    @apply text-foreground font-medium;
+  }
+  
+  /* Footer styling utilities */
+  .footer-section-heading {
+    @apply text-lg font-semibold text-primary;
+  }
+  
+  .footer-link {
+    @apply text-muted-foreground hover:text-primary transition-colors;
+  }
+  
+  .footer-social-icon {
+    @apply p-2 bg-muted hover:bg-primary hover:text-primary-foreground transition-all duration-200 rounded;
   }
   
   /* Enhanced dropdown menus for better visibility */
   .dropdown-enhanced {
-    @apply bg-white border border-gray-200 shadow-lg rounded-lg;
-    @apply dark:bg-popover dark:border-border dark:shadow-2xl;
+    @apply bg-popover border border-border shadow-lg rounded-lg;
+    @apply dark:shadow-2xl;
   }
   
   .dropdown-item {
-    @apply text-gray-700 hover:bg-gray-100 hover:text-gray-900;
-    @apply dark:text-popover-foreground dark:hover:bg-accent dark:hover:text-accent-foreground;
+    @apply text-popover-foreground hover:bg-accent hover:text-accent-foreground;
   }
   
   /* Loading states */
   .loading-overlay {
-    @apply absolute inset-0 bg-white/80 backdrop-blur-sm;
-    @apply dark:bg-background/80;
+    @apply absolute inset-0 bg-background/80 backdrop-blur-sm;
     @apply flex items-center justify-center z-50;
   }
   
   .loading-spinner {
-    @apply animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600;
-    @apply dark:border-primary;
+    @apply animate-spin rounded-full h-8 w-8 border-b-2 border-primary;
   }
   
   /* Focus styles for accessibility */
   .focus-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2;
-    @apply dark:focus-visible:ring-ring;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
   }
   
   /* Enhanced prose for better content readability */
   .prose-enhanced {
     @apply prose prose-slate max-w-none;
-    @apply prose-headings:text-gray-900 prose-headings:font-semibold;
-    @apply prose-p:text-gray-700 prose-p:leading-relaxed;
-    @apply prose-strong:text-gray-900 prose-strong:font-semibold;
-    @apply prose-code:text-pink-600 prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded;
-    @apply prose-pre:bg-gray-900 prose-pre:text-gray-100;
-    @apply prose-blockquote:text-gray-600 prose-blockquote:border-gray-300;
-    @apply prose-hr:border-gray-300;
-    @apply prose-a:text-blue-600 prose-a:hover:text-blue-700;
+    @apply prose-headings:text-foreground prose-headings:font-semibold;
+    @apply prose-p:text-foreground prose-p:leading-relaxed;
+    @apply prose-strong:text-foreground prose-strong:font-semibold;
+    @apply prose-code:text-primary prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded;
+    @apply prose-pre:bg-muted prose-pre:text-foreground;
+    @apply prose-blockquote:text-muted-foreground prose-blockquote:border-border;
+    @apply prose-hr:border-border;
+    @apply prose-a:text-primary prose-a:hover:text-primary/80;
     
     /* Dark mode prose */
     @apply dark:prose-invert;
     @apply dark:prose-headings:text-foreground;
-    @apply dark:prose-p:text-muted-foreground;
+    @apply dark:prose-p:text-foreground;
     @apply dark:prose-strong:text-foreground;
     @apply dark:prose-code:text-primary dark:prose-code:bg-muted;
     @apply dark:prose-blockquote:text-muted-foreground dark:prose-blockquote:border-border;
@@ -140,18 +147,15 @@
   }
   
   .table-enhanced th {
-    @apply bg-gray-50 text-gray-900 font-semibold text-left px-4 py-3 border-b border-gray-200;
-    @apply dark:bg-muted dark:text-foreground dark:border-border;
+    @apply bg-muted text-foreground font-semibold text-left px-4 py-3 border-b border-border;
   }
   
   .table-enhanced td {
-    @apply text-gray-700 px-4 py-3 border-b border-gray-100;
-    @apply dark:text-muted-foreground dark:border-border/50;
+    @apply text-foreground px-4 py-3 border-b border-border/50;
   }
   
   .table-enhanced tr:hover td {
-    @apply bg-gray-50;
-    @apply dark:bg-muted/50;
+    @apply bg-muted/50;
   }
   
   /* Alert components */
@@ -179,40 +183,33 @@
 @layer utilities {
   /* Text contrast utilities */
   .text-contrast {
-    @apply text-gray-900;
-    @apply dark:text-foreground;
+    @apply text-foreground;
   }
   
   .text-contrast-secondary {
-    @apply text-gray-600;
-    @apply dark:text-muted-foreground;
+    @apply text-muted-foreground;
   }
   
   .text-contrast-muted {
-    @apply text-gray-500;
-    @apply dark:text-muted-foreground/70;
+    @apply text-muted-foreground/70;
   }
   
   /* Background utilities */
   .bg-surface {
-    @apply bg-white;
-    @apply dark:bg-card;
+    @apply bg-background;
   }
   
   .bg-surface-secondary {
-    @apply bg-gray-50;
-    @apply dark:bg-muted/50;
+    @apply bg-muted/50;
   }
   
   /* Border utilities */
   .border-contrast {
-    @apply border-gray-200;
-    @apply dark:border-border;
+    @apply border-border;
   }
   
   .border-contrast-light {
-    @apply border-gray-100;
-    @apply dark:border-border/50;
+    @apply border-border/50;
   }
   
   /* Shadow utilities for light mode */
