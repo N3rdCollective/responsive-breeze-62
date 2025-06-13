@@ -1,3 +1,4 @@
+
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -6,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import AuthProvider from '@/hooks/useAuth';
+import { AnalyticsProvider } from '@/components/providers/AnalyticsProvider';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import MusicPlayer from "@/components/MusicPlayer";
@@ -39,6 +41,7 @@ const ForumInitiateSearchPage = lazy(() => import("./pages/ForumInitiateSearchPa
 const NotFound = lazy(() => import("./pages/NotFound"));
 const RequestPasswordResetPage = lazy(() => import("./pages/RequestPasswordResetPage"));
 const UpdatePasswordPage = lazy(() => import("./pages/UpdatePasswordPage"));
+const PrivacySettings = lazy(() => import("./pages/PrivacySettings"));
 
 // Staff pages
 const StaffLogin = lazy(() => import("./pages/StaffLogin"));
@@ -70,86 +73,89 @@ function App() {
         <TooltipProvider>
           <AuthProvider>
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-              <div className="min-h-screen bg-background flex flex-col w-full">
-                <Routes>
-                  {/* Staff Routes - Now wrapped with StaffAuthProvider */}
-                  <Route path="/staff/*" element={
-                    <StaffAuthProvider>
-                      <Suspense fallback={<PageLoader />}>
-                        <Routes>
-                          <Route path="login" element={<StaffLogin />} />
-                          <Route path="signup" element={<StaffRegistration />} />
-                          <Route path="*" element={<StaffLayout />}>
-                            <Route path="panel" element={<UnifiedStaffDashboard />} />
-                            <Route path="analytics" element={<StaffAnalytics />} />
-                            <Route path="videos" element={<StaffVideosPage />} />
-                            <Route path="news" element={<StaffNewsPage />} />
-                            <Route path="news/editor" element={<NewsEditor />} />
-                            <Route path="news/editor/:id" element={<NewsEditor />} />
-                            <Route path="home" element={<StaffHomepageManager />} />
-                            <Route path="personalities" element={<StaffPersonalities />} />
-                            <Route path="featured-artists" element={<StaffFeaturedArtists />} />
-                            <Route path="shows" element={<StaffShowsManager />} />
-                            <Route path="users" element={<StaffUserManager />} />
-                            <Route path="users/edit/:userId" element={<StaffUserEditor />} />
-                            <Route path="forum" element={<StaffForumManagementPage />} />
-                            <Route path="moderation" element={<StaffModeratorDashboard />} />
-                            <Route path="activity" element={<StaffActivityLogs />} />
-                            <Route path="sponsors" element={<StaffSponsors />} />
-                            <Route path="settings" element={<StaffSystemSettings />} />
-                            <Route path="about" element={<StaffAboutEditor />} />
-                          </Route>
-                        </Routes>
-                      </Suspense>
-                    </StaffAuthProvider>
-                  } />
-                  
-                  {/* Public Routes */}
-                  <Route path="/*" element={
-                    <>
-                      <Navbar />
-                      <main className="flex-1">
-                        <ErrorBoundary>
-                          <Suspense fallback={<PageLoader />}>
-                            <Routes>
-                              <Route path="/" element={<Index />} />
-                              <Route path="/about" element={<About />} />
-                              <Route path="/contact" element={<Contact />} />
-                              <Route path="/news" element={<News />} />
-                              <Route path="/news/:id" element={<NewsPost />} />
-                              <Route path="/schedule" element={<Schedule />} />
-                              <Route path="/personalities" element={<Personalities />} />
-                              <Route path="/artists" element={<ArtistsPage />} />
-                              <Route path="/artists/:id" element={<ArtistDetail />} />
-                              <Route path="/artists-archive" element={<ArtistsArchivePage />} />
-                              <Route path="/auth" element={<Auth />} />
-                              <Route path="/profile" element={<ProfilePage />} />
-                              <Route path="/profile/:userId" element={<PublicProfilePage />} />
-                              <Route path="/u/:username" element={<PublicProfilePage />} />
-                              <Route path="/messages" element={<UnifiedMessagesPage />} />
-                              <Route path="/members" element={<MembersPage />} />
-                              <Route path="/members/forum/:categorySlug" element={<ForumCategoryPage />} />
-                              <Route path="/members/forum/:categorySlug/:topicSlug" element={<ForumTopicPage />} />
-                              <Route path="/members/forum/:categorySlug/new" element={<NewForumTopicPage />} />
-                              <Route path="/forum/new-topic/:categorySlug" element={<NewForumTopicPage />} />
-                              <Route path="/forum/search" element={<ForumInitiateSearchPage />} />
-                              <Route path="/forum/search/results" element={<ForumSearchResultsPage />} />
-                              <Route path="/reset-password" element={<RequestPasswordResetPage />} />
-                              <Route path="/update-password" element={<UpdatePasswordPage />} />
-                              <Route path="*" element={<NotFound />} />
-                              <Route path="/error" element={<RouteErrorElement />} />
-                            </Routes>
-                          </Suspense>
-                        </ErrorBoundary>
-                      </main>
-                      <Footer />
-                      <MusicPlayer />
-                    </>
-                  } />
-                </Routes>
-              </div>
-              <Toaster />
-              <Sonner />
+              <AnalyticsProvider>
+                <div className="min-h-screen bg-background flex flex-col w-full">
+                  <Routes>
+                    {/* Staff Routes - Now wrapped with StaffAuthProvider */}
+                    <Route path="/staff/*" element={
+                      <StaffAuthProvider>
+                        <Suspense fallback={<PageLoader />}>
+                          <Routes>
+                            <Route path="login" element={<StaffLogin />} />
+                            <Route path="signup" element={<StaffRegistration />} />
+                            <Route path="*" element={<StaffLayout />}>
+                              <Route path="panel" element={<UnifiedStaffDashboard />} />
+                              <Route path="analytics" element={<StaffAnalytics />} />
+                              <Route path="videos" element={<StaffVideosPage />} />
+                              <Route path="news" element={<StaffNewsPage />} />
+                              <Route path="news/editor" element={<NewsEditor />} />
+                              <Route path="news/editor/:id" element={<NewsEditor />} />
+                              <Route path="home" element={<StaffHomepageManager />} />
+                              <Route path="personalities" element={<StaffPersonalities />} />
+                              <Route path="featured-artists" element={<StaffFeaturedArtists />} />
+                              <Route path="shows" element={<StaffShowsManager />} />
+                              <Route path="users" element={<StaffUserManager />} />
+                              <Route path="users/edit/:userId" element={<StaffUserEditor />} />
+                              <Route path="forum" element={<StaffForumManagementPage />} />
+                              <Route path="moderation" element={<StaffModeratorDashboard />} />
+                              <Route path="activity" element={<StaffActivityLogs />} />
+                              <Route path="sponsors" element={<StaffSponsors />} />
+                              <Route path="settings" element={<StaffSystemSettings />} />
+                              <Route path="about" element={<StaffAboutEditor />} />
+                            </Route>
+                          </Routes>
+                        </Suspense>
+                      </StaffAuthProvider>
+                    } />
+                    
+                    {/* Public Routes */}
+                    <Route path="/*" element={
+                      <>
+                        <Navbar />
+                        <main className="flex-1">
+                          <ErrorBoundary>
+                            <Suspense fallback={<PageLoader />}>
+                              <Routes>
+                                <Route path="/" element={<Index />} />
+                                <Route path="/about" element={<About />} />
+                                <Route path="/contact" element={<Contact />} />
+                                <Route path="/news" element={<News />} />
+                                <Route path="/news/:id" element={<NewsPost />} />
+                                <Route path="/schedule" element={<Schedule />} />
+                                <Route path="/personalities" element={<Personalities />} />
+                                <Route path="/artists" element={<ArtistsPage />} />
+                                <Route path="/artists/:id" element={<ArtistDetail />} />
+                                <Route path="/artists-archive" element={<ArtistsArchivePage />} />
+                                <Route path="/auth" element={<Auth />} />
+                                <Route path="/profile" element={<ProfilePage />} />
+                                <Route path="/profile/:userId" element={<PublicProfilePage />} />
+                                <Route path="/u/:username" element={<PublicProfilePage />} />
+                                <Route path="/messages" element={<UnifiedMessagesPage />} />
+                                <Route path="/members" element={<MembersPage />} />
+                                <Route path="/members/forum/:categorySlug" element={<ForumCategoryPage />} />
+                                <Route path="/members/forum/:categorySlug/:topicSlug" element={<ForumTopicPage />} />
+                                <Route path="/members/forum/:categorySlug/new" element={<NewForumTopicPage />} />
+                                <Route path="/forum/new-topic/:categorySlug" element={<NewForumTopicPage />} />
+                                <Route path="/forum/search" element={<ForumInitiateSearchPage />} />
+                                <Route path="/forum/search/results" element={<ForumSearchResultsPage />} />
+                                <Route path="/reset-password" element={<RequestPasswordResetPage />} />
+                                <Route path="/update-password" element={<UpdatePasswordPage />} />
+                                <Route path="/privacy-settings" element={<PrivacySettings />} />
+                                <Route path="*" element={<NotFound />} />
+                                <Route path="/error" element={<RouteErrorElement />} />
+                              </Routes>
+                            </Suspense>
+                          </ErrorBoundary>
+                        </main>
+                        <Footer />
+                        <MusicPlayer />
+                      </>
+                    } />
+                  </Routes>
+                </div>
+                <Toaster />
+                <Sonner />
+              </AnalyticsProvider>
             </BrowserRouter>
           </AuthProvider>
         </TooltipProvider>
