@@ -7,10 +7,15 @@ type SecurityEventType =
   | 'login_success'
   | 'login_failure'
   | 'signup_attempt'
+  | 'signup_success'
+  | 'signup_failure'
   | 'password_reset_attempt'
+  | 'password_reset_success'
+  | 'password_reset_failure'
   | 'permission_violation'
   | 'suspicious_activity'
-  | 'account_lockout';
+  | 'account_lockout'
+  | 'page_access';
 
 type SecuritySeverity = 'low' | 'medium' | 'high' | 'critical';
 
