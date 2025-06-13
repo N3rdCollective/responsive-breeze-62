@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { ThemeToggle } from "@/components/navbar/ThemeToggle";
+import ThemeToggle from "@/components/navbar/ThemeToggle";
 import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin, Shield } from "lucide-react";
 import SponsorsSection from "@/components/footer/SponsorsSection";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
@@ -38,14 +38,14 @@ const Footer = () => {
           {/* Company Info */}
           <div className="space-y-4">
             <h3 className="text-xl font-bold text-[#FFD700]">
-              {settings?.site_name || "Radio Station"}
+              {settings?.site_title || "Radio Station"}
             </h3>
             <p className="text-gray-300 text-sm leading-relaxed">
-              {settings?.site_description || "Your favorite radio station bringing you the best music and entertainment."}
+              {settings?.site_tagline || "Your favorite radio station bringing you the best music and entertainment."}
             </p>
             <div className="flex items-center gap-1">
               <span className="text-sm text-gray-400">Theme:</span>
-              <ThemeToggle />
+              <ThemeToggle isHomePage={false} isScrolled={true} />
             </div>
           </div>
 
@@ -90,12 +90,6 @@ const Footer = () => {
                   >
                     {settings.contact_phone}
                   </a>
-                </div>
-              )}
-              {settings?.contact_address && (
-                <div className="flex items-start gap-2 text-sm">
-                  <MapPin className="h-4 w-4 text-[#FFD700] mt-0.5" />
-                  <span className="text-gray-300">{settings.contact_address}</span>
                 </div>
               )}
             </div>
@@ -144,7 +138,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="mt-8 pt-6 border-t border-[#333] flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-gray-400 text-sm text-center sm:text-left">
-            © {new Date().getFullYear()} {settings?.site_name || "Radio Station"}. All rights reserved.
+            © {new Date().getFullYear()} {settings?.site_title || "Radio Station"}. All rights reserved.
             {settings?.copyright_text && (
               <span className="block sm:inline sm:ml-2">
                 {settings.copyright_text}
