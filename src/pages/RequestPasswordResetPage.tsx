@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2, ArrowLeft } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
+import { useRateLimiting } from "@/hooks/security/useRateLimiting";
+import { useSecurityEventLogger } from "@/hooks/security/useSecurityEventLogger";
 
 const RequestPasswordResetPage = () => {
   const [email, setEmail] = useState("");
@@ -16,6 +18,8 @@ const RequestPasswordResetPage = () => {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const { toast } = useToast();
+  const { checkRateLimit, logAuthAttempt, isRateLimited } = useRateLimiting();
+  const { logSecurityEvent } = useSecurityEventLogger();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,11 +28,39 @@ const RequestPasswordResetPage = () => {
     setIsLoading(true);
 
     try {
+      // Check rate limiting for password reset attempts
+      const canProceed = await checkRateLimit(email, 'password_reset', { 
+        maxAttempts: 3, 
+        timeWindow: '1 hour' 
+      });
+      
+      if (!canProceed) {
+        setError("Too many password reset attempts. Please wait 1 hour before trying again.");
+        await logSecurityEvent('account_lockout', 'high', { 
+          email, 
+          reason: 'password_reset_rate_limit_exceeded' 
+        });
+        return;
+      }
+
+      // Log password reset attempt
+      await logSecurityEvent('password_reset_attempt', 'low', { email });
+
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/update-password`,
       });
 
-      if (resetError) throw resetError;
+      if (resetError) {
+        await logAuthAttempt(email, 'password_reset', false);
+        await logSecurityEvent('password_reset_failure', 'medium', { 
+          email, 
+          errorMessage: resetError.message 
+        });
+        throw resetError;
+      }
+
+      await logAuthAttempt(email, 'password_reset', true);
+      await logSecurityEvent('password_reset_success', 'low', { email });
 
       setMessage("If an account exists for this email, a password reset link has been sent.");
       toast({
@@ -72,6 +104,14 @@ const RequestPasswordResetPage = () => {
                 <AlertDescription>{message}</AlertDescription>
               </Alert>
             )}
+            {isRateLimited && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Too many password reset attempts. Please wait 1 hour before trying again.
+                </AlertDescription>
+              </Alert>
+            )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -81,7 +121,7 @@ const RequestPasswordResetPage = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                disabled={isLoading}
+                disabled={isLoading || isRateLimited}
               />
             </div>
           </CardContent>
@@ -90,7 +130,7 @@ const RequestPasswordResetPage = () => {
             <Button
               type="submit"
               className="w-full"
-              disabled={isLoading}
+              disabled={isLoading || isRateLimited}
             >
               {isLoading ? (
                 <>

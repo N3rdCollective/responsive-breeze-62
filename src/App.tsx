@@ -1,165 +1,89 @@
 
-import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import AuthProvider from '@/hooks/useAuth';
-import { AnalyticsProvider } from '@/components/providers/AnalyticsProvider';
 import { StaffAuthProvider } from "@/hooks/useStaffAuth";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import MusicPlayer from "@/components/MusicPlayer";
-import ErrorBoundary from "@/components/ErrorBoundary";
-import RouteErrorElement from "@/components/RouteErrorElement";
-import PageLoader from "@/components/general/PageLoader";
-import StaffLayout from "@/components/layouts/StaffLayout";
-
-// Lazy load components
-const Index = lazy(() => import("./pages/Index"));
-const About = lazy(() => import("./pages/About"));
-const Contact = lazy(() => import("./pages/Contact"));
-const News = lazy(() => import("./pages/News"));
-const NewsPost = lazy(() => import("./pages/NewsPost"));
-const Schedule = lazy(() => import("./pages/Schedule"));
-const Personalities = lazy(() => import("./pages/Personalities"));
-const ArtistsPage = lazy(() => import("./pages/ArtistsPage"));
-const ArtistDetail = lazy(() => import("./pages/ArtistDetail"));
-const ArtistsArchivePage = lazy(() => import("./pages/ArtistsArchivePage"));
-const Auth = lazy(() => import("./pages/Auth"));
-const ProfilePage = lazy(() => import("./pages/ProfilePage"));
-const PublicProfilePage = lazy(() => import("./pages/PublicProfilePage"));
-const UnifiedMessagesPage = lazy(() => import("./pages/UnifiedMessagesPage"));
-const MembersPage = lazy(() => import("./pages/MembersPage"));
-const ForumCategoryPage = lazy(() => import("./pages/ForumCategoryPage"));
-const ForumTopicPage = lazy(() => import("./pages/ForumTopicPage"));
-const NewForumTopicPage = lazy(() => import("./pages/NewForumTopicPage"));
-const ForumSearchResultsPage = lazy(() => import("./pages/ForumSearchResultsPage"));
-const ForumInitiateSearchPage = lazy(() => import("./pages/ForumInitiateSearchPage"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const RequestPasswordResetPage = lazy(() => import("./pages/RequestPasswordResetPage"));
-const UpdatePasswordPage = lazy(() => import("./pages/UpdatePasswordPage"));
-const PrivacySettings = lazy(() => import("./pages/PrivacySettings"));
-
-// Staff pages
-const StaffLogin = lazy(() => import("./pages/StaffLogin"));
-const StaffRegistration = lazy(() => import("./pages/StaffRegistration"));
-const UnifiedStaffDashboard = lazy(() => import("./pages/UnifiedStaffDashboard"));
-const StaffNewsPage = lazy(() => import("./pages/StaffNewsPage"));
-const NewsEditor = lazy(() => import("./pages/NewsEditor"));
-const StaffHomepageManager = lazy(() => import("./pages/StaffHomepageManager"));
-const StaffPersonalities = lazy(() => import("./pages/StaffPersonalities"));
-const StaffFeaturedArtists = lazy(() => import("./pages/StaffFeaturedArtists"));
-const StaffShowsManager = lazy(() => import("./pages/StaffShowsManager"));
-const StaffUserManager = lazy(() => import("./pages/StaffUserManager"));
-const StaffUserEditor = lazy(() => import("./pages/StaffUserEditor"));
-const StaffForumManagementPage = lazy(() => import("./pages/StaffForumManagementPage"));
-const StaffModeratorDashboard = lazy(() => import("./pages/StaffModeratorDashboard"));
-const StaffActivityLogs = lazy(() => import("./pages/StaffActivityLogs"));
-const StaffSponsors = lazy(() => import("./pages/StaffSponsors"));
-const StaffSystemSettings = lazy(() => import("./pages/StaffSystemSettings"));
-const StaffAboutEditor = lazy(() => import("./pages/StaffAboutEditor"));
-const StaffAnalytics = lazy(() => import("./pages/StaffAnalytics"));
-const StaffVideosPage = lazy(() => import("./pages/StaffVideosPage"));
+import { SecurityProvider } from "@/components/security/SecurityProvider";
+import Index from "./pages/Index";
+import About from "./pages/About";
+import Forum from "./pages/Forum";
+import ForumTopic from "./pages/ForumTopic";
+import ForumCategory from "./pages/ForumCategory";
+import Timeline from "./pages/Timeline";
+import News from "./pages/News";
+import NewsDetail from "./pages/NewsDetail";
+import Auth from "./pages/Auth";
+import RequestPasswordResetPage from "./pages/RequestPasswordResetPage";
+import UpdatePasswordPage from "./pages/UpdatePasswordPage";
+import Profile from "./pages/Profile";
+import Messages from "./pages/Messages";
+import Conversation from "./pages/Conversation";
+import StaffRegistration from "./pages/StaffRegistration";
+import StaffLoginPage from "./pages/StaffLoginPage";
+import StaffPanel from "./pages/StaffPanel";
+import StaffUserManager from "./pages/StaffUserManager";
+import StaffContentManager from "./pages/StaffContentManager";
+import StaffAnalytics from "./pages/StaffAnalytics";
+import StaffNewsManager from "./pages/StaffNewsManager";
+import StaffCreateNews from "./pages/StaffCreateNews";
+import StaffEditNews from "./pages/StaffEditNews";
+import StaffReportManager from "./pages/StaffReportManager";
+import StaffHomepageManager from "./pages/StaffHomepageManager";
+import StaffPersonalityManager from "./pages/StaffPersonalityManager";
+import StaffScheduleManager from "./pages/StaffScheduleManager";
+import StaffSettings from "./pages/StaffSettings";
+import PersonalityProfile from "./pages/PersonalityProfile";
+import Schedule from "./pages/Schedule";
 
 const queryClient = new QueryClient();
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="dark">
-        <TooltipProvider>
-          <AuthProvider>
-            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-              <StaffAuthProvider>
-                <AnalyticsProvider>
-                  <div className="min-h-screen bg-background flex flex-col w-full">
-                    <Routes>
-                      {/* Staff Routes */}
-                      <Route path="/staff/*" element={
-                        <Suspense fallback={<PageLoader />}>
-                          <Routes>
-                            <Route path="login" element={<StaffLogin />} />
-                            <Route path="signup" element={<StaffRegistration />} />
-                            <Route path="*" element={<StaffLayout />}>
-                              <Route path="panel" element={<UnifiedStaffDashboard />} />
-                              <Route path="analytics" element={<StaffAnalytics />} />
-                              <Route path="videos" element={<StaffVideosPage />} />
-                              <Route path="news" element={<StaffNewsPage />} />
-                              <Route path="news/editor" element={<NewsEditor />} />
-                              <Route path="news/editor/:id" element={<NewsEditor />} />
-                              <Route path="home" element={<StaffHomepageManager />} />
-                              <Route path="personalities" element={<StaffPersonalities />} />
-                              <Route path="featured-artists" element={<StaffFeaturedArtists />} />
-                              <Route path="shows" element={<StaffShowsManager />} />
-                              <Route path="users" element={<StaffUserManager />} />
-                              <Route path="users/edit/:userId" element={<StaffUserEditor />} />
-                              <Route path="forum" element={<StaffForumManagementPage />} />
-                              <Route path="moderation" element={<StaffModeratorDashboard />} />
-                              <Route path="activity" element={<StaffActivityLogs />} />
-                              <Route path="sponsors" element={<StaffSponsors />} />
-                              <Route path="settings" element={<StaffSystemSettings />} />
-                              <Route path="about" element={<StaffAboutEditor />} />
-                            </Route>
-                          </Routes>
-                        </Suspense>
-                      } />
-                      
-                      {/* Public Routes */}
-                      <Route path="/*" element={
-                        <>
-                          <Navbar />
-                          <main className="flex-1">
-                            <ErrorBoundary>
-                              <Suspense fallback={<PageLoader />}>
-                                <Routes>
-                                  <Route path="/" element={<Index />} />
-                                  <Route path="/about" element={<About />} />
-                                  <Route path="/contact" element={<Contact />} />
-                                  <Route path="/news" element={<News />} />
-                                  <Route path="/news/:id" element={<NewsPost />} />
-                                  <Route path="/schedule" element={<Schedule />} />
-                                  <Route path="/personalities" element={<Personalities />} />
-                                  <Route path="/artists" element={<ArtistsPage />} />
-                                  <Route path="/artists/:id" element={<ArtistDetail />} />
-                                  <Route path="/artists-archive" element={<ArtistsArchivePage />} />
-                                  <Route path="/auth" element={<Auth />} />
-                                  <Route path="/profile" element={<ProfilePage />} />
-                                  <Route path="/profile/:userId" element={<PublicProfilePage />} />
-                                  <Route path="/u/:username" element={<PublicProfilePage />} />
-                                  <Route path="/messages" element={<UnifiedMessagesPage />} />
-                                  <Route path="/members" element={<MembersPage />} />
-                                  <Route path="/members/forum/:categorySlug" element={<ForumCategoryPage />} />
-                                  <Route path="/members/forum/:categorySlug/:topicSlug" element={<ForumTopicPage />} />
-                                  <Route path="/members/forum/:categorySlug/new" element={<NewForumTopicPage />} />
-                                  <Route path="/forum/new-topic/:categorySlug" element={<NewForumTopicPage />} />
-                                  <Route path="/forum/search" element={<ForumInitiateSearchPage />} />
-                                  <Route path="/forum/search/results" element={<ForumSearchResultsPage />} />
-                                  <Route path="/reset-password" element={<RequestPasswordResetPage />} />
-                                  <Route path="/update-password" element={<UpdatePasswordPage />} />
-                                  <Route path="/privacy-settings" element={<PrivacySettings />} />
-                                  <Route path="*" element={<NotFound />} />
-                                  <Route path="/error" element={<RouteErrorElement />} />
-                                </Routes>
-                              </Suspense>
-                            </ErrorBoundary>
-                          </main>
-                          <Footer />
-                          <MusicPlayer />
-                        </>
-                      } />
-                    </Routes>
-                  </div>
-                  <Toaster />
-                  <Sonner />
-                </AnalyticsProvider>
-              </StaffAuthProvider>
+      <TooltipProvider>
+        <SecurityProvider>
+          <StaffAuthProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/forum" element={<Forum />} />
+                <Route path="/forum/topic/:slug" element={<ForumTopic />} />
+                <Route path="/forum/category/:slug" element={<ForumCategory />} />
+                <Route path="/timeline" element={<Timeline />} />
+                <Route path="/news" element={<News />} />
+                <Route path="/news/:slug" element={<NewsDetail />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
+                <Route path="/update-password" element={<UpdatePasswordPage />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/messages" element={<Messages />} />
+                <Route path="/conversation/:id" element={<Conversation />} />
+                <Route path="/staff/register" element={<StaffRegistration />} />
+                <Route path="/staff/login" element={<StaffLoginPage />} />
+                <Route path="/staff/panel" element={<StaffPanel />} />
+                <Route path="/staff/users" element={<StaffUserManager />} />
+                <Route path="/staff/content" element={<StaffContentManager />} />
+                <Route path="/staff/analytics" element={<StaffAnalytics />} />
+                <Route path="/staff/news" element={<StaffNewsManager />} />
+                <Route path="/staff/news/create" element={<StaffCreateNews />} />
+                <Route path="/staff/news/edit/:id" element={<StaffEditNews />} />
+                <Route path="/staff/reports" element={<StaffReportManager />} />
+                <Route path="/staff/homepage" element={<StaffHomepageManager />} />
+                <Route path="/staff/personalities" element={<StaffPersonalityManager />} />
+                <Route path="/staff/schedule" element={<StaffScheduleManager />} />
+                <Route path="/staff/settings" element={<StaffSettings />} />
+                <Route path="/personality/:id" element={<PersonalityProfile />} />
+                <Route path="/schedule" element={<Schedule />} />
+              </Routes>
             </BrowserRouter>
-          </AuthProvider>
-        </TooltipProvider>
-      </ThemeProvider>
+          </StaffAuthProvider>
+        </SecurityProvider>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }
