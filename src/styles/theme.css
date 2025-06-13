@@ -5,43 +5,43 @@
   /* Status-specific button variants for immediate use */
   .btn-success {
     @apply bg-green-600 text-white hover:bg-green-700 shadow-sm;
-    @apply dark:bg-green-500 dark:text-green-950 dark:hover:bg-green-400;
+    @apply dark:bg-green-400 dark:text-black dark:hover:bg-green-300;
   }
   
   .btn-warning {
     @apply bg-yellow-600 text-white hover:bg-yellow-700 shadow-sm;
-    @apply dark:bg-yellow-500 dark:text-yellow-950 dark:hover:bg-yellow-400;
+    @apply dark:bg-yellow-400 dark:text-black dark:hover:bg-yellow-300;
   }
   
   .btn-error {
     @apply bg-red-600 text-white hover:bg-red-700 shadow-sm;
-    @apply dark:bg-red-500 dark:text-red-950 dark:hover:bg-red-400;
+    @apply dark:bg-red-400 dark:text-black dark:hover:bg-red-300;
   }
   
   .btn-info {
     @apply bg-blue-600 text-white hover:bg-blue-700 shadow-sm;
-    @apply dark:bg-blue-500 dark:text-blue-950 dark:hover:bg-blue-400;
+    @apply dark:bg-blue-400 dark:text-black dark:hover:bg-blue-300;
   }
   
   /* Enhanced status badges with better contrast */
   .badge-success {
     @apply bg-green-100 text-green-800 border border-green-200;
-    @apply dark:bg-green-900/30 dark:text-green-300 dark:border-green-800;
+    @apply dark:bg-green-400 dark:text-black dark:border-green-500;
   }
   
   .badge-warning {
     @apply bg-yellow-100 text-yellow-800 border border-yellow-200;
-    @apply dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800;
+    @apply dark:bg-yellow-400 dark:text-black dark:border-yellow-500;
   }
   
   .badge-error {
     @apply bg-red-100 text-red-800 border border-red-200;
-    @apply dark:bg-red-900/30 dark:text-red-300 dark:border-red-800;
+    @apply dark:bg-red-400 dark:text-black dark:border-red-500;
   }
   
   .badge-info {
     @apply bg-blue-100 text-blue-800 border border-blue-200;
-    @apply dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800;
+    @apply dark:bg-blue-400 dark:text-black dark:border-blue-500;
   }
   
   /* Form validation states with better visibility */
@@ -74,10 +74,12 @@
   /* Navigation improvements with semantic tokens */
   .nav-link {
     @apply text-muted-foreground hover:text-foreground transition-colors duration-200;
+    @apply dark:text-gray-300 dark:hover:text-white;
   }
   
   .nav-link-active {
     @apply text-foreground font-medium;
+    @apply dark:text-white;
   }
   
   /* Footer styling utilities */
@@ -87,6 +89,7 @@
   
   .footer-link {
     @apply text-muted-foreground hover:text-primary transition-colors;
+    @apply dark:text-gray-300 dark:hover:text-primary;
   }
   
   .footer-social-icon {
@@ -101,6 +104,7 @@
   
   .dropdown-item {
     @apply text-popover-foreground hover:bg-accent hover:text-accent-foreground;
+    @apply dark:text-gray-200 dark:hover:text-white;
   }
   
   /* Loading states */
@@ -130,13 +134,13 @@
     @apply prose-hr:border-border;
     @apply prose-a:text-primary prose-a:hover:text-primary/80;
     
-    /* Dark mode prose */
+    /* Dark mode prose with better text contrast */
     @apply dark:prose-invert;
-    @apply dark:prose-headings:text-foreground;
-    @apply dark:prose-p:text-foreground;
-    @apply dark:prose-strong:text-foreground;
+    @apply dark:prose-headings:text-white;
+    @apply dark:prose-p:text-gray-200;
+    @apply dark:prose-strong:text-white;
     @apply dark:prose-code:text-primary dark:prose-code:bg-muted;
-    @apply dark:prose-blockquote:text-muted-foreground dark:prose-blockquote:border-border;
+    @apply dark:prose-blockquote:text-gray-300 dark:prose-blockquote:border-border;
     @apply dark:prose-hr:border-border;
     @apply dark:prose-a:text-primary dark:prose-a:hover:text-primary/80;
   }
@@ -148,50 +152,55 @@
   
   .table-enhanced th {
     @apply bg-muted text-foreground font-semibold text-left px-4 py-3 border-b border-border;
+    @apply dark:text-white;
   }
   
   .table-enhanced td {
     @apply text-foreground px-4 py-3 border-b border-border/50;
+    @apply dark:text-gray-200;
   }
   
   .table-enhanced tr:hover td {
     @apply bg-muted/50;
   }
   
-  /* Alert components */
+  /* Alert components with better dark mode text */
   .alert-info {
     @apply bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-4;
-    @apply dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300;
+    @apply dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-200;
   }
   
   .alert-success {
     @apply bg-green-50 border border-green-200 text-green-800 rounded-lg p-4;
-    @apply dark:bg-green-900/20 dark:border-green-800 dark:text-green-300;
+    @apply dark:bg-green-900/30 dark:border-green-800 dark:text-green-200;
   }
   
   .alert-warning {
     @apply bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-lg p-4;
-    @apply dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300;
+    @apply dark:bg-yellow-900/30 dark:border-yellow-800 dark:text-yellow-200;
   }
   
   .alert-error {
     @apply bg-red-50 border border-red-200 text-red-800 rounded-lg p-4;
-    @apply dark:bg-red-900/20 dark:border-red-800 dark:text-red-300;
+    @apply dark:bg-red-900/30 dark:border-red-800 dark:text-red-200;
   }
 }
 
 @layer utilities {
-  /* Text contrast utilities */
+  /* Text contrast utilities with improved dark mode */
   .text-contrast {
     @apply text-foreground;
+    @apply dark:text-gray-100;
   }
   
   .text-contrast-secondary {
     @apply text-muted-foreground;
+    @apply dark:text-gray-300;
   }
   
   .text-contrast-muted {
     @apply text-muted-foreground/70;
+    @apply dark:text-gray-400;
   }
   
   /* Background utilities */

@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -12,38 +13,38 @@ const buttonVariants = cva(
         default: [
           // Light mode: strong blue with white text for better contrast
           "bg-blue-600 text-white hover:bg-blue-700 shadow-sm",
-          // Dark mode: keep existing primary colors
-          "dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
+          // Dark mode: bright primary with dark text for contrast
+          "dark:bg-primary dark:text-black dark:hover:bg-primary/90"
         ],
         destructive: [
           // Light mode: strong red with white text
           "bg-red-600 text-white hover:bg-red-700 shadow-sm",
-          // Dark mode
-          "dark:bg-destructive dark:text-destructive-foreground dark:hover:bg-destructive/90"
+          // Dark mode: bright red with dark text for better contrast
+          "dark:bg-red-500 dark:text-black dark:hover:bg-red-400"
         ],
         outline: [
           // Light mode: gray border with dark text for better readability
           "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 shadow-sm",
-          // Dark mode
-          "dark:border-input dark:bg-background dark:hover:bg-accent dark:hover:text-accent-foreground"
+          // Dark mode: bright border and text for visibility
+          "dark:border-gray-600 dark:bg-background dark:text-gray-200 dark:hover:bg-accent dark:hover:text-white"
         ],
         secondary: [
           // Light mode: light gray background with dark text
           "bg-gray-100 text-gray-900 hover:bg-gray-200 shadow-sm",
-          // Dark mode
-          "dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/80"
+          // Dark mode: bright background with dark text for contrast
+          "dark:bg-gray-300 dark:text-black dark:hover:bg-gray-200"
         ],
         ghost: [
           // Light mode: transparent with gray text, better hover state
           "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
-          // Dark mode
-          "dark:hover:bg-accent dark:hover:text-accent-foreground"
+          // Dark mode: bright text for visibility
+          "dark:text-gray-200 dark:hover:bg-accent dark:hover:text-white"
         ],
         link: [
           // Light mode: blue text for better visibility
           "text-blue-600 underline-offset-4 hover:underline hover:text-blue-700",
-          // Dark mode
-          "dark:text-primary dark:hover:underline"
+          // Dark mode: bright primary text
+          "dark:text-primary dark:hover:text-primary/80"
         ],
       },
       size: {
