@@ -1,3 +1,4 @@
+
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -71,12 +72,12 @@ function App() {
       <ThemeProvider defaultTheme="dark">
         <TooltipProvider>
           <AuthProvider>
-            <StaffAuthProvider>
-              <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <StaffAuthProvider>
                 <AnalyticsProvider>
                   <div className="min-h-screen bg-background flex flex-col w-full">
                     <Routes>
-                      {/* Staff Routes - No longer need StaffAuthProvider wrapper */}
+                      {/* Staff Routes */}
                       <Route path="/staff/*" element={
                         <Suspense fallback={<PageLoader />}>
                           <Routes>
@@ -154,8 +155,8 @@ function App() {
                   <Toaster />
                   <Sonner />
                 </AnalyticsProvider>
-              </BrowserRouter>
-            </StaffAuthProvider>
+              </StaffAuthProvider>
+            </BrowserRouter>
           </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>
