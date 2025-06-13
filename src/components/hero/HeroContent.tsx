@@ -43,7 +43,7 @@ const HeroContent: React.FC<HeroContentProps> = ({
         <Link to="/schedule" className="w-full sm:w-auto">
           <Button
             variant="outline"
-            className="border-white text-white hover:bg-white/10 px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg w-full sm:w-auto min-h-[44px] touch-manipulation"
+            className="px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg w-full sm:w-auto min-h-[44px] touch-manipulation"
           >
             View Schedule
           </Button>
