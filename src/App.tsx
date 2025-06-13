@@ -1,4 +1,3 @@
-
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -8,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import AuthProvider from '@/hooks/useAuth';
 import { AnalyticsProvider } from '@/components/providers/AnalyticsProvider';
+import { StaffAuthProvider } from "@/hooks/useStaffAuth";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import MusicPlayer from "@/components/MusicPlayer";
@@ -15,7 +15,6 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import RouteErrorElement from "@/components/RouteErrorElement";
 import PageLoader from "@/components/general/PageLoader";
 import StaffLayout from "@/components/layouts/StaffLayout";
-import { StaffAuthProvider } from "@/hooks/useStaffAuth";
 
 // Lazy load components
 const Index = lazy(() => import("./pages/Index"));
@@ -72,13 +71,13 @@ function App() {
       <ThemeProvider defaultTheme="dark">
         <TooltipProvider>
           <AuthProvider>
-            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-              <AnalyticsProvider>
-                <div className="min-h-screen bg-background flex flex-col w-full">
-                  <Routes>
-                    {/* Staff Routes - Now wrapped with StaffAuthProvider */}
-                    <Route path="/staff/*" element={
-                      <StaffAuthProvider>
+            <StaffAuthProvider>
+              <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                <AnalyticsProvider>
+                  <div className="min-h-screen bg-background flex flex-col w-full">
+                    <Routes>
+                      {/* Staff Routes - No longer need StaffAuthProvider wrapper */}
+                      <Route path="/staff/*" element={
                         <Suspense fallback={<PageLoader />}>
                           <Routes>
                             <Route path="login" element={<StaffLogin />} />
@@ -105,58 +104,58 @@ function App() {
                             </Route>
                           </Routes>
                         </Suspense>
-                      </StaffAuthProvider>
-                    } />
-                    
-                    {/* Public Routes */}
-                    <Route path="/*" element={
-                      <>
-                        <Navbar />
-                        <main className="flex-1">
-                          <ErrorBoundary>
-                            <Suspense fallback={<PageLoader />}>
-                              <Routes>
-                                <Route path="/" element={<Index />} />
-                                <Route path="/about" element={<About />} />
-                                <Route path="/contact" element={<Contact />} />
-                                <Route path="/news" element={<News />} />
-                                <Route path="/news/:id" element={<NewsPost />} />
-                                <Route path="/schedule" element={<Schedule />} />
-                                <Route path="/personalities" element={<Personalities />} />
-                                <Route path="/artists" element={<ArtistsPage />} />
-                                <Route path="/artists/:id" element={<ArtistDetail />} />
-                                <Route path="/artists-archive" element={<ArtistsArchivePage />} />
-                                <Route path="/auth" element={<Auth />} />
-                                <Route path="/profile" element={<ProfilePage />} />
-                                <Route path="/profile/:userId" element={<PublicProfilePage />} />
-                                <Route path="/u/:username" element={<PublicProfilePage />} />
-                                <Route path="/messages" element={<UnifiedMessagesPage />} />
-                                <Route path="/members" element={<MembersPage />} />
-                                <Route path="/members/forum/:categorySlug" element={<ForumCategoryPage />} />
-                                <Route path="/members/forum/:categorySlug/:topicSlug" element={<ForumTopicPage />} />
-                                <Route path="/members/forum/:categorySlug/new" element={<NewForumTopicPage />} />
-                                <Route path="/forum/new-topic/:categorySlug" element={<NewForumTopicPage />} />
-                                <Route path="/forum/search" element={<ForumInitiateSearchPage />} />
-                                <Route path="/forum/search/results" element={<ForumSearchResultsPage />} />
-                                <Route path="/reset-password" element={<RequestPasswordResetPage />} />
-                                <Route path="/update-password" element={<UpdatePasswordPage />} />
-                                <Route path="/privacy-settings" element={<PrivacySettings />} />
-                                <Route path="*" element={<NotFound />} />
-                                <Route path="/error" element={<RouteErrorElement />} />
-                              </Routes>
-                            </Suspense>
-                          </ErrorBoundary>
-                        </main>
-                        <Footer />
-                        <MusicPlayer />
-                      </>
-                    } />
-                  </Routes>
-                </div>
-                <Toaster />
-                <Sonner />
-              </AnalyticsProvider>
-            </BrowserRouter>
+                      } />
+                      
+                      {/* Public Routes */}
+                      <Route path="/*" element={
+                        <>
+                          <Navbar />
+                          <main className="flex-1">
+                            <ErrorBoundary>
+                              <Suspense fallback={<PageLoader />}>
+                                <Routes>
+                                  <Route path="/" element={<Index />} />
+                                  <Route path="/about" element={<About />} />
+                                  <Route path="/contact" element={<Contact />} />
+                                  <Route path="/news" element={<News />} />
+                                  <Route path="/news/:id" element={<NewsPost />} />
+                                  <Route path="/schedule" element={<Schedule />} />
+                                  <Route path="/personalities" element={<Personalities />} />
+                                  <Route path="/artists" element={<ArtistsPage />} />
+                                  <Route path="/artists/:id" element={<ArtistDetail />} />
+                                  <Route path="/artists-archive" element={<ArtistsArchivePage />} />
+                                  <Route path="/auth" element={<Auth />} />
+                                  <Route path="/profile" element={<ProfilePage />} />
+                                  <Route path="/profile/:userId" element={<PublicProfilePage />} />
+                                  <Route path="/u/:username" element={<PublicProfilePage />} />
+                                  <Route path="/messages" element={<UnifiedMessagesPage />} />
+                                  <Route path="/members" element={<MembersPage />} />
+                                  <Route path="/members/forum/:categorySlug" element={<ForumCategoryPage />} />
+                                  <Route path="/members/forum/:categorySlug/:topicSlug" element={<ForumTopicPage />} />
+                                  <Route path="/members/forum/:categorySlug/new" element={<NewForumTopicPage />} />
+                                  <Route path="/forum/new-topic/:categorySlug" element={<NewForumTopicPage />} />
+                                  <Route path="/forum/search" element={<ForumInitiateSearchPage />} />
+                                  <Route path="/forum/search/results" element={<ForumSearchResultsPage />} />
+                                  <Route path="/reset-password" element={<RequestPasswordResetPage />} />
+                                  <Route path="/update-password" element={<UpdatePasswordPage />} />
+                                  <Route path="/privacy-settings" element={<PrivacySettings />} />
+                                  <Route path="*" element={<NotFound />} />
+                                  <Route path="/error" element={<RouteErrorElement />} />
+                                </Routes>
+                              </Suspense>
+                            </ErrorBoundary>
+                          </main>
+                          <Footer />
+                          <MusicPlayer />
+                        </>
+                      } />
+                    </Routes>
+                  </div>
+                  <Toaster />
+                  <Sonner />
+                </AnalyticsProvider>
+              </BrowserRouter>
+            </StaffAuthProvider>
           </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>
