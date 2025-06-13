@@ -2,6 +2,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Import enhanced theme system */
+@import './styles/theme.css';
  
 @layer base {
   :root {
@@ -138,13 +141,32 @@
     color: #FFD700 !important;
   }
 
-  /* Light mode button improvements - Fixed to avoid circular dependency */
-  button {
-    @apply text-foreground;
+  /* Enhanced form elements for better light mode visibility */
+  input, textarea, select {
+    @apply bg-background border-input text-foreground;
+    @apply focus:border-ring focus:ring-2 focus:ring-ring/20;
   }
-
-  button:hover {
-    @apply text-primary;
+  
+  input::placeholder,
+  textarea::placeholder {
+    @apply text-muted-foreground;
+  }
+  
+  /* Enhanced link styles */
+  a {
+    @apply text-blue-600 hover:text-blue-700;
+    @apply dark:text-primary dark:hover:text-primary/80;
+  }
+  
+  /* Better code block styling */
+  code {
+    @apply bg-gray-100 text-pink-600 px-1 py-0.5 rounded text-sm;
+    @apply dark:bg-muted dark:text-primary;
+  }
+  
+  pre {
+    @apply bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto;
+    @apply dark:bg-muted dark:text-foreground;
   }
 }
 

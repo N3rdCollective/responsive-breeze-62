@@ -9,15 +9,42 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+        default: [
+          // Light mode: strong blue with white text for better contrast
+          "bg-blue-600 text-white hover:bg-blue-700 shadow-sm",
+          // Dark mode: keep existing primary colors
+          "dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
+        ],
+        destructive: [
+          // Light mode: strong red with white text
+          "bg-red-600 text-white hover:bg-red-700 shadow-sm",
+          // Dark mode
+          "dark:bg-destructive dark:text-destructive-foreground dark:hover:bg-destructive/90"
+        ],
+        outline: [
+          // Light mode: gray border with dark text for better readability
+          "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 shadow-sm",
+          // Dark mode
+          "dark:border-input dark:bg-background dark:hover:bg-accent dark:hover:text-accent-foreground"
+        ],
+        secondary: [
+          // Light mode: light gray background with dark text
+          "bg-gray-100 text-gray-900 hover:bg-gray-200 shadow-sm",
+          // Dark mode
+          "dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/80"
+        ],
+        ghost: [
+          // Light mode: transparent with gray text, better hover state
+          "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
+          // Dark mode
+          "dark:hover:bg-accent dark:hover:text-accent-foreground"
+        ],
+        link: [
+          // Light mode: blue text for better visibility
+          "text-blue-600 underline-offset-4 hover:underline hover:text-blue-700",
+          // Dark mode
+          "dark:text-primary dark:hover:underline"
+        ],
       },
       size: {
         default: "h-10 px-4 py-2",

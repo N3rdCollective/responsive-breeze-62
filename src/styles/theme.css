@@ -1,0 +1,228 @@
+
+/* Enhanced Theme System with Comprehensive Light/Dark Mode Support */
+
+@layer components {
+  /* Status-specific button variants for immediate use */
+  .btn-success {
+    @apply bg-green-600 text-white hover:bg-green-700 shadow-sm;
+    @apply dark:bg-green-500 dark:text-green-950 dark:hover:bg-green-400;
+  }
+  
+  .btn-warning {
+    @apply bg-yellow-600 text-white hover:bg-yellow-700 shadow-sm;
+    @apply dark:bg-yellow-500 dark:text-yellow-950 dark:hover:bg-yellow-400;
+  }
+  
+  .btn-error {
+    @apply bg-red-600 text-white hover:bg-red-700 shadow-sm;
+    @apply dark:bg-red-500 dark:text-red-950 dark:hover:bg-red-400;
+  }
+  
+  .btn-info {
+    @apply bg-blue-600 text-white hover:bg-blue-700 shadow-sm;
+    @apply dark:bg-blue-500 dark:text-blue-950 dark:hover:bg-blue-400;
+  }
+  
+  /* Enhanced status badges with better contrast */
+  .badge-success {
+    @apply bg-green-100 text-green-800 border border-green-200;
+    @apply dark:bg-green-900/30 dark:text-green-300 dark:border-green-800;
+  }
+  
+  .badge-warning {
+    @apply bg-yellow-100 text-yellow-800 border border-yellow-200;
+    @apply dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800;
+  }
+  
+  .badge-error {
+    @apply bg-red-100 text-red-800 border border-red-200;
+    @apply dark:bg-red-900/30 dark:text-red-300 dark:border-red-800;
+  }
+  
+  .badge-info {
+    @apply bg-blue-100 text-blue-800 border border-blue-200;
+    @apply dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800;
+  }
+  
+  /* Form validation states with better visibility */
+  .form-error {
+    @apply border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20;
+  }
+  
+  .form-success {
+    @apply border-green-500 focus:border-green-500 focus:ring-2 focus:ring-green-500/20;
+  }
+  
+  .form-warning {
+    @apply border-yellow-500 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20;
+  }
+  
+  /* Enhanced card variants */
+  .card-elevated {
+    @apply bg-card border border-border shadow-lg rounded-lg;
+    @apply dark:shadow-2xl dark:shadow-black/20;
+  }
+  
+  .card-flat {
+    @apply bg-card border border-border rounded-lg;
+  }
+  
+  .card-ghost {
+    @apply bg-transparent border-0;
+  }
+  
+  /* Navigation improvements */
+  .nav-link {
+    @apply text-gray-600 hover:text-gray-900 transition-colors duration-200;
+    @apply dark:text-muted-foreground dark:hover:text-foreground;
+  }
+  
+  .nav-link-active {
+    @apply text-gray-900 font-medium;
+    @apply dark:text-foreground;
+  }
+  
+  /* Enhanced dropdown menus for better visibility */
+  .dropdown-enhanced {
+    @apply bg-white border border-gray-200 shadow-lg rounded-lg;
+    @apply dark:bg-popover dark:border-border dark:shadow-2xl;
+  }
+  
+  .dropdown-item {
+    @apply text-gray-700 hover:bg-gray-100 hover:text-gray-900;
+    @apply dark:text-popover-foreground dark:hover:bg-accent dark:hover:text-accent-foreground;
+  }
+  
+  /* Loading states */
+  .loading-overlay {
+    @apply absolute inset-0 bg-white/80 backdrop-blur-sm;
+    @apply dark:bg-background/80;
+    @apply flex items-center justify-center z-50;
+  }
+  
+  .loading-spinner {
+    @apply animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600;
+    @apply dark:border-primary;
+  }
+  
+  /* Focus styles for accessibility */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2;
+    @apply dark:focus-visible:ring-ring;
+  }
+  
+  /* Enhanced prose for better content readability */
+  .prose-enhanced {
+    @apply prose prose-slate max-w-none;
+    @apply prose-headings:text-gray-900 prose-headings:font-semibold;
+    @apply prose-p:text-gray-700 prose-p:leading-relaxed;
+    @apply prose-strong:text-gray-900 prose-strong:font-semibold;
+    @apply prose-code:text-pink-600 prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded;
+    @apply prose-pre:bg-gray-900 prose-pre:text-gray-100;
+    @apply prose-blockquote:text-gray-600 prose-blockquote:border-gray-300;
+    @apply prose-hr:border-gray-300;
+    @apply prose-a:text-blue-600 prose-a:hover:text-blue-700;
+    
+    /* Dark mode prose */
+    @apply dark:prose-invert;
+    @apply dark:prose-headings:text-foreground;
+    @apply dark:prose-p:text-muted-foreground;
+    @apply dark:prose-strong:text-foreground;
+    @apply dark:prose-code:text-primary dark:prose-code:bg-muted;
+    @apply dark:prose-blockquote:text-muted-foreground dark:prose-blockquote:border-border;
+    @apply dark:prose-hr:border-border;
+    @apply dark:prose-a:text-primary dark:prose-a:hover:text-primary/80;
+  }
+  
+  /* Table enhancements */
+  .table-enhanced {
+    @apply border-collapse w-full;
+  }
+  
+  .table-enhanced th {
+    @apply bg-gray-50 text-gray-900 font-semibold text-left px-4 py-3 border-b border-gray-200;
+    @apply dark:bg-muted dark:text-foreground dark:border-border;
+  }
+  
+  .table-enhanced td {
+    @apply text-gray-700 px-4 py-3 border-b border-gray-100;
+    @apply dark:text-muted-foreground dark:border-border/50;
+  }
+  
+  .table-enhanced tr:hover td {
+    @apply bg-gray-50;
+    @apply dark:bg-muted/50;
+  }
+  
+  /* Alert components */
+  .alert-info {
+    @apply bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-4;
+    @apply dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300;
+  }
+  
+  .alert-success {
+    @apply bg-green-50 border border-green-200 text-green-800 rounded-lg p-4;
+    @apply dark:bg-green-900/20 dark:border-green-800 dark:text-green-300;
+  }
+  
+  .alert-warning {
+    @apply bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-lg p-4;
+    @apply dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300;
+  }
+  
+  .alert-error {
+    @apply bg-red-50 border border-red-200 text-red-800 rounded-lg p-4;
+    @apply dark:bg-red-900/20 dark:border-red-800 dark:text-red-300;
+  }
+}
+
+@layer utilities {
+  /* Text contrast utilities */
+  .text-contrast {
+    @apply text-gray-900;
+    @apply dark:text-foreground;
+  }
+  
+  .text-contrast-secondary {
+    @apply text-gray-600;
+    @apply dark:text-muted-foreground;
+  }
+  
+  .text-contrast-muted {
+    @apply text-gray-500;
+    @apply dark:text-muted-foreground/70;
+  }
+  
+  /* Background utilities */
+  .bg-surface {
+    @apply bg-white;
+    @apply dark:bg-card;
+  }
+  
+  .bg-surface-secondary {
+    @apply bg-gray-50;
+    @apply dark:bg-muted/50;
+  }
+  
+  /* Border utilities */
+  .border-contrast {
+    @apply border-gray-200;
+    @apply dark:border-border;
+  }
+  
+  .border-contrast-light {
+    @apply border-gray-100;
+    @apply dark:border-border/50;
+  }
+  
+  /* Shadow utilities for light mode */
+  .shadow-contrast {
+    @apply shadow-sm;
+    @apply dark:shadow-none;
+  }
+  
+  .shadow-contrast-lg {
+    @apply shadow-lg;
+    @apply dark:shadow-2xl dark:shadow-black/20;
+  }
+}
