@@ -6,37 +6,37 @@
 @layer base {
   :root {
     /* Base colors - Enhanced light mode */
-    --background: 0 0% 98%;
-    --foreground: 220 25% 15%;
+    --background: 0 0% 100%;
+    --foreground: 220 30% 12%;
     
     /* Card & Container colors */
     --card: 0 0% 100%;
-    --card-foreground: 220 25% 15%;
+    --card-foreground: 220 30% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 15%;
+    --popover-foreground: 220 30% 12%;
     
-    /* Primary brand colors - using the gold accent from homepage */
-    --primary: 45 100% 50%;
-    --primary-foreground: 220 25% 15%;
+    /* Primary brand colors - using blue for better contrast in light mode */
+    --primary: 220 91% 46%;
+    --primary-foreground: 0 0% 100%;
     
     /* Secondary & Accent colors - better contrast */
-    --secondary: 220 13% 95%;
-    --secondary-foreground: 220 25% 15%;
-    --accent: 220 13% 95%;
-    --accent-foreground: 220 25% 15%;
+    --secondary: 220 13% 92%;
+    --secondary-foreground: 220 30% 12%;
+    --accent: 220 13% 92%;
+    --accent-foreground: 220 30% 12%;
     
     /* UI feedback colors */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     
     /* Neutral tones - improved contrast */
-    --muted: 220 13% 93%;
-    --muted-foreground: 220 15% 35%;
+    --muted: 220 13% 95%;
+    --muted-foreground: 220 20% 25%;
     
     /* Border & Input colors - better definition */
-    --border: 220 13% 88%;
-    --input: 220 13% 88%;
-    --ring: 220 25% 15%;
+    --border: 220 13% 80%;
+    --input: 220 13% 80%;
+    --ring: 220 91% 46%;
     
     /* Border radius - consistent with homepage */
     --radius: 0.75rem;
