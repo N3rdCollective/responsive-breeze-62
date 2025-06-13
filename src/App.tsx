@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { StaffAuthProvider } from "@/hooks/useStaffAuth";
 import { AuthProvider } from "@/hooks/useAuth";
 import { SecurityProvider } from "@/components/security/SecurityProvider";
+import MusicPlayer from "@/components/MusicPlayer";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import News from "./pages/News";
@@ -46,6 +47,7 @@ function App() {
                   <Route path="/staff/analytics" element={<StaffAnalytics />} />
                   <Route path="/staff/homepage" element={<StaffHomepageManager />} />
                 </Routes>
+                <MusicPlayer />
               </StaffAuthProvider>
             </AuthProvider>
           </BrowserRouter>

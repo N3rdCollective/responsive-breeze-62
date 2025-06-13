@@ -8,6 +8,7 @@ import PersonalitySlider from "@/components/home/PersonalitySlider";
 import VideoGallery from "@/components/VideoGallery";
 import FeaturedArtistSection from "@/components/home/FeaturedArtistSection";
 import TitleUpdater from "@/components/TitleUpdater";
+import Footer from "@/components/Footer";
 
 // Newly imported components and hook
 import PageLoader from "@/components/general/PageLoader";
@@ -78,6 +79,8 @@ const Index = () => {
         subtitle={homepageContent.cta_section_subtitle}
         buttonText={homepageContent.cta_button_text}
       />
+
+      <Footer />
     </div>
   );
 };
