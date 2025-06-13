@@ -26,10 +26,10 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <SecurityProvider>
-          <StaffAuthProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <StaffAuthProvider>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/about" element={<About />} />
@@ -44,8 +44,8 @@ function App() {
                 <Route path="/staff/analytics" element={<StaffAnalytics />} />
                 <Route path="/staff/homepage" element={<StaffHomepageManager />} />
               </Routes>
-            </BrowserRouter>
-          </StaffAuthProvider>
+            </StaffAuthProvider>
+          </BrowserRouter>
         </SecurityProvider>
       </TooltipProvider>
     </QueryClientProvider>
