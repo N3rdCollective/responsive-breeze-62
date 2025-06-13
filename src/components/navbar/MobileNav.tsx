@@ -4,9 +4,10 @@ import { useLocation } from 'react-router-dom';
 import { useScrollToTopNavigation } from '@/hooks/useScrollToTopNavigation';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { Menu, Mail, User, LogOut, Bell, LogIn } from 'lucide-react';
+import { Menu, Mail, User, LogOut, Bell, LogIn, Settings } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
+import { useStaffAuth } from '@/hooks/useStaffAuth';
 import { useUnifiedMessages } from '@/hooks/useUnifiedMessages';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import ThemeToggle from '@/components/navbar/ThemeToggle';
@@ -23,6 +24,7 @@ const MobileNav = ({ isScrolled, isHomePage, onAuthModalOpen }: MobileNavProps) 
   const location = useLocation();
   const navigate = useScrollToTopNavigation();
   const { user, logout } = useAuth();
+  const { isAuthenticated: isStaffAuthenticated } = useStaffAuth();
   const { totalUnreadCount } = useUnifiedMessages();
   const [open, setOpen] = React.useState(false);
 
@@ -126,6 +128,17 @@ const MobileNav = ({ isScrolled, isHomePage, onAuthModalOpen }: MobileNavProps) 
                   <User className="mr-2 h-4 w-4" />
                   Profile
                 </ScrollToTopLink>
+                
+                {isStaffAuthenticated && (
+                  <ScrollToTopLink
+                    to="/staff/panel"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    Dashboard
+                  </ScrollToTopLink>
+                )}
                 
                 <ThemeToggle mobile isHomePage={isHomePage} isScrolled={isScrolled} />
                 

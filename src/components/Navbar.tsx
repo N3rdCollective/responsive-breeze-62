@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useScrollToTopNavigation } from "@/hooks/useScrollToTopNavigation";
@@ -31,7 +30,7 @@ const Navbar = () => {
   const [mounted, setMounted] = useState(false);
   
   const { user, logout: userLogout } = useAuth();
-  const { staffName, handleLogout: staffLogout, userRole: staffUserRole } = useStaffAuth();
+  const { staffName, handleLogout: staffLogout, userRole: staffUserRole, isAuthenticated: isStaffAuthenticated } = useStaffAuth();
   const { totalUnreadCount } = useUnifiedMessages();
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false); 
@@ -147,6 +146,12 @@ const Navbar = () => {
                         <User className="mr-2 h-4 w-4" />
                         <span>Profile</span>
                       </DropdownMenuItem>
+                      {isStaffAuthenticated && (
+                        <DropdownMenuItem onClick={() => navigate("/staff/panel")}>
+                          <Settings className="mr-2 h-4 w-4" />
+                          <span>Dashboard</span>
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
                       <ThemeToggle dropdown isHomePage={isHomePage} isScrolled={isScrolled} />
                       <DropdownMenuSeparator />
