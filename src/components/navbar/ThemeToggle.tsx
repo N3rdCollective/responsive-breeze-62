@@ -8,9 +8,10 @@ interface ThemeToggleProps {
   isHomePage: boolean;
   isScrolled: boolean;
   mobile?: boolean;
+  dropdown?: boolean;
 }
 
-const ThemeToggle = ({ isHomePage, isScrolled, mobile = false }: ThemeToggleProps) => {
+const ThemeToggle = ({ isHomePage, isScrolled, mobile = false, dropdown = false }: ThemeToggleProps) => {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   
@@ -19,6 +20,28 @@ const ThemeToggle = ({ isHomePage, isScrolled, mobile = false }: ThemeToggleProp
   }, []);
   
   if (!mounted) return null;
+  
+  // Dropdown variant for user menu
+  if (dropdown) {
+    return (
+      <button
+        onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+        className="flex items-center w-full px-2 py-1.5 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+      >
+        {theme === "light" ? (
+          <>
+            <Moon className="mr-2 h-4 w-4" />
+            <span>Dark Mode</span>
+          </>
+        ) : (
+          <>
+            <Sun className="mr-2 h-4 w-4" />
+            <span>Light Mode</span>
+          </>
+        )}
+      </button>
+    );
+  }
   
   if (mobile) {
     return (

@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useUnifiedMessages } from '@/hooks/useUnifiedMessages';
 import NotificationBell from '@/components/notifications/NotificationBell';
+import ThemeToggle from '@/components/navbar/ThemeToggle';
 import { Separator } from '@/components/ui/separator';
 import ScrollToTopLink from '@/components/ui/scroll-to-top-link';
 
@@ -71,10 +72,10 @@ const MobileNav = ({ isScrolled, isHomePage, onAuthModalOpen }: MobileNavProps) 
             variant="ghost"
             size="icon"
             onClick={handleMessagesClick}
-            className={`relative h-9 w-9 ${
+            className={`relative h-9 w-9 transition-colors ${
               isHomePage && !isScrolled 
-                ? "text-white hover:text-primary dark:text-primary dark:hover:text-white" 
-                : "text-foreground hover:text-primary dark:hover:text-primary"
+                ? "text-white hover:text-primary hover:bg-white/10" 
+                : "text-foreground hover:text-primary hover:bg-accent"
             }`}
           >
             <Mail className="h-5 w-5" />
@@ -125,6 +126,9 @@ const MobileNav = ({ isScrolled, isHomePage, onAuthModalOpen }: MobileNavProps) 
                   <User className="mr-2 h-4 w-4" />
                   Profile
                 </ScrollToTopLink>
+                
+                <ThemeToggle mobile isHomePage={isHomePage} isScrolled={isScrolled} />
+                
                 <button
                   onClick={handleLogout}
                   className="flex items-center text-sm font-medium transition-colors hover:text-primary text-muted-foreground text-left"
@@ -134,13 +138,17 @@ const MobileNav = ({ isScrolled, isHomePage, onAuthModalOpen }: MobileNavProps) 
                 </button>
               </>
             ) : (
-              <button
-                onClick={handleAuthAction}
-                className="flex items-center text-sm font-medium transition-colors hover:text-primary text-muted-foreground text-left"
-              >
-                <LogIn className="mr-2 h-4 w-4" />
-                Sign In / Sign Up
-              </button>
+              <>
+                <button
+                  onClick={handleAuthAction}
+                  className="flex items-center text-sm font-medium transition-colors hover:text-primary text-muted-foreground text-left"
+                >
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Sign In / Sign Up
+                </button>
+                
+                <ThemeToggle mobile isHomePage={isHomePage} isScrolled={isScrolled} />
+              </>
             )}
           </nav>
         </SheetContent>

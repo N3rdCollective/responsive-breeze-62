@@ -7,6 +7,7 @@ import MobileNav from "./navbar/MobileNav";
 import AuthModal from "@/components/auth/AuthModal";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import ListenButton from "./navbar/ListenButton";
+import ThemeToggle from "./navbar/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
 import { useUnifiedMessages } from "@/hooks/useUnifiedMessages";
@@ -79,19 +80,19 @@ const Navbar = () => {
     <>
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled 
-          ? "bg-white/90 dark:bg-[#333333]/90 backdrop-blur-md shadow-sm" 
+          ? "bg-background/90 backdrop-blur-md shadow-sm border-b border-border" 
           : isHomePage 
             ? "bg-transparent" 
-            : "bg-white dark:bg-[#333333]"
+            : "bg-background border-b border-border"
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <Link to="/" className={`text-xl font-bold ${
+              <Link to="/" className={`text-xl font-bold transition-colors ${
                 isHomePage && !isScrolled 
-                  ? "text-white dark:text-[#FFD700]" 
-                  : "text-[#333333] dark:text-[#FFD700] bg-clip-text"
+                  ? "text-white dark:text-primary" 
+                  : "text-foreground hover:text-primary"
               }`}>
                 Rappin' Lounge
               </Link>
@@ -114,10 +115,10 @@ const Navbar = () => {
                     variant="ghost"
                     size="icon"
                     onClick={handleMessagesClick}
-                    className={`relative ${
+                    className={`relative transition-colors ${
                       isHomePage && !isScrolled 
-                        ? "text-white hover:text-primary dark:text-primary dark:hover:text-white hover:bg-white/10 dark:hover:bg-black/10" 
-                        : "text-foreground hover:text-primary dark:hover:text-primary hover:bg-accent dark:hover:bg-accent"
+                        ? "text-white hover:text-primary hover:bg-white/10" 
+                        : "text-foreground hover:text-primary hover:bg-accent"
                     }`}
                   >
                     <Mail className="h-5 w-5" />
@@ -147,6 +148,8 @@ const Navbar = () => {
                         <span>Profile</span>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
+                      <ThemeToggle dropdown isHomePage={isHomePage} isScrolled={isScrolled} />
+                      <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleLogout}>
                         <LogOut className="mr-2 h-4 w-4" />
                         <span>Log out</span>
@@ -155,7 +158,7 @@ const Navbar = () => {
                   </DropdownMenu>
                 </>
               ) : (
-                <Button onClick={handleAuthModalOpen} variant="outline">
+                <Button onClick={handleAuthModalOpen} variant="outline" className="transition-colors">
                   Sign In
                 </Button>
               )}

@@ -1,7 +1,6 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import ThemeToggle from "@/components/navbar/ThemeToggle";
 import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin, Shield } from "lucide-react";
 import SponsorsSection from "@/components/footer/SponsorsSection";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
@@ -31,7 +30,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-[#1a1a1a] dark:bg-[#0A0A0A] text-white py-12 border-t border-[#333]">
+    <footer className="footer-dark bg-[#1a1a1a] text-white py-12 border-t border-[#333] [&_*]:!text-white [&_a]:!text-gray-300 [&_a:hover]:!text-[#FFD700]">
       <div className="container mx-auto px-4">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -43,10 +42,6 @@ const Footer = () => {
             <p className="text-gray-300 text-sm leading-relaxed">
               {settings?.site_tagline || "Your favorite radio station bringing you the best music and entertainment."}
             </p>
-            <div className="flex items-center gap-1">
-              <span className="text-sm text-gray-400">Theme:</span>
-              <ThemeToggle isHomePage={false} isScrolled={true} />
-            </div>
           </div>
 
           {/* Quick Links */}
