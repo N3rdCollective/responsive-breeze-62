@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { StaffAuthProvider } from "@/hooks/useStaffAuth";
+import { AuthProvider } from "@/hooks/useAuth";
 import { SecurityProvider } from "@/components/security/SecurityProvider";
 import Index from "./pages/Index";
 import About from "./pages/About";
@@ -29,22 +30,24 @@ function App() {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <StaffAuthProvider>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/news" element={<News />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
-                <Route path="/update-password" element={<UpdatePasswordPage />} />
-                <Route path="/staff/register" element={<StaffRegistration />} />
-                <Route path="/staff/login" element={<StaffLoginPage />} />
-                <Route path="/staff/panel" element={<StaffPanel />} />
-                <Route path="/staff/users" element={<StaffUserManager />} />
-                <Route path="/staff/analytics" element={<StaffAnalytics />} />
-                <Route path="/staff/homepage" element={<StaffHomepageManager />} />
-              </Routes>
-            </StaffAuthProvider>
+            <AuthProvider>
+              <StaffAuthProvider>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/news" element={<News />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
+                  <Route path="/update-password" element={<UpdatePasswordPage />} />
+                  <Route path="/staff/register" element={<StaffRegistration />} />
+                  <Route path="/staff/login" element={<StaffLoginPage />} />
+                  <Route path="/staff/panel" element={<StaffPanel />} />
+                  <Route path="/staff/users" element={<StaffUserManager />} />
+                  <Route path="/staff/analytics" element={<StaffAnalytics />} />
+                  <Route path="/staff/homepage" element={<StaffHomepageManager />} />
+                </Routes>
+              </StaffAuthProvider>
+            </AuthProvider>
           </BrowserRouter>
         </SecurityProvider>
       </TooltipProvider>
