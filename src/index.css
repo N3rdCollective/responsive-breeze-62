@@ -138,16 +138,12 @@
     color: #FFD700 !important;
   }
 
-  /* Light mode button improvements */
-  .light [data-theme="light"] .bg-primary {
-    @apply bg-primary text-primary-foreground;
-  }
-
-  .light button {
+  /* Light mode button improvements - Fixed to avoid circular dependency */
+  button {
     @apply text-foreground;
   }
 
-  .light button:hover {
+  button:hover {
     @apply text-primary;
   }
 }
