@@ -20,6 +20,12 @@ import StaffPanel from "./pages/StaffPanel";
 import StaffUserManager from "./pages/StaffUserManager";
 import StaffAnalytics from "./pages/StaffAnalytics";
 import StaffHomepageManager from "./pages/StaffHomepageManager";
+import MembersPage from "./pages/MembersPage";
+import ForumCategoryPage from "./pages/ForumCategoryPage";
+import ForumTopicPage from "./pages/ForumTopicPage";
+import NewForumTopicPage from "./pages/NewForumTopicPage";
+import ForumSearchResultsPage from "./pages/ForumSearchResultsPage";
+import ForumInitiateSearchPage from "./pages/ForumInitiateSearchPage";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +46,13 @@ function App() {
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
                   <Route path="/update-password" element={<UpdatePasswordPage />} />
+                  <Route path="/members" element={<MembersPage />} />
+                  <Route path="/members/forum" element={<MembersPage />} />
+                  <Route path="/members/forum/:categorySlug" element={<ForumCategoryPage />} />
+                  <Route path="/members/forum/:categorySlug/:topicSlug" element={<ForumTopicPage />} />
+                  <Route path="/forum/new-topic/:categorySlug" element={<NewForumTopicPage />} />
+                  <Route path="/forum/search-results" element={<ForumSearchResultsPage />} />
+                  <Route path="/forum/initiate-search" element={<ForumInitiateSearchPage />} />
                   <Route path="/staff/register" element={<StaffRegistration />} />
                   <Route path="/staff/login" element={<StaffLoginPage />} />
                   <Route path="/staff/panel" element={<StaffPanel />} />
