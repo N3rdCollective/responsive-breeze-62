@@ -26,6 +26,14 @@ const Index = () => {
     showFeaturedArtist 
   } = useHomepageData();
 
+  // Debug logging
+  console.log('🏠 Index page render:', {
+    featuredVideos,
+    featuredVideosLength: featuredVideos.length,
+    isLoading,
+    settings
+  });
+
   if (isLoading) {
     return <PageLoader />;
   }

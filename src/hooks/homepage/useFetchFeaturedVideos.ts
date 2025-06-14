@@ -14,6 +14,7 @@ export const useFetchFeaturedVideos = (): UseFetchFeaturedVideosReturn => {
 
   useEffect(() => {
     const fetchVideos = async () => {
+      console.log('🎬 Starting to fetch featured videos...');
       setIsLoading(true);
       try {
         const { data: videosData, error: videosError } = await supabase
@@ -22,10 +23,17 @@ export const useFetchFeaturedVideos = (): UseFetchFeaturedVideosReturn => {
           .order("display_order", { ascending: true })
           .eq("is_active", true);
 
+        console.log('🎬 Featured videos fetch result:', {
+          videosData,
+          videosError,
+          dataLength: videosData?.length || 0
+        });
+
         if (videosError) {
           console.error("Error fetching featured videos:", videosError);
           setFeaturedVideos([]);
         } else {
+          console.log('🎬 Setting featured videos:', videosData || []);
           setFeaturedVideos(videosData || []);
         }
       } catch (error) {
@@ -33,6 +41,7 @@ export const useFetchFeaturedVideos = (): UseFetchFeaturedVideosReturn => {
         setFeaturedVideos([]);
       } finally {
         setIsLoading(false);
+        console.log('🎬 Featured videos fetch completed');
       }
     };
 

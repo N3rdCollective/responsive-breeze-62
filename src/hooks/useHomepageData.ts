@@ -10,7 +10,6 @@ export type { HomeSettings, HomepageContentData, VideoData };
 export const defaultSettings: HomeSettings = originalDefaultSettings;
 export const defaultHomepageContentData: HomepageContentData = originalDefaultHomepageContent;
 
-
 interface UseHomepageDataReturn {
   settings: HomeSettings;
   homepageContent: HomepageContentData;
@@ -26,6 +25,15 @@ export const useHomepageData = (): UseHomepageDataReturn => {
   const { showFeaturedArtist, isLoading: isLoadingShowArtistFlag } = useFetchShowFeaturedArtistFlag();
 
   const isLoading = isLoadingSettings || isLoadingContent || isLoadingVideos || isLoadingShowArtistFlag;
+
+  // Debug logging
+  console.log('🎬 Homepage Data Debug:', {
+    featuredVideos,
+    featuredVideosCount: featuredVideos.length,
+    isLoading,
+    isLoadingVideos,
+    settings
+  });
 
   return {
     settings,
