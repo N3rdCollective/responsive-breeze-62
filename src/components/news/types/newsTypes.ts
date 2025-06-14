@@ -1,3 +1,4 @@
+
 /**
  * Common News component types
  */
@@ -10,7 +11,10 @@ export interface Post {
   post_date: string;
   category: string | null;
   author: string | null;
+  author_name: string | null; // Keep both for compatibility
   status: string;
+  created_at: string;
+  updated_at: string;
   tags?: string[];
   featured_artist_id?: string | null;
 }

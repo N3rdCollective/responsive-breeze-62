@@ -16,7 +16,18 @@ export const NewsList = () => {
     handleSearch,
   } = useNewsData();
 
+  console.log('🗞️ NewsList component state:', {
+    categories,
+    categoriesCount: categories?.length,
+    posts,
+    postsCount: posts?.length,
+    isLoading,
+    error,
+    selectedCategory
+  });
+
   if (error) {
+    console.error('🗞️ NewsList error:', error);
     return (
       <div className="text-center py-12">
         <h3 className="text-xl font-semibold text-destructive">Error loading news</h3>
@@ -24,6 +35,13 @@ export const NewsList = () => {
       </div>
     );
   }
+
+  if (isLoading) {
+    console.log('🗞️ NewsList: Showing loading skeleton');
+    return <NewsLoadingSkeleton />;
+  }
+
+  console.log('🗞️ NewsList: Rendering news grid with', posts?.length || 0, 'posts');
 
   return (
     <div className="space-y-8">
@@ -40,14 +58,10 @@ export const NewsList = () => {
       />
       
       {/* Posts grid */}
-      {isLoading ? (
-        <NewsLoadingSkeleton />
-      ) : (
-        <NewsGrid 
-          posts={posts} 
-          selectedCategory={selectedCategory} 
-        />
-      )}
+      <NewsGrid 
+        posts={posts} 
+        selectedCategory={selectedCategory} 
+      />
     </div>
   );
 };

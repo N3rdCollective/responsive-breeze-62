@@ -11,6 +11,15 @@ interface NewsCardProps {
 }
 
 export const NewsCard = ({ post }: NewsCardProps) => {
+  console.log('🗞️ NewsCard rendering post:', {
+    id: post.id,
+    title: post.title,
+    category: post.category,
+    author_name: post.author_name,
+    post_date: post.post_date,
+    featured_image: post.featured_image
+  });
+
   // Only use image URL if it's not a blob URL
   const imageUrl = post.featured_image && 
     !post.featured_image.startsWith('blob:') ? 

@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import NewsList from "@/components/news/NewsList";
 
 const News = () => {
+  console.log('🗞️ News page rendering...');
+  
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
