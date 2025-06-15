@@ -13,6 +13,7 @@ import About from "./pages/About";
 import News from "./pages/News";
 import NewsPostPage from "./pages/NewsPost";
 import Auth from "./pages/Auth";
+import ProfilePage from "./pages/ProfilePage";
 import RequestPasswordResetPage from "./pages/RequestPasswordResetPage";
 import UpdatePasswordPage from "./pages/UpdatePasswordPage";
 import StaffRegistration from "./pages/StaffRegistration";
@@ -46,6 +47,7 @@ function App() {
                   <Route path="/news" element={<News />} />
                   <Route path="/news/:id" element={<NewsPostPage />} />
                   <Route path="/auth" element={<Auth />} />
+                  <Route path="/profile" element={<ProfilePage />} />
                   <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
                   <Route path="/update-password" element={<UpdatePasswordPage />} />
                   <Route path="/members" element={<MembersPage />} />
