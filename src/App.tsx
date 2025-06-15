@@ -11,6 +11,7 @@ import MusicPlayer from "@/components/MusicPlayer";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import News from "./pages/News";
+import NewsPostPage from "./pages/NewsPost";
 import Auth from "./pages/Auth";
 import RequestPasswordResetPage from "./pages/RequestPasswordResetPage";
 import UpdatePasswordPage from "./pages/UpdatePasswordPage";
@@ -43,6 +44,7 @@ function App() {
                   <Route path="/" element={<Index />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/news" element={<News />} />
+                  <Route path="/news/:id" element={<NewsPostPage />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
                   <Route path="/update-password" element={<UpdatePasswordPage />} />

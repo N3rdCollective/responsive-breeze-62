@@ -13,8 +13,18 @@ export const NewsGrid = ({ posts, selectedCategory }: NewsGridProps) => {
     posts,
     postsCount: posts?.length,
     selectedCategory,
-    postsType: typeof posts
+    postsType: typeof posts,
+    postsArray: Array.isArray(posts),
+    firstPost: posts?.[0]
   });
+
+  // Additional debugging
+  if (posts) {
+    console.log('🗞️ NewsGrid: Posts array details:', {
+      length: posts.length,
+      posts: posts.map(p => ({ id: p.id, title: p.title, status: p.status }))
+    });
+  }
 
   if (!posts || posts.length === 0) {
     console.log('🗞️ NewsGrid: No posts to display, showing empty state');
@@ -22,7 +32,6 @@ export const NewsGrid = ({ posts, selectedCategory }: NewsGridProps) => {
   }
 
   console.log('🗞️ NewsGrid: Rendering', posts.length, 'posts');
-  console.log('🗞️ NewsGrid: First post details:', posts[0]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -32,7 +41,8 @@ export const NewsGrid = ({ posts, selectedCategory }: NewsGridProps) => {
           title: post.title,
           category: post.category,
           author_name: post.author_name,
-          post_date: post.post_date
+          post_date: post.post_date,
+          status: post.status
         });
         return (
           <NewsCard key={post.id} post={post} />
