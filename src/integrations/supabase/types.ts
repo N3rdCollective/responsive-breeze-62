@@ -1557,10 +1557,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      check_staff_admin_role: {
-        Args: { user_id: string }
-        Returns: boolean
-      }
       check_user_role: {
         Args: { required_role: string }
         Returns: boolean
@@ -1627,9 +1623,17 @@ export type Database = {
           total_topic_posts: number
         }[]
       }
+      get_user_staff_role: {
+        Args: { user_id: string }
+        Returns: string
+      }
       increment_topic_view_count: {
         Args: { topic_id_param: string }
         Returns: undefined
+      }
+      is_user_staff_member: {
+        Args: { user_id: string }
+        Returns: boolean
       }
       log_security_event: {
         Args: {

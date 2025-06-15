@@ -32,19 +32,43 @@ export const useStaffPermissions = (): StaffPermissions => {
       }
 
       try {
-        const { data: staffData, error } = await supabase
-          .from('staff')
-          .select('role')
-          .eq('id', user.id)
-          .single();
+        console.log('🔐 Forum: Checking staff permissions for user:', user.id);
 
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error checking staff permissions:', error);
+        // Use the new non-recursive function to check if user is staff
+        const { data: isStaffResult, error: staffCheckError } = await supabase
+          .rpc('is_user_staff_member', { user_id: user.id });
+
+        if (staffCheckError) {
+          console.error('Forum: Error checking staff status:', staffCheckError);
+          throw staffCheckError;
         }
 
-        const role = staffData?.role || null;
-        const isStaff = !!staffData;
+        const isStaff = isStaffResult || false;
+        console.log('🔐 Forum: User is staff:', isStaff);
+
+        if (!isStaff) {
+          setPermissions({
+            isStaff: false,
+            role: null,
+            canModerate: false,
+            loading: false,
+          });
+          return;
+        }
+
+        // Get user's staff role using the new function
+        const { data: roleResult, error: roleError } = await supabase
+          .rpc('get_user_staff_role', { user_id: user.id });
+
+        if (roleError) {
+          console.error('Forum: Error fetching staff role:', roleError);
+          throw roleError;
+        }
+
+        const role = roleResult || null;
         const canModerate = role === 'admin' || role === 'super_admin' || role === 'moderator';
+
+        console.log('🔐 Forum: Staff role:', role, 'Can moderate:', canModerate);
 
         setPermissions({
           isStaff,
@@ -52,8 +76,9 @@ export const useStaffPermissions = (): StaffPermissions => {
           canModerate,
           loading: false,
         });
-      } catch (err) {
-        console.error('Error in staff permissions check:', err);
+
+      } catch (err: any) {
+        console.error('Forum: Error in staff permissions check:', err);
         setPermissions({
           isStaff: false,
           role: null,
