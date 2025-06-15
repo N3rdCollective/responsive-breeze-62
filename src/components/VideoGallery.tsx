@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VideoData } from "@/components/staff/home/context/HomeSettingsContext";
+import { useAuth } from "@/hooks/useAuth";
 
 interface VideoGalleryProps {
   videos?: VideoData[];
@@ -18,16 +19,19 @@ interface VideoGalleryProps {
 
 const VideoGallery: React.FC<VideoGalleryProps> = ({ videos = [] }) => {
   const [openVideoId, setOpenVideoId] = useState<string | null>(null);
+  const { user } = useAuth();
   
   // Debug logging
   console.log('🎬 VideoGallery render:', {
     videos,
     videosLength: videos.length,
-    videosType: typeof videos
+    videosType: typeof videos,
+    userLoggedIn: !!user,
+    userId: user?.id
   });
   
   if (videos.length === 0) {
-    console.log('🎬 VideoGallery: No videos to display');
+    console.log('🎬 VideoGallery: No videos to display, user logged in:', !!user);
     return null; // Don't show section if no videos
   }
   
@@ -39,7 +43,7 @@ const VideoGallery: React.FC<VideoGalleryProps> = ({ videos = [] }) => {
         {/* Responsive layout: grid for mobile, flex row for desktop */}
         <div className="grid grid-cols-2 sm:grid-cols-2 md:flex md:flex-wrap md:justify-center gap-4">
           {videos.map((video) => {
-            console.log('🎬 Rendering video:', video);
+            console.log('🎬 Rendering video:', video, 'User logged in:', !!user);
             return (
               <Dialog key={video.id} open={openVideoId === video.id} onOpenChange={(open) => {
                 if (!open) setOpenVideoId(null);
