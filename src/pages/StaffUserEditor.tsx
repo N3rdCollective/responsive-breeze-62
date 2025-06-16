@@ -94,6 +94,8 @@ const StaffUserEditor = () => {
       if (!userId) return;
       
       try {
+        console.log('🔍 [USER_EDITOR] Fetching user data for ID:', userId);
+        
         const { data, error } = await supabase
           .from('profiles')
           .select(`
@@ -115,16 +117,23 @@ const StaffUserEditor = () => {
           .single();
 
         if (error) {
-          console.error('Error fetching user:', error);
+          console.error('❌ [USER_EDITOR] Error fetching user:', error);
           toast({
             title: "Error",
-            description: "Failed to load user data",
+            description: `Failed to load user data: ${error.message}`,
             variant: "destructive"
           });
           return;
         }
 
         if (data) {
+          console.log('✅ [USER_EDITOR] User data fetched successfully:', {
+            id: data.id,
+            username: data.username,
+            role: data.role,
+            status: data.status
+          });
+
           const userData = {
             ...data,
             forum_post_count: data.forum_post_count || 0,
@@ -144,7 +153,7 @@ const StaffUserEditor = () => {
           });
         }
       } catch (error) {
-        console.error('Error fetching user:', error);
+        console.error('❌ [USER_EDITOR] Exception fetching user:', error);
         toast({
           title: "Error",
           description: "Failed to load user data",
@@ -160,7 +169,7 @@ const StaffUserEditor = () => {
 
   const handleSave = async () => {
     if (!userId || !user) {
-      console.error('Missing userId or user data');
+      console.error('❌ [USER_EDITOR] Missing userId or user data');
       toast({
         title: "Error",
         description: "Missing user information",
@@ -170,9 +179,33 @@ const StaffUserEditor = () => {
     }
 
     setSaving(true);
-    console.log('Saving user data:', { userId, formData });
+    console.log('💾 [USER_EDITOR] Starting save operation:', { userId, formData });
     
     try {
+      // First, verify current user has permission to update
+      const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !currentUser) {
+        console.error('❌ [USER_EDITOR] Authentication error:', authError);
+        throw new Error('Authentication required to update user profiles');
+      }
+
+      console.log('🔐 [USER_EDITOR] Current authenticated user:', currentUser.id);
+
+      // Check if current user is staff
+      const { data: staffData, error: staffError } = await supabase
+        .from('staff')
+        .select('role')
+        .eq('id', currentUser.id)
+        .single();
+
+      if (staffError || !staffData) {
+        console.error('❌ [USER_EDITOR] Staff verification failed:', staffError);
+        throw new Error('Only staff members can update user profiles');
+      }
+
+      console.log('✅ [USER_EDITOR] Staff verification successful:', staffData.role);
+
       // Prepare the update data, ensuring we handle null/empty values properly
       const updateData = {
         display_name: formData.display_name.trim() || null,
@@ -183,25 +216,46 @@ const StaffUserEditor = () => {
         updated_at: new Date().toISOString()
       };
 
-      console.log('Update data to be sent:', updateData);
+      console.log('📝 [USER_EDITOR] Update data prepared:', updateData);
 
-      const { data, error } = await supabase
+      // Try using the service role for this operation if available
+      // Otherwise, rely on RLS policies for staff permissions
+      const { data: updatedData, error: updateError } = await supabase
         .from('profiles')
         .update(updateData)
         .eq('id', userId)
-        .select();
+        .select('*')
+        .single();
 
-      if (error) {
-        console.error('Supabase error updating user:', error);
-        toast({
-          title: "Database Error",
-          description: `Failed to update user: ${error.message}`,
-          variant: "destructive"
+      if (updateError) {
+        console.error('❌ [USER_EDITOR] Database update failed:', {
+          error: updateError,
+          code: updateError.code,
+          message: updateError.message,
+          details: updateError.details,
+          hint: updateError.hint
         });
-        return;
+
+        // Provide specific error messages based on common RLS issues
+        let errorMessage = `Failed to update user: ${updateError.message}`;
+        
+        if (updateError.code === '42501') {
+          errorMessage = 'Permission denied. You may not have the required permissions to update this user.';
+        } else if (updateError.code === 'PGRST301') {
+          errorMessage = 'No rows were updated. This might be due to Row Level Security policies.';
+        } else if (updateError.message.includes('RLS')) {
+          errorMessage = 'Update blocked by security policies. Please check your permissions.';
+        }
+
+        throw new Error(errorMessage);
       }
 
-      console.log('Update successful, returned data:', data);
+      if (!updatedData) {
+        console.error('❌ [USER_EDITOR] No data returned from update operation');
+        throw new Error('Update operation completed but no data was returned. The user may not have been updated.');
+      }
+
+      console.log('✅ [USER_EDITOR] Update successful:', updatedData);
 
       toast({
         title: "Success",
@@ -211,18 +265,18 @@ const StaffUserEditor = () => {
       // Update local user state with the new data
       setUser(prev => prev ? {
         ...prev,
-        display_name: formData.display_name || null,
-        username: formData.username || null,
-        role: formData.role,
-        status: formData.status,
-        forum_signature: formData.forum_signature || null
+        display_name: updatedData.display_name,
+        username: updatedData.username,
+        role: updatedData.role,
+        status: updatedData.status,
+        forum_signature: updatedData.forum_signature
       } : null);
 
     } catch (error: any) {
-      console.error('Unexpected error updating user:', error);
+      console.error('❌ [USER_EDITOR] Save operation failed:', error);
       toast({
-        title: "Error",
-        description: `Failed to update user: ${error.message || 'Unknown error'}`,
+        title: "Update Failed",
+        description: error.message || 'An unexpected error occurred while updating the user.',
         variant: "destructive"
       });
     } finally {
