@@ -34,6 +34,7 @@ import StaffVideosPage from "./pages/StaffVideosPage";
 import StaffForumManagementPage from "./pages/StaffForumManagementPage";
 import StaffShowsManager from "./pages/StaffShowsManager";
 import StaffModerationPage from "./pages/StaffModerationPage";
+import UnifiedMessagesPage from "./pages/UnifiedMessagesPage";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,7 @@ function App() {
                 <Route path="/news/:id" element={<NewsPostPage />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/messages" element={<UnifiedMessagesPage />} />
                 <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
                 <Route path="/update-password" element={<UpdatePasswordPage />} />
                 <Route path="/members" element={<MembersPage />} />
