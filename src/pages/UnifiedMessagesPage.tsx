@@ -5,6 +5,7 @@ import { useScrollToTopNavigation } from '@/hooks/useScrollToTopNavigation';
 import { useConversations } from '@/hooks/useConversations';
 import { useUserMessages } from '@/hooks/useUserMessages';
 import { supabase } from '@/integrations/supabase/client';
+import Navbar from '@/components/Navbar';
 import NewConversationModal from '@/components/messaging/NewConversationModal';
 import MessagesPageHeader from '@/components/messaging/MessagesPageHeader';
 import ConversationsTab from '@/components/messaging/ConversationsTab';
@@ -213,6 +214,7 @@ const UnifiedMessagesPage: React.FC = () => {
   return (
     <>
       <TitleUpdater title="Messages" />
+      <Navbar />
       <div className="flex flex-col bg-background min-h-screen pt-16">
         <div className="flex flex-col flex-1 min-h-0">
           <MessagesPageHeader totalUnreadCount={totalUnreadCount} />
