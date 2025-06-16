@@ -68,7 +68,27 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Check staff status when user signs in
         if (event === 'SIGNED_IN' && session?.user) {
           setTimeout(async () => {
-            await checkStaffStatus();
+            try {
+              const { data, error } = await supabase
+                .from('staff')
+                .select('role')
+                .eq('id', session.user.id)
+                .single();
+
+              if (error || !data) {
+                console.log('🔐 [INFO] User is not staff member after RLS fix:', session.user.id);
+                setIsStaff(false);
+                setStaffRole(null);
+              } else {
+                console.log('🔐 [SUCCESS] Staff status confirmed after RLS fix:', { userId: session.user.id, role: data.role });
+                setIsStaff(true);
+                setStaffRole(data.role);
+              }
+            } catch (error) {
+              console.error('🔐 [ERROR] Error checking staff status after RLS fix:', error);
+              setIsStaff(false);
+              setStaffRole(null);
+            }
           }, 0);
         } else if (event === 'SIGNED_OUT') {
           setIsStaff(false);
@@ -86,7 +106,29 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         setLoading(false);
         
         if (currentSession?.user) {
-          checkStaffStatus();
+          setTimeout(async () => {
+            try {
+              const { data, error } = await supabase
+                .from('staff')
+                .select('role')
+                .eq('id', currentSession.user.id)
+                .single();
+
+              if (error || !data) {
+                console.log('🔐 [INFO] User is not staff member after RLS fix:', currentSession.user.id);
+                setIsStaff(false);
+                setStaffRole(null);
+              } else {
+                console.log('🔐 [SUCCESS] Staff status confirmed after RLS fix:', { userId: currentSession.user.id, role: data.role });
+                setIsStaff(true);
+                setStaffRole(data.role);
+              }
+            } catch (error) {
+              console.error('🔐 [ERROR] Error checking staff status after RLS fix:', error);
+              setIsStaff(false);
+              setStaffRole(null);
+            }
+          }, 0);
         }
       })
       .catch((error) => {
@@ -95,7 +137,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
     return () => subscription.unsubscribe();
-  }, [user]);
+  }, []); // Remove user dependency to prevent infinite loop
 
   const logout = async () => {
     try {

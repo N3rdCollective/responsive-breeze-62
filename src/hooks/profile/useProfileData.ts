@@ -51,14 +51,15 @@ export const useProfileData = (user: User | null) => {
   }, [toast]);
 
   useEffect(() => {
-    // Initialize loading state correctly based on user presence
-    if (user) {
+    // Only depend on user.id to prevent infinite loops
+    if (user?.id) {
       setIsLoading(true); 
+      loadProfile(user);
     } else {
       setIsLoading(false); // No user, so not loading profile data
+      loadProfile(null);
     }
-    loadProfile(user);
-  }, [user, loadProfile]);
+  }, [user?.id, loadProfile]); // Only depend on user.id, not the full user object
 
   const refetchProfile = useCallback(() => {
     if (user) {
