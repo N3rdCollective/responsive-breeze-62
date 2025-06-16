@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useStaffRole } from "@/hooks/useStaffRole";
 import NewsHeader from "@/components/staff/news/NewsHeader";
 import NewsListTable from "@/components/staff/news/NewsListTable";
@@ -55,16 +55,6 @@ const StaffNewsPage = () => {
         isAdmin={isAdmin}
         onLogout={handleLogout}
       />
-      
-      <div className="mb-6 flex justify-end">
-        <Button 
-          onClick={() => navigate("/staff/news/editor")} 
-          className="flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          Create New Post
-        </Button>
-      </div>
       
       <NewsListTable 
         refreshTrigger={refreshTrigger} 
