@@ -5,7 +5,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import NewsList from "@/components/news/NewsList";
-import { Skeleton } from "@/components/ui/skeleton";
 
 const News = () => {
   const navigate = useNavigate();
@@ -20,7 +19,6 @@ const News = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="pt-16">
-        {/* Hero Section - Mobile optimized */}
         <section className="relative bg-muted text-foreground py-16 sm:py-20 lg:py-24">
           <div className="absolute inset-0">
             <img
@@ -41,14 +39,12 @@ const News = () => {
           </div>
         </section>
 
-        {/* News Section - Mobile optimized */}
         <section className="py-12 sm:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <NewsList />
           </div>
         </section>
 
-        {/* Newsletter Section - Mobile optimized */}
         <section className="bg-muted py-12 sm:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4 text-foreground">Stay Updated</h2>

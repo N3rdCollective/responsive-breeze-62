@@ -1,43 +1,22 @@
 
-import { useFetchHomeSettings, HomeSettings } from './homepage/useFetchHomeSettings';
-import { useFetchHomepageContent, HomepageContentData, defaultHomepageContentData as originalDefaultHomepageContent } from './homepage/useFetchHomepageContent';
-import { useFetchFeaturedVideos } from './homepage/useFetchFeaturedVideos';
+import { useFetchHomeSettings } from './homepage/useFetchHomeSettings';
+import { useFetchHomepageContent } from './homepage/useFetchHomepageContent';
+import { useFeaturedVideos } from './useFeaturedVideos';
 import { useFetchShowFeaturedArtistFlag } from './homepage/useFetchShowFeaturedArtistFlag';
-import { VideoData, defaultSettings as originalDefaultSettings } from "@/components/staff/home/context/HomeSettingsContext";
 
-// Re-export types and defaults that might be used elsewhere, ensuring consistency with previous exports.
-export type { HomeSettings, HomepageContentData, VideoData };
-export const defaultSettings: HomeSettings = originalDefaultSettings;
-export const defaultHomepageContentData: HomepageContentData = originalDefaultHomepageContent;
-
-interface UseHomepageDataReturn {
-  settings: HomeSettings;
-  homepageContent: HomepageContentData;
-  featuredVideos: VideoData[];
-  isLoading: boolean;
-  showFeaturedArtist: boolean;
-}
-
-export const useHomepageData = (): UseHomepageDataReturn => {
+export const useHomepageData = () => {
   const { settings, isLoading: isLoadingSettings } = useFetchHomeSettings();
   const { homepageContent, isLoading: isLoadingContent } = useFetchHomepageContent();
-  const { featuredVideos, isLoading: isLoadingVideos } = useFetchFeaturedVideos();
+  const { featuredVideos, isLoading: isLoadingVideos } = useFeaturedVideos();
   const { showFeaturedArtist, isLoading: isLoadingShowArtistFlag } = useFetchShowFeaturedArtistFlag();
 
-  // Only consider videos loading for overall loading state if videos are actually being fetched
-  const isLoading = isLoadingSettings || isLoadingContent || isLoadingShowArtistFlag;
+  const isLoading = isLoadingSettings || isLoadingContent || isLoadingVideos || isLoadingShowArtistFlag;
 
-  // Enhanced debug logging to track the aggregation
-  console.log('🏠 Homepage Data Debug:', {
-    featuredVideos,
-    featuredVideosCount: featuredVideos.length,
+  console.log('🏠 Homepage Data:', {
+    featuredVideos: featuredVideos.length,
     isLoading,
-    isLoadingVideos,
-    isLoadingSettings,
-    isLoadingContent,
-    isLoadingShowArtistFlag,
-    settings,
-    timestamp: new Date().toISOString()
+    settings: settings?.show_hero,
+    homepageContent: homepageContent?.hero_title
   });
 
   return {

@@ -1623,6 +1623,10 @@ export type Database = {
           total_topic_posts: number
         }[]
       }
+      get_user_role_simple: {
+        Args: { user_id: string }
+        Returns: string
+      }
       get_user_staff_role: {
         Args: { user_id: string }
         Returns: string
@@ -1632,6 +1636,10 @@ export type Database = {
         Returns: undefined
       }
       is_user_staff_member: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
+      is_user_staff_simple: {
         Args: { user_id: string }
         Returns: boolean
       }

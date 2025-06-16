@@ -3,59 +3,49 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { VideoData } from "@/components/staff/home/context/HomeSettingsContext";
 
-interface UseFetchFeaturedVideosReturn {
+interface UseFeaturedVideosReturn {
   featuredVideos: VideoData[];
   isLoading: boolean;
+  error: string | null;
 }
 
-export const useFetchFeaturedVideos = (): UseFetchFeaturedVideosReturn => {
+export const useFeaturedVideos = (): UseFeaturedVideosReturn => {
   const [featuredVideos, setFeaturedVideos] = useState<VideoData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchVideos = async () => {
-      console.log('🎬 Starting to fetch featured videos (auth-independent)...');
+      console.log('🎬 Fetching featured videos...');
       setIsLoading(true);
+      setError(null);
       
       try {
-        // Use a simple query without any authentication context
         const { data: videosData, error: videosError } = await supabase
           .from("featured_videos")
           .select("*")
-          .order("display_order", { ascending: true })
-          .eq("is_active", true);
-
-        console.log('🎬 Featured videos fetch result:', {
-          videosData,
-          videosError,
-          dataLength: videosData?.length || 0,
-          authState: 'independent'
-        });
+          .eq("is_active", true)
+          .order("display_order", { ascending: true });
 
         if (videosError) {
           console.error("🎬 Error fetching featured videos:", videosError);
+          setError(videosError.message);
           setFeaturedVideos([]);
         } else {
-          console.log('🎬 Setting featured videos:', videosData || []);
+          console.log('🎬 Featured videos fetched successfully:', videosData?.length || 0);
           setFeaturedVideos(videosData || []);
         }
       } catch (error) {
         console.error("🎬 Error in fetchVideos:", error);
+        setError(error instanceof Error ? error.message : 'Unknown error');
         setFeaturedVideos([]);
       } finally {
         setIsLoading(false);
-        console.log('🎬 Featured videos fetch completed');
       }
     };
 
     fetchVideos();
-  }, []); // No dependencies on auth state
+  }, []);
 
-  console.log('🎬 useFetchFeaturedVideos returning:', {
-    featuredVideos,
-    featuredVideosLength: featuredVideos.length,
-    isLoading
-  });
-
-  return { featuredVideos, isLoading };
+  return { featuredVideos, isLoading, error };
 };

@@ -10,13 +10,11 @@ import FeaturedArtistSection from "@/components/home/FeaturedArtistSection";
 import TitleUpdater from "@/components/TitleUpdater";
 import Footer from "@/components/Footer";
 import AuthModal from "@/components/auth/AuthModal";
-
-// Newly imported components and hook
 import PageLoader from "@/components/general/PageLoader";
 import StatsSection from "@/components/home/StatsSection";
 import CtaSection from "@/components/home/CtaSection";
-import { useHomepageData } from "@/hooks/useHomepageData";
 import SongRequestWidget from "@/components/SongRequestWidget";
+import { useHomepageData } from "@/hooks/useHomepageData";
 
 const Index = () => {
   const { 
@@ -29,13 +27,10 @@ const Index = () => {
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-  // Enhanced debug logging to track page renders and video state
   console.log('🏠 Index page render:', {
-    featuredVideos,
-    featuredVideosLength: featuredVideos.length,
+    featuredVideos: featuredVideos.length,
     isLoading,
-    settings,
-    renderTime: new Date().toISOString()
+    settings: settings?.show_hero
   });
 
   if (isLoading) {
@@ -60,10 +55,8 @@ const Index = () => {
         />
       )}
       
-      {/* Always render VideoGallery to prevent it from disappearing during auth changes */}
       <VideoGallery videos={featuredVideos} onAuthModalOpen={handleAuthModalOpen} /> 
       
-      {/* Mobile-optimized container with better spacing */}
       <div className="container mx-auto px-3 sm:px-4 lg:px-8 py-6 sm:py-8">
         {settings.show_live_banner && <LiveShowBanner />}
       </div>
@@ -77,14 +70,12 @@ const Index = () => {
         }} />
       )}
       
-      {/* Mobile-optimized main content container */}
       <div className="container mx-auto px-3 sm:px-4 lg:px-8 py-6 sm:py-8">
         <div className="space-y-12 sm:space-y-16">
           {showFeaturedArtist && <FeaturedArtistSection />}
           {settings.show_news_section && <HomeNewsSection onAuthModalOpen={handleAuthModalOpen} />}
           {settings.show_personalities && <PersonalitySlider />}
           
-          {/* Mobile-optimized song request widget */}
           <div className="w-full max-w-none">
             <SongRequestWidget />
           </div>
