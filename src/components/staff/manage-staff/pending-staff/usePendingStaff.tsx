@@ -6,10 +6,10 @@ import { useToast } from "@/hooks/use-toast";
 export interface PendingStaffMember {
   id: string;
   email: string;
-  role: string;
-  invited_by: string;
-  created_at: string;
-  inviter_name?: string;
+  status: string;
+  invited_at: string;
+  approved_at?: string;
+  rejected_at?: string;
 }
 
 export const usePendingStaff = (onStaffUpdate: () => void) => {
@@ -21,27 +21,20 @@ export const usePendingStaff = (onStaffUpdate: () => void) => {
   const fetchPendingStaff = async () => {
     try {
       const { data, error } = await supabase
-        .from("staff_invitations")
-        .select(`
-          *,
-          inviter:invited_by (
-            first_name,
-            last_name,
-            email
-          )
-        `)
-        .eq("status", "pending")
-        .order("created_at", { ascending: false });
+        .from("pending_staff")
+        .select("*")
+        .eq("status", "invited")
+        .order("invited_at", { ascending: false });
 
       if (error) throw error;
 
       const formattedData = data?.map(item => ({
         id: item.id,
         email: item.email,
-        role: item.role,
-        invited_by: item.invited_by,
-        created_at: item.created_at,
-        inviter_name: item.inviter ? `${item.inviter.first_name || ''} ${item.inviter.last_name || ''}`.trim() || item.inviter.email : 'Unknown'
+        status: item.status,
+        invited_at: item.invited_at,
+        approved_at: item.approved_at,
+        rejected_at: item.rejected_at,
       })) || [];
 
       setPendingStaff(formattedData);
@@ -62,10 +55,11 @@ export const usePendingStaff = (onStaffUpdate: () => void) => {
     
     try {
       const { error } = await supabase
-        .from("staff_invitations")
+        .from("pending_staff")
         .update({ 
           status: approved ? "approved" : "rejected",
-          updated_at: new Date().toISOString()
+          approved_at: approved ? new Date().toISOString() : null,
+          rejected_at: approved ? null : new Date().toISOString(),
         })
         .eq("id", pendingId);
 

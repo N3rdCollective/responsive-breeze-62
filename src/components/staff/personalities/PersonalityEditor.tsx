@@ -1,16 +1,16 @@
 
 import { Button } from "@/components/ui/button";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
+import { useAuth } from "@/hooks/useAuth";
 import PersonalityList from "./components/PersonalityList";
 import PersonalityForm from "./components/PersonalityForm";
 import { usePersonalityEditor } from "./hooks/usePersonalityEditor";
 import { FormValues, Personality } from "./types";
 
 export const PersonalityEditor = () => {
-  const { userRole } = useStaffAuth();
+  const { staffRole } = useAuth();
   
   // Check if user has permissions
-  const canEdit = userRole === "admin" || userRole === "super_admin" || userRole === "moderator";
+  const canEdit = staffRole === "admin" || staffRole === "super_admin" || staffRole === "moderator";
 
   const { 
     form,

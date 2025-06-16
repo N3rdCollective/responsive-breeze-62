@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,13 +32,13 @@ type AboutFormValues = z.infer<typeof aboutFormSchema>;
 const StaffAboutEditor = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { isLoading, userRole } = useStaffAuth();
+  const { isLoading, staffRole } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
   const [initialData, setInitialData] = useState<AboutFormValues | null>(null);
   const [recordId, setRecordId] = useState<string | null>(null);
   
   // Check if user has permissions to edit
-  const canEdit = userRole === "admin" || userRole === "super_admin" || userRole === "moderator";
+  const canEdit = staffRole === "admin" || staffRole === "super_admin" || staffRole === "moderator";
 
   const form = useForm<AboutFormValues>({
     resolver: zodResolver(aboutFormSchema),

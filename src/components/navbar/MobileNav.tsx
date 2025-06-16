@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Menu, Mail, User, LogOut, Bell, LogIn, Settings } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
-import { useStaffAuth } from '@/hooks/useStaffAuth';
 import { useUnifiedMessages } from '@/hooks/useUnifiedMessages';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import ThemeToggle from '@/components/navbar/ThemeToggle';
@@ -23,8 +22,7 @@ interface MobileNavProps {
 const MobileNav = ({ isScrolled, isHomePage, onAuthModalOpen }: MobileNavProps) => {
   const location = useLocation();
   const navigate = useScrollToTopNavigation();
-  const { user, logout } = useAuth();
-  const { isAuthenticated: isStaffAuthenticated } = useStaffAuth();
+  const { user, logout, isStaff } = useAuth();
   const { totalUnreadCount } = useUnifiedMessages();
   const [open, setOpen] = React.useState(false);
 
@@ -129,7 +127,7 @@ const MobileNav = ({ isScrolled, isHomePage, onAuthModalOpen }: MobileNavProps) 
                   Profile
                 </ScrollToTopLink>
                 
-                {isStaffAuthenticated && (
+                {isStaff && (
                   <ScrollToTopLink
                     to="/staff/panel"
                     onClick={() => setOpen(false)}

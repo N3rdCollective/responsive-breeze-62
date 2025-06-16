@@ -13,7 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useStaffActivityLogger } from "@/hooks/useStaffActivityLogger";
@@ -30,7 +30,7 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({
 }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { userRole } = useStaffAuth();
+  const { staffRole } = useAuth();
   const { logActivity } = useStaffActivityLogger();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -39,8 +39,8 @@ const NewsTableActions: React.FC<NewsTableActionsProps> = ({
   const postTitle = post.title;
   const postStatus = post.status;
   
-  const canModify = userRole === 'admin' || userRole === 'super_admin' || userRole === 'moderator';
-  const canPublish = canModify || userRole === 'content_manager';
+  const canModify = staffRole === 'admin' || staffRole === 'super_admin' || staffRole === 'moderator';
+  const canPublish = canModify || staffRole === 'content_manager';
 
   const handleEdit = () => {
     console.log("[NewsTableActions] Edit button clicked for post:", postId);

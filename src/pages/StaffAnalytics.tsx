@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useStaffAuth } from '@/hooks/useStaffAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import TitleUpdater from '@/components/TitleUpdater';
@@ -13,7 +13,7 @@ import AnalyticsPageDetails from '@/components/analytics/AnalyticsPageDetails';
 
 const StaffAnalytics = () => {
   const navigate = useNavigate();
-  const { userRole, isLoading: authLoading } = useStaffAuth();
+  const { staffRole, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [dateRange, setDateRange] = useState('30'); // days
 
@@ -47,7 +47,7 @@ const StaffAnalytics = () => {
     );
   }
 
-  if (!userRole || !['admin', 'super_admin'].includes(userRole)) {
+  if (!staffRole || !['admin', 'super_admin'].includes(staffRole)) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">

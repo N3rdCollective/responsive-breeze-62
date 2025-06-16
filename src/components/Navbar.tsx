@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useScrollToTopNavigation } from "@/hooks/useScrollToTopNavigation";
@@ -8,7 +9,6 @@ import NotificationBell from "@/components/notifications/NotificationBell";
 import ListenButton from "./navbar/ListenButton";
 import ThemeToggle from "./navbar/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
 import { useUnifiedMessages } from "@/hooks/useUnifiedMessages";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -29,8 +29,7 @@ const Navbar = () => {
   const navigate = useScrollToTopNavigation();
   const [mounted, setMounted] = useState(false);
   
-  const { user, logout: userLogout } = useAuth();
-  const { staffName, handleLogout: staffLogout, userRole: staffUserRole, isAuthenticated: isStaffAuthenticated } = useStaffAuth();
+  const { user, logout: userLogout, isStaff, staffRole } = useAuth();
   const { totalUnreadCount } = useUnifiedMessages();
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false); 
@@ -146,7 +145,7 @@ const Navbar = () => {
                         <User className="mr-2 h-4 w-4" />
                         <span>Profile</span>
                       </DropdownMenuItem>
-                      {isStaffAuthenticated && (
+                      {isStaff && (
                         <DropdownMenuItem onClick={() => navigate("/staff/panel")}>
                           <Settings className="mr-2 h-4 w-4" />
                           <span>Dashboard</span>
