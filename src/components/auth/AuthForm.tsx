@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +12,6 @@ import { EnhancedSignupForm } from '@/components/auth/EnhancedSignupForm';
 
 const AuthForm: React.FC = () => {
   const navigate = useNavigate();
-  const { isStaff } = useAuth();
   const [loading, setLoading] = useState(false);
   
   // Login form state
@@ -45,12 +43,8 @@ const AuthForm: React.FC = () => {
           description: "Welcome back!",
         });
         
-        // Redirect based on user type
-        if (isStaff) {
-          navigate('/staff/panel');
-        } else {
-          navigate('/');
-        }
+        // Always redirect to homepage
+        navigate('/');
       }
     } catch (error: any) {
       toast({
@@ -69,7 +63,7 @@ const AuthForm: React.FC = () => {
       description: "Welcome! Your account has been created successfully.",
     });
     
-    // Redirect to home page after successful signup
+    // Redirect to homepage after successful signup
     navigate('/');
   };
 

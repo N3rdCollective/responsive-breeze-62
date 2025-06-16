@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -69,6 +68,7 @@ const Auth = () => {
           title: "Welcome back!",
           description: "You have been successfully logged in.",
         });
+        // Always redirect to homepage
         navigate("/");
       }
     } catch (error: any) {
@@ -98,11 +98,16 @@ const Auth = () => {
     setError("");
   };
 
+  const handleSignupSuccess = () => {
+    // Always redirect to homepage after signup
+    navigate("/");
+  };
+
   if (isSignUp) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
-          <EnhancedSignupForm onSwitchToSignIn={switchToSignIn} />
+          <EnhancedSignupForm onSwitchToSignIn={switchToSignIn} onSuccess={handleSignupSuccess} />
         </Card>
       </div>
     );
