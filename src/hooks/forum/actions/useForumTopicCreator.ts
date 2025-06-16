@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -42,7 +41,7 @@ export const useForumTopicCreator = () => {
           last_post_at: new Date().toISOString(),
           last_post_user_id: user.id,
         })
-        .select('id, title, slug, category_id, user_id, created_at, updated_at, last_post_at, last_post_user_id, is_sticky, is_locked, view_count')
+        .select('id, title, slug, category_id, user_id, created_at, updated_at, last_post_at, last_post_user_id, is_locked, is_pinned, view_count, post_count')
         .single();
 
       if (topicError) {
@@ -65,7 +64,7 @@ export const useForumTopicCreator = () => {
           user_id: user.id,
           content: input.content,
         })
-        .select('id, topic_id, user_id, content, created_at, updated_at, is_edited')
+        .select('id, topic_id, user_id, content, created_at, updated_at')
         .single();
       
       if (postError) {
@@ -82,7 +81,7 @@ export const useForumTopicCreator = () => {
       
       console.log('✅ [TOPIC_CREATOR] First post created successfully:', postInsertData.id);
 
-      // Step 3: Fetch complete topic data with relationships (graceful fallback)
+      // Step 3: Fetch complete topic data with relationships
       let completeTopicData;
       try {
         console.log('📝 [TOPIC_CREATOR] Fetching complete topic data with relationships');
@@ -107,7 +106,7 @@ export const useForumTopicCreator = () => {
         completeTopicData = topicInsertData;
       }
 
-      // Step 4: Fetch complete post data with relationships (graceful fallback)
+      // Step 4: Fetch complete post data with relationships
       let completePostData;
       try {
         console.log('📝 [TOPIC_CREATOR] Fetching complete post data with relationships');
@@ -189,7 +188,7 @@ export const useForumTopicCreator = () => {
       console.log('🎉 [TOPIC_CREATOR] Topic creation process completed successfully');
       toast({ title: "Topic Created!", description: `Your new topic "${input.title}" has been successfully created. ${createdPoll ? 'Poll also added.' : ''}`, variant: "default" });
 
-      // Step 6: Handle mention notifications for the first post (non-critical)
+      // Step 6: Handle mention notifications for the first post
       try {
         const mentionedUserIds = extractMentionedUserIds(input.content);
         if (mentionedUserIds.length > 0) {
