@@ -30,6 +30,10 @@ import ForumTopicPage from "./pages/ForumTopicPage";
 import NewForumTopicPage from "./pages/NewForumTopicPage";
 import ForumSearchResultsPage from "./pages/ForumSearchResultsPage";
 import ForumInitiateSearchPage from "./pages/ForumInitiateSearchPage";
+import StaffVideosPage from "./pages/StaffVideosPage";
+import StaffForumManagementPage from "./pages/StaffForumManagementPage";
+import StaffShowsManager from "./pages/StaffShowsManager";
+import StaffModerationPage from "./pages/StaffModerationPage";
 
 const queryClient = new QueryClient();
 
@@ -73,6 +77,10 @@ function App() {
                   <Route path="news" element={<StaffNewsPage />} />
                   <Route path="news/editor" element={<NewsEditor />} />
                   <Route path="news/editor/:id" element={<NewsEditor />} />
+                  <Route path="videos" element={<StaffVideosPage />} />
+                  <Route path="forum" element={<StaffForumManagementPage />} />
+                  <Route path="shows" element={<StaffShowsManager />} />
+                  <Route path="moderation" element={<StaffModerationPage />} />
                 </Route>
               </Routes>
               <MusicPlayer />
