@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { SecurityProvider } from "@/components/security/SecurityProvider";
 import MusicPlayer from "@/components/MusicPlayer";
@@ -63,6 +63,7 @@ function App() {
                 
                 {/* Staff dashboard routes (nested under StaffLayout) */}
                 <Route path="/staff/*" element={<StaffLayout />}>
+                  <Route index element={<Navigate to="panel" replace />} />
                   <Route path="panel" element={<StaffPanel />} />
                   <Route path="users" element={<StaffUserManager />} />
                   <Route path="analytics" element={<StaffAnalytics />} />
