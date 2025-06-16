@@ -24,15 +24,20 @@ export const useHomepageData = (): UseHomepageDataReturn => {
   const { featuredVideos, isLoading: isLoadingVideos } = useFetchFeaturedVideos();
   const { showFeaturedArtist, isLoading: isLoadingShowArtistFlag } = useFetchShowFeaturedArtistFlag();
 
-  const isLoading = isLoadingSettings || isLoadingContent || isLoadingVideos || isLoadingShowArtistFlag;
+  // Only consider videos loading for overall loading state if videos are actually being fetched
+  const isLoading = isLoadingSettings || isLoadingContent || isLoadingShowArtistFlag;
 
-  // Debug logging
-  console.log('🎬 Homepage Data Debug:', {
+  // Enhanced debug logging to track the aggregation
+  console.log('🏠 Homepage Data Debug:', {
     featuredVideos,
     featuredVideosCount: featuredVideos.length,
     isLoading,
     isLoadingVideos,
-    settings
+    isLoadingSettings,
+    isLoadingContent,
+    isLoadingShowArtistFlag,
+    settings,
+    timestamp: new Date().toISOString()
   });
 
   return {

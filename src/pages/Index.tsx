@@ -29,12 +29,13 @@ const Index = () => {
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-  // Debug logging
+  // Enhanced debug logging to track page renders and video state
   console.log('🏠 Index page render:', {
     featuredVideos,
     featuredVideosLength: featuredVideos.length,
     isLoading,
-    settings
+    settings,
+    renderTime: new Date().toISOString()
   });
 
   if (isLoading) {
@@ -59,6 +60,7 @@ const Index = () => {
         />
       )}
       
+      {/* Always render VideoGallery to prevent it from disappearing during auth changes */}
       <VideoGallery videos={featuredVideos} onAuthModalOpen={handleAuthModalOpen} /> 
       
       {/* Mobile-optimized container with better spacing */}

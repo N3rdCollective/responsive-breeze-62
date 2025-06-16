@@ -20,16 +20,20 @@ interface VideoGalleryProps {
 const VideoGallery: React.FC<VideoGalleryProps> = ({ videos = [], onAuthModalOpen }) => {
   const [openVideoId, setOpenVideoId] = useState<string | null>(null);
   
-  // Debug logging
+  // Enhanced debug logging to track auth state changes
   console.log('🎬 VideoGallery render:', {
     videos,
     videosLength: videos.length,
-    videosType: typeof videos
+    videosType: typeof videos,
+    hasVideos: videos && videos.length > 0,
+    timestamp: new Date().toISOString()
   });
   
-  if (videos.length === 0) {
-    console.log('🎬 VideoGallery: No videos to display');
-    return null; // Don't show section if no videos
+  // Always render the section structure, even if no videos
+  // This prevents the component from disappearing during auth state changes
+  if (!videos || videos.length === 0) {
+    console.log('🎬 VideoGallery: No videos to display, returning null');
+    return null;
   }
   
   return (

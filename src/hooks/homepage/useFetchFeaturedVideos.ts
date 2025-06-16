@@ -14,10 +14,11 @@ export const useFetchFeaturedVideos = (): UseFetchFeaturedVideosReturn => {
 
   useEffect(() => {
     const fetchVideos = async () => {
-      console.log('🎬 Starting to fetch featured videos...');
+      console.log('🎬 Starting to fetch featured videos (auth-independent)...');
       setIsLoading(true);
       
       try {
+        // Use a simple query without any authentication context
         const { data: videosData, error: videosError } = await supabase
           .from("featured_videos")
           .select("*")
@@ -27,7 +28,8 @@ export const useFetchFeaturedVideos = (): UseFetchFeaturedVideosReturn => {
         console.log('🎬 Featured videos fetch result:', {
           videosData,
           videosError,
-          dataLength: videosData?.length || 0
+          dataLength: videosData?.length || 0,
+          authState: 'independent'
         });
 
         if (videosError) {
@@ -47,7 +49,7 @@ export const useFetchFeaturedVideos = (): UseFetchFeaturedVideosReturn => {
     };
 
     fetchVideos();
-  }, []);
+  }, []); // No dependencies on auth state
 
   console.log('🎬 useFetchFeaturedVideos returning:', {
     featuredVideos,
