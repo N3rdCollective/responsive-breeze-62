@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { SecurityProvider } from "@/components/security/SecurityProvider";
 import MusicPlayer from "@/components/MusicPlayer";
+import StaffLayout from "@/components/layouts/StaffLayout";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import News from "./pages/News";
@@ -55,12 +56,18 @@ function App() {
                 <Route path="/forum/new-topic/:categorySlug" element={<NewForumTopicPage />} />
                 <Route path="/forum/search-results" element={<ForumSearchResultsPage />} />
                 <Route path="/forum/initiate-search" element={<ForumInitiateSearchPage />} />
+                
+                {/* Staff authentication routes (outside StaffLayout) */}
                 <Route path="/staff/register" element={<StaffRegistration />} />
                 <Route path="/staff/login" element={<StaffLoginPage />} />
-                <Route path="/staff/panel" element={<StaffPanel />} />
-                <Route path="/staff/users" element={<StaffUserManager />} />
-                <Route path="/staff/analytics" element={<StaffAnalytics />} />
-                <Route path="/staff/homepage" element={<StaffHomepageManager />} />
+                
+                {/* Staff dashboard routes (nested under StaffLayout) */}
+                <Route path="/staff/*" element={<StaffLayout />}>
+                  <Route path="panel" element={<StaffPanel />} />
+                  <Route path="users" element={<StaffUserManager />} />
+                  <Route path="analytics" element={<StaffAnalytics />} />
+                  <Route path="homepage" element={<StaffHomepageManager />} />
+                </Route>
               </Routes>
               <MusicPlayer />
             </AuthProvider>
