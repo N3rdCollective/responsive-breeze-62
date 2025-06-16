@@ -49,8 +49,8 @@ export const useForumTopicCreator = () => {
         return await createTopicManually(input, user, slug);
       }
 
-      const typedRpcResult = rpcResult as TopicCreationResult;
-      if (!typedRpcResult || !typedRpcResult.topic_id || !typedRpcResult.post_id) {
+      const typedRpcResult = rpcResult as unknown as TopicCreationResult;
+      if (!typedRpcResult || typeof typedRpcResult !== 'object' || !typedRpcResult.topic_id || !typedRpcResult.post_id) {
         console.error('❌ [TOPIC_CREATOR] Invalid RPC result:', rpcResult);
         return await createTopicManually(input, user, slug);
       }
