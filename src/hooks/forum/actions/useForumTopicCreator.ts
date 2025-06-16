@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -35,8 +34,8 @@ export const useForumTopicCreator = () => {
       const slug = generateSlug(input.title);
       console.log('🏷️ [TOPIC_CREATOR] Generated slug:', slug);
 
-      // Use the new RPC function for atomic topic and post creation
-      console.log('📝 [TOPIC_CREATOR] Creating topic and post via RPC function');
+      // Use RPC function instead of direct insert to bypass RLS issues
+      console.log('📝 [TOPIC_CREATOR] Creating topic via RPC function');
       const { data: rpcResult, error: rpcError } = await supabase.rpc('create_forum_topic_with_post', {
         p_category_id: input.category_id,
         p_title: input.title,
@@ -46,99 +45,47 @@ export const useForumTopicCreator = () => {
 
       if (rpcError) {
         console.error('❌ [TOPIC_CREATOR] RPC creation error:', rpcError);
-        throw new Error(`Failed to create topic: ${rpcError.message}`);
+        // Fallback to manual creation if RPC doesn't exist
+        return await createTopicManually(input, user, slug);
       }
 
-      if (!rpcResult) {
-        console.error('❌ [TOPIC_CREATOR] No result from RPC function');
-        throw new Error('Failed to create topic: No result returned');
+      const typedRpcResult = rpcResult as TopicCreationResult;
+      if (!typedRpcResult || !typedRpcResult.topic_id || !typedRpcResult.post_id) {
+        console.error('❌ [TOPIC_CREATOR] Invalid RPC result:', rpcResult);
+        return await createTopicManually(input, user, slug);
       }
 
-      // Parse the JSON result
-      const result = rpcResult as TopicCreationResult;
-      console.log('✅ [TOPIC_CREATOR] Topic and post created via RPC:', result);
+      console.log('✅ [TOPIC_CREATOR] Topic and post created via RPC:', typedRpcResult);
 
-      // Fetch the created topic and post with all necessary joins
+      // Fetch the created topic and post
       const [topicResult, postResult] = await Promise.all([
-        supabase
-          .from('forum_topics')
-          .select(`
-            *,
-            profile:profiles!forum_topics_user_id_fkey(
-              username,
-              display_name,
-              profile_picture,
-              created_at,
-              forum_post_count,
-              forum_signature
-            ),
-            category:forum_categories!forum_topics_category_id_fkey(
-              name,
-              slug
-            ),
-            _count:forum_posts(count)
-          `)
-          .eq('id', result.topic_id)
-          .single(),
-        supabase
-          .from('forum_posts')
-          .select(`
-            *,
-            profile:profiles!forum_posts_user_id_fkey(
-              username,
-              display_name,
-              profile_picture,
-              created_at,
-              forum_post_count,
-              forum_signature
-            ),
-            forum_post_reactions(*)
-          `)
-          .eq('id', result.post_id)
-          .single()
+        supabase.from('forum_topics').select('*').eq('id', typedRpcResult.topic_id).single(),
+        supabase.from('forum_posts').select('*').eq('id', typedRpcResult.post_id).single()
       ]);
 
-      if (topicResult.error) {
-        console.error('❌ [TOPIC_CREATOR] Error fetching created topic:', topicResult.error);
-        // Topic was created but we can't fetch it - try basic fetch
-        const basicTopic = await supabase.from('forum_topics').select('*').eq('id', result.topic_id).single();
-        if (basicTopic.error) {
-          throw new Error('Failed to fetch created topic data');
-        }
-        // Use basic topic data
-        var topicData = basicTopic.data;
-      } else {
-        var topicData = topicResult.data;
+      if (topicResult.error || postResult.error) {
+        console.error('❌ [TOPIC_CREATOR] Error fetching created data:', { topicResult, postResult });
+        throw new Error('Failed to fetch created topic and post data');
       }
 
-      if (postResult.error) {
-        console.error('❌ [TOPIC_CREATOR] Error fetching created post:', postResult.error);
-        // Post was created but we can't fetch it - try basic fetch
-        const basicPost = await supabase.from('forum_posts').select('*').eq('id', result.post_id).single();
-        if (basicPost.error) {
-          throw new Error('Failed to fetch created post data');
-        }
-        // Use basic post data
-        var postData = basicPost.data;
-      } else {
-        var postData = postResult.data;
-      }
+      const createdTopicData = topicResult.data;
+      const createdPostData = postResult.data;
 
       // Handle poll creation if needed
       let createdPoll: ForumPoll | null = null;
       if (input.poll && input.poll.question && input.poll.options.length >= 2) {
-        createdPoll = await createPoll(topicData.id, user.id, input.poll);
+        createdPoll = await createPoll(createdTopicData.id, user.id, input.poll);
       }
 
       // Handle mentions
-      await handleMentions(input.content, user, topicData, postData);
+      await handleMentions(input.content, user, createdTopicData, createdPostData);
 
-      const finalTopicData = { ...topicData, poll: createdPoll } as ForumTopic;
+      const finalTopicData = { ...createdTopicData, poll: createdPoll } as ForumTopic;
 
       console.log('🎉 [TOPIC_CREATOR] Topic creation completed successfully');
       toast({ title: "Topic Created!", description: `Your new topic "${input.title}" has been successfully created.`, variant: "default" });
 
-      return { topic: finalTopicData, firstPost: postData as ForumPost };
+      return { topic: finalTopicData, firstPost: createdPostData as ForumPost };
 
     } catch (error: any) {
       console.error("❌ [TOPIC_CREATOR] Topic creation process failed:", error);
@@ -147,6 +94,65 @@ export const useForumTopicCreator = () => {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // Fallback manual creation method
+  const createTopicManually = async (input: CreateTopicInput, user: any, slug: string) => {
+    console.log('📝 [TOPIC_CREATOR] Falling back to manual creation');
+    
+    // Create topic with absolute minimal data
+    const { data: manualTopicData, error: topicError } = await supabase
+      .from('forum_topics')
+      .insert({
+        category_id: input.category_id,
+        user_id: user.id,
+        title: input.title,
+        slug: slug,
+        last_post_at: new Date().toISOString(),
+        last_post_user_id: user.id,
+      })
+      .select('id, title, slug, category_id, user_id, created_at')
+      .single();
+
+    if (topicError) {
+      console.error('❌ [TOPIC_CREATOR] Topic creation error:', topicError);
+      throw topicError;
+    }
+
+    console.log('✅ [TOPIC_CREATOR] Topic created:', manualTopicData.id);
+
+    // Create post with absolute minimal data
+    const { data: manualPostData, error: postError } = await supabase
+      .from('forum_posts')
+      .insert({
+        topic_id: manualTopicData.id,
+        user_id: user.id,
+        content: input.content,
+      })
+      .select('id, topic_id, user_id, content, created_at')
+      .single();
+    
+    if (postError) {
+      console.error("❌ [TOPIC_CREATOR] Post creation error:", postError);
+      // Rollback topic
+      await supabase.from('forum_topics').delete().eq('id', manualTopicData.id);
+      throw new Error(`Failed to create post: ${postError.message}`);
+    }
+
+    console.log('✅ [TOPIC_CREATOR] Post created:', manualPostData.id);
+
+    // Handle poll creation if needed
+    let createdPoll: ForumPoll | null = null;
+    if (input.poll && input.poll.question && input.poll.options.length >= 2) {
+      createdPoll = await createPoll(manualTopicData.id, user.id, input.poll);
+    }
+
+    // Handle mentions
+    await handleMentions(input.content, user, manualTopicData, manualPostData);
+
+    const finalTopicData = { ...manualTopicData, poll: createdPoll } as ForumTopic;
+
+    return { topic: finalTopicData, firstPost: manualPostData as ForumPost };
   };
 
   // Helper function to create poll
