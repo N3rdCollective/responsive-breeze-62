@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { VideoData } from '@/components/staff/home/context/HomeSettingsContext';
-import { greetings } from '@/data/greetings'; // Removed GreetingData import as it's not used here
+import { greetings } from '@/data/greetings';
 import { useAuth } from '@/hooks/useAuth';
 
 const defaultVideoBackgrounds: VideoData[] = [];
@@ -14,28 +13,39 @@ export const useHeroData = (videoBackgroundsProp?: VideoData[]) => {
   const [videos, setVideos] = useState<VideoData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
-  const [profileDisplayName, setProfileDisplayName] = useState<string | null>(null); // New state for profile display name
+  const [profileDisplayName, setProfileDisplayName] = useState<string | null>(null);
+
+  console.log('🏠 useHeroData: Hook initialized', { 
+    user: user?.id, 
+    videoBackgroundsProp: videoBackgroundsProp?.length 
+  });
 
   useEffect(() => {
     const fetchVideos = async () => {
       if (videoBackgroundsProp && videoBackgroundsProp.length > 0) {
+        console.log('🏠 useHeroData: Using provided videos', videoBackgroundsProp.length);
         setVideos(videoBackgroundsProp);
-        setIsLoading(false); // Set loading to false only after setting videos
+        setIsLoading(false);
         return;
       }
 
       try {
-        // setIsLoading(true); // Already true by default, ensure it's set if this effect runs multiple times
+        console.log('🏠 useHeroData: Fetching videos from database');
         const { data, error } = await supabase
           .from("featured_videos")
           .select("*")
           .order("display_order", { ascending: true })
           .eq("is_active", true);
 
-        if (error) throw error;
+        if (error) {
+          console.error('🏠 useHeroData: Error fetching videos:', error);
+          throw error;
+        }
+        
+        console.log('🏠 useHeroData: Videos fetched successfully', data?.length || 0);
         setVideos(data || defaultVideoBackgrounds);
       } catch (error) {
-        console.error("Error fetching featured videos:", error);
+        console.error("🏠 useHeroData: Error fetching featured videos:", error);
         setVideos(defaultVideoBackgrounds);
       } finally {
         setIsLoading(false);
@@ -48,13 +58,16 @@ export const useHeroData = (videoBackgroundsProp?: VideoData[]) => {
   useEffect(() => {
     const fetchLocation = async () => {
       try {
+        console.log('🏠 useHeroData: Fetching user location');
         const response = await fetch('https://ipapi.co/json/');
         const data = await response.json();
         if (data.region_code && data.country_code) {
-          setLocation(`${data.country_code}-${data.region_code}`);
+          const locationKey = `${data.country_code}-${data.region_code}`;
+          console.log('🏠 useHeroData: Location detected:', locationKey);
+          setLocation(locationKey);
         }
       } catch (error) {
-        console.log('Error fetching location:', error);
+        console.log('🏠 useHeroData: Error fetching location:', error);
         // Keep default location on error
       }
     };
@@ -67,6 +80,7 @@ export const useHeroData = (videoBackgroundsProp?: VideoData[]) => {
     if (user?.id) {
       const fetchProfileDisplayName = async () => {
         try {
+          console.log('🏠 useHeroData: Fetching profile display_name for user:', user.id);
           const { data, error } = await supabase
             .from('profiles')
             .select('display_name')
@@ -74,26 +88,24 @@ export const useHeroData = (videoBackgroundsProp?: VideoData[]) => {
             .single();
 
           if (error) {
-            console.error('Error fetching profile display_name:', error.message);
+            console.error('🏠 useHeroData: Error fetching profile display_name:', error.message);
             setProfileDisplayName(null);
             return;
           }
           
-          if (data && data.display_name) {
-            setProfileDisplayName(data.display_name);
-          } else {
-            setProfileDisplayName(null); // Explicitly set to null if not found or empty
-          }
+          const displayName = data?.display_name || null;
+          console.log('🏠 useHeroData: Profile display_name fetched:', displayName);
+          setProfileDisplayName(displayName);
         } catch (err) {
-          console.error('Exception fetching profile display_name:', err);
+          console.error('🏠 useHeroData: Exception fetching profile display_name:', err);
           setProfileDisplayName(null);
         }
       };
       fetchProfileDisplayName();
     } else {
-      setProfileDisplayName(null); // Reset if no user
+      setProfileDisplayName(null);
     }
-  }, [user]);
+  }, [user?.id]); // Only depend on user.id, not the entire user object
 
   useEffect(() => {
     if (videos.length === 0 && !isLoading) return;
@@ -104,7 +116,7 @@ export const useHeroData = (videoBackgroundsProp?: VideoData[]) => {
     }, 45000);
 
     return () => clearInterval(videoRotationInterval);
-  }, [videos, isLoading]);
+  }, [videos.length, isLoading]);
 
   useEffect(() => {
     const getTimeBasedGreeting = () => {
@@ -121,23 +133,25 @@ export const useHeroData = (videoBackgroundsProp?: VideoData[]) => {
       
       let displayNameToUse = "";
       if (user) {
-        if (profileDisplayName) { // Prioritize fetched profile display_name
+        if (profileDisplayName) {
           displayNameToUse = profileDisplayName;
         } else if (user.user_metadata?.display_name) {
           displayNameToUse = user.user_metadata.display_name;
         } else if (user.user_metadata?.username) {
           displayNameToUse = user.user_metadata.username;
-        } else if (user.user_metadata?.name) { // Fallback to 'name' from metadata
+        } else if (user.user_metadata?.name) {
           displayNameToUse = user.user_metadata.name;
         } else if (user.email) {
           displayNameToUse = user.email.split('@')[0];
         }
       }
 
-      if (displayNameToUse) {
-        return `${slang}! ${timeGreeting}, ${displayNameToUse}!`;
-      }
-      return `${slang}! ${timeGreeting}`;
+      const newGreeting = displayNameToUse 
+        ? `${slang}! ${timeGreeting}, ${displayNameToUse}!`
+        : `${slang}! ${timeGreeting}`;
+      
+      console.log('🏠 useHeroData: Generated greeting:', newGreeting);
+      return newGreeting;
     };
 
     const updateGreeting = () => {
@@ -148,7 +162,7 @@ export const useHeroData = (videoBackgroundsProp?: VideoData[]) => {
     const interval = setInterval(updateGreeting, 60000);
 
     return () => clearInterval(interval);
-  }, [location, user, profileDisplayName, greetings]); // Added profileDisplayName and greetings as dependencies
+  }, [location, user?.id, user?.email, user?.user_metadata?.display_name, user?.user_metadata?.username, user?.user_metadata?.name, profileDisplayName]);
 
   return { location, greeting, videos, currentVideoIndex, isLoading };
 };

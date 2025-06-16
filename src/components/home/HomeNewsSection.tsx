@@ -9,6 +9,7 @@ import { Newspaper } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 interface NewsPost {
   id: string;
@@ -24,10 +25,21 @@ interface HomeNewsSectionProps {
 }
 
 const HomeNewsSection: React.FC<HomeNewsSectionProps> = ({ onAuthModalOpen }) => {
+  const { user } = useAuth();
+  
+  console.log('🏠📰 HomeNewsSection: Rendering', { 
+    userId: user?.id,
+    isAuthenticated: !!user 
+  });
   
   const { data: posts, isLoading } = useQuery({
     queryKey: ["home-news-posts"],
     queryFn: async () => {
+      console.log('🏠📰 HomeNewsSection: Fetching posts', { 
+        isAuthenticated: !!user,
+        userId: user?.id 
+      });
+      
       const { data, error } = await supabase
         .from("posts")
         .select("id, title, content, featured_image, post_date, category")
@@ -36,9 +48,15 @@ const HomeNewsSection: React.FC<HomeNewsSectionProps> = ({ onAuthModalOpen }) =>
         .limit(3);
       
       if (error) {
-        console.error("Error fetching news posts:", error);
+        console.error("🏠📰 HomeNewsSection: Error fetching news posts:", error);
         return [];
       }
+      
+      console.log('🏠📰 HomeNewsSection: Posts fetched successfully', {
+        count: data?.length || 0,
+        isAuthenticated: !!user,
+        posts: data?.map(p => ({ id: p.id, title: p.title })) || []
+      });
       
       return data as NewsPost[];
     },

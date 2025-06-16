@@ -4,8 +4,10 @@ import NewsLoadingSkeleton from "./components/NewsLoadingSkeleton";
 import NewsGrid from "./components/NewsGrid";
 import SearchBar from "./components/SearchBar";
 import useNewsData from "./hooks/useNewsData";
+import { useAuth } from "@/hooks/useAuth";
 
 export const NewsList = () => {
+  const { user } = useAuth();
   const {
     categories,
     posts,
@@ -17,13 +19,13 @@ export const NewsList = () => {
   } = useNewsData();
 
   console.log('🗞️ NewsList component state:', {
-    categories,
-    categoriesCount: categories?.length,
-    posts,
-    postsCount: posts?.length,
+    categories: categories?.length || 0,
+    posts: posts?.length || 0,
     isLoading,
-    error,
-    selectedCategory
+    error: error?.message || 'No error',
+    selectedCategory,
+    isAuthenticated: !!user,
+    userId: user?.id
   });
 
   if (error) {
@@ -32,6 +34,9 @@ export const NewsList = () => {
       <div className="text-center py-12">
         <h3 className="text-xl font-semibold text-destructive">Error loading news</h3>
         <p className="text-muted-foreground mt-2">Please try again later</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          Debug: {error.message} | Auth: {user ? 'Yes' : 'No'}
+        </p>
       </div>
     );
   }

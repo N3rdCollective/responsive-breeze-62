@@ -4,13 +4,18 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Post } from "../types/newsTypes";
+import { useAuth } from "@/hooks/useAuth";
 
 export const useNewsData = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
   
-  console.log('🗞️ useNewsData: Starting news data fetch...');
+  console.log('🗞️ useNewsData: Starting news data fetch...', { 
+    userId: user?.id,
+    isAuthenticated: !!user 
+  });
   
   const { data: categories } = useQuery({
     queryKey: ["news-categories"],
@@ -46,7 +51,12 @@ export const useNewsData = () => {
   const { data: posts, isLoading, error } = useQuery({
     queryKey: ["news-posts", selectedCategory, searchTerm],
     queryFn: async () => {
-      console.log('🗞️ Fetching news posts with filters:', { selectedCategory, searchTerm });
+      console.log('🗞️ Fetching news posts with filters:', { 
+        selectedCategory, 
+        searchTerm,
+        isAuthenticated: !!user,
+        userId: user?.id 
+      });
       
       let query = supabase
         .from("posts")
@@ -60,7 +70,13 @@ export const useNewsData = () => {
       
       const { data, error } = await query;
       
-      console.log('🗞️ Raw database response:', { data, error, count: data?.length });
+      console.log('🗞️ Raw database response:', { 
+        data: data?.length ? `${data.length} posts` : 'No posts',
+        error: error?.message || 'No error',
+        count: data?.length,
+        isAuthenticated: !!user,
+        firstPostTitle: data?.[0]?.title
+      });
       
       if (error) {
         console.error('🗞️ Error fetching posts:', error);
@@ -85,8 +101,8 @@ export const useNewsData = () => {
       
       console.log('🗞️ Final posts data:', {
         totalPosts: filteredData.length,
-        firstPost: filteredData[0],
-        postTitles: filteredData.map(p => p.title)
+        firstPost: filteredData[0]?.title || 'No posts',
+        postTitles: filteredData.slice(0, 3).map(p => p.title)
       });
       
       return filteredData;
@@ -104,13 +120,13 @@ export const useNewsData = () => {
   };
 
   console.log('🗞️ useNewsData returning:', {
-    categories,
-    posts,
-    postsCount: posts?.length,
+    categories: categories?.length || 0,
+    posts: posts?.length || 0,
     isLoading,
-    error,
+    error: error?.message || 'No error',
     selectedCategory,
-    searchTerm
+    searchTerm,
+    isAuthenticated: !!user
   });
 
   return {
