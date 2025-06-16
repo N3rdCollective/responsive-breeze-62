@@ -40,7 +40,23 @@ const StaffUserEditor = () => {
     sendUserMessage
   } = useUserManagement();
 
-  // Use the optimized dialogs hook for moderation actions
+  // Create enhanced moderation handlers that update local state
+  const enhancedUpdateUserStatus = async (
+    userId: string,
+    status: UserManagementUser['status'],
+    reason: string,
+    actionType: 'suspend' | 'ban' | 'unban'
+  ) => {
+    const success = await updateUserStatus(userId, status, reason, actionType);
+    if (success) {
+      // Update local user state to match the new status
+      setUser(prev => prev ? { ...prev, status } : null);
+      setFormData(prev => ({ ...prev, status }));
+    }
+    return success;
+  };
+
+  // Use the optimized dialogs hook with enhanced moderation handler
   const {
     actionDialog,
     actionReason,
@@ -58,7 +74,7 @@ const StaffUserEditor = () => {
     openMessageDialog,
     closeMessageDialog,
     handleSendMessage,
-  } = useOptimizedUserManagerDialogs(updateUserStatus, sendUserMessage);
+  } = useOptimizedUserManagerDialogs(enhancedUpdateUserStatus, sendUserMessage);
 
   const [user, setUser] = useState<UserManagementUser | null>(null);
   const [loading, setLoading] = useState(true);
