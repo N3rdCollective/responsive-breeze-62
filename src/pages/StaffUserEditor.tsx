@@ -1,32 +1,196 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useStaffRole } from "@/hooks/useStaffRole";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Users, 
-  ArrowLeft
+  ArrowLeft,
+  Save,
+  CheckCircle,
+  Clock,
+  Ban
 } from "lucide-react";
 import TitleUpdater from "@/components/TitleUpdater";
+import { supabase } from "@/integrations/supabase/client";
+import type { UserManagementUser } from "@/hooks/admin/useUserManagement";
 
 const StaffUserEditor = () => {
   const navigate = useNavigate();
   const { userId } = useParams<{ userId: string }>();
-  const { userRole, isLoading } = useStaffRole();
+  const { userRole, isLoading: authLoading } = useStaffRole();
+  const { toast } = useToast();
 
-  if (isLoading) {
+  const [user, setUser] = useState<UserManagementUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    display_name: '',
+    username: '',
+    email: '',
+    role: 'user' as 'user' | 'moderator' | 'admin',
+    status: 'active' as 'active' | 'suspended' | 'banned',
+    forum_signature: ''
+  });
+
+  // Fetch user data
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!userId) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select(`
+            id,
+            email,
+            username,
+            display_name,
+            status,
+            role,
+            created_at,
+            last_active,
+            profile_picture,
+            forum_signature,
+            forum_post_count,
+            timeline_post_count,
+            pending_report_count
+          `)
+          .eq('id', userId)
+          .single();
+
+        if (error) {
+          console.error('Error fetching user:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load user data",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        if (data) {
+          const userData = {
+            ...data,
+            forum_post_count: data.forum_post_count || 0,
+            timeline_post_count: data.timeline_post_count || 0,
+            pending_report_count: data.pending_report_count || 0,
+            email: data.email || 'N/A'
+          } as UserManagementUser;
+
+          setUser(userData);
+          setFormData({
+            display_name: userData.display_name || '',
+            username: userData.username || '',
+            email: userData.email || '',
+            role: userData.role || 'user',
+            status: userData.status || 'active',
+            forum_signature: userData.forum_signature || ''
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching user:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load user data",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [userId, toast]);
+
+  const handleSave = async () => {
+    if (!userId || !user) return;
+
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          display_name: formData.display_name.trim() || null,
+          username: formData.username.trim() || null,
+          role: formData.role,
+          status: formData.status,
+          forum_signature: formData.forum_signature.trim() || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+
+      if (error) {
+        console.error('Error updating user:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update user",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: "User updated successfully"
+      });
+
+      // Update local user state
+      setUser(prev => prev ? {
+        ...prev,
+        display_name: formData.display_name || null,
+        username: formData.username || null,
+        role: formData.role,
+        status: formData.status,
+        forum_signature: formData.forum_signature || null
+      } : null);
+
+    } catch (error) {
+      console.error('Error updating user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update user",
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const config = {
+      active: { variant: 'default' as const, icon: CheckCircle, text: 'Active', className: 'bg-green-500 hover:bg-green-600' },
+      suspended: { variant: 'secondary' as const, icon: Clock, text: 'Suspended', className: 'bg-yellow-500 hover:bg-yellow-600 text-black' },
+      banned: { variant: 'destructive' as const, icon: Ban, text: 'Banned', className: '' }
+    };
+    const selectedConfig = config[status as keyof typeof config] || config.active;
+    const { variant, icon: Icon, text, className } = selectedConfig;
+    return (
+      <Badge variant={variant} className={`flex items-center gap-1 ${className || ''}`}>
+        <Icon className="h-3 w-3" />
+        {text}
+      </Badge>
+    );
+  };
+
+  if (authLoading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-128px)]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-lg text-muted-foreground">Loading User Editor...</p>
+          <p className="text-lg text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
   }
 
-  // Check if user has permission to edit users
   if (!userRole || !['admin', 'super_admin'].includes(userRole)) {
     return (
       <>
@@ -51,9 +215,47 @@ const StaffUserEditor = () => {
     );
   }
 
+  if (loading) {
+    return (
+      <>
+        <TitleUpdater title="Edit User - Staff Panel" />
+        <div className="flex items-center justify-center h-[calc(100vh-128px)]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-lg text-muted-foreground">Loading user data...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (!user) {
+    return (
+      <>
+        <TitleUpdater title="User Not Found - Staff Panel" />
+        <main className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
+          <Card className="border-destructive/50 bg-destructive/5">
+            <CardHeader>
+              <CardTitle className="text-destructive">User Not Found</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">
+                The user you're trying to edit could not be found.
+              </p>
+              <Button onClick={() => navigate('/staff/users')} variant="outline">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to User Management
+              </Button>
+            </CardContent>
+          </Card>
+        </main>
+      </>
+    );
+  }
+
   return (
     <>
-      <TitleUpdater title="Edit User - Staff Panel" />
+      <TitleUpdater title={`Edit ${user.display_name || user.username} - Staff Panel`} />
       <main className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
@@ -74,32 +276,153 @@ const StaffUserEditor = () => {
           </div>
         </div>
 
-        {/* Redirect Notice Card */}
-        <Card className="border-primary/50 bg-primary/5 dark:bg-primary/10">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-primary text-lg sm:text-xl">
-              <Users className="h-5 w-5 flex-shrink-0" />
-              <span className="break-words">User Management Integration</span>
+        {/* User Info Card */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              User Information
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-foreground/80 text-sm sm:text-base leading-relaxed">
-              User editing is now handled through the main User Management interface. 
-              You'll be redirected to the user management page where you can search for 
-              and edit the specific user.
-            </p>
-            {userId && (
-              <p className="text-sm text-muted-foreground">
-                User ID: {userId}
-              </p>
-            )}
-            <Button 
-              onClick={() => navigate('/staff/users')}
-              className="w-full sm:w-auto"
-            >
-              <Users className="h-4 w-4 mr-2" />
-              Go to User Management
-            </Button>
+            <div className="flex items-center gap-4">
+              {user.profile_picture ? (
+                <img
+                  src={user.profile_picture}
+                  alt={user.display_name || user.username || 'User'}
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                  <span className="text-2xl font-medium text-muted-foreground">
+                    {(user.display_name || user.username || 'U').charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+              <div>
+                <h3 className="text-lg font-semibold">{user.display_name || user.username}</h3>
+                <p className="text-sm text-muted-foreground">@{user.username}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  {getStatusBadge(user.status)}
+                  <Badge variant="outline">{user.role}</Badge>
+                </div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div>
+                <span className="font-medium">Forum Posts:</span> {user.forum_post_count}
+              </div>
+              <div>
+                <span className="font-medium">Timeline Posts:</span> {user.timeline_post_count}
+              </div>
+              <div>
+                <span className="font-medium">Pending Reports:</span> {user.pending_report_count}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Edit Form */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Edit User Details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="display_name">Display Name</Label>
+                <Input
+                  id="display_name"
+                  value={formData.display_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
+                  placeholder="Enter display name"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  value={formData.username}
+                  onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+                  placeholder="Enter username"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="Enter email"
+                disabled
+                className="bg-muted"
+              />
+              <p className="text-xs text-muted-foreground">Email cannot be changed from this interface</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="role">Role</Label>
+                <Select value={formData.role} onValueChange={(value: 'user' | 'moderator' | 'admin') => setFormData(prev => ({ ...prev, role: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="moderator">Moderator</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select value={formData.status} onValueChange={(value: 'active' | 'suspended' | 'banned') => setFormData(prev => ({ ...prev, status: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="suspended">Suspended</SelectItem>
+                    <SelectItem value="banned">Banned</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="forum_signature">Forum Signature</Label>
+              <Textarea
+                id="forum_signature"
+                value={formData.forum_signature}
+                onChange={(e) => setFormData(prev => ({ ...prev, forum_signature: e.target.value }))}
+                placeholder="Enter forum signature"
+                rows={3}
+              />
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <Button onClick={handleSave} disabled={saving}>
+                {saving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/staff/users')}>
+                Cancel
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </main>
