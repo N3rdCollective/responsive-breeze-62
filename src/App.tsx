@@ -20,6 +20,7 @@ import StaffRegistration from "./pages/StaffRegistration";
 import StaffLoginPage from "./pages/StaffLoginPage";
 import StaffPanel from "./pages/StaffPanel";
 import StaffUserManager from "./pages/StaffUserManager";
+import StaffUserEditor from "./pages/StaffUserEditor";
 import StaffAnalytics from "./pages/StaffAnalytics";
 import StaffHomepageManager from "./pages/StaffHomepageManager";
 import StaffNewsPage from "./pages/StaffNewsPage";
@@ -78,6 +79,7 @@ function App() {
                   <Route index element={<Navigate to="panel" replace />} />
                   <Route path="panel" element={<StaffPanel />} />
                   <Route path="users" element={<StaffUserManager />} />
+                  <Route path="users/edit/:userId" element={<StaffUserEditor />} />
                   <Route path="analytics" element={<StaffAnalytics />} />
                   <Route path="homepage" element={<StaffHomepageManager />} />
                   <Route path="system-settings" element={<StaffSystemSettings />} />
