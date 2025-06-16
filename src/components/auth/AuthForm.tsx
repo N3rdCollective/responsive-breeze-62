@@ -10,7 +10,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EnhancedSignupForm } from '@/components/auth/EnhancedSignupForm';
 
-const AuthForm: React.FC = () => {
+interface AuthFormProps {
+  onSuccess?: () => void;
+}
+
+const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   
@@ -43,8 +47,12 @@ const AuthForm: React.FC = () => {
           description: "Welcome back!",
         });
         
-        // Always redirect to homepage
-        navigate('/');
+        // Call onSuccess callback if provided (for modal), otherwise navigate
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          navigate('/');
+        }
       }
     } catch (error: any) {
       toast({
@@ -63,8 +71,12 @@ const AuthForm: React.FC = () => {
       description: "Welcome! Your account has been created successfully.",
     });
     
-    // Redirect to homepage after successful signup
-    navigate('/');
+    // Call onSuccess callback if provided (for modal), otherwise navigate
+    if (onSuccess) {
+      onSuccess();
+    } else {
+      navigate('/');
+    }
   };
 
   return (

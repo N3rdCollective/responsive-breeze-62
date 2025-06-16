@@ -30,7 +30,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
             Sign in to your account or create a new one
           </DialogDescription>
         </DialogHeader>
-        <AuthForm />
+        <AuthForm onSuccess={handleSuccess} />
       </DialogContent>
     </Dialog>
   );
