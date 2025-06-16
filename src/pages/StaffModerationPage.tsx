@@ -214,6 +214,9 @@ const StaffModerationPage = () => {
   }
 
   const selectedReport = selectedFlag ? filteredReports.find(r => r.id === selectedFlag) : null;
+  
+  // Only show ReportDetails for valid content types that can be moderated
+  const canShowReportDetails = selectedReport && (selectedReport.contentType === 'post' || selectedReport.contentType === 'topic');
 
   return (
     <>
@@ -271,18 +274,18 @@ const StaffModerationPage = () => {
               onRefresh={handleRefresh}
             />
             
-            {selectedReport && (
+            {canShowReportDetails && selectedReport && (
               <ReportDetails
-                reportData={selectedReport}
+                reportData={{
+                  ...selectedReport,
+                  contentType: selectedReport.contentType as 'post' | 'topic',
+                  reportedUserId: selectedReport.reportedUserId,
+                  contentId: selectedReport.contentId,
+                  topicId: selectedReport.topicId
+                }}
                 onClose={() => setSelectedFlag(null)}
                 onAction={(action, reportId, details) => {
-                  // Filter out user content type for actions that require specific content types
-                  const filteredDetails = details && selectedReport.contentType !== 'user' ? {
-                    ...details,
-                    contentType: selectedReport.contentType as 'post' | 'topic'
-                  } : undefined;
-                  
-                  return handleReportAction(action, reportId, filteredDetails);
+                  return handleReportAction(action, reportId, details);
                 }}
                 moderationNote={moderationNote}
                 setModerationNote={setModerationNote}
