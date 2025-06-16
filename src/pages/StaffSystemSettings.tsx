@@ -1,7 +1,5 @@
 
 import { useState } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { useStaffRole } from "@/hooks/useStaffRole";
 import StaffHeader from "@/components/staff/StaffHeader";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
@@ -21,20 +19,14 @@ const StaffSystemSettings = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="max-w-7xl mx-auto px-4 pt-24 pb-16">
-        <div className="space-y-8">
-          <StaffHeader 
-            staffName={staffName} 
-            isAdmin={isAdmin} 
-            title="System Settings" 
-          />
-          
-          <SystemSettingsForm />
-        </div>
-      </div>
-      <Footer />
+    <div className="space-y-8">
+      <StaffHeader 
+        staffName={staffName} 
+        isAdmin={isAdmin} 
+        title="System Settings" 
+      />
+      
+      <SystemSettingsForm />
     </div>
   );
 };
