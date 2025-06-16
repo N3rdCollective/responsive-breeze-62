@@ -15,10 +15,6 @@ const StaffNewsPage = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   
   const handleRefresh = () => setRefreshTrigger(prev => prev + 1);
-  const handleLogout = () => {
-    // Handle logout logic here
-    navigate('/staff/login');
-  };
   
   // Check if user has appropriate permissions
   const canManageNews = userRole === "admin" || userRole === "moderator" || userRole === "staff" || userRole === "super_admin" || userRole === "blogger";
@@ -53,7 +49,6 @@ const StaffNewsPage = () => {
         title="News Management" 
         staffName={staffName}
         isAdmin={isAdmin}
-        onLogout={handleLogout}
       />
       
       <NewsListTable 
