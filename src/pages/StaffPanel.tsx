@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import ManageStaffModal from "@/components/ManageStaffModal";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
+import { useAuth } from "@/hooks/useAuth";
 import StaffProfileEditor from "@/components/staff/StaffProfileEditor";
 import { Button } from "@/components/ui/button";
 import { UserCog } from "lucide-react";
@@ -19,10 +19,17 @@ const StaffPanel = () => {
   const { toast } = useToast();
   const [isManageStaffOpen, setIsManageStaffOpen] = useState(false);
   const [isProfileEditorOpen, setIsProfileEditorOpen] = useState(false);
-  const { staffName, isAdmin, isLoading, handleLogout, userRole } = useStaffAuth();
+  const { user, isStaff, staffRole, isLoading, logout } = useAuth();
+
+  const staffName = user?.user_metadata?.display_name || user?.user_metadata?.first_name || user?.email || 'Staff Member';
+  const isAdmin = staffRole === 'admin' || staffRole === 'super_admin';
 
   const handleManageUsers = () => {
     setIsManageStaffOpen(true);
+  };
+
+  const handleLogout = async () => {
+    await logout();
   };
 
   if (isLoading) {
@@ -54,7 +61,7 @@ const StaffPanel = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
           <div className="lg:col-span-1">
-            <ContentManagementCard userRole={userRole} />
+            <ContentManagementCard userRole={staffRole} />
           </div>
           <div className="lg:col-span-1">
             <ShowManagementCard />
@@ -63,7 +70,7 @@ const StaffPanel = () => {
             <AdminCard 
               onManageStaff={handleManageUsers} 
               onLogout={handleLogout} 
-              userRole={userRole}
+              userRole={staffRole}
             />
           </div>
         </div>
@@ -76,7 +83,7 @@ const StaffPanel = () => {
       <ManageStaffModal 
         open={isManageStaffOpen}
         onOpenChange={setIsManageStaffOpen}
-        currentUserRole={userRole}
+        currentUserRole={staffRole || 'staff'}
       />
       
       <StaffProfileEditor

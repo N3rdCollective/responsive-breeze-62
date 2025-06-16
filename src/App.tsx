@@ -4,7 +4,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { StaffAuthProvider } from "@/hooks/useStaffAuth";
 import { AuthProvider } from "@/hooks/useAuth";
 import { SecurityProvider } from "@/components/security/SecurityProvider";
 import MusicPlayer from "@/components/MusicPlayer";
@@ -40,32 +39,30 @@ function App() {
           <Sonner />
           <BrowserRouter>
             <AuthProvider>
-              <StaffAuthProvider>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/news" element={<News />} />
-                  <Route path="/news/:id" element={<NewsPostPage />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/profile" element={<ProfilePage />} />
-                  <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
-                  <Route path="/update-password" element={<UpdatePasswordPage />} />
-                  <Route path="/members" element={<MembersPage />} />
-                  <Route path="/members/forum" element={<MembersPage />} />
-                  <Route path="/members/forum/:categorySlug" element={<ForumCategoryPage />} />
-                  <Route path="/members/forum/:categorySlug/:topicSlug" element={<ForumTopicPage />} />
-                  <Route path="/forum/new-topic/:categorySlug" element={<NewForumTopicPage />} />
-                  <Route path="/forum/search-results" element={<ForumSearchResultsPage />} />
-                  <Route path="/forum/initiate-search" element={<ForumInitiateSearchPage />} />
-                  <Route path="/staff/register" element={<StaffRegistration />} />
-                  <Route path="/staff/login" element={<StaffLoginPage />} />
-                  <Route path="/staff/panel" element={<StaffPanel />} />
-                  <Route path="/staff/users" element={<StaffUserManager />} />
-                  <Route path="/staff/analytics" element={<StaffAnalytics />} />
-                  <Route path="/staff/homepage" element={<StaffHomepageManager />} />
-                </Routes>
-                <MusicPlayer />
-              </StaffAuthProvider>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/news" element={<News />} />
+                <Route path="/news/:id" element={<NewsPostPage />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
+                <Route path="/update-password" element={<UpdatePasswordPage />} />
+                <Route path="/members" element={<MembersPage />} />
+                <Route path="/members/forum" element={<MembersPage />} />
+                <Route path="/members/forum/:categorySlug" element={<ForumCategoryPage />} />
+                <Route path="/members/forum/:categorySlug/:topicSlug" element={<ForumTopicPage />} />
+                <Route path="/forum/new-topic/:categorySlug" element={<NewForumTopicPage />} />
+                <Route path="/forum/search-results" element={<ForumSearchResultsPage />} />
+                <Route path="/forum/initiate-search" element={<ForumInitiateSearchPage />} />
+                <Route path="/staff/register" element={<StaffRegistration />} />
+                <Route path="/staff/login" element={<StaffLoginPage />} />
+                <Route path="/staff/panel" element={<StaffPanel />} />
+                <Route path="/staff/users" element={<StaffUserManager />} />
+                <Route path="/staff/analytics" element={<StaffAnalytics />} />
+                <Route path="/staff/homepage" element={<StaffHomepageManager />} />
+              </Routes>
+              <MusicPlayer />
             </AuthProvider>
           </BrowserRouter>
         </SecurityProvider>

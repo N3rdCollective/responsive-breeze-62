@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   LayoutDashboard, 
   Newspaper, 
@@ -42,10 +42,12 @@ const mainNavigationItems = [
 const StaffSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { staffName, handleLogout, userRole } = useStaffAuth();
+  const { user, staffRole, logout } = useAuth();
+
+  const staffName = user?.user_metadata?.display_name || user?.user_metadata?.first_name || user?.email || 'Staff Member';
 
   const onLogout = async () => {
-    await handleLogout();
+    await logout();
     navigate('/staff/login');
   };
 
@@ -65,7 +67,7 @@ const StaffSidebar = () => {
             <span className="hidden sm:inline">Logged in as </span>
             <span className="font-medium">{staffName}</span>
             <span className="ml-1 px-1.5 py-0.5 bg-primary/10 text-primary rounded text-[10px] uppercase tracking-wider">
-              {userRole}
+              {staffRole}
             </span>
           </div>
         )}

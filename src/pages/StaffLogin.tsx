@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, Shield } from "lucide-react";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 const StaffLogin = () => {
   const [email, setEmail] = useState("");
@@ -18,16 +18,16 @@ const StaffLogin = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, isLoading: authLoading } = useStaffAuth();
+  const { isStaff, isLoading: authLoading } = useAuth();
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
+    if (!authLoading && isStaff) {
       console.log('✅ Already authenticated, redirecting to staff panel');
       const from = location.state?.from?.pathname || "/staff/panel";
       navigate(from, { replace: true });
     }
-  }, [isAuthenticated, authLoading, navigate, location]);
+  }, [isStaff, authLoading, navigate, location]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +59,7 @@ const StaffLogin = () => {
           description: "Welcome to the staff panel!",
         });
 
-        // The useStaffAuth context will handle the authentication state
+        // The useAuth context will handle the authentication state
         // and StaffRouteProtection will handle the redirect
         console.log('🔄 Login complete, authentication context will handle redirect');
       }
@@ -94,9 +94,9 @@ const StaffLogin = () => {
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
             <Shield className="h-6 w-6 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-bold">Staff Login</CardTitle>
+          <CardTitle className="text-xl font-bold">Staff Login</CardTitle>
           <CardDescription>
-            Access the staff administration panel
+            Access the staff control panel
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -106,7 +106,7 @@ const StaffLogin = () => {
               <Input
                 id="email"
                 type="email"
-                placeholder="your@email.com"
+                placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -119,7 +119,7 @@ const StaffLogin = () => {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -146,7 +146,7 @@ const StaffLogin = () => {
               className="w-full" 
               disabled={isLoading}
             >
-              {isLoading ? "Signing in..." : "Sign in"}
+              {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
         </CardContent>

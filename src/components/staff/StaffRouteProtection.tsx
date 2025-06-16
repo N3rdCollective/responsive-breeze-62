@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useStaffAuth } from '@/hooks/useStaffAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { AlertCircle } from 'lucide-react';
 
@@ -14,13 +14,13 @@ const StaffRouteProtection: React.FC<StaffRouteProtectionProps> = ({
   children, 
   requiredRoles = [] 
 }) => {
-  const { isLoading, isAuthenticated, userRole, handleLogout } = useStaffAuth();
+  const { isLoading, isStaff, staffRole, logout } = useAuth();
   const location = useLocation();
 
   console.log('🛡️ StaffRouteProtection check:', {
     isLoading,
-    isAuthenticated,
-    userRole,
+    isStaff,
+    staffRole,
     requiredRoles,
     currentPath: location.pathname
   });
@@ -39,23 +39,23 @@ const StaffRouteProtection: React.FC<StaffRouteProtectionProps> = ({
     );
   }
 
-  // Only redirect if we're certain the user is not authenticated AND not on login/signup pages
+  // Only redirect if we're certain the user is not staff AND not on login/signup pages
   const isAuthPage = location.pathname.includes('/staff/login') || location.pathname.includes('/staff/signup');
   
-  if (!isLoading && !isAuthenticated && !isAuthPage) {
-    console.log('❌ Not authenticated, redirecting to login');
+  if (!isLoading && !isStaff && !isAuthPage) {
+    console.log('❌ Not staff member, redirecting to login');
     return <Navigate to="/staff/login" replace />;
   }
 
   // If user is authenticated but on login page, redirect to panel
-  if (!isLoading && isAuthenticated && isAuthPage) {
+  if (!isLoading && isStaff && isAuthPage) {
     console.log('✅ Already authenticated, redirecting to panel');
     return <Navigate to="/staff/panel" replace />;
   }
 
-  // Check role-based permissions if required roles are specified and user is authenticated
-  if (isAuthenticated && requiredRoles.length > 0 && userRole && !requiredRoles.includes(userRole)) {
-    console.log('❌ Role check failed:', { userRole, requiredRoles });
+  // Check role-based permissions if required roles are specified and user is staff
+  if (isStaff && requiredRoles.length > 0 && staffRole && !requiredRoles.includes(staffRole)) {
+    console.log('❌ Role check failed:', { staffRole, requiredRoles });
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center max-w-md mx-auto p-6">
@@ -66,7 +66,7 @@ const StaffRouteProtection: React.FC<StaffRouteProtectionProps> = ({
           </p>
           <div className="space-y-2 mb-6">
             <p className="text-sm text-muted-foreground">
-              <span className="font-medium">Your role:</span> {userRole}
+              <span className="font-medium">Your role:</span> {staffRole}
             </p>
             <p className="text-sm text-muted-foreground">
               <span className="font-medium">Required:</span> {requiredRoles.join(', ')}
@@ -76,7 +76,7 @@ const StaffRouteProtection: React.FC<StaffRouteProtectionProps> = ({
             <Button onClick={() => window.history.back()} variant="outline">
               Go Back
             </Button>
-            <Button onClick={handleLogout} variant="destructive">
+            <Button onClick={logout} variant="destructive">
               Logout
             </Button>
           </div>
