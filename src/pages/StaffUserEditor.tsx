@@ -159,38 +159,56 @@ const StaffUserEditor = () => {
   }, [userId, toast]);
 
   const handleSave = async () => {
-    if (!userId || !user) return;
+    if (!userId || !user) {
+      console.error('Missing userId or user data');
+      toast({
+        title: "Error",
+        description: "Missing user information",
+        variant: "destructive"
+      });
+      return;
+    }
 
     setSaving(true);
+    console.log('Saving user data:', { userId, formData });
+    
     try {
-      const { error } = await supabase
+      // Prepare the update data, ensuring we handle null/empty values properly
+      const updateData = {
+        display_name: formData.display_name.trim() || null,
+        username: formData.username.trim() || null,
+        role: formData.role,
+        status: formData.status,
+        forum_signature: formData.forum_signature.trim() || null,
+        updated_at: new Date().toISOString()
+      };
+
+      console.log('Update data to be sent:', updateData);
+
+      const { data, error } = await supabase
         .from('profiles')
-        .update({
-          display_name: formData.display_name.trim() || null,
-          username: formData.username.trim() || null,
-          role: formData.role,
-          status: formData.status,
-          forum_signature: formData.forum_signature.trim() || null,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userId);
+        .update(updateData)
+        .eq('id', userId)
+        .select();
 
       if (error) {
-        console.error('Error updating user:', error);
+        console.error('Supabase error updating user:', error);
         toast({
-          title: "Error",
-          description: "Failed to update user",
+          title: "Database Error",
+          description: `Failed to update user: ${error.message}`,
           variant: "destructive"
         });
         return;
       }
+
+      console.log('Update successful, returned data:', data);
 
       toast({
         title: "Success",
         description: "User updated successfully"
       });
 
-      // Update local user state
+      // Update local user state with the new data
       setUser(prev => prev ? {
         ...prev,
         display_name: formData.display_name || null,
@@ -200,11 +218,11 @@ const StaffUserEditor = () => {
         forum_signature: formData.forum_signature || null
       } : null);
 
-    } catch (error) {
-      console.error('Error updating user:', error);
+    } catch (error: any) {
+      console.error('Unexpected error updating user:', error);
       toast({
         title: "Error",
-        description: "Failed to update user",
+        description: `Failed to update user: ${error.message || 'Unknown error'}`,
         variant: "destructive"
       });
     } finally {
