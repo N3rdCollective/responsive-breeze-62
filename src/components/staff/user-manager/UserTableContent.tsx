@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import {
   Table,
   TableBody,
@@ -18,7 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, MessageSquare, Mail, UserX, Ban, UserCheck, Users } from "lucide-react";
+import { MoreHorizontal, Eye, MessageSquare, Mail, UserX, Ban, UserCheck, Users, Edit } from "lucide-react";
 import type { User, ActionDialogHandler, MessageDialogHandler } from "./types";
 
 interface UserTableContentProps {
@@ -114,6 +115,12 @@ const UserTableContent: React.FC<UserTableContentProps> = ({
                     <DropdownMenuItem onClick={() => alert(`View profile for ${user.username}`)}>
                       <Eye className="mr-2 h-4 w-4" />
                       View Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to={`/staff/users/edit/${user.id}`}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit User
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => alert(`View posts by ${user.username}`)}>
                       <MessageSquare className="mr-2 h-4 w-4" />

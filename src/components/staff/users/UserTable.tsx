@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, Ban, UserCheck, UserX, Mail, MessageSquare, Users } from 'lucide-react';
+import { MoreHorizontal, Eye, Ban, UserCheck, UserX, Mail, MessageSquare, Users, Edit } from 'lucide-react';
 import { UserManagementUser } from '@/hooks/admin/useUserManagement';
 import LoadingSpinner from '@/components/staff/LoadingSpinner';
 
@@ -117,6 +117,11 @@ const UserTable: React.FC<UserTableProps> = ({
                     <DropdownMenuItem asChild>
                       <Link to={`/u/${user.username}`}>
                         <Eye className="mr-2 h-4 w-4" /> View Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to={`/staff/users/edit/${user.id}`}>
+                        <Edit className="mr-2 h-4 w-4" /> Edit User
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => console.log(`View posts: ${user.id}`)}>
