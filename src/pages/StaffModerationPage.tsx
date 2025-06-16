@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStaffRole } from "@/hooks/useStaffRole";
+import { useModerationStats } from "@/hooks/moderation/useModerationStats";
+import { useContentReports } from "@/hooks/moderation/useContentReports";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,120 +17,86 @@ import {
 import TitleUpdater from "@/components/TitleUpdater";
 import DashboardOverview from "@/components/staff/moderator-dashboard/DashboardOverview";
 import ReportedContentSection from "@/components/staff/moderator-dashboard/ReportedContentSection";
+import ReportDetails from "@/components/staff/moderator-dashboard/ReportDetails";
 import { DashboardStats, Report } from "@/components/staff/moderator-dashboard/types";
+import { ContentReport } from "@/hooks/moderation/useContentReports";
 
 const StaffModerationPage = () => {
   const navigate = useNavigate();
   const { staffName, userRole, isLoading } = useStaffRole();
+  const { stats, loading: statsLoading, refreshStats } = useModerationStats();
+  const { 
+    reports, 
+    loading: reportsLoading, 
+    updateReportStatus, 
+    createModerationAction,
+    removeContentOnDb,
+    lockTopicOnDb,
+    fetchReports 
+  } = useContentReports();
+  
   const [activeTab, setActiveTab] = useState("overview");
-  const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
-    pendingReports: 0,
-    resolvedToday: 0,
-    newMembers: 0,
-    activeTopics: 0,
-    topCategories: [],
-    flaggedUsers: []
-  });
-  const [reports, setReports] = useState<Report[]>([]);
   const [selectedFlag, setSelectedFlag] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [moderationNote, setModerationNote] = useState("");
 
   // Check if user has appropriate permissions
   const canModerate = userRole === "admin" || userRole === "moderator" || userRole === "super_admin";
 
-  useEffect(() => {
-    if (canModerate) {
-      loadModerationData();
-    }
-  }, [canModerate]);
-
-  const loadModerationData = async () => {
-    // Mock data for now - this would connect to real Supabase data
-    const mockStats: DashboardStats = {
-      pendingReports: 12,
-      resolvedToday: 8,
-      newMembers: 25,
-      activeTopics: 156,
-      topCategories: [
-        { name: "General Discussion", count: 45 },
-        { name: "Music Chat", count: 32 },
-        { name: "Artist Spotlight", count: 28 },
-        { name: "Tech Support", count: 15 }
-      ],
-      flaggedUsers: [
-        { name: "user123", flags: 3 },
-        { name: "troublemaker", flags: 7 },
-        { name: "spammer001", flags: 5 }
-      ]
-    };
-
-    const mockReports: Report[] = [
-      {
-        id: "1",
-        contentType: "post",
-        contentId: "post-123",
-        content: "Spam content that violates community guidelines",
-        reportReason: "Spam content",
-        status: "pending",
-        timestamp: "2024-01-15T10:30:00Z",
-        author: { 
-          id: "user-1",
-          name: "John Doe", 
-          avatar: "/api/placeholder/32/32",
-          joinDate: "2024-01-01T00:00:00Z",
-          postCount: 15,
-          previousFlags: 0
-        },
-        reporter: { 
-          id: "user-2",
-          name: "Jane Smith", 
-          avatar: "/api/placeholder/32/32" 
-        },
-        topic: { 
-          id: "topic-1",
-          title: "Weekly Music Discussion",
-          category: "Music Chat"
-        },
-        reportedUserId: "user-1",
-        topicId: "topic-1"
+  // Convert ContentReport to Report format for UI components
+  const convertToReportFormat = (contentReport: ContentReport): Report => {
+    return {
+      id: contentReport.id,
+      contentType: contentReport.content_type as 'post' | 'topic' | 'user',
+      contentId: contentReport.content_id,
+      content: contentReport.content_preview || '',
+      reportReason: contentReport.report_reason,
+      status: contentReport.status,
+      timestamp: contentReport.created_at,
+      author: {
+        id: contentReport.reported_user_id,
+        name: contentReport.reported_user_name,
+        avatar: contentReport.reported_user_avatar || '/api/placeholder/32/32',
+        joinDate: new Date().toISOString(), // Placeholder - could be enhanced
+        postCount: 0, // Placeholder - could be enhanced
+        previousFlags: 0 // Placeholder - could be enhanced
       },
-      {
-        id: "2", 
-        contentType: "topic",
-        contentId: "topic-2",
-        content: "Topic with inappropriate language and offensive content",
-        reportReason: "Inappropriate language",
-        status: "pending",
-        timestamp: "2024-01-15T09:15:00Z",
-        author: { 
-          id: "user-3",
-          name: "BadUser", 
-          avatar: "/api/placeholder/32/32",
-          joinDate: "2024-01-10T00:00:00Z",
-          postCount: 5,
-          previousFlags: 2
-        },
-        reporter: { 
-          id: "user-4",
-          name: "ModUser", 
-          avatar: "/api/placeholder/32/32" 
-        },
-        topic: { 
-          id: "topic-2",
-          title: "Offensive Topic Title",
-          category: "General Discussion"
-        },
-        reportedUserId: "user-3",
-        topicId: "topic-2"
-      }
-    ];
-
-    setDashboardStats(mockStats);
-    setReports(mockReports);
+      reporter: {
+        id: 'reporter-id', // Placeholder
+        name: contentReport.reporter_name,
+        avatar: contentReport.reporter_avatar || '/api/placeholder/32/32'
+      },
+      topic: {
+        id: contentReport.topic_id || '',
+        title: contentReport.topic_title || 'Unknown Topic',
+        category: 'General' // Placeholder - could be enhanced
+      },
+      reportedUserId: contentReport.reported_user_id,
+      topicId: contentReport.topic_id || undefined,
+      resolution: contentReport.action_type ? {
+        action: contentReport.action_type,
+        moderator: contentReport.moderator_name || 'Unknown',
+        timestamp: contentReport.action_created_at || new Date().toISOString(),
+        note: contentReport.action_note || ''
+      } : undefined
+    };
   };
 
-  const filteredReports = reports.filter(report => {
+  // Convert reports to UI format
+  const convertedReports = reports.map(convertToReportFormat);
+
+  // Convert stats to UI format
+  const dashboardStats: DashboardStats = {
+    pendingReports: stats.pendingReports,
+    resolvedToday: stats.resolvedToday,
+    newMembers: stats.newMembers,
+    activeTopics: stats.activeTopics,
+    topCategories: stats.topCategories,
+    flaggedUsers: stats.flaggedUsers
+  };
+
+  const filteredReports = convertedReports.filter(report => {
     const statusMatch = filterStatus === 'all' || report.status === filterStatus;
     const searchMatch = !searchTerm || 
       report.topic.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -138,7 +106,74 @@ const StaffModerationPage = () => {
     return statusMatch && searchMatch;
   });
 
-  if (isLoading) {
+  const handleReportAction = async (
+    action: string, 
+    reportId: string,
+    details?: { 
+      reportedUserId?: string;
+      contentId?: string;
+      contentType?: 'post' | 'topic';
+      topicId?: string;
+    }
+  ) => {
+    try {
+      switch (action) {
+        case 'dismiss':
+        case 'reopen':
+          const newStatus = action === 'dismiss' ? 'rejected' : 'pending';
+          await updateReportStatus(reportId, newStatus);
+          break;
+          
+        case 'remove_content':
+          if (details?.contentId && details?.contentType) {
+            await removeContentOnDb(details.contentId, details.contentType);
+            await createModerationAction(reportId, 'content_removed', moderationNote);
+            await updateReportStatus(reportId, 'resolved');
+          }
+          break;
+          
+        case 'lock_topic':
+          if (details?.topicId) {
+            await lockTopicOnDb(details.topicId);
+            await createModerationAction(reportId, 'topic_locked', moderationNote);
+            await updateReportStatus(reportId, 'resolved');
+          }
+          break;
+          
+        case 'warn_user':
+          await createModerationAction(reportId, 'user_warned', moderationNote);
+          await updateReportStatus(reportId, 'resolved');
+          break;
+          
+        case 'ban_user':
+          if (moderationNote.trim()) {
+            await createModerationAction(reportId, 'user_banned', moderationNote);
+            await updateReportStatus(reportId, 'resolved');
+          }
+          break;
+          
+        default:
+          await createModerationAction(reportId, action, moderationNote);
+          await updateReportStatus(reportId, 'resolved');
+      }
+      
+      // Clear the moderation note and refresh data
+      setModerationNote("");
+      setSelectedFlag(null);
+      await fetchReports();
+      await refreshStats();
+      
+    } catch (error) {
+      console.error('Error handling report action:', error);
+    }
+  };
+
+  const handleRefresh = async () => {
+    await fetchReports();
+    await refreshStats();
+  };
+
+  if (isLoading || statsLoading || reportsLoading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-128px)]">
         <div className="text-center">
@@ -177,6 +212,8 @@ const StaffModerationPage = () => {
       </>
     );
   }
+
+  const selectedReport = selectedFlag ? filteredReports.find(r => r.id === selectedFlag) : null;
 
   return (
     <>
@@ -232,6 +269,16 @@ const StaffModerationPage = () => {
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
             />
+            
+            {selectedReport && (
+              <ReportDetails
+                reportData={selectedReport}
+                onClose={() => setSelectedFlag(null)}
+                onAction={handleReportAction}
+                moderationNote={moderationNote}
+                setModerationNote={setModerationNote}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="users" className="space-y-6">

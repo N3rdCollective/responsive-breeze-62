@@ -11,7 +11,7 @@ interface ReportedContentSectionProps {
   setFilterStatus: (status: string) => void;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
-  // onRefresh: () => void; // Future: for refresh functionality
+  onRefresh?: () => void;
 }
 
 const ReportedContentSection: React.FC<ReportedContentSectionProps> = ({
@@ -22,6 +22,7 @@ const ReportedContentSection: React.FC<ReportedContentSectionProps> = ({
   setFilterStatus,
   searchTerm,
   setSearchTerm,
+  onRefresh,
 }) => {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
@@ -56,13 +57,15 @@ const ReportedContentSection: React.FC<ReportedContentSectionProps> = ({
                 <Search size={16} />
               </div>
             </div>
-            <button 
-              className="flex items-center text-gray-700 dark:text-gray-300 border dark:border-gray-600 rounded-md px-3 py-1.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700"
-              // onClick={onRefresh} // Future
-            >
-              <RefreshCw size={16} className="mr-1" />
-              Refresh
-            </button>
+            {onRefresh && (
+              <button 
+                className="flex items-center text-gray-700 dark:text-gray-300 border dark:border-gray-600 rounded-md px-3 py-1.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700"
+                onClick={onRefresh}
+              >
+                <RefreshCw size={16} className="mr-1" />
+                Refresh
+              </button>
+            )}
           </div>
         </div>
       </div>
