@@ -16,7 +16,7 @@ export const useFeaturedVideos = (): UseFeaturedVideosReturn => {
 
   useEffect(() => {
     const fetchVideos = async () => {
-      console.log('🎬 Fetching featured videos...');
+      console.log('🎬 [FIXED] Fetching featured videos after RLS fix...');
       setIsLoading(true);
       setError(null);
       
@@ -28,15 +28,16 @@ export const useFeaturedVideos = (): UseFeaturedVideosReturn => {
           .order("display_order", { ascending: true });
 
         if (videosError) {
-          console.error("🎬 Error fetching featured videos:", videosError);
+          console.error("🎬 [ERROR] Error fetching featured videos:", videosError);
           setError(videosError.message);
           setFeaturedVideos([]);
         } else {
-          console.log('🎬 Featured videos fetched successfully:', videosData?.length || 0);
+          console.log('🎬 [SUCCESS] Featured videos fetched successfully after RLS fix:', videosData?.length || 0);
+          console.log('🎬 [DATA] Video titles:', videosData?.map(v => v.title) || []);
           setFeaturedVideos(videosData || []);
         }
       } catch (error) {
-        console.error("🎬 Error in fetchVideos:", error);
+        console.error("🎬 [EXCEPTION] Error in fetchVideos:", error);
         setError(error instanceof Error ? error.message : 'Unknown error');
         setFeaturedVideos([]);
       } finally {

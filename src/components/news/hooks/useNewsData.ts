@@ -12,7 +12,7 @@ export const useNewsData = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
   
-  console.log('🗞️ useNewsData: Starting news data fetch...', { 
+  console.log('🗞️ [FIXED] useNewsData: Starting news data fetch after RLS fix...', { 
     userId: user?.id,
     isAuthenticated: !!user 
   });
@@ -20,7 +20,7 @@ export const useNewsData = () => {
   const { data: categories } = useQuery({
     queryKey: ["news-categories"],
     queryFn: async () => {
-      console.log('🗞️ Fetching news categories...');
+      console.log('🗞️ [FIXED] Fetching news categories after RLS fix...');
       const { data, error } = await supabase
         .from("posts")
         .select("category")
@@ -29,7 +29,7 @@ export const useNewsData = () => {
         .order("category");
       
       if (error) {
-        console.error('🗞️ Error fetching categories:', error);
+        console.error('🗞️ [ERROR] Error fetching categories:', error);
         toast({
           title: "Error fetching categories",
           description: error.message,
@@ -43,7 +43,7 @@ export const useNewsData = () => {
         new Set(data.map((item) => item.category))
       ).filter(Boolean) as string[];
       
-      console.log('🗞️ Categories fetched:', uniqueCategories);
+      console.log('🗞️ [SUCCESS] Categories fetched after RLS fix:', uniqueCategories);
       return uniqueCategories;
     },
   });
@@ -51,7 +51,7 @@ export const useNewsData = () => {
   const { data: posts, isLoading, error } = useQuery({
     queryKey: ["news-posts", selectedCategory, searchTerm],
     queryFn: async () => {
-      console.log('🗞️ Fetching news posts with filters:', { 
+      console.log('🗞️ [FIXED] Fetching news posts after RLS fix with filters:', { 
         selectedCategory, 
         searchTerm,
         isAuthenticated: !!user,
@@ -70,7 +70,7 @@ export const useNewsData = () => {
       
       const { data, error } = await query;
       
-      console.log('🗞️ Raw database response:', { 
+      console.log('🗞️ [FIXED] Raw database response after RLS fix:', { 
         data: data?.length ? `${data.length} posts` : 'No posts',
         error: error?.message || 'No error',
         count: data?.length,
@@ -79,7 +79,7 @@ export const useNewsData = () => {
       });
       
       if (error) {
-        console.error('🗞️ Error fetching posts:', error);
+        console.error('🗞️ [ERROR] Error fetching posts:', error);
         toast({
           title: "Error fetching posts",
           description: error.message,
@@ -96,10 +96,10 @@ export const useNewsData = () => {
           post.title.toLowerCase().includes(term) || 
           post.content.toLowerCase().includes(term)
         );
-        console.log('🗞️ Posts after search filter:', filteredData.length);
+        console.log('🗞️ [FIXED] Posts after search filter:', filteredData.length);
       }
       
-      console.log('🗞️ Final posts data:', {
+      console.log('🗞️ [SUCCESS] Final posts data after RLS fix:', {
         totalPosts: filteredData.length,
         firstPost: filteredData[0]?.title || 'No posts',
         postTitles: filteredData.slice(0, 3).map(p => p.title)
@@ -110,16 +110,16 @@ export const useNewsData = () => {
   });
 
   const handleCategoryFilter = (category: string | null) => {
-    console.log('🗞️ Category filter changed:', category);
+    console.log('🗞️ [FIXED] Category filter changed:', category);
     setSelectedCategory(category === selectedCategory ? null : category);
   };
 
   const handleSearch = (term: string) => {
-    console.log('🗞️ Search term changed:', term);
+    console.log('🗞️ [FIXED] Search term changed:', term);
     setSearchTerm(term);
   };
 
-  console.log('🗞️ useNewsData returning:', {
+  console.log('🗞️ [FIXED] useNewsData returning after RLS fix:', {
     categories: categories?.length || 0,
     posts: posts?.length || 0,
     isLoading,
