@@ -22,6 +22,8 @@ import StaffPanel from "./pages/StaffPanel";
 import StaffUserManager from "./pages/StaffUserManager";
 import StaffAnalytics from "./pages/StaffAnalytics";
 import StaffHomepageManager from "./pages/StaffHomepageManager";
+import StaffNewsPage from "./pages/StaffNewsPage";
+import NewsEditor from "./pages/NewsEditor";
 import MembersPage from "./pages/MembersPage";
 import ForumCategoryPage from "./pages/ForumCategoryPage";
 import ForumTopicPage from "./pages/ForumTopicPage";
@@ -68,6 +70,9 @@ function App() {
                   <Route path="users" element={<StaffUserManager />} />
                   <Route path="analytics" element={<StaffAnalytics />} />
                   <Route path="homepage" element={<StaffHomepageManager />} />
+                  <Route path="news" element={<StaffNewsPage />} />
+                  <Route path="news/editor" element={<NewsEditor />} />
+                  <Route path="news/editor/:id" element={<NewsEditor />} />
                 </Route>
               </Routes>
               <MusicPlayer />
