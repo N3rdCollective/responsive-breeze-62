@@ -88,6 +88,27 @@ const StaffUserEditor = () => {
     forum_signature: ''
   });
 
+  // Helper function to validate and cast database response types
+  const validateAndCastUserData = (data: any): UserManagementUser => {
+    // Validate status field
+    const validStatuses: UserManagementUser['status'][] = ['active', 'suspended', 'banned'];
+    const status = validStatuses.includes(data.status) ? data.status : 'active';
+    
+    // Validate role field
+    const validRoles: UserManagementUser['role'][] = ['user', 'moderator', 'admin'];
+    const role = validRoles.includes(data.role) ? data.role : 'user';
+
+    return {
+      ...data,
+      status,
+      role,
+      forum_post_count: data.forum_post_count || 0,
+      timeline_post_count: data.timeline_post_count || 0,
+      pending_report_count: data.pending_report_count || 0,
+      email: data.email || 'N/A'
+    } as UserManagementUser;
+  };
+
   // Fetch user data
   useEffect(() => {
     const fetchUser = async () => {
@@ -134,13 +155,7 @@ const StaffUserEditor = () => {
             status: data.status
           });
 
-          const userData = {
-            ...data,
-            forum_post_count: data.forum_post_count || 0,
-            timeline_post_count: data.timeline_post_count || 0,
-            pending_report_count: data.pending_report_count || 0,
-            email: data.email || 'N/A'
-          } as UserManagementUser;
+          const userData = validateAndCastUserData(data);
 
           setUser(userData);
           setFormData({
@@ -262,14 +277,16 @@ const StaffUserEditor = () => {
         description: "User updated successfully"
       });
 
-      // Update local user state with the new data
+      // Update local user state with the new data, ensuring proper type casting
+      const validatedUpdatedData = validateAndCastUserData(updatedData);
+      
       setUser(prev => prev ? {
         ...prev,
-        display_name: updatedData.display_name,
-        username: updatedData.username,
-        role: updatedData.role,
-        status: updatedData.status,
-        forum_signature: updatedData.forum_signature
+        display_name: validatedUpdatedData.display_name,
+        username: validatedUpdatedData.username,
+        role: validatedUpdatedData.role,
+        status: validatedUpdatedData.status,
+        forum_signature: validatedUpdatedData.forum_signature
       } : null);
 
     } catch (error: any) {
