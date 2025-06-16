@@ -1,8 +1,6 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import { useStaffRole } from "@/hooks/useStaffRole";
 import NewsHeader from "@/components/staff/news/NewsHeader";
 import NewsListTable from "@/components/staff/news/NewsListTable";
@@ -33,18 +31,6 @@ const StaffNewsPage = () => {
   
   return (
     <div className="container mx-auto p-4 max-w-7xl">
-      <div className="mb-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/staff/panel')}
-          className="gap-1 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Staff Dashboard
-        </Button>
-      </div>
-      
       <NewsHeader 
         title="News Management" 
         staffName={staffName}
