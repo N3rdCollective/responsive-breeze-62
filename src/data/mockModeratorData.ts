@@ -27,7 +27,9 @@ export const reportedContent: Report[] = [
       title: 'Product Review Discussion',
       category: 'Reviews'
     },
-    status: 'pending'
+    status: 'pending',
+    reportedUserId: 'user-789',
+    topicId: 'topic-456'
   },
   {
     id: 'report-2',
@@ -54,7 +56,9 @@ export const reportedContent: Report[] = [
       title: 'Product Recommendations',
       category: 'General Discussion'
     },
-    status: 'pending'
+    status: 'pending',
+    reportedUserId: 'user-102',
+    topicId: 'topic-789'
   },
   {
     id: 'report-3',
@@ -82,6 +86,8 @@ export const reportedContent: Report[] = [
       category: 'General Discussion'
     },
     status: 'resolved',
+    reportedUserId: 'user-104',
+    topicId: 'topic-101',
     resolution: {
       action: 'moved',
       moderator: 'Admin User',
@@ -115,6 +121,8 @@ export const reportedContent: Report[] = [
       category: 'Resources'
     },
     status: 'rejected',
+    reportedUserId: 'user-106',
+    topicId: 'topic-102',
     resolution: {
       action: 'no_action',
       moderator: 'Admin User',
@@ -148,6 +156,8 @@ export const reportedContent: Report[] = [
       category: 'Various'
     },
     status: 'resolved',
+    reportedUserId: 'user-108',
+    topicId: 'topic-103',
     resolution: {
       action: 'removed_banned',
       moderator: 'Senior Mod',
@@ -173,4 +183,3 @@ export const dashboardStats: DashboardStats = {
     { name: 'John Smith', flags: 1 }
   ]
 };
-
