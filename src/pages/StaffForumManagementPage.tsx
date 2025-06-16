@@ -1,18 +1,27 @@
-import React from "react";
+
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStaffRole } from "@/hooks/useStaffRole";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   MessageSquare, 
   ArrowLeft,
-  ArrowRight
+  Settings,
+  List
 } from "lucide-react";
 import TitleUpdater from "@/components/TitleUpdater";
+import CategoryManagement from "@/components/staff/forum/CategoryManagement";
+import TopicManagement from "@/components/staff/forum/TopicManagement";
 
-const StaffForumManager = () => {
+const StaffForumManagementPage = () => {
   const navigate = useNavigate();
   const { staffName, userRole, isLoading } = useStaffRole();
+  const [activeTab, setActiveTab] = useState("categories");
+
+  // Check if user has appropriate permissions
+  const canManageForum = userRole === "admin" || userRole === "moderator" || userRole === "super_admin";
 
   if (isLoading) {
     return (
@@ -25,10 +34,39 @@ const StaffForumManager = () => {
     );
   }
 
+  if (!canManageForum) {
+    return (
+      <>
+        <TitleUpdater />
+        <main className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
+            <div className="order-2 sm:order-1">
+              <Button variant="outline" size="sm" onClick={() => navigate('/staff/panel')} className="w-full sm:w-auto">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Staff Panel
+              </Button>
+            </div>
+          </div>
+          <Card className="border-destructive/50 bg-destructive/5 dark:bg-destructive/10">
+            <CardHeader>
+              <CardTitle className="text-destructive">Access Denied</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                You don't have permission to access forum management tools. 
+                Contact an administrator if you believe this is an error.
+              </p>
+            </CardContent>
+          </Card>
+        </main>
+      </>
+    );
+  }
+
   return (
     <>
       <TitleUpdater />
-      <main className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
           <div className="order-2 sm:order-1">
@@ -43,38 +81,35 @@ const StaffForumManager = () => {
               <span className="break-words">Forum Management</span>
             </h1>
             <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-              Manage forum categories, topics, and moderation via Unified Dashboard.
+              Manage forum categories, topics, and community discussions.
             </p>
           </div>
         </div>
 
-        {/* Notice Card */}
-        <Card className="border-primary/50 bg-primary/5 dark:bg-primary/10">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-primary text-lg sm:text-xl">
-              <MessageSquare className="h-5 w-5 flex-shrink-0" />
-              <span className="break-words">Enhanced Forum Moderation</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-foreground/80 text-sm sm:text-base leading-relaxed">
-              All forum management and moderation features are now integrated into the 
-              Unified Staff Dashboard. This includes tools for content review, user reports, 
-              and maintaining community guidelines.
-            </p>
-            <Button 
-              onClick={() => navigate('/staff/moderation')}
-              className="w-full sm:w-auto"
-            >
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Go to Moderation Tools
-              <ArrowRight className="h-4 w-4 ml-1.5" />
-            </Button>
-          </CardContent>
-        </Card>
+        {/* Management Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="categories" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Categories
+            </TabsTrigger>
+            <TabsTrigger value="topics" className="flex items-center gap-2">
+              <List className="h-4 w-4" />
+              Topics
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="categories" className="space-y-6">
+            <CategoryManagement userRole={userRole} />
+          </TabsContent>
+
+          <TabsContent value="topics" className="space-y-6">
+            <TopicManagement userRole={userRole} />
+          </TabsContent>
+        </Tabs>
       </main>
     </>
   );
 };
 
-export default StaffForumManager;
+export default StaffForumManagementPage;
