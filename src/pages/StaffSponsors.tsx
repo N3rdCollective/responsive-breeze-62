@@ -2,13 +2,13 @@
 import React from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
+import { useStaffRole } from "@/hooks/useStaffRole";
 import SponsorsManagement from "@/components/staff/sponsors/SponsorsManagement";
 import StaffHeader from "@/components/staff/StaffHeader";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 
 const StaffSponsors = () => {
-  const { staffName, isAdmin, isLoading, userRole } = useStaffAuth();
+  const { staffName, isAdmin, isLoading, userRole } = useStaffRole();
 
   if (isLoading) {
     return <LoadingSpinner />;

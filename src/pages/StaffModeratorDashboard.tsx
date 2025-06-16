@@ -1,7 +1,7 @@
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
+import { useStaffRole } from "@/hooks/useStaffRole";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -13,7 +13,7 @@ import TitleUpdater from "@/components/TitleUpdater";
 
 const StaffModerationDashboard = () => {
   const navigate = useNavigate();
-  const { staffName, userRole } = useStaffAuth();
+  const { staffName, userRole } = useStaffRole();
 
   return (
     <>

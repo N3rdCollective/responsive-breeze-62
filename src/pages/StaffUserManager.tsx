@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
+import { useStaffRole } from "@/hooks/useStaffRole";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, Clock, Ban } from "lucide-react";
@@ -26,7 +26,7 @@ type User = UserManagementUser;
 
 const StaffUserManager = () => {
   const navigate = useNavigate();
-  const { userRole, isLoading: authLoading } = useStaffAuth(); 
+  const { userRole, isLoading: authLoading } = useStaffRole(); 
   const { toast } = useToast();
   
   // Use the user management hook

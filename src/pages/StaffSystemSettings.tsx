@@ -2,14 +2,14 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
+import { useStaffRole } from "@/hooks/useStaffRole";
 import StaffHeader from "@/components/staff/StaffHeader";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 import SystemSettingsForm from "@/components/staff/settings/SystemSettingsForm";
 import AccessDenied from "@/components/staff/news/AccessDenied";
 
 const StaffSystemSettings = () => {
-  const { staffName, isAdmin, isLoading, userRole } = useStaffAuth();
+  const { staffName, isAdmin, isLoading, userRole } = useStaffRole();
   const hasAccess = isAdmin || userRole === "super_admin";
 
   if (isLoading) {

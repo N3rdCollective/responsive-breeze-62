@@ -3,13 +3,13 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import StaffHeader from "@/components/staff/StaffHeader";
 import PersonalityEditor from "@/components/staff/personalities/PersonalityEditor";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
+import { useStaffRole } from "@/hooks/useStaffRole";
 import { Navigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
 
 const StaffPersonalities = () => {
-  const { isLoading, userRole, staffName } = useStaffAuth();
+  const { isLoading, userRole, staffName } = useStaffRole();
   const { toast } = useToast();
   
   // Check authentication

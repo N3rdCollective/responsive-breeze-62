@@ -79,6 +79,7 @@ const StaffHomepageManager = () => {
   const navigate = useNavigate();
   const { userRole, isLoading: authLoading, staffId } = useStaffRole();
   const { toast } = useToast();
+  const { logActivity } = useStaffActivityLogger();
   
   const [content, setContent] = useState<HomepageContent>(defaultHomepageContent);
   const [homeSettings, setHomeSettings] = useState<HomeSettings>({...defaultHomeSettingsBase, id: ''});
