@@ -12,17 +12,21 @@ export const useForumTopicCreator = () => {
   const [submitting, setSubmitting] = useState(false);
 
   const createTopic = async (input: CreateTopicInput): Promise<{ topic: ForumTopic; firstPost: ForumPost } | null> => {
+    console.log("createTopic called with input:", input);
     setSubmitting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      console.log("Current user:", user);
       if (!user) {
         toast({ title: "Authentication Error", description: "You must be logged in to create a topic.", variant: "destructive" });
         return null;
       }
 
       const slug = generateSlug(input.title);
+      console.log("Generated slug:", slug);
 
       // Create the topic
+      console.log("Creating topic in database...");
       const { data: topicData, error: topicError } = await supabase
         .from('forum_topics')
         .insert({
@@ -40,10 +44,15 @@ export const useForumTopicCreator = () => {
         `)
         .single();
 
-      if (topicError) throw topicError;
+      console.log("Topic creation result:", { topicData, topicError });
+      if (topicError) {
+        console.error("Topic creation error:", topicError);
+        throw topicError;
+      }
       if (!topicData) throw new Error("Failed to create topic.");
 
       // Create the first post
+      console.log("Creating first post...");
       const { data: postData, error: postError } = await supabase
         .from('forum_posts')
         .insert({
@@ -58,6 +67,7 @@ export const useForumTopicCreator = () => {
         `)
         .single();
       
+      console.log("First post creation result:", { postData, postError });
       if (postError) {
         console.error("Error creating first post, topic was created but post failed:", postError);
         await supabase.from('forum_topics').delete().eq('id', topicData.id); // Attempt to rollback topic
@@ -68,6 +78,7 @@ export const useForumTopicCreator = () => {
       let createdPoll: ForumPoll | null = null;
       // Create Poll if data is provided
       if (input.poll && input.poll.question && input.poll.options.length >= 2) {
+        console.log("Creating poll...");
         const { data: pollData, error: pollError } = await supabase
           .from('forum_polls')
           .insert({
@@ -129,6 +140,7 @@ export const useForumTopicCreator = () => {
         }
       }
 
+      console.log("Topic creation successful, returning result:", { topic: finalTopicData, firstPost: postData });
       return { topic: finalTopicData, firstPost: postData as ForumPost };
 
     } catch (error: any) {

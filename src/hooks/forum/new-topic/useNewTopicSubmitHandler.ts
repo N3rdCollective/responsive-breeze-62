@@ -74,7 +74,7 @@ export const useNewTopicSubmitHandler = ({
     console.log("createTopic result:", result);
     
     if (result && result.topic) {
-      const navigateToPath = `/forum/topic/${result.topic.slug || result.topic.id}`;
+      const navigateToPath = `/members/forum/${category.slug}/${result.topic.slug}`;
       console.log("Navigating to path:", navigateToPath);
       try {
         navigate(navigateToPath);
