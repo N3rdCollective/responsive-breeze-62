@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
+import { useStaffRole } from "@/hooks/useStaffRole";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -77,9 +77,8 @@ const defaultHomepageContent: HomepageContent = {
 
 const StaffHomepageManager = () => {
   const navigate = useNavigate();
-  const { userRole, isLoading: authLoading, staffId } = useStaffAuth();
+  const { userRole, isLoading: authLoading, staffId } = useStaffRole();
   const { toast } = useToast();
-  const { logActivity } = useStaffActivityLogger();
   
   const [content, setContent] = useState<HomepageContent>(defaultHomepageContent);
   const [homeSettings, setHomeSettings] = useState<HomeSettings>({...defaultHomeSettingsBase, id: ''});

@@ -94,8 +94,8 @@ const ActivityLogs: React.FC = () => {
       
       {selectedLog && (
         <LogDetailDialog 
-          log={selectedLog} 
-          open={!!selectedLog} 
+          logEntry={selectedLog}
+          isOpen={!!selectedLog} 
           onOpenChange={() => setSelectedLog(null)} 
         />
       )}

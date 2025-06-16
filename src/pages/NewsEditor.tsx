@@ -1,7 +1,7 @@
 
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
+import { useStaffRole } from "@/hooks/useStaffRole";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 import NewsForm from "@/components/news/editor/NewsForm";
 import { useNewsEditor } from "@/components/news/editor/useNewsEditor";
@@ -13,7 +13,7 @@ const NewsEditor = () => {
   const params = useParams<{ id?: string; postId?: string }>();
   // Check both 'id' and 'postId' params since routes might use either
   const id = params.id || params.postId;
-  const { staffName, isLoading: authLoading, userRole } = useStaffAuth();
+  const { staffName, isLoading: authLoading, userRole } = useStaffRole();
   const navigate = useNavigate();
   
   console.log("[NewsEditor] Component loaded with params:", { params, extractedId: id });

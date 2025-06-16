@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 export interface PendingStaffMember {
   id: string;
   email: string;
-  status: string;
+  status: "approved" | "rejected" | "invited" | "requested";
   invited_at: string;
   approved_at?: string;
   rejected_at?: string;
@@ -31,7 +31,7 @@ export const usePendingStaff = (onStaffUpdate: () => void) => {
       const formattedData = data?.map(item => ({
         id: item.id,
         email: item.email,
-        status: item.status,
+        status: item.status as "approved" | "rejected" | "invited" | "requested",
         invited_at: item.invited_at,
         approved_at: item.approved_at,
         rejected_at: item.rejected_at,

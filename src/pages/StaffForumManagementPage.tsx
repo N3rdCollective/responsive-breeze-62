@@ -1,7 +1,6 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
+import { useStaffRole } from "@/hooks/useStaffRole";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -13,7 +12,7 @@ import TitleUpdater from "@/components/TitleUpdater";
 
 const StaffForumManager = () => {
   const navigate = useNavigate();
-  const { staffName, userRole, isLoading } = useStaffAuth();
+  const { staffName, userRole, isLoading } = useStaffRole();
 
   if (isLoading) {
     return (

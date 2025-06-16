@@ -1,16 +1,15 @@
-
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
+import { useStaffRole } from "@/hooks/useStaffRole";
 import StaffHeader from "@/components/staff/StaffHeader";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 import FeaturedArtistManager from "@/components/staff/featured-artists/FeaturedArtistManager";
 import { useStaffActivityLogger } from "@/hooks/useStaffActivityLogger";
 
 const StaffFeaturedArtistsPage = () => {
-  const { userRole, isLoading, staffName, isAdmin } = useStaffAuth();
+  const { userRole, isLoading, staffName, isAdmin } = useStaffRole();
   const navigate = useNavigate();
   const logger = useStaffActivityLogger();
   

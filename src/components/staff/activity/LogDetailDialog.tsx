@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { Calendar, User, Target, Info, Eye, EyeOff, Clock, Tag, Globe, Edit, Trash2, Settings, FileText, Shield, UserCheck } from 'lucide-react';
+import { Calendar, User, Target, Info, Eye, EyeOff, Clock, Tag, Globe, Edit, Trash2, Settings, FileText, Shield, UserCheck, LogOut } from 'lucide-react';
 import {
   Dialog,
   DialogContent,

@@ -1,6 +1,5 @@
-
 import React from "react";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
+import { useStaffRole } from "@/hooks/useStaffRole";
 import StaffHeader from "@/components/staff/StaffHeader";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 import ActivityLogs from "@/components/staff/activity/ActivityLogs";
@@ -9,15 +8,14 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const StaffActivityLogs = () => {
-  const { staffName, isAdmin, isLoading, userRole } = useStaffAuth();
+  const { staffName, isAdmin, isLoading, userRole } = useStaffRole();
   const navigate = useNavigate();
-  const hasAccess = isAdmin || userRole === "super_admin" || userRole === "moderator";
-
+  
   if (isLoading) {
     return <LoadingSpinner />;
   }
 
-  if (!hasAccess) {
+  if (!isAdmin) {
     return (
       <div className="max-w-7xl mx-auto px-4 pt-24 pb-16">
         <div className="mb-4">

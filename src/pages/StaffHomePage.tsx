@@ -3,13 +3,13 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { useStaffAuth } from "@/hooks/useStaffAuth";
+import { useStaffRole } from "@/hooks/useStaffRole";
 import StaffHeader from "@/components/staff/StaffHeader";
 import HomeContentManager from "@/components/staff/home/HomeContentManager";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 
 const StaffHomePage = () => {
-  const { userRole, isLoading, staffName, isAdmin } = useStaffAuth();
+  const { userRole, isLoading, staffName, isAdmin } = useStaffRole();
   const navigate = useNavigate();
   
   // Check if user has appropriate permissions
