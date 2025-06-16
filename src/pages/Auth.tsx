@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useRateLimiting } from "@/hooks/security/useRateLimiting";
 import { useSecurityEventLogger } from "@/hooks/security/useSecurityEventLogger";
-import EnhancedSignupForm from "@/components/auth/EnhancedSignupForm";
+import { EnhancedSignupForm } from "@/components/auth/EnhancedSignupForm";
 import { Link } from "react-router-dom";
 
 const Auth = () => {

@@ -48,3 +48,49 @@ export const getPasswordStrengthText = (strength: number): string => {
   if (strength <= 4) return 'Good';
   return 'Strong';
 };
+
+export interface SignupFormData {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+}
+
+export const validateSignupForm = (
+  formData: SignupFormData, 
+  emailExists: boolean, 
+  usernameExists: boolean
+) => {
+  const errors: string[] = [];
+
+  // Validate email
+  const emailError = validateEmail(formData.email);
+  if (emailError) errors.push(emailError);
+  if (emailExists) errors.push('Email already exists');
+
+  // Validate username
+  const usernameError = validateUsername(formData.username);
+  if (usernameError) errors.push(usernameError);
+  if (usernameExists) errors.push('Username already exists');
+
+  // Validate password
+  const { strength } = calculatePasswordStrength(formData.password);
+  const passwordError = validatePassword(formData.password, strength);
+  if (passwordError) errors.push(passwordError);
+
+  // Validate password confirmation
+  if (formData.password !== formData.confirmPassword) {
+    errors.push('Passwords do not match');
+  }
+
+  // Validate required fields
+  if (!formData.firstName.trim()) errors.push('First name is required');
+  if (!formData.lastName.trim()) errors.push('Last name is required');
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};

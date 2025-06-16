@@ -8,7 +8,7 @@ export const useUsernameCheck = () => {
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const usernameCheckRef = useRef<string>('');
 
-  const checkUsernameAvailability = useCallback(async (username: string) => {
+  const checkUsername = useCallback(async (username: string) => {
     const usernameValidationError = validateUsername(username);
     if (usernameValidationError || !username) {
       setUsernameAvailable(null);
@@ -54,10 +54,13 @@ export const useUsernameCheck = () => {
     setUsernameAvailable(null);
   }, []);
 
+  // Return both the new and old method names for compatibility
   return {
     usernameAvailable,
+    usernameExists: usernameAvailable === false, // Convert to the expected format
     isCheckingUsername,
-    checkUsernameAvailability,
+    checkUsername,
+    checkUsernameAvailability: checkUsername,
     resetUsernameCheck
   };
 };

@@ -8,7 +8,7 @@ export const useEmailCheck = () => {
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const emailCheckRef = useRef<string>('');
 
-  const checkEmailAvailability = useCallback(async (email: string) => {
+  const checkEmail = useCallback(async (email: string) => {
     const emailValidationError = validateEmail(email);
     if (emailValidationError || !email) {
       setEmailAvailable(null);
@@ -54,10 +54,13 @@ export const useEmailCheck = () => {
     setEmailAvailable(null);
   }, []);
 
+  // Return both the new and old method names for compatibility
   return {
     emailAvailable,
+    emailExists: emailAvailable === false, // Convert to the expected format
     isCheckingEmail,
-    checkEmailAvailability,
+    checkEmail,
+    checkEmailAvailability: checkEmail,
     resetEmailCheck
   };
 };
