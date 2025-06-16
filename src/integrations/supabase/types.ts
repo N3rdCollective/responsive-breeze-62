@@ -1573,6 +1573,15 @@ export type Database = {
         }
         Returns: string
       }
+      create_forum_topic_with_post: {
+        Args: {
+          p_category_id: string
+          p_title: string
+          p_slug: string
+          p_content: string
+        }
+        Returns: Json
+      }
       get_analytics_summary: {
         Args: { start_date: string; end_date: string }
         Returns: {
