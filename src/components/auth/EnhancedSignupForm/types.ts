@@ -31,5 +31,6 @@ export interface ValidationErrors {
 }
 
 export interface EnhancedSignupFormProps {
-  onSwitchToSignIn: () => void;
+  onSuccess?: () => void;
+  onSwitchToSignIn?: () => void;
 }

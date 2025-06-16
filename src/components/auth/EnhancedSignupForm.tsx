@@ -9,13 +9,12 @@ import { Label } from '@/components/ui/label';
 import { useEmailCheck } from './EnhancedSignupForm/useEmailCheck';
 import { useUsernameCheck } from './EnhancedSignupForm/useUsernameCheck';
 import { validateSignupForm } from './EnhancedSignupForm/validation';
-import type { SignupFormData } from './EnhancedSignupForm/types';
+import type { SignupFormData, EnhancedSignupFormProps } from './EnhancedSignupForm/types';
 
-interface EnhancedSignupFormProps {
-  onSuccess?: () => void;
-}
-
-export const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSuccess }) => {
+export const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ 
+  onSuccess, 
+  onSwitchToSignIn 
+}) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<SignupFormData>({
@@ -107,86 +106,101 @@ export const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({ onSucces
   };
 
   return (
-    <form onSubmit={handleSignup} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+    <div className="space-y-4">
+      <form onSubmit={handleSignup} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="firstName">First Name</Label>
+            <Input
+              id="firstName"
+              type="text"
+              value={formData.firstName}
+              onChange={(e) => handleInputChange('firstName', e.target.value)}
+              required
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="lastName">Last Name</Label>
+            <Input
+              id="lastName"
+              type="text"
+              value={formData.lastName}
+              onChange={(e) => handleInputChange('lastName', e.target.value)}
+              required
+            />
+          </div>
+        </div>
+        
         <div className="space-y-2">
-          <Label htmlFor="firstName">First Name</Label>
+          <Label htmlFor="username">Username</Label>
           <Input
-            id="firstName"
+            id="username"
             type="text"
-            value={formData.firstName}
-            onChange={(e) => handleInputChange('firstName', e.target.value)}
+            value={formData.username}
+            onChange={(e) => handleInputChange('username', e.target.value)}
+            required
+            className={usernameExists ? 'border-red-500' : ''}
+          />
+          {usernameExists && (
+            <p className="text-sm text-red-500">Username already exists</p>
+          )}
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="signup-email">Email</Label>
+          <Input
+            id="signup-email"
+            type="email"
+            value={formData.email}
+            onChange={(e) => handleInputChange('email', e.target.value)}
+            required
+            className={emailExists ? 'border-red-500' : ''}
+          />
+          {emailExists && (
+            <p className="text-sm text-red-500">Email already registered</p>
+          )}
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="signup-password">Password</Label>
+          <Input
+            id="signup-password"
+            type="password"
+            value={formData.password}
+            onChange={(e) => handleInputChange('password', e.target.value)}
             required
           />
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="lastName">Last Name</Label>
+          <Label htmlFor="confirm-password">Confirm Password</Label>
           <Input
-            id="lastName"
-            type="text"
-            value={formData.lastName}
-            onChange={(e) => handleInputChange('lastName', e.target.value)}
+            id="confirm-password"
+            type="password"
+            value={formData.confirmPassword}
+            onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
             required
           />
         </div>
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="username">Username</Label>
-        <Input
-          id="username"
-          type="text"
-          value={formData.username}
-          onChange={(e) => handleInputChange('username', e.target.value)}
-          required
-          className={usernameExists ? 'border-red-500' : ''}
-        />
-        {usernameExists && (
-          <p className="text-sm text-red-500">Username already exists</p>
-        )}
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="signup-email">Email</Label>
-        <Input
-          id="signup-email"
-          type="email"
-          value={formData.email}
-          onChange={(e) => handleInputChange('email', e.target.value)}
-          required
-          className={emailExists ? 'border-red-500' : ''}
-        />
-        {emailExists && (
-          <p className="text-sm text-red-500">Email already registered</p>
-        )}
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="signup-password">Password</Label>
-        <Input
-          id="signup-password"
-          type="password"
-          value={formData.password}
-          onChange={(e) => handleInputChange('password', e.target.value)}
-          required
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="confirm-password">Confirm Password</Label>
-        <Input
-          id="confirm-password"
-          type="password"
-          value={formData.confirmPassword}
-          onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-          required
-        />
-      </div>
-      
-      <Button type="submit" className="w-full" disabled={loading || emailExists || usernameExists}>
-        {loading ? 'Creating Account...' : 'Create Account'}
-      </Button>
-    </form>
+        
+        <Button type="submit" className="w-full" disabled={loading || emailExists || usernameExists}>
+          {loading ? 'Creating Account...' : 'Create Account'}
+        </Button>
+      </form>
+
+      {onSwitchToSignIn && (
+        <div className="text-center">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onSwitchToSignIn}
+            className="w-full"
+          >
+            Already have an account? Sign in
+          </Button>
+        </div>
+      )}
+    </div>
   );
 };
