@@ -28,7 +28,6 @@ export const useNewTopicSubmitHandler = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("handleSubmit called from hook");
     
     if (!title.trim()) {
       toast({ title: "Title required", description: "Please enter a title for your topic.", variant: "destructive" });
@@ -41,7 +40,6 @@ export const useNewTopicSubmitHandler = ({
     }
     
     if (!category) {
-      console.error("Category not loaded, cannot submit topic.");
       toast({ title: "Error", description: "Category data is missing.", variant: "destructive" });
       return;
     }
@@ -63,36 +61,29 @@ export const useNewTopicSubmitHandler = ({
       };
     }
     
-    console.log("Calling createTopic with:", { category_id: category.id, title, content, poll: pollInput });
     const result = await createTopic({
       category_id: category.id,
       title: title.trim(),
-      content, // Content is already processed by editor, ensure trim applied to text if needed
+      content,
       poll: pollInput,
     });
     
-    console.log("createTopic result:", result);
-    
     if (result && result.topic) {
       const navigateToPath = `/members/forum/${category.slug}/${result.topic.slug}`;
-      console.log("Navigating to path:", navigateToPath);
       try {
         navigate(navigateToPath);
-        console.log("Navigation call successful.");
       } catch (navError) {
         console.error("Error during navigation:", navError);
         toast({ title: "Navigation Error", description: "Could not navigate to the topic page.", variant: "destructive" });
       }
     } else {
-      console.log("Topic creation failed or result is invalid, not navigating.");
-      // Toast for failure is handled within useForumTopicCreator, but we can add a generic one if `result` is null
-       if (!result) {
+      if (!result) {
          toast({
             title: "Topic Creation Failed",
             description: "The topic could not be created. Please try again.",
             variant: "destructive"
          });
-       } else if (result && !result.topic) { // Result exists but topic is missing
+       } else if (result && !result.topic) {
           toast({
              title: "Topic Data Missing",
              description: "Topic was created but data is incomplete. Cannot navigate.",
