@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero"; 
 import LiveShowBanner from "@/components/LiveShowBanner";
@@ -9,6 +9,7 @@ import VideoGallery from "@/components/VideoGallery";
 import FeaturedArtistSection from "@/components/home/FeaturedArtistSection";
 import TitleUpdater from "@/components/TitleUpdater";
 import Footer from "@/components/Footer";
+import AuthModal from "@/components/auth/AuthModal";
 
 // Newly imported components and hook
 import PageLoader from "@/components/general/PageLoader";
@@ -26,6 +27,8 @@ const Index = () => {
     showFeaturedArtist 
   } = useHomepageData();
 
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
   // Debug logging
   console.log('🏠 Index page render:', {
     featuredVideos,
@@ -37,6 +40,10 @@ const Index = () => {
   if (isLoading) {
     return <PageLoader />;
   }
+
+  const handleAuthModalOpen = () => {
+    setIsAuthModalOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -52,7 +59,7 @@ const Index = () => {
         />
       )}
       
-      <VideoGallery videos={featuredVideos} /> 
+      <VideoGallery videos={featuredVideos} onAuthModalOpen={handleAuthModalOpen} /> 
       
       {/* Mobile-optimized container with better spacing */}
       <div className="container mx-auto px-3 sm:px-4 lg:px-8 py-6 sm:py-8">
@@ -72,7 +79,7 @@ const Index = () => {
       <div className="container mx-auto px-3 sm:px-4 lg:px-8 py-6 sm:py-8">
         <div className="space-y-12 sm:space-y-16">
           {showFeaturedArtist && <FeaturedArtistSection />}
-          {settings.show_news_section && <HomeNewsSection />}
+          {settings.show_news_section && <HomeNewsSection onAuthModalOpen={handleAuthModalOpen} />}
           {settings.show_personalities && <PersonalitySlider />}
           
           {/* Mobile-optimized song request widget */}
@@ -89,6 +96,7 @@ const Index = () => {
       />
 
       <Footer />
+      <AuthModal open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen} />
     </div>
   );
 };

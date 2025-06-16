@@ -20,6 +20,14 @@ export const useFetchFeaturedVideos = (): UseFetchFeaturedVideosReturn => {
       console.log('🎬 Auth state:', { user: !!user, authLoading, userId: user?.id });
       setIsLoading(true);
       
+      // If user is not authenticated, return empty array
+      if (!user) {
+        console.log('🎬 User not authenticated, skipping video fetch');
+        setFeaturedVideos([]);
+        setIsLoading(false);
+        return;
+      }
+      
       try {
         const { data: videosData, error: videosError } = await supabase
           .from("featured_videos")

@@ -12,12 +12,14 @@ import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VideoData } from "@/components/staff/home/context/HomeSettingsContext";
 import { useAuth } from "@/hooks/useAuth";
+import AuthRequiredMessage from "@/components/auth/AuthRequiredMessage";
 
 interface VideoGalleryProps {
   videos?: VideoData[];
+  onAuthModalOpen?: () => void;
 }
 
-const VideoGallery: React.FC<VideoGalleryProps> = ({ videos = [] }) => {
+const VideoGallery: React.FC<VideoGalleryProps> = ({ videos = [], onAuthModalOpen }) => {
   const [openVideoId, setOpenVideoId] = useState<string | null>(null);
   const { user } = useAuth();
   
@@ -29,6 +31,22 @@ const VideoGallery: React.FC<VideoGalleryProps> = ({ videos = [] }) => {
     userLoggedIn: !!user,
     userId: user?.id
   });
+
+  // If user is not authenticated, show auth required message
+  if (!user) {
+    return (
+      <section className="py-12 bg-gradient-to-b from-background to-muted dark:from-black/90 dark:to-black/95">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold mb-8 text-center text-foreground dark:text-white">Featured Music Videos</h2>
+          <AuthRequiredMessage
+            title="Members Only Content"
+            description="Sign in to access our exclusive collection of featured music videos and discover amazing artists from around the world."
+            onSignInClick={() => onAuthModalOpen?.()}
+          />
+        </div>
+      </section>
+    );
+  }
   
   if (videos.length === 0) {
     console.log('🎬 VideoGallery: No videos to display, user logged in:', !!user);

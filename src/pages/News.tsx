@@ -1,12 +1,59 @@
 
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import NewsList from "@/components/news/NewsList";
+import { useAuth } from "@/hooks/useAuth";
+import AuthRequiredMessage from "@/components/auth/AuthRequiredMessage";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const News = () => {
-  console.log('🗞️ News page rendering...');
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
   
+  console.log('🗞️ News page rendering...', { user: !!user, loading });
+
+  const handleAuthRedirect = () => {
+    navigate("/auth");
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="pt-16">
+          <section className="relative bg-muted text-foreground py-16 sm:py-20 lg:py-24">
+            <div className="absolute inset-0">
+              <img
+                src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81"
+                alt="Newsroom"
+                className="w-full h-full object-cover opacity-30"
+              />
+            </div>
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="max-w-3xl">
+                <Skeleton className="h-10 w-64 mb-4" />
+                <Skeleton className="h-24 w-full max-w-2xl" />
+              </div>
+            </div>
+          </section>
+          <section className="py-12 sm:py-16">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-32 w-full" />
+                ))}
+              </div>
+            </div>
+          </section>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -26,7 +73,10 @@ const News = () => {
                 Latest News
               </h1>
               <p className="text-base sm:text-lg lg:text-xl font-medium text-foreground bg-background/50 backdrop-blur-sm p-3 sm:p-4 rounded-lg inline-block leading-relaxed">
-                Stay updated with the latest happenings in music, entertainment, and local events. Use the search bar to find specific content.
+                {user 
+                  ? "Stay updated with the latest happenings in music, entertainment, and local events. Use the search bar to find specific content."
+                  : "Join our community to access exclusive news and updates about music, entertainment, and local events."
+                }
               </p>
             </div>
           </div>
@@ -35,7 +85,15 @@ const News = () => {
         {/* News Section - Mobile optimized */}
         <section className="py-12 sm:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <NewsList />
+            {user ? (
+              <NewsList />
+            ) : (
+              <AuthRequiredMessage
+                title="Members Only News Access"
+                description="Sign in to access our comprehensive news coverage including music industry updates, artist interviews, event coverage, and exclusive content from our editorial team."
+                onSignInClick={handleAuthRedirect}
+              />
+            )}
           </div>
         </section>
 

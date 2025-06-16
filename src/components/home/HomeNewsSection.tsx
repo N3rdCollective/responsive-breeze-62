@@ -9,6 +9,8 @@ import { Newspaper } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import AuthRequiredMessage from "@/components/auth/AuthRequiredMessage";
 
 interface NewsPost {
   id: string;
@@ -19,7 +21,13 @@ interface NewsPost {
   category: string | null;
 }
 
-const HomeNewsSection = () => {
+interface HomeNewsSectionProps {
+  onAuthModalOpen?: () => void;
+}
+
+const HomeNewsSection: React.FC<HomeNewsSectionProps> = ({ onAuthModalOpen }) => {
+  const { user } = useAuth();
+  
   const { data: posts, isLoading } = useQuery({
     queryKey: ["home-news-posts"],
     queryFn: async () => {
@@ -37,7 +45,24 @@ const HomeNewsSection = () => {
       
       return data as NewsPost[];
     },
+    enabled: !!user, // Only fetch when user is authenticated
   });
+
+  // If user is not authenticated, show auth required message
+  if (!user) {
+    return (
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
+          <h2 className="text-xl sm:text-2xl font-bold">Latest News</h2>
+        </div>
+        <AuthRequiredMessage
+          title="Exclusive News Content"
+          description="Join our community to stay updated with the latest music news, artist interviews, and industry insights from around the world."
+          onSignInClick={() => onAuthModalOpen?.()}
+        />
+      </div>
+    );
+  }
   
   if (isLoading) {
     return (
