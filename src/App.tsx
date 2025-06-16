@@ -34,6 +34,7 @@ import StaffVideosPage from "./pages/StaffVideosPage";
 import StaffForumManagementPage from "./pages/StaffForumManagementPage";
 import StaffShowsManager from "./pages/StaffShowsManager";
 import StaffModerationPage from "./pages/StaffModerationPage";
+import StaffSystemSettings from "./pages/StaffSystemSettings";
 import UnifiedMessagesPage from "./pages/UnifiedMessagesPage";
 import RedirectNewTopic from "./components/utility/RedirectNewTopic";
 
@@ -79,6 +80,7 @@ function App() {
                   <Route path="users" element={<StaffUserManager />} />
                   <Route path="analytics" element={<StaffAnalytics />} />
                   <Route path="homepage" element={<StaffHomepageManager />} />
+                  <Route path="system-settings" element={<StaffSystemSettings />} />
                   <Route path="news" element={<StaffNewsPage />} />
                   <Route path="news/editor" element={<NewsEditor />} />
                   <Route path="news/editor/:id" element={<NewsEditor />} />
