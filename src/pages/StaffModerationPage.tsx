@@ -268,13 +268,22 @@ const StaffModerationPage = () => {
               setFilterStatus={setFilterStatus}
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
+              onRefresh={handleRefresh}
             />
             
             {selectedReport && (
               <ReportDetails
                 reportData={selectedReport}
                 onClose={() => setSelectedFlag(null)}
-                onAction={handleReportAction}
+                onAction={(action, reportId, details) => {
+                  // Filter out user content type for actions that require specific content types
+                  const filteredDetails = details && selectedReport.contentType !== 'user' ? {
+                    ...details,
+                    contentType: selectedReport.contentType as 'post' | 'topic'
+                  } : undefined;
+                  
+                  return handleReportAction(action, reportId, filteredDetails);
+                }}
                 moderationNote={moderationNote}
                 setModerationNote={setModerationNote}
               />
