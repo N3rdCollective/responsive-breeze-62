@@ -8,13 +8,15 @@ const ContactSettingsTab = () => {
   const form = useFormContext<SystemSettingsFormValues>();
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-medium">Social Media Links</h3>
-      <p className="text-sm text-muted-foreground mb-4">
-        Configure social media links displayed on the website.
-      </p>
+    <div className="space-y-4 sm:space-y-6">
+      <div>
+        <h3 className="text-lg font-medium">Social Media Links</h3>
+        <p className="text-sm text-muted-foreground mt-1">
+          Configure social media links displayed on the website.
+        </p>
+      </div>
       
-      <div className="grid gap-4">        
+      <div className="grid gap-4 sm:gap-6">        
         <FormField
           control={form.control}
           name="social_media_links.facebook"

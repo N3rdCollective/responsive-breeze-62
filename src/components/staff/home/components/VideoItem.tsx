@@ -30,20 +30,20 @@ const VideoItem: React.FC<VideoItemProps> = ({
   onUpdateField
 }) => {
   return (
-    <div className="flex flex-col gap-2 p-3 border rounded-md">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+    <div className="flex flex-col gap-3 p-3 sm:p-4 border rounded-md">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           <img 
             src={`https://img.youtube.com/vi/${video.youtube_id}/default.jpg`} 
             alt={video.title} 
-            className="w-16 h-12 object-cover rounded"
+            className="w-16 h-12 object-cover rounded flex-shrink-0"
             onError={(e) => {
               (e.target as HTMLImageElement).src = '/placeholder.svg';
             }}
           />
-          <span className="font-medium">{video.title}</span>
+          <span className="font-medium truncate">{video.title}</span>
         </div>
-        <div className="flex gap-1">
+        <div className="flex flex-wrap gap-1 sm:flex-nowrap">
           <Button
             variant="ghost"
             size="icon"
@@ -85,28 +85,31 @@ const VideoItem: React.FC<VideoItemProps> = ({
           </Button>
         </div>
       </div>
-      <div>
-        <Label htmlFor={`video-id-${index}`}>YouTube Video ID</Label>
-        <Input
-          id={`video-id-${index}`}
-          value={video.youtube_id}
-          className="mt-1"
-          onChange={(e) => onUpdateField(index, 'youtube_id', e.target.value)}
-          disabled={isReordering}
-        />
-      </div>
-      <div>
-        <Label htmlFor={`video-title-${index}`} className="flex items-center gap-1">
-          Title
-          <span className="text-xs text-muted-foreground font-normal">(Auto-fetched from YouTube)</span>
-        </Label>
-        <Input
-          id={`video-title-${index}`}
-          value={video.title}
-          className="mt-1"
-          onChange={(e) => onUpdateField(index, 'title', e.target.value)}
-          disabled={isReordering}
-        />
+      
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <Label htmlFor={`video-id-${index}`}>YouTube Video ID</Label>
+          <Input
+            id={`video-id-${index}`}
+            value={video.youtube_id}
+            className="mt-1"
+            onChange={(e) => onUpdateField(index, 'youtube_id', e.target.value)}
+            disabled={isReordering}
+          />
+        </div>
+        <div>
+          <Label htmlFor={`video-title-${index}`} className="flex flex-col sm:flex-row sm:items-center gap-1">
+            <span>Title</span>
+            <span className="text-xs text-muted-foreground font-normal">(Auto-fetched from YouTube)</span>
+          </Label>
+          <Input
+            id={`video-title-${index}`}
+            value={video.title}
+            className="mt-1"
+            onChange={(e) => onUpdateField(index, 'title', e.target.value)}
+            disabled={isReordering}
+          />
+        </div>
       </div>
     </div>
   );

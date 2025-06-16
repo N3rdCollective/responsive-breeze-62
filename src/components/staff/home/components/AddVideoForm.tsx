@@ -23,12 +23,12 @@ const AddVideoForm: React.FC<AddVideoFormProps> = ({
   onAddVideo
 }) => {
   return (
-    <div className="border border-dashed rounded-md p-4">
-      <h4 className="font-medium mb-2">Add New Video</h4>
+    <div className="border border-dashed rounded-md p-3 sm:p-4">
+      <h4 className="font-medium mb-3">Add New Video</h4>
       <div className="space-y-4">
         <div>
           <Label htmlFor="new-video-id">YouTube Video ID</Label>
-          <div className="flex gap-2 mt-1">
+          <div className="flex flex-col sm:flex-row gap-2 mt-1">
             <Input
               id="new-video-id"
               value={newVideoId}
@@ -37,9 +37,13 @@ const AddVideoForm: React.FC<AddVideoFormProps> = ({
                 setErrorVideoId("");
               }}
               placeholder="e.g. dQw4w9WgXcQ"
-              className={errorVideoId ? "border-destructive" : ""}
+              className={`flex-1 ${errorVideoId ? "border-destructive" : ""}`}
             />
-            <Button onClick={onAddVideo} disabled={isValidating}>
+            <Button 
+              onClick={onAddVideo} 
+              disabled={isValidating}
+              className="w-full sm:w-auto"
+            >
               {isValidating ? (
                 <span className="flex items-center gap-2">
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
@@ -48,7 +52,7 @@ const AddVideoForm: React.FC<AddVideoFormProps> = ({
               ) : (
                 <span className="flex items-center gap-2">
                   <Plus className="h-4 w-4" />
-                  Add
+                  Add Video
                 </span>
               )}
             </Button>

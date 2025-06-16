@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, FormProvider } from "react-hook-form";
@@ -75,7 +76,7 @@ const SystemSettingsForm = () => {
 
   if (isLoading) {
     return (
-      <Card className="p-6">
+      <Card className="p-4 sm:p-6">
         <div className="flex justify-center items-center h-60">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <span className="ml-2 text-lg">Loading system settings...</span>
@@ -87,33 +88,44 @@ const SystemSettingsForm = () => {
   return (
     <FormProvider {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
-        <Card className="p-6">
+        <Card className="p-4 sm:p-6">
           {isFormReady ? (
             <Tabs 
               defaultValue="general" 
               value={activeTab} 
               onValueChange={setActiveTab}
+              className="w-full"
             >
-              <TabsList className="grid grid-cols-4 mb-6">
-                <TabsTrigger value="general">General</TabsTrigger>
-                <TabsTrigger value="contact">Contact Info</TabsTrigger>
-                <TabsTrigger value="copyright">Copyright</TabsTrigger>
-                <TabsTrigger value="localization">Localization</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 mb-4 sm:mb-6 h-auto">
+                <TabsTrigger value="general" className="text-xs sm:text-sm px-2 py-2">
+                  General
+                </TabsTrigger>
+                <TabsTrigger value="contact" className="text-xs sm:text-sm px-2 py-2">
+                  <span className="hidden sm:inline">Contact Info</span>
+                  <span className="sm:hidden">Contact</span>
+                </TabsTrigger>
+                <TabsTrigger value="copyright" className="text-xs sm:text-sm px-2 py-2">
+                  Copyright
+                </TabsTrigger>
+                <TabsTrigger value="localization" className="text-xs sm:text-sm px-2 py-2">
+                  <span className="hidden sm:inline">Localization</span>
+                  <span className="sm:hidden">Locale</span>
+                </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="general">
+              <TabsContent value="general" className="mt-4 sm:mt-6">
                 <GeneralSettingsTab />
               </TabsContent>
               
-              <TabsContent value="contact">
+              <TabsContent value="contact" className="mt-4 sm:mt-6">
                 <ContactSettingsTab />
               </TabsContent>
               
-              <TabsContent value="copyright">
+              <TabsContent value="copyright" className="mt-4 sm:mt-6">
                 <CopyrightSettingsTab />
               </TabsContent>
               
-              <TabsContent value="localization">
+              <TabsContent value="localization" className="mt-4 sm:mt-6">
                 <LocalizationSettingsTab />
               </TabsContent>
               

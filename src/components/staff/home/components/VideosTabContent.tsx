@@ -44,24 +44,25 @@ const VideosTabContent: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="space-y-2">
-        <div className="flex flex-col space-y-1.5">
-          <div className="flex justify-between items-center">
+        <div className="flex flex-col space-y-3 sm:space-y-1.5">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
             <h3 className="text-lg font-semibold">Manage Featured Music Videos</h3>
             <Button 
               variant="outline" 
               size="sm" 
               onClick={refreshAllVideoTitles}
               disabled={isProcessing || featuredVideos.length === 0}
-              className="gap-1"
+              className="gap-1 w-full sm:w-auto"
             >
               {isRefreshing ? (
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
               ) : (
                 <RefreshCw className="h-4 w-4" />
               )}
-              Update All Titles
+              <span className="sm:hidden">Update All Video Titles</span>
+              <span className="hidden sm:inline">Update All Titles</span>
             </Button>
           </div>
           <p className="text-sm text-muted-foreground">
@@ -70,7 +71,7 @@ const VideosTabContent: React.FC = () => {
         </div>
 
         <Card>
-          <CardContent className="pt-4">
+          <CardContent className="pt-4 p-4 sm:p-6 sm:pt-4">
             <div className="space-y-4">
               {featuredVideos.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
