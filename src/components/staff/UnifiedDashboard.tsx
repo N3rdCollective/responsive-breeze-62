@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
-import { useModerationStats } from '@/hooks/moderation/useModerationStats';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
@@ -13,12 +13,13 @@ import {
   TrendingUp,
   AlertTriangle,
   CheckCircle,
-  Clock
+  Clock,
+  RefreshCw
 } from 'lucide-react';
 
 const UnifiedDashboard = () => {
   const { user, staffRole } = useAuth();
-  const { stats, loading } = useModerationStats();
+  const { stats, loading, error, refreshStats } = useDashboardStats();
 
   const isAdmin = staffRole === 'admin' || staffRole === 'super_admin';
   const staffName = user?.user_metadata?.display_name || user?.user_metadata?.first_name || user?.email || 'Staff Member';
@@ -26,39 +27,32 @@ const UnifiedDashboard = () => {
   const quickStats = [
     {
       title: 'Active Users',
-      value: '1,234',
+      value: stats.activeUsers.toLocaleString(),
       icon: Users,
-      trend: '+12%',
+      trend: stats.usersTrend,
       color: 'blue'
     },
     {
       title: 'Total Posts',
-      value: '5,678',
+      value: stats.totalPosts.toLocaleString(),
       icon: FileText,
-      trend: '+8%',
+      trend: stats.postsTrend,
       color: 'green'
     },
     {
       title: 'Forum Topics',
-      value: stats.activeTopics.toString(),
+      value: stats.activeTopics.toLocaleString(),
       icon: MessageSquare,
-      trend: '+15%',
+      trend: stats.topicsTrend,
       color: 'purple'
     },
     {
       title: 'Pending Reports',
-      value: stats.pendingReports.toString(),
+      value: stats.pendingReports.toLocaleString(),
       icon: AlertTriangle,
       trend: stats.pendingReports > 0 ? 'Needs attention' : 'All clear',
       color: stats.pendingReports > 0 ? 'red' : 'green'
     }
-  ];
-
-  const recentActivity = [
-    { action: 'New user registration', time: '2 minutes ago', status: 'success' },
-    { action: 'Forum post reported', time: '15 minutes ago', status: 'warning' },
-    { action: 'News article published', time: '1 hour ago', status: 'success' },
-    { action: 'Show scheduled updated', time: '2 hours ago', status: 'info' }
   ];
 
   if (loading) {
@@ -80,6 +74,26 @@ const UnifiedDashboard = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center">
+              <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Error Loading Dashboard</h3>
+              <p className="text-muted-foreground mb-4">{error}</p>
+              <Button onClick={refreshStats} variant="outline">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Try Again
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto">
       {/* Welcome Header */}
@@ -92,7 +106,16 @@ const UnifiedDashboard = () => {
             Here's what's happening with your station today.
           </p>
         </div>
-        <div className="flex-shrink-0 w-full sm:w-auto">
+        <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={refreshStats}
+            className="p-2"
+            title="Refresh data"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
           <Badge variant="secondary" className="text-xs px-2 py-1 w-full sm:w-auto justify-center sm:justify-start">
             {staffRole?.toUpperCase()}
           </Badge>
@@ -151,20 +174,26 @@ const UnifiedDashboard = () => {
           </CardHeader>
           <CardContent className="pt-0">
             <div className="space-y-3 sm:space-y-4 max-h-80 overflow-y-auto">
-              {recentActivity.map((activity, index) => (
-                <div key={index} className="flex items-center justify-between py-2 border-b last:border-b-0 min-h-[3rem]">
-                  <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                    <div className={`h-2 w-2 rounded-full flex-shrink-0 ${
-                      activity.status === 'success' ? 'bg-green-500' :
-                      activity.status === 'warning' ? 'bg-yellow-500' :
-                      activity.status === 'error' ? 'bg-red-500' :
-                      'bg-blue-500'
-                    }`} />
-                    <span className="text-xs sm:text-sm font-medium truncate">{activity.action}</span>
+              {stats.recentActivity.length > 0 ? (
+                stats.recentActivity.map((activity, index) => (
+                  <div key={index} className="flex items-center justify-between py-2 border-b last:border-b-0 min-h-[3rem]">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                      <div className={`h-2 w-2 rounded-full flex-shrink-0 ${
+                        activity.status === 'success' ? 'bg-green-500' :
+                        activity.status === 'warning' ? 'bg-yellow-500' :
+                        activity.status === 'error' ? 'bg-red-500' :
+                        'bg-blue-500'
+                      }`} />
+                      <span className="text-xs sm:text-sm font-medium truncate">{activity.action}</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">{activity.time}</span>
                   </div>
-                  <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">{activity.time}</span>
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p className="text-sm">No recent activity found</p>
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
