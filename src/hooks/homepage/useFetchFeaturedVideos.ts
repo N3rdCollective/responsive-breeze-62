@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { VideoData } from "@/components/staff/home/context/HomeSettingsContext";
-import { useAuth } from '@/hooks/useAuth';
 
 interface UseFetchFeaturedVideosReturn {
   featuredVideos: VideoData[];
@@ -12,21 +11,11 @@ interface UseFetchFeaturedVideosReturn {
 export const useFetchFeaturedVideos = (): UseFetchFeaturedVideosReturn => {
   const [featuredVideos, setFeaturedVideos] = useState<VideoData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
     const fetchVideos = async () => {
       console.log('🎬 Starting to fetch featured videos...');
-      console.log('🎬 Auth state:', { user: !!user, authLoading, userId: user?.id });
       setIsLoading(true);
-      
-      // If user is not authenticated, return empty array
-      if (!user) {
-        console.log('🎬 User not authenticated, skipping video fetch');
-        setFeaturedVideos([]);
-        setIsLoading(false);
-        return;
-      }
       
       try {
         const { data: videosData, error: videosError } = await supabase
@@ -38,8 +27,7 @@ export const useFetchFeaturedVideos = (): UseFetchFeaturedVideosReturn => {
         console.log('🎬 Featured videos fetch result:', {
           videosData,
           videosError,
-          dataLength: videosData?.length || 0,
-          userLoggedIn: !!user
+          dataLength: videosData?.length || 0
         });
 
         if (videosError) {
@@ -58,17 +46,13 @@ export const useFetchFeaturedVideos = (): UseFetchFeaturedVideosReturn => {
       }
     };
 
-    // Wait for auth to settle before fetching videos
-    if (!authLoading) {
-      fetchVideos();
-    }
-  }, [user, authLoading]);
+    fetchVideos();
+  }, []);
 
   console.log('🎬 useFetchFeaturedVideos returning:', {
     featuredVideos,
     featuredVideosLength: featuredVideos.length,
-    isLoading,
-    userLoggedIn: !!user
+    isLoading
   });
 
   return { featuredVideos, isLoading };

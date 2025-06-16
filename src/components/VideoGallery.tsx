@@ -11,8 +11,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VideoData } from "@/components/staff/home/context/HomeSettingsContext";
-import { useAuth } from "@/hooks/useAuth";
-import AuthRequiredMessage from "@/components/auth/AuthRequiredMessage";
 
 interface VideoGalleryProps {
   videos?: VideoData[];
@@ -21,35 +19,16 @@ interface VideoGalleryProps {
 
 const VideoGallery: React.FC<VideoGalleryProps> = ({ videos = [], onAuthModalOpen }) => {
   const [openVideoId, setOpenVideoId] = useState<string | null>(null);
-  const { user } = useAuth();
   
   // Debug logging
   console.log('🎬 VideoGallery render:', {
     videos,
     videosLength: videos.length,
-    videosType: typeof videos,
-    userLoggedIn: !!user,
-    userId: user?.id
+    videosType: typeof videos
   });
-
-  // If user is not authenticated, show auth required message
-  if (!user) {
-    return (
-      <section className="py-12 bg-gradient-to-b from-background to-muted dark:from-black/90 dark:to-black/95">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-8 text-center text-foreground dark:text-white">Featured Music Videos</h2>
-          <AuthRequiredMessage
-            title="Members Only Content"
-            description="Sign in to access our exclusive collection of featured music videos and discover amazing artists from around the world."
-            onSignInClick={() => onAuthModalOpen?.()}
-          />
-        </div>
-      </section>
-    );
-  }
   
   if (videos.length === 0) {
-    console.log('🎬 VideoGallery: No videos to display, user logged in:', !!user);
+    console.log('🎬 VideoGallery: No videos to display');
     return null; // Don't show section if no videos
   }
   
@@ -61,7 +40,7 @@ const VideoGallery: React.FC<VideoGalleryProps> = ({ videos = [], onAuthModalOpe
         {/* Responsive layout: grid for mobile, flex row for desktop */}
         <div className="grid grid-cols-2 sm:grid-cols-2 md:flex md:flex-wrap md:justify-center gap-4">
           {videos.map((video) => {
-            console.log('🎬 Rendering video:', video, 'User logged in:', !!user);
+            console.log('🎬 Rendering video:', video);
             return (
               <Dialog key={video.id} open={openVideoId === video.id} onOpenChange={(open) => {
                 if (!open) setOpenVideoId(null);
