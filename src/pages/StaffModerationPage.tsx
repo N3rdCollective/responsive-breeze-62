@@ -67,22 +67,60 @@ const StaffModerationPage = () => {
       {
         id: "1",
         contentType: "post",
+        contentId: "post-123",
+        content: "Spam content that violates community guidelines",
         reportReason: "Spam content",
         status: "pending",
         timestamp: "2024-01-15T10:30:00Z",
-        author: { name: "John Doe", avatar: "/api/placeholder/32/32" },
-        reporter: { name: "Jane Smith", avatar: "/api/placeholder/32/32" },
-        topic: { title: "Weekly Music Discussion" }
+        author: { 
+          id: "user-1",
+          name: "John Doe", 
+          avatar: "/api/placeholder/32/32",
+          joinDate: "2024-01-01T00:00:00Z",
+          postCount: 15,
+          previousFlags: 0
+        },
+        reporter: { 
+          id: "user-2",
+          name: "Jane Smith", 
+          avatar: "/api/placeholder/32/32" 
+        },
+        topic: { 
+          id: "topic-1",
+          title: "Weekly Music Discussion",
+          category: "Music Chat"
+        },
+        reportedUserId: "user-1",
+        topicId: "topic-1"
       },
       {
         id: "2", 
         contentType: "topic",
+        contentId: "topic-2",
+        content: "Topic with inappropriate language and offensive content",
         reportReason: "Inappropriate language",
         status: "pending",
         timestamp: "2024-01-15T09:15:00Z",
-        author: { name: "BadUser", avatar: "/api/placeholder/32/32" },
-        reporter: { name: "ModUser", avatar: "/api/placeholder/32/32" },
-        topic: { title: "Offensive Topic Title" }
+        author: { 
+          id: "user-3",
+          name: "BadUser", 
+          avatar: "/api/placeholder/32/32",
+          joinDate: "2024-01-10T00:00:00Z",
+          postCount: 5,
+          previousFlags: 2
+        },
+        reporter: { 
+          id: "user-4",
+          name: "ModUser", 
+          avatar: "/api/placeholder/32/32" 
+        },
+        topic: { 
+          id: "topic-2",
+          title: "Offensive Topic Title",
+          category: "General Discussion"
+        },
+        reportedUserId: "user-3",
+        topicId: "topic-2"
       }
     ];
 
