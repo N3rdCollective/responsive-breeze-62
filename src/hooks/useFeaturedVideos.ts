@@ -16,7 +16,7 @@ export const useFeaturedVideos = (): UseFeaturedVideosReturn => {
 
   useEffect(() => {
     const fetchVideos = async () => {
-      console.log('🎬 [FIXED] Fetching featured videos after RLS fix...');
+      console.log('🎬 [CLEAN] Fetching featured videos after RLS cleanup...');
       setIsLoading(true);
       setError(null);
       
@@ -32,7 +32,7 @@ export const useFeaturedVideos = (): UseFeaturedVideosReturn => {
           setError(videosError.message);
           setFeaturedVideos([]);
         } else {
-          console.log('🎬 [SUCCESS] Featured videos fetched successfully after RLS fix:', videosData?.length || 0);
+          console.log('🎬 [SUCCESS] Featured videos fetched successfully after RLS cleanup:', videosData?.length || 0);
           console.log('🎬 [DATA] Video titles:', videosData?.map(v => v.title) || []);
           setFeaturedVideos(videosData || []);
         }

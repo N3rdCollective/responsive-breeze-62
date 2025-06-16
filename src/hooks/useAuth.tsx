@@ -33,7 +33,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
-      console.log('🔐 [FIXED] Checking staff status after RLS fix for user:', user.id);
+      console.log('🔐 [CLEAN] Checking staff status after RLS cleanup for user:', user.id);
       
       const { data, error } = await supabase
         .from('staff')
@@ -42,16 +42,16 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         .single();
 
       if (error || !data) {
-        console.log('🔐 [INFO] User is not staff member after RLS fix:', user.id);
+        console.log('🔐 [INFO] User is not staff member after RLS cleanup:', user.id);
         setIsStaff(false);
         setStaffRole(null);
       } else {
-        console.log('🔐 [SUCCESS] Staff status confirmed after RLS fix:', { userId: user.id, role: data.role });
+        console.log('🔐 [SUCCESS] Staff status confirmed after RLS cleanup:', { userId: user.id, role: data.role });
         setIsStaff(true);
         setStaffRole(data.role);
       }
     } catch (error) {
-      console.error('🔐 [ERROR] Error checking staff status after RLS fix:', error);
+      console.error('🔐 [ERROR] Error checking staff status after RLS cleanup:', error);
       setIsStaff(false);
       setStaffRole(null);
     }
@@ -60,7 +60,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log("🔐 [FIXED] Auth state changed after RLS fix:", event, session?.user?.email);
+        console.log("🔐 [CLEAN] Auth state changed after RLS cleanup:", event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -76,16 +76,16 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
                 .single();
 
               if (error || !data) {
-                console.log('🔐 [INFO] User is not staff member after RLS fix:', session.user.id);
+                console.log('🔐 [INFO] User is not staff member after RLS cleanup:', session.user.id);
                 setIsStaff(false);
                 setStaffRole(null);
               } else {
-                console.log('🔐 [SUCCESS] Staff status confirmed after RLS fix:', { userId: session.user.id, role: data.role });
+                console.log('🔐 [SUCCESS] Staff status confirmed after RLS cleanup:', { userId: session.user.id, role: data.role });
                 setIsStaff(true);
                 setStaffRole(data.role);
               }
             } catch (error) {
-              console.error('🔐 [ERROR] Error checking staff status after RLS fix:', error);
+              console.error('🔐 [ERROR] Error checking staff status after RLS cleanup:', error);
               setIsStaff(false);
               setStaffRole(null);
             }
@@ -100,7 +100,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Initial session check
     supabase.auth.getSession()
       .then(({ data: { session: currentSession } }) => {
-        console.log("🔐 [FIXED] Initial session check after RLS fix:", currentSession?.user?.email);
+        console.log("🔐 [CLEAN] Initial session check after RLS cleanup:", currentSession?.user?.email);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         setLoading(false);
@@ -115,16 +115,16 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
                 .single();
 
               if (error || !data) {
-                console.log('🔐 [INFO] User is not staff member after RLS fix:', currentSession.user.id);
+                console.log('🔐 [INFO] User is not staff member after RLS cleanup:', currentSession.user.id);
                 setIsStaff(false);
                 setStaffRole(null);
               } else {
-                console.log('🔐 [SUCCESS] Staff status confirmed after RLS fix:', { userId: currentSession.user.id, role: data.role });
+                console.log('🔐 [SUCCESS] Staff status confirmed after RLS cleanup:', { userId: currentSession.user.id, role: data.role });
                 setIsStaff(true);
                 setStaffRole(data.role);
               }
             } catch (error) {
-              console.error('🔐 [ERROR] Error checking staff status after RLS fix:', error);
+              console.error('🔐 [ERROR] Error checking staff status after RLS cleanup:', error);
               setIsStaff(false);
               setStaffRole(null);
             }
@@ -132,16 +132,16 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       })
       .catch((error) => {
-        console.error("🔐 [ERROR] Initial session check error after RLS fix:", error.message);
+        console.error("🔐 [ERROR] Initial session check error after RLS cleanup:", error.message);
         setLoading(false);
       });
 
     return () => subscription.unsubscribe();
-  }, []); // Remove user dependency to prevent infinite loop
+  }, []); // Clean dependencies to prevent infinite loop
 
   const logout = async () => {
     try {
-      console.log("🔐 [FIXED] Logging out after RLS fix...");
+      console.log("🔐 [CLEAN] Logging out after RLS cleanup...");
       
       // Clean up auth state
       const cleanupAuthState = () => {
@@ -163,7 +163,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { error } = await supabase.auth.signOut({ scope: 'global' });
       
       if (error) {
-        console.error('🔐 [ERROR] Error logging out after RLS fix:', error.message);
+        console.error('🔐 [ERROR] Error logging out after RLS cleanup:', error.message);
         toast({
           title: "Logout Error",
           description: "There was an error logging out. Please try again.",
@@ -177,7 +177,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsStaff(false);
       setStaffRole(null);
       
-      console.log("🔐 [SUCCESS] Logout successful after RLS fix");
+      console.log("🔐 [SUCCESS] Logout successful after RLS cleanup");
       toast({
         title: "Logged out",
         description: "You have been successfully logged out."
@@ -185,7 +185,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       window.location.href = "/";
     } catch (error) {
-      console.error("🔐 [ERROR] Logout failed after RLS fix:", error);
+      console.error("🔐 [ERROR] Logout failed after RLS cleanup:", error);
     }
   };
 
