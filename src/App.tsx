@@ -35,6 +35,7 @@ import StaffForumManagementPage from "./pages/StaffForumManagementPage";
 import StaffShowsManager from "./pages/StaffShowsManager";
 import StaffModerationPage from "./pages/StaffModerationPage";
 import UnifiedMessagesPage from "./pages/UnifiedMessagesPage";
+import RedirectNewTopic from "./components/utility/RedirectNewTopic";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +62,8 @@ function App() {
                 <Route path="/members/forum" element={<MembersPage />} />
                 <Route path="/members/forum/:categorySlug" element={<ForumCategoryPage />} />
                 <Route path="/members/forum/:categorySlug/:topicSlug" element={<ForumTopicPage />} />
+                {/* Add redirect route for old new topic pattern */}
+                <Route path="/members/forum/:categorySlug/new" element={<RedirectNewTopic />} />
                 <Route path="/forum/new-topic/:categorySlug" element={<NewForumTopicPage />} />
                 <Route path="/forum/search-results" element={<ForumSearchResultsPage />} />
                 <Route path="/forum/initiate-search" element={<ForumInitiateSearchPage />} />
