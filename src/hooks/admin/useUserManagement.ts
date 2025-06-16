@@ -18,6 +18,7 @@ export interface UserManagementUser {
   forum_post_count: number;
   timeline_post_count: number;
   pending_report_count: number;
+  forum_signature?: string | null; // Added forum_signature property
 }
 
 // Export User as a separate type alias to avoid conflicts
@@ -69,7 +70,8 @@ export const useUserManagement = () => {
           profile_picture,
           forum_post_count,
           timeline_post_count,
-          pending_report_count
+          pending_report_count,
+          forum_signature
         `)
         .order('created_at', { ascending: false });
 
@@ -86,6 +88,7 @@ export const useUserManagement = () => {
         forum_post_count: user.forum_post_count || 0,
         timeline_post_count: user.timeline_post_count || 0,
         pending_report_count: user.pending_report_count || 0,
+        forum_signature: user.forum_signature || null,
         email: user.email || 'N/A'
       })) || [];
       
