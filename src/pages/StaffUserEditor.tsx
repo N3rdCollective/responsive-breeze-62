@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useStaffRole } from "@/hooks/useStaffRole";
@@ -16,17 +15,50 @@ import {
   Save,
   CheckCircle,
   Clock,
-  Ban
+  Ban,
+  UserX,
+  Mail,
+  Shield
 } from "lucide-react";
 import TitleUpdater from "@/components/TitleUpdater";
 import { supabase } from "@/integrations/supabase/client";
 import type { UserManagementUser } from "@/hooks/admin/useUserManagement";
+import { useUserManagement } from "@/hooks/admin/useUserManagement";
+import { useOptimizedUserManagerDialogs } from "@/hooks/admin/useOptimizedUserManagerDialogs";
+import UserActionDialog from "@/components/staff/user-manager/UserActionDialog";
+import UserMessageDialog from "@/components/staff/user-manager/UserMessageDialog";
 
 const StaffUserEditor = () => {
   const navigate = useNavigate();
   const { userId } = useParams<{ userId: string }>();
   const { userRole, isLoading: authLoading } = useStaffRole();
   const { toast } = useToast();
+
+  // Use the user management hook for moderation functions
+  const {
+    updateUserStatus,
+    sendUserMessage
+  } = useUserManagement();
+
+  // Use the optimized dialogs hook for moderation actions
+  const {
+    actionDialog,
+    actionReason,
+    actionLoading,
+    setActionReason,
+    openActionDialog,
+    closeActionDialog,
+    handleUserAction,
+    messageDialog,
+    messageSubject,
+    messageContent,
+    messageLoading,
+    setMessageSubject,
+    setMessageContent,
+    openMessageDialog,
+    closeMessageDialog,
+    handleSendMessage,
+  } = useOptimizedUserManagerDialogs(updateUserStatus, sendUserMessage);
 
   const [user, setUser] = useState<UserManagementUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -323,6 +355,63 @@ const StaffUserEditor = () => {
           </CardContent>
         </Card>
 
+        {/* Moderation Actions Card */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Moderation Actions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => openMessageDialog(user)}
+              >
+                <Mail className="h-4 w-4 mr-2" />
+                Send Message
+              </Button>
+              
+              {user.status === 'active' && (
+                <>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
+                    onClick={() => openActionDialog('suspend', user)}
+                  >
+                    <UserX className="h-4 w-4 mr-2" />
+                    Suspend User
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    onClick={() => openActionDialog('ban', user)}
+                  >
+                    <Ban className="h-4 w-4 mr-2" />
+                    Ban User
+                  </Button>
+                </>
+              )}
+              
+              {(user.status === 'suspended' || user.status === 'banned') && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                  onClick={() => openActionDialog('unban', user)}
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Restore User
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Edit Form */}
         <Card>
           <CardHeader>
@@ -425,6 +514,30 @@ const StaffUserEditor = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Moderation Dialogs */}
+        <UserActionDialog
+          isOpen={actionDialog.open}
+          action={actionDialog.action}
+          user={actionDialog.user}
+          reason={actionReason}
+          onReasonChange={setActionReason}
+          onConfirm={handleUserAction}
+          onClose={closeActionDialog}
+          isLoading={actionLoading}
+        />
+
+        <UserMessageDialog
+          isOpen={messageDialog.open}
+          user={messageDialog.user}
+          subject={messageSubject}
+          content={messageContent}
+          onSubjectChange={setMessageSubject}
+          onContentChange={setMessageContent}
+          onSend={handleSendMessage}
+          onClose={closeMessageDialog}
+          isLoading={messageLoading}
+        />
       </main>
     </>
   );
