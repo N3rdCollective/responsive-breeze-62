@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useStaffRole } from "@/hooks/useStaffRole";
@@ -274,7 +275,7 @@ const StaffUserEditor = () => {
 
       toast({
         title: "Success",
-        description: "User updated successfully"
+        description: "User updated successfully. Returning to user management...",
       });
 
       // Update local user state with the new data, ensuring proper type casting
@@ -288,6 +289,11 @@ const StaffUserEditor = () => {
         status: validatedUpdatedData.status,
         forum_signature: validatedUpdatedData.forum_signature
       } : null);
+
+      // Navigate back to user management after a short delay
+      setTimeout(() => {
+        navigate('/staff/users');
+      }, 1500);
 
     } catch (error: any) {
       console.error('❌ [USER_EDITOR] Save operation failed:', error);
@@ -392,7 +398,7 @@ const StaffUserEditor = () => {
 
   return (
     <>
-      <TitleUpdater title={`Edit ${user.display_name || user.username} - Staff Panel`} />
+      <TitleUpdater title={`Edit ${user?.display_name || user?.username} - Staff Panel`} />
       <main className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
