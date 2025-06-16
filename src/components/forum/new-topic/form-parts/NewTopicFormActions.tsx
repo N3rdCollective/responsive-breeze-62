@@ -14,6 +14,10 @@ const NewTopicFormActions: React.FC<NewTopicFormActionsProps> = ({
   isSubmitDisabled,
   onCancel,
 }) => {
+  const handleSubmitClick = () => {
+    console.log('🖱️ [FORM_ACTIONS] Submit button clicked', { submitting, isSubmitDisabled });
+  };
+
   return (
     <div className="flex justify-end space-x-2 pt-4">
       <Button
@@ -29,6 +33,7 @@ const NewTopicFormActions: React.FC<NewTopicFormActionsProps> = ({
         type="submit"
         disabled={submitting || isSubmitDisabled}
         className="bg-primary hover:bg-primary/90"
+        onClick={handleSubmitClick}
       >
         {submitting ? (
           <>

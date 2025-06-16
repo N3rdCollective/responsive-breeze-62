@@ -18,6 +18,13 @@ const NewForumTopicPage = () => {
   const navigate = useNavigate();
   const { createTopic, submitting } = useForumTopicCreator();
   
+  console.log('📄 [NEW_TOPIC_PAGE] Rendering with state:', {
+    categorySlug,
+    user: user?.id,
+    authLoading,
+    submitting
+  });
+  
   const { category, loadingCategory } = useForumCategoryLoader(categorySlug);
   
   const {
@@ -26,12 +33,11 @@ const NewForumTopicPage = () => {
     enablePoll, setEnablePoll,
     pollQuestion, setPollQuestion,
     pollOptions, 
-    // setPollOptions, // Direct setter not passed if individual handlers are used
     isContentEffectivelyEmpty,
     handlePollOptionChange,
     addPollOption,
     removePollOption,
-  } = useNewForumTopicForm(); // Using default initial poll options
+  } = useNewForumTopicForm();
 
   const { handleSubmit } = useNewTopicSubmitHandler({
     title,
@@ -45,26 +51,33 @@ const NewForumTopicPage = () => {
   });
   
   useEffect(() => {
+    console.log('🔐 [NEW_TOPIC_PAGE] Auth check:', { user: user?.id, authLoading });
     if (!authLoading && !user) {
+      console.log('🔐 [NEW_TOPIC_PAGE] Redirecting to auth - user not logged in');
       navigate("/auth");
     }
   }, [user, authLoading, navigate]);
   
+  useEffect(() => {
+    console.log('📂 [NEW_TOPIC_PAGE] Category state:', { category: category?.name, loadingCategory });
+  }, [category, loadingCategory]);
+  
   if (authLoading || loadingCategory) {
+    console.log('⏳ [NEW_TOPIC_PAGE] Still loading...');
     return <NewTopicPageLoader />;
   }
   
   if (!user) {
-    // This case should ideally be handled by the auth redirect useEffect,
-    // but it's good for robustness if navigation hasn't completed yet.
+    console.log('🚫 [NEW_TOPIC_PAGE] No user found');
     return null; 
   }
   
   if (!category) {
-    // useForumCategoryLoader should handle navigation if category not found or error.
-    // This renders CategoryNotFoundDisplay if category is null AFTER loading is false.
+    console.log('🚫 [NEW_TOPIC_PAGE] No category found');
     return <CategoryNotFoundDisplay />;
   }
+  
+  console.log('✅ [NEW_TOPIC_PAGE] Rendering main content');
   
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -86,7 +99,6 @@ const NewForumTopicPage = () => {
             pollQuestion={pollQuestion}
             setPollQuestion={setPollQuestion}
             pollOptions={pollOptions}
-            // Removed setPollOptions prop as it's not defined in NewTopicFormProps
             handlePollOptionChange={handlePollOptionChange}
             addPollOption={addPollOption}
             removePollOption={removePollOption}
