@@ -26,7 +26,7 @@ const ConversationsTab: React.FC<ConversationsTabProps> = ({
 }) => {
   return (
     <div className="flex-1 flex min-h-0 h-full">
-      <aside className="w-full md:w-1/3 lg:w-1/4 border-r dark:border-gray-700/50 flex flex-col min-h-0 h-full">
+      <aside className="w-full md:w-1/3 lg:w-1/4 border-r dark:border-gray-700/50 flex flex-col min-h-0 h-full overflow-hidden">
         <ConversationList
           conversations={conversations}
           currentUserId={currentUserId}
@@ -37,7 +37,7 @@ const ConversationsTab: React.FC<ConversationsTabProps> = ({
         />
       </aside>
 
-      <main className="flex-1 flex flex-col min-h-0 h-full">
+      <main className="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
         {selectedConversationId && otherParticipantId ? (
           <ChatView conversationId={selectedConversationId} otherParticipantId={otherParticipantId} />
         ) : (

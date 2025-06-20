@@ -27,7 +27,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, isError,
 
   if (isLoading) {
     return (
-      <div className="flex-1 p-4 space-y-4 min-h-[400px] max-h-[calc(100vh-200px)] overflow-hidden">
+      <div className="h-full p-4 space-y-4 overflow-hidden">
         {[...Array(5)].map((_, i) => (
           <div key={i} className={`flex gap-2 ${i % 2 === 0 ? 'justify-start' : 'justify-end'}`}>
             {i % 2 === 0 && <Skeleton className="h-8 w-8 rounded-full" />}
@@ -41,7 +41,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, isError,
 
   if (isError) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center text-destructive p-4 min-h-[400px] max-h-[calc(100vh-200px)]">
+      <div className="h-full flex flex-col items-center justify-center text-destructive p-4">
         <AlertTriangle size={48} className="mb-4" />
         <p className="text-lg">Error loading messages.</p>
         <p className="text-sm">Please try again later.</p>
@@ -50,7 +50,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, isError,
   }
 
   return (
-    <ScrollArea className="flex-1 min-h-[400px] max-h-[calc(100vh-200px)] border border-border/40 rounded-lg">
+    <ScrollArea className="h-full">
       <div className="p-4 space-y-4">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground min-h-[300px]">

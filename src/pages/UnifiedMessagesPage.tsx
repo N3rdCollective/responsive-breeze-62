@@ -215,7 +215,7 @@ const UnifiedMessagesPage: React.FC = () => {
     <>
       <TitleUpdater title="Messages" />
       <Navbar />
-      <div className="flex flex-col bg-background min-h-screen pt-16">
+      <div className="flex flex-col bg-background h-screen pt-16">
         <div className="flex flex-col flex-1 min-h-0">
           <MessagesPageHeader totalUnreadCount={totalUnreadCount} />
 
@@ -241,7 +241,7 @@ const UnifiedMessagesPage: React.FC = () => {
               </TabsList>
             </div>
 
-            <TabsContent value="conversations" className="flex-1 flex mt-0 min-h-0">
+            <TabsContent value="conversations" className="flex-1 mt-0 min-h-0 h-full">
               <ConversationsTab
                 conversations={conversations}
                 currentUserId={user.id}

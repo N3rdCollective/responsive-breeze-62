@@ -108,14 +108,16 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, otherParticipantId 
   }
   
   return (
-    <div className="flex flex-col h-full">
-      <MessageList
-        messages={messages}
-        isLoading={messagesLoading}
-        isError={messagesError}
-        currentUserId={currentUserId}
-        conversationId={conversationId}
-      />
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <MessageList
+          messages={messages}
+          isLoading={messagesLoading}
+          isError={messagesError}
+          currentUserId={currentUserId}
+          conversationId={conversationId}
+        />
+      </div>
       
       <div className="flex-shrink-0">
         <TypingIndicatorDisplay
