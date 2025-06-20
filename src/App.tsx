@@ -25,6 +25,12 @@ import PublicProfilePage from "./pages/PublicProfilePage";
 import UnifiedMessagesPage from "./pages/UnifiedMessagesPage";
 import StaffPanel from "./pages/StaffPanel";
 import StaffAnalytics from "./pages/StaffAnalytics";
+import StaffNewsPage from "./pages/StaffNewsPage";
+import StaffVideosPage from "./pages/StaffVideosPage";
+import StaffUsersPage from "./pages/StaffUsersPage";
+import StaffForumManagementPage from "./pages/StaffForumManagementPage";
+import StaffModerationPage from "./pages/StaffModerationPage";
+import StaffActivityLogs from "./pages/StaffActivityLogs";
 import ForumCategoryPage from "./pages/ForumCategoryPage";
 import ForumTopicPage from "./pages/ForumTopicPage";
 import NewForumTopicPage from "./pages/NewForumTopicPage";
@@ -49,7 +55,13 @@ function App() {
                     <Route path="/staff/*" element={<StaffLayout />}>
                       <Route path="panel" element={<StaffPanel />} />
                       <Route path="analytics" element={<StaffAnalytics />} />
-                      {/* Add other staff routes here as needed */}
+                      <Route path="news" element={<StaffNewsPage />} />
+                      <Route path="news/editor/:id?" element={<NewsEditor />} />
+                      <Route path="videos" element={<StaffVideosPage />} />
+                      <Route path="users" element={<StaffUsersPage />} />
+                      <Route path="forum" element={<StaffForumManagementPage />} />
+                      <Route path="moderation" element={<StaffModerationPage />} />
+                      <Route path="activity" element={<StaffActivityLogs />} />
                     </Route>
 
                     {/* Regular routes with navbar and footer */}
@@ -62,7 +74,6 @@ function App() {
                             <Route path="/about" element={<About />} />
                             <Route path="/news" element={<News />} />
                             <Route path="/news/:slug" element={<NewsPost />} />
-                            <Route path="/news/editor/:id?" element={<NewsEditor />} />
                             <Route path="/schedule" element={<Schedule />} />
                             <Route path="/personalities" element={<Personalities />} />
                             <Route path="/artists" element={<ArtistsPage />} />
