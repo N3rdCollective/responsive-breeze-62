@@ -12,7 +12,12 @@ interface ForumCategoryHeaderProps {
   categorySlug?: string;
 }
 
-const ForumCategoryHeader: React.FC<ForumCategoryHeaderProps> = ({ category }) => {
+const ForumCategoryHeader: React.FC<ForumCategoryHeaderProps> = ({ category, categorySlug }) => {
+  // Determine the correct new topic URL based on the current path
+  const newTopicUrl = categorySlug?.startsWith('/members/forum/') 
+    ? `/members/forum/${category.slug}/new-topic`
+    : `/forum/${category.slug}/new-topic`;
+
   return (
     <Card className="mb-6 border-primary/20">
       <CardHeader className="bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 py-4">
@@ -41,8 +46,7 @@ const ForumCategoryHeader: React.FC<ForumCategoryHeaderProps> = ({ category }) =
             )}
           </div>
           <Button asChild className="bg-primary hover:bg-primary/90 text-sm sm:text-base shrink-0">
-            {/* Changed category.id to category.slug to match the route parameter */}
-            <Link to={`/forum/new-topic/${category.slug}`}>
+            <Link to={newTopicUrl}>
               <Plus className="h-4 w-4 mr-2" />
               New Topic
             </Link>
