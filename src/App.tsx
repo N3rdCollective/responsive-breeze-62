@@ -10,6 +10,7 @@ import { AuthProvider } from "./hooks/useAuth";
 import { Toaster } from "./components/ui/toaster";
 import ErrorBoundary from "./components/ErrorBoundary";
 import RouteErrorElement from "./components/RouteErrorElement";
+import StaffLayout from "./components/layouts/StaffLayout";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import News from "./pages/News";
@@ -43,40 +44,52 @@ function App() {
             <AuthProvider>
               <AnalyticsProvider>
                 <ErrorBoundary>
-                  <Navbar />
-                  <main className="min-h-screen">
-                    <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/about" element={<About />} />
-                      <Route path="/news" element={<News />} />
-                      <Route path="/news/:slug" element={<NewsPost />} />
-                      <Route path="/news/editor/:id?" element={<NewsEditor />} />
-                      <Route path="/schedule" element={<Schedule />} />
-                      <Route path="/personalities" element={<Personalities />} />
-                      <Route path="/artists" element={<ArtistsPage />} />
-                      <Route path="/artists/archive" element={<ArtistsArchivePage />} />
-                      <Route path="/artists/:id" element={<ArtistDetail />} />
-                      <Route path="/members" element={<MembersPage />} />
-                      <Route path="/members/forum" element={<MembersPage />} />
-                      <Route path="/members/forum/:categorySlug" element={<ForumCategoryPage />} />
-                      <Route path="/members/forum/:categorySlug/:topicSlug" element={<ForumTopicPage />} />
-                      <Route path="/members/forum/:categorySlug/new-topic" element={<NewForumTopicPage />} />
-                      <Route path="/forum/:categorySlug" element={<ForumCategoryPage />} />
-                      <Route path="/forum/:categorySlug/:topicSlug" element={<ForumTopicPage />} />
-                      <Route path="/forum/:categorySlug/new-topic" element={<NewForumTopicPage />} />
-                      <Route path="/forum/initiate-search" element={<ForumInitiateSearchPage />} />
-                      <Route path="/forum/search" element={<ForumSearchResultsPage />} />
-                      <Route path="/contact" element={<Contact />} />
-                      <Route path="/auth" element={<Auth />} />
-                      <Route path="/profile" element={<ProfilePage />} />
-                      <Route path="/profile/:userId" element={<PublicProfilePage />} />
-                      <Route path="/messages" element={<UnifiedMessagesPage />} />
-                      <Route path="/staff/panel" element={<StaffPanel />} />
-                      <Route path="/staff/analytics" element={<StaffAnalytics />} />
-                      <Route path="*" element={<RouteErrorElement />} />
-                    </Routes>
-                  </main>
-                  <Footer />
+                  <Routes>
+                    {/* Staff routes with layout */}
+                    <Route path="/staff/*" element={<StaffLayout />}>
+                      <Route path="panel" element={<StaffPanel />} />
+                      <Route path="analytics" element={<StaffAnalytics />} />
+                      {/* Add other staff routes here as needed */}
+                    </Route>
+
+                    {/* Regular routes with navbar and footer */}
+                    <Route path="/*" element={
+                      <>
+                        <Navbar />
+                        <main className="min-h-screen">
+                          <Routes>
+                            <Route path="/" element={<Index />} />
+                            <Route path="/about" element={<About />} />
+                            <Route path="/news" element={<News />} />
+                            <Route path="/news/:slug" element={<NewsPost />} />
+                            <Route path="/news/editor/:id?" element={<NewsEditor />} />
+                            <Route path="/schedule" element={<Schedule />} />
+                            <Route path="/personalities" element={<Personalities />} />
+                            <Route path="/artists" element={<ArtistsPage />} />
+                            <Route path="/artists/archive" element={<ArtistsArchivePage />} />
+                            <Route path="/artists/:id" element={<ArtistDetail />} />
+                            <Route path="/members" element={<MembersPage />} />
+                            <Route path="/members/forum" element={<MembersPage />} />
+                            <Route path="/members/forum/:categorySlug" element={<ForumCategoryPage />} />
+                            <Route path="/members/forum/:categorySlug/:topicSlug" element={<ForumTopicPage />} />
+                            <Route path="/members/forum/:categorySlug/new-topic" element={<NewForumTopicPage />} />
+                            <Route path="/forum/:categorySlug" element={<ForumCategoryPage />} />
+                            <Route path="/forum/:categorySlug/:topicSlug" element={<ForumTopicPage />} />
+                            <Route path="/forum/:categorySlug/new-topic" element={<NewForumTopicPage />} />
+                            <Route path="/forum/initiate-search" element={<ForumInitiateSearchPage />} />
+                            <Route path="/forum/search" element={<ForumSearchResultsPage />} />
+                            <Route path="/contact" element={<Contact />} />
+                            <Route path="/auth" element={<Auth />} />
+                            <Route path="/profile" element={<ProfilePage />} />
+                            <Route path="/profile/:userId" element={<PublicProfilePage />} />
+                            <Route path="/messages" element={<UnifiedMessagesPage />} />
+                            <Route path="*" element={<RouteErrorElement />} />
+                          </Routes>
+                        </main>
+                        <Footer />
+                      </>
+                    } />
+                  </Routes>
                   <Toaster />
                 </ErrorBoundary>
               </AnalyticsProvider>

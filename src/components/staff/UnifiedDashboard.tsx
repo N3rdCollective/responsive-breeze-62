@@ -145,66 +145,64 @@ const UnifiedDashboard = () => {
   return (
     <>
       <TitleUpdater title="Staff Dashboard" />
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-6 space-y-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Staff Dashboard</h1>
-              <p className="text-muted-foreground">
-                Welcome back! Here's what's happening with your radio station.
-              </p>
-            </div>
-            <Button 
-              onClick={() => navigate('/staff/activity')}
-              variant="outline"
-              className="w-full sm:w-auto"
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Staff Dashboard</h1>
+            <p className="text-muted-foreground">
+              Welcome back! Here's what's happening with your radio station.
+            </p>
+          </div>
+          <Button 
+            onClick={() => navigate('/staff/activity')}
+            variant="outline"
+            className="w-full sm:w-auto"
+          >
+            <Activity className="h-4 w-4 mr-2" />
+            View Activity Logs
+          </Button>
+        </div>
+
+        <QuickStatsGrid stats={stats} />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredActions.map((action, index) => (
+            <Card 
+              key={index} 
+              className="cursor-pointer hover:shadow-lg transition-all duration-200 group"
+              onClick={() => navigate(action.path)}
             >
-              <Activity className="h-4 w-4 mr-2" />
-              View Activity Logs
-            </Button>
-          </div>
-
-          <QuickStatsGrid stats={stats} />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredActions.map((action, index) => (
-              <Card 
-                key={index} 
-                className="cursor-pointer hover:shadow-lg transition-all duration-200 group"
-                onClick={() => navigate(action.path)}
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className={`p-2 rounded-lg ${
-                      action.color === 'blue' ? 'bg-blue-100 dark:bg-blue-900/20' :
-                      action.color === 'green' ? 'bg-green-100 dark:bg-green-900/20' :
-                      action.color === 'purple' ? 'bg-purple-100 dark:bg-purple-900/20' :
-                      action.color === 'orange' ? 'bg-orange-100 dark:bg-orange-900/20' :
-                      action.color === 'red' ? 'bg-red-100 dark:bg-red-900/20' :
-                      'bg-gray-100 dark:bg-gray-900/20'
-                    }`}>
-                      <action.icon className={`h-6 w-6 ${
-                        action.color === 'blue' ? 'text-blue-600 dark:text-blue-400' :
-                        action.color === 'green' ? 'text-green-600 dark:text-green-400' :
-                        action.color === 'purple' ? 'text-purple-600 dark:text-purple-400' :
-                        action.color === 'orange' ? 'text-orange-600 dark:text-orange-400' :
-                        action.color === 'red' ? 'text-red-600 dark:text-red-400' :
-                        'text-gray-600 dark:text-gray-400'
-                      }`} />
-                    </div>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className={`p-2 rounded-lg ${
+                    action.color === 'blue' ? 'bg-blue-100 dark:bg-blue-900/20' :
+                    action.color === 'green' ? 'bg-green-100 dark:bg-green-900/20' :
+                    action.color === 'purple' ? 'bg-purple-100 dark:bg-purple-900/20' :
+                    action.color === 'orange' ? 'bg-orange-100 dark:bg-orange-900/20' :
+                    action.color === 'red' ? 'bg-red-100 dark:bg-red-900/20' :
+                    'bg-gray-100 dark:bg-gray-900/20'
+                  }`}>
+                    <action.icon className={`h-6 w-6 ${
+                      action.color === 'blue' ? 'text-blue-600 dark:text-blue-400' :
+                      action.color === 'green' ? 'text-green-600 dark:text-green-400' :
+                      action.color === 'purple' ? 'text-purple-600 dark:text-purple-400' :
+                      action.color === 'orange' ? 'text-orange-600 dark:text-orange-400' :
+                      action.color === 'red' ? 'text-red-600 dark:text-red-400' :
+                      'text-gray-600 dark:text-gray-400'
+                    }`} />
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <CardTitle className="text-lg mb-2 group-hover:text-primary transition-colors">
-                    {action.title}
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    {action.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardTitle className="text-lg mb-2 group-hover:text-primary transition-colors">
+                  {action.title}
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  {action.description}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     </>

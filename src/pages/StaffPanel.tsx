@@ -11,11 +11,7 @@ const StaffPanel = () => {
     return <LoadingSpinner />;
   }
 
-  return (
-    <div className="max-w-full">
-      <UnifiedDashboard />
-    </div>
-  );
+  return <UnifiedDashboard />;
 };
 
 export default StaffPanel;
