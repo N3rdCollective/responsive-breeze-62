@@ -8,11 +8,18 @@ interface AnalyticsData {
   unique_visitors: number;
   page_path: string;
   visit_count: number;
-  device_breakdown: any;
+  device_breakdown: Record<string, number>;
+}
+
+interface ProcessedAnalytics {
+  totalVisits: number;
+  totalUniqueVisitors: number;
+  topPages: Array<{ page: string; visits: number }>;
+  deviceBreakdown: Array<{ device: string; count: number }>;
 }
 
 interface LiveAnalyticsState {
-  data: AnalyticsData[];
+  data: ProcessedAnalytics;
   isLive: boolean;
   lastUpdated: Date | null;
   connectionStatus: 'connected' | 'disconnected' | 'connecting';
@@ -21,7 +28,12 @@ interface LiveAnalyticsState {
 export const useLiveAnalytics = (dateRange: string = '30') => {
   const { toast } = useToast();
   const [state, setState] = useState<LiveAnalyticsState>({
-    data: [],
+    data: {
+      totalVisits: 0,
+      totalUniqueVisitors: 0,
+      topPages: [],
+      deviceBreakdown: []
+    },
     isLive: false,
     lastUpdated: null,
     connectionStatus: 'disconnected'
@@ -50,16 +62,24 @@ export const useLiveAnalytics = (dateRange: string = '30') => {
 
       console.log('Raw analytics data:', data);
 
-      // Process the data to handle the cross join structure
       if (data && data.length > 0) {
-        // Group the data properly since it comes from cross joins
-        const processedData = data.map((row: any) => ({
-          total_visits: Number(row.total_visits) || 0,
-          unique_visitors: Number(row.unique_visitors) || 0,
-          page_path: row.page_path || '',
-          visit_count: Number(row.visit_count) || 0,
-          device_breakdown: row.device_breakdown || {}
-        }));
+        // Process the data properly
+        const firstRow = data[0];
+        
+        const processedData: ProcessedAnalytics = {
+          totalVisits: Number(firstRow.total_visits) || 0,
+          totalUniqueVisitors: Number(firstRow.unique_visitors) || 0,
+          topPages: data.map((row: AnalyticsData) => ({
+            page: row.page_path || 'Unknown',
+            visits: Number(row.visit_count) || 0
+          })).filter(page => page.page && page.visits > 0).slice(0, 10),
+          deviceBreakdown: firstRow.device_breakdown 
+            ? Object.entries(firstRow.device_breakdown as Record<string, number>).map(([device, count]) => ({
+                device: device.charAt(0).toUpperCase() + device.slice(1),
+                count: Number(count) || 0
+              }))
+            : []
+        };
 
         console.log('Processed analytics data:', processedData);
         
@@ -72,7 +92,12 @@ export const useLiveAnalytics = (dateRange: string = '30') => {
         // No data found, set empty state
         setState(prev => ({
           ...prev,
-          data: [],
+          data: {
+            totalVisits: 0,
+            totalUniqueVisitors: 0,
+            topPages: [],
+            deviceBreakdown: []
+          },
           lastUpdated: new Date()
         }));
       }
@@ -84,10 +109,14 @@ export const useLiveAnalytics = (dateRange: string = '30') => {
         variant: "destructive"
       });
       
-      // Set empty data on error
       setState(prev => ({
         ...prev,
-        data: [],
+        data: {
+          totalVisits: 0,
+          totalUniqueVisitors: 0,
+          topPages: [],
+          deviceBreakdown: []
+        },
         lastUpdated: new Date()
       }));
     } finally {
@@ -100,7 +129,6 @@ export const useLiveAnalytics = (dateRange: string = '30') => {
 
     setState(prev => ({ ...prev, isLive: true, connectionStatus: 'connecting' }));
 
-    // Set up real-time subscription for new analytics data
     const channel = supabase
       .channel('analytics-live-updates')
       .on(
@@ -112,7 +140,6 @@ export const useLiveAnalytics = (dateRange: string = '30') => {
         },
         (payload) => {
           console.log('New analytics data received:', payload);
-          // Refresh data when new analytics are added
           fetchAnalytics();
           
           toast({
@@ -132,7 +159,6 @@ export const useLiveAnalytics = (dateRange: string = '30') => {
 
     channelRef.current = channel;
 
-    // Set up auto-refresh every 30 seconds
     autoRefreshRef.current = setInterval(() => {
       fetchAnalytics();
     }, 30000);
@@ -161,12 +187,10 @@ export const useLiveAnalytics = (dateRange: string = '30') => {
     }
   }, [state.isLive, startLiveUpdates, stopLiveUpdates]);
 
-  // Initial data fetch
   useEffect(() => {
     fetchAnalytics();
   }, [fetchAnalytics]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       stopLiveUpdates();

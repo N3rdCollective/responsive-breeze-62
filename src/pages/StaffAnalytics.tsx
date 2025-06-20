@@ -15,7 +15,7 @@ const StaffAnalytics = () => {
   const navigate = useNavigate();
   const { staffRole, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
-  const [dateRange, setDateRange] = useState('30'); // days
+  const [dateRange, setDateRange] = useState('30');
 
   const {
     analytics,
@@ -35,7 +35,6 @@ const StaffAnalytics = () => {
     });
   };
 
-  // Check authorization
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -59,41 +58,7 @@ const StaffAnalytics = () => {
     );
   }
 
-  // Process analytics data for display
-  const totalVisits = analytics.length > 0 ? analytics[0].total_visits : 0;
-  const totalUniqueVisitors = analytics.length > 0 ? analytics[0].unique_visitors : 0;
-  
-  // Top pages data - get unique pages with their visit counts
-  const pageMap = new Map();
-  analytics.forEach(item => {
-    if (item.page_path && item.visit_count) {
-      pageMap.set(item.page_path, item.visit_count);
-    }
-  });
-  
-  const topPagesData = Array.from(pageMap.entries())
-    .sort(([,a], [,b]) => b - a)
-    .slice(0, 10)
-    .map(([page, visits]) => ({
-      page: page.length > 20 ? page.substring(0, 20) + '...' : page,
-      visits: visits
-    }));
-
-  // Device breakdown data - get from first row since it's aggregated
-  const deviceData = analytics.length > 0 && analytics[0].device_breakdown 
-    ? Object.entries(analytics[0].device_breakdown as Record<string, number>).map(([device, count]) => ({
-        device: device.charAt(0).toUpperCase() + device.slice(1),
-        count: count
-      }))
-    : [];
-
-  console.log('Dashboard data:', {
-    totalVisits,
-    totalUniqueVisitors,
-    topPagesData,
-    deviceData,
-    analytics
-  });
+  console.log('Analytics data:', analytics);
 
   return (
     <>
@@ -112,10 +77,10 @@ const StaffAnalytics = () => {
           />
 
           <AnalyticsStatsCards
-            totalVisits={totalVisits}
-            totalUniqueVisitors={totalUniqueVisitors}
-            topPagesCount={topPagesData.length}
-            deviceTypesCount={deviceData.length}
+            totalVisits={analytics.totalVisits}
+            totalUniqueVisitors={analytics.totalUniqueVisitors}
+            topPagesCount={analytics.topPages.length}
+            deviceTypesCount={analytics.deviceBreakdown.length}
             isLive={isLive}
             connectionStatus={connectionStatus}
             loading={loading}
@@ -124,28 +89,24 @@ const StaffAnalytics = () => {
           {!loading && (
             <>
               <AnalyticsCharts
-                topPagesData={topPagesData}
-                deviceData={deviceData}
+                topPagesData={analytics.topPages}
+                deviceData={analytics.deviceBreakdown}
               />
 
-              <AnalyticsPageDetails analytics={analytics} />
+              <AnalyticsPageDetails analytics={analytics.topPages} />
             </>
           )}
 
-          {/* Debug info - remove in production */}
           {process.env.NODE_ENV === 'development' && (
             <div className="mt-8 p-4 bg-muted rounded-lg">
               <h3 className="font-semibold mb-2">Debug Info:</h3>
-              <p>Total analytics records: {analytics.length}</p>
+              <p>Total visits: {analytics.totalVisits}</p>
+              <p>Unique visitors: {analytics.totalUniqueVisitors}</p>
+              <p>Top pages count: {analytics.topPages.length}</p>
+              <p>Device types: {analytics.deviceBreakdown.length}</p>
               <p>Loading: {loading.toString()}</p>
               <p>Connection: {connectionStatus}</p>
               <p>Last updated: {lastUpdated?.toLocaleString()}</p>
-              <details className="mt-2">
-                <summary>Raw data</summary>
-                <pre className="text-xs mt-2 overflow-auto">
-                  {JSON.stringify(analytics.slice(0, 3), null, 2)}
-                </pre>
-              </details>
             </div>
           )}
         </main>
