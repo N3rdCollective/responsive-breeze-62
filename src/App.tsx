@@ -10,6 +10,7 @@ import { AuthProvider } from "./hooks/useAuth";
 import { Toaster } from "./components/ui/toaster";
 import ErrorBoundary from "./components/ErrorBoundary";
 import RouteErrorElement from "./components/RouteErrorElement";
+import News from "./pages/News";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
                     <Routes>
                       <Route path="/" element={<div>Home Page</div>} />
                       <Route path="/about" element={<div>About Page</div>} />
+                      <Route path="/news" element={<News />} />
                       <Route path="*" element={<RouteErrorElement />} />
                     </Routes>
                   </main>
