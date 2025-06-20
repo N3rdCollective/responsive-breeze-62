@@ -1,4 +1,3 @@
-
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
@@ -58,6 +57,7 @@ function App() {
                       <Route path="/artists/:id" element={<ArtistDetail />} />
                       <Route path="/members" element={<MembersPage />} />
                       <Route path="/members/forum" element={<MembersPage />} />
+                      <Route path="/members/forum/:categorySlug" element={<ForumCategoryPage />} />
                       <Route path="/forum/:categorySlug" element={<ForumCategoryPage />} />
                       <Route path="/forum/:categorySlug/:topicSlug" element={<ForumTopicPage />} />
                       <Route path="/forum/:categorySlug/new-topic" element={<NewForumTopicPage />} />
