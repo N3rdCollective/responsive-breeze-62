@@ -10,7 +10,29 @@ import { AuthProvider } from "./hooks/useAuth";
 import { Toaster } from "./components/ui/toaster";
 import ErrorBoundary from "./components/ErrorBoundary";
 import RouteErrorElement from "./components/RouteErrorElement";
+import Index from "./pages/Index";
+import About from "./pages/About";
 import News from "./pages/News";
+import Schedule from "./pages/Schedule";
+import Personalities from "./pages/Personalities";
+import ArtistsPage from "./pages/ArtistsPage";
+import MembersPage from "./pages/MembersPage";
+import Contact from "./pages/Contact";
+import Auth from "./pages/Auth";
+import ProfilePage from "./pages/ProfilePage";
+import PublicProfilePage from "./pages/PublicProfilePage";
+import UnifiedMessagesPage from "./pages/UnifiedMessagesPage";
+import StaffPanel from "./pages/StaffPanel";
+import StaffAnalytics from "./pages/StaffAnalytics";
+import ForumCategoryPage from "./pages/ForumCategoryPage";
+import ForumTopicPage from "./pages/ForumTopicPage";
+import NewForumTopicPage from "./pages/NewForumTopicPage";
+import ForumInitiateSearchPage from "./pages/ForumInitiateSearchPage";
+import ForumSearchResultsPage from "./pages/ForumSearchResultsPage";
+import ArtistsArchivePage from "./pages/ArtistsArchivePage";
+import ArtistDetail from "./pages/ArtistDetail";
+import NewsPost from "./pages/NewsPost";
+import NewsEditor from "./pages/NewsEditor";
 
 function App() {
   return (
@@ -24,9 +46,30 @@ function App() {
                   <Navbar />
                   <main className="min-h-screen">
                     <Routes>
-                      <Route path="/" element={<div>Home Page</div>} />
-                      <Route path="/about" element={<div>About Page</div>} />
+                      <Route path="/" element={<Index />} />
+                      <Route path="/about" element={<About />} />
                       <Route path="/news" element={<News />} />
+                      <Route path="/news/:slug" element={<NewsPost />} />
+                      <Route path="/news/editor/:id?" element={<NewsEditor />} />
+                      <Route path="/schedule" element={<Schedule />} />
+                      <Route path="/personalities" element={<Personalities />} />
+                      <Route path="/artists" element={<ArtistsPage />} />
+                      <Route path="/artists/archive" element={<ArtistsArchivePage />} />
+                      <Route path="/artists/:id" element={<ArtistDetail />} />
+                      <Route path="/members" element={<MembersPage />} />
+                      <Route path="/members/forum" element={<MembersPage />} />
+                      <Route path="/forum/:categorySlug" element={<ForumCategoryPage />} />
+                      <Route path="/forum/:categorySlug/:topicSlug" element={<ForumTopicPage />} />
+                      <Route path="/forum/:categorySlug/new-topic" element={<NewForumTopicPage />} />
+                      <Route path="/forum/initiate-search" element={<ForumInitiateSearchPage />} />
+                      <Route path="/forum/search" element={<ForumSearchResultsPage />} />
+                      <Route path="/contact" element={<Contact />} />
+                      <Route path="/auth" element={<Auth />} />
+                      <Route path="/profile" element={<ProfilePage />} />
+                      <Route path="/profile/:userId" element={<PublicProfilePage />} />
+                      <Route path="/messages" element={<UnifiedMessagesPage />} />
+                      <Route path="/staff/panel" element={<StaffPanel />} />
+                      <Route path="/staff/analytics" element={<StaffAnalytics />} />
                       <Route path="*" element={<RouteErrorElement />} />
                     </Routes>
                   </main>
