@@ -26,7 +26,7 @@ import DashboardErrorState from "./dashboard/DashboardErrorState";
 const UnifiedDashboard = () => {
   const navigate = useNavigate();
   const { userRole, isLoading: authLoading } = useStaffRole();
-  const { stats, isLoading, error } = useDashboardStats();
+  const { stats, loading, error } = useDashboardStats();
 
   if (authLoading) {
     return <DashboardLoadingSkeleton />;
@@ -55,7 +55,7 @@ const UnifiedDashboard = () => {
     );
   }
 
-  if (isLoading) {
+  if (loading) {
     return <DashboardLoadingSkeleton />;
   }
 
