@@ -1,5 +1,5 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, forwardRef, useImperativeHandle } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import MessageItem from '../MessageItem';
@@ -14,15 +14,20 @@ interface MessageListProps {
   conversationId: string | null;
 }
 
-const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, isError, currentUserId, conversationId }) => {
+export interface MessageListRef {
+  scrollToBottom: (behavior?: ScrollBehavior) => void;
+}
+
+const MessageList = forwardRef<MessageListRef, MessageListProps>(({ messages, isLoading, isError, currentUserId, conversationId }, ref) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Remove automatic scrolling - users can manually scroll as needed
-  // const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
-  //   messagesEndRef.current?.scrollIntoView({ behavior });
-  // };
+  const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
+    messagesEndRef.current?.scrollIntoView({ behavior });
+  };
 
-  // Removed useEffect that automatically scrolled to bottom on messages/conversationId change
+  useImperativeHandle(ref, () => ({
+    scrollToBottom
+  }));
 
   if (isLoading) {
     return (
@@ -65,6 +70,8 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, isError,
       </div>
     </ScrollArea>
   );
-};
+});
+
+MessageList.displayName = 'MessageList';
 
 export default MessageList;
