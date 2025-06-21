@@ -27,7 +27,8 @@ import StaffPanel from "./pages/StaffPanel";
 import StaffAnalytics from "./pages/StaffAnalytics";
 import StaffNewsPage from "./pages/StaffNewsPage";
 import StaffVideosPage from "./pages/StaffVideosPage";
-import StaffUsersPage from "./pages/StaffUsersPage";
+import StaffUserManager from "./pages/StaffUserManager";
+import StaffSystemSettings from "./pages/StaffSystemSettings";
 import StaffForumManagementPage from "./pages/StaffForumManagementPage";
 import StaffModerationPage from "./pages/StaffModerationPage";
 import StaffActivityLogs from "./pages/StaffActivityLogs";
@@ -58,7 +59,8 @@ function App() {
                       <Route path="news" element={<StaffNewsPage />} />
                       <Route path="news/editor/:id?" element={<NewsEditor />} />
                       <Route path="videos" element={<StaffVideosPage />} />
-                      <Route path="users" element={<StaffUsersPage />} />
+                      <Route path="users" element={<StaffUserManager />} />
+                      <Route path="settings" element={<StaffSystemSettings />} />
                       <Route path="forum" element={<StaffForumManagementPage />} />
                       <Route path="moderation" element={<StaffModerationPage />} />
                       <Route path="activity" element={<StaffActivityLogs />} />
