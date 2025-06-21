@@ -112,20 +112,31 @@ export const useNewTopicSubmitHandler = ({
       
       if (result && result.topic) {
         const navigateToPath = `/members/forum/${category.slug}/${result.topic.slug}`;
-        console.log('🧭 [TOPIC_SUBMIT] Navigating to:', navigateToPath);
+        console.log('🧭 [TOPIC_SUBMIT] Preparing to navigate to:', navigateToPath);
         
         toast({ 
           title: "Topic Created!", 
-          description: `Your new topic "${result.topic.title}" has been successfully created.`,
+          description: `Your new topic "${result.topic.title}" has been successfully created. Navigating to your topic...`,
           variant: "default"
         });
         
+        // Add a delay before navigation to allow database consistency
+        console.log('⏳ [TOPIC_SUBMIT] Adding delay before navigation for database consistency');
+        await new Promise(resolve => setTimeout(resolve, 750));
+        
         try {
+          console.log('🧭 [TOPIC_SUBMIT] Executing navigation to:', navigateToPath);
           navigate(navigateToPath);
           console.log('✅ [TOPIC_SUBMIT] Navigation successful');
         } catch (navError) {
           console.error("❌ [TOPIC_SUBMIT] Navigation error:", navError);
-          toast({ title: "Navigation Error", description: "Topic created but could not navigate to the topic page.", variant: "destructive" });
+          toast({ 
+            title: "Navigation Issue", 
+            description: "Topic created successfully! Redirecting to category page.", 
+            variant: "default" 
+          });
+          // Fallback navigation to category page
+          navigate(`/members/forum/${category.slug}`);
         }
       } else {
         console.error('❌ [TOPIC_SUBMIT] Topic creation failed:', result);
