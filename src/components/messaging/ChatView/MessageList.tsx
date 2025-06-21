@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import MessageItem from '../MessageItem';
@@ -17,13 +17,12 @@ interface MessageListProps {
 const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, isError, currentUserId, conversationId }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
-    messagesEndRef.current?.scrollIntoView({ behavior });
-  };
+  // Remove automatic scrolling - users can manually scroll as needed
+  // const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
+  //   messagesEndRef.current?.scrollIntoView({ behavior });
+  // };
 
-  useEffect(() => {
-    scrollToBottom(messages.length > 0 ? "smooth" : "auto");
-  }, [messages, conversationId]);
+  // Removed useEffect that automatically scrolled to bottom on messages/conversationId change
 
   if (isLoading) {
     return (
