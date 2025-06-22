@@ -1,7 +1,6 @@
 
 import { useNavigate } from "react-router-dom";
 import { toast } from '@/hooks/use-toast';
-import { ToastAction } from "@/components/ui/toast";
 import { CreateTopicInput, ForumCategory, ForumTopic, ForumPost } from "@/types/forum";
 
 interface UseNewTopicSubmitHandlerProps {
@@ -116,7 +115,7 @@ export const useNewTopicSubmitHandler = ({
         const categoryPagePath = `/members/forum/${category.slug}`;
         console.log('🧭 [TOPIC_SUBMIT] Navigating to category page:', categoryPagePath);
         
-        // Show success toast with "View Topic" button
+        // Show success toast
         const topicPagePath = `/members/forum/${category.slug}/${result.topic.slug}`;
         toast({ 
           title: "Topic Created Successfully!", 
@@ -124,24 +123,8 @@ export const useNewTopicSubmitHandler = ({
           variant: "default",
         });
         
-        // Navigate to category page immediately
-        navigate(categoryPagePath);
-        
-        // Show a second toast after a delay with the view topic option
-        setTimeout(() => {
-          toast({
-            title: "View Your Topic",
-            description: "Click below to view your newly created topic.",
-            action: (
-              <ToastAction 
-                altText="View Topic"
-                onClick={() => navigate(topicPagePath)}
-              >
-                View Topic
-              </ToastAction>
-            ),
-          });
-        }, 1000);
+        // Navigate to the new topic page directly
+        navigate(topicPagePath);
         
       } else {
         console.error('❌ [TOPIC_SUBMIT] Topic creation failed:', result);

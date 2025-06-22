@@ -3,7 +3,6 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { NavigateFunction } from 'react-router-dom';
 import { ForumTopic, ForumPoll, ForumPollOption, ForumPollVote } from '@/types/forum';
 import { toast } from '@/hooks/use-toast';
-import { ToastAction } from "@/components/ui/toast";
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -165,14 +164,6 @@ export const fetchTopicDetails = async (
         title: "Topic Not Found",
         description: "The topic you're looking for doesn't exist or is still being processed. Please try refreshing the page or check back in a moment.",
         variant: "destructive",
-        action: (
-          <ToastAction 
-            altText="Refresh Page"
-            onClick={() => window.location.reload()}
-          >
-            Refresh Page
-          </ToastAction>
-        ),
       });
       navigate('/members/forum', { replace: true });
     } else if (err.code !== 'PGRST201' && !err.message.includes("JSON object requested, single row returned") && !err.message.includes("multiple rows returned")) { 
