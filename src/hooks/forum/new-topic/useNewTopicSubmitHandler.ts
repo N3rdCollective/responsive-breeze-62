@@ -1,6 +1,7 @@
 
 import { useNavigate } from "react-router-dom";
 import { toast } from '@/hooks/use-toast';
+import { ToastAction } from "@/components/ui/toast";
 import { CreateTopicInput, ForumCategory, ForumTopic, ForumPost } from "@/types/forum";
 
 interface UseNewTopicSubmitHandlerProps {
@@ -132,12 +133,12 @@ export const useNewTopicSubmitHandler = ({
             title: "View Your Topic",
             description: "Click below to view your newly created topic.",
             action: (
-              <button 
+              <ToastAction 
+                altText="View Topic"
                 onClick={() => navigate(topicPagePath)}
-                className="inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
               >
                 View Topic
-              </button>
+              </ToastAction>
             ),
           });
         }, 1000);

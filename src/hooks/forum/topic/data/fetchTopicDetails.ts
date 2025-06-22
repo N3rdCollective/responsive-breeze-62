@@ -3,6 +3,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { NavigateFunction } from 'react-router-dom';
 import { ForumTopic, ForumPoll, ForumPollOption, ForumPollVote } from '@/types/forum';
 import { toast } from '@/hooks/use-toast';
+import { ToastAction } from "@/components/ui/toast";
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -165,12 +166,12 @@ export const fetchTopicDetails = async (
         description: "The topic you're looking for doesn't exist or is still being processed. Please try refreshing the page or check back in a moment.",
         variant: "destructive",
         action: (
-          <button 
+          <ToastAction 
+            altText="Refresh Page"
             onClick={() => window.location.reload()}
-            className="inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
           >
             Refresh Page
-          </button>
+          </ToastAction>
         ),
       });
       navigate('/members/forum', { replace: true });
