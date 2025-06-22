@@ -3,6 +3,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import MusicPlayer from "./components/MusicPlayer";
 import { ThemeProvider } from "./components/providers/ThemeProvider";
 import { QueryProvider } from "./components/providers/QueryProvider";
 import { AnalyticsProvider } from "./components/providers/AnalyticsProvider";
@@ -106,6 +107,7 @@ function App() {
                       </>
                     } />
                   </Routes>
+                  <MusicPlayer />
                   <Toaster />
                 </ErrorBoundary>
               </AnalyticsProvider>
