@@ -10,7 +10,7 @@ const RedirectNewTopic = () => {
   }
 
   // Redirect to the correct new topic page structure.
-  return <Navigate to={`/forum/new-topic/${categorySlug}`} replace />;
+  return <Navigate to={`/members/forum/${categorySlug}/new-topic`} replace />;
 };
 
 export default RedirectNewTopic;

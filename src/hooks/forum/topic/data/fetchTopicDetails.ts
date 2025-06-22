@@ -164,10 +164,14 @@ export const fetchTopicDetails = async (
         title: "Topic Not Found",
         description: "The topic you're looking for doesn't exist or is still being processed. Please try refreshing the page or check back in a moment.",
         variant: "destructive",
-        action: {
-          altText: "Refresh Page",
-          onClick: () => window.location.reload(),
-        },
+        action: (
+          <button 
+            onClick={() => window.location.reload()}
+            className="inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+          >
+            Refresh Page
+          </button>
+        ),
       });
       navigate('/members/forum', { replace: true });
     } else if (err.code !== 'PGRST201' && !err.message.includes("JSON object requested, single row returned") && !err.message.includes("multiple rows returned")) { 

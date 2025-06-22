@@ -115,26 +115,32 @@ export const useNewTopicSubmitHandler = ({
         const categoryPagePath = `/members/forum/${category.slug}`;
         console.log('🧭 [TOPIC_SUBMIT] Navigating to category page:', categoryPagePath);
         
-        // Show success toast with "View Topic" action
+        // Show success toast with "View Topic" button
         const topicPagePath = `/members/forum/${category.slug}/${result.topic.slug}`;
         toast({ 
           title: "Topic Created Successfully!", 
           description: `Your new topic "${result.topic.title}" has been created.`,
           variant: "default",
-          action: {
-            altText: "View Topic",
-            onClick: () => {
-              // Add a small delay before navigating to ensure database consistency
-              setTimeout(() => {
-                console.log('🧭 [TOPIC_SUBMIT] Navigating to topic via action button:', topicPagePath);
-                navigate(topicPagePath);
-              }, 1000);
-            },
-          },
         });
         
         // Navigate to category page immediately
         navigate(categoryPagePath);
+        
+        // Show a second toast after a delay with the view topic option
+        setTimeout(() => {
+          toast({
+            title: "View Your Topic",
+            description: "Click below to view your newly created topic.",
+            action: (
+              <button 
+                onClick={() => navigate(topicPagePath)}
+                className="inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+              >
+                View Topic
+              </button>
+            ),
+          });
+        }, 1000);
         
       } else {
         console.error('❌ [TOPIC_SUBMIT] Topic creation failed:', result);

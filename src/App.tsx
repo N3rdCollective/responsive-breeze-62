@@ -11,6 +11,7 @@ import { Toaster } from "./components/ui/toaster";
 import ErrorBoundary from "./components/ErrorBoundary";
 import RouteErrorElement from "./components/RouteErrorElement";
 import StaffLayout from "./components/layouts/StaffLayout";
+import RedirectNewTopic from "./components/utility/RedirectNewTopic";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import News from "./pages/News";
@@ -86,9 +87,11 @@ function App() {
                             <Route path="/members/forum/:categorySlug" element={<ForumCategoryPage />} />
                             <Route path="/members/forum/:categorySlug/:topicSlug" element={<ForumTopicPage />} />
                             <Route path="/members/forum/:categorySlug/new-topic" element={<NewForumTopicPage />} />
+                            <Route path="/members/forum/:categorySlug/new" element={<RedirectNewTopic />} />
                             <Route path="/forum/:categorySlug" element={<ForumCategoryPage />} />
                             <Route path="/forum/:categorySlug/:topicSlug" element={<ForumTopicPage />} />
                             <Route path="/forum/:categorySlug/new-topic" element={<NewForumTopicPage />} />
+                            <Route path="/forum/:categorySlug/new" element={<RedirectNewTopic />} />
                             <Route path="/forum/initiate-search" element={<ForumInitiateSearchPage />} />
                             <Route path="/forum/search" element={<ForumSearchResultsPage />} />
                             <Route path="/contact" element={<Contact />} />
