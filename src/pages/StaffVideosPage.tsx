@@ -4,8 +4,8 @@ import { useStaffRole } from "@/hooks/useStaffRole";
 import LoadingSpinner from "@/components/staff/LoadingSpinner";
 import AccessDenied from "@/components/staff/news/AccessDenied";
 import TitleUpdater from "@/components/TitleUpdater";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Video } from "lucide-react";
+import { HomeSettingsProvider } from "@/components/staff/home/context/HomeSettingsContext";
+import VideosTabContent from "@/components/staff/home/components/VideosTabContent";
 
 const StaffVideosPage = () => {
   const { userRole, isLoading, staffName } = useStaffRole();
@@ -26,7 +26,7 @@ const StaffVideosPage = () => {
   }
   
   return (
-    <>
+    <HomeSettingsProvider>
       <TitleUpdater title="Featured Videos Management" />
       <div className="container mx-auto p-4 max-w-7xl">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
@@ -38,21 +38,9 @@ const StaffVideosPage = () => {
           </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Video className="h-5 w-5" />
-              Video Management
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Video management functionality will be implemented here.
-            </p>
-          </CardContent>
-        </Card>
+        <VideosTabContent />
       </div>
-    </>
+    </HomeSettingsProvider>
   );
 };
 
