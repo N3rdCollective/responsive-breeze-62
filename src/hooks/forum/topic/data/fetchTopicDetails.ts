@@ -11,7 +11,7 @@ export const fetchTopicDetails = async (
   supabase: SupabaseClient,
   toastFn: typeof toast,
   navigate: NavigateFunction,
-  currentUserId?: string | null, // For checking current user's vote
+  currentUserId?: string | null,
   retryCount: number = 0
 ): Promise<{topic: ForumTopic | null, categorySlug: string | null}> => {
   if (!paramTopicSlug) {
@@ -19,11 +19,12 @@ export const fetchTopicDetails = async (
     return { topic: null, categorySlug: null};
   }
 
-  const maxRetries = 3;
-  const retryDelay = 500;
+  const maxRetries = 5; // Increased retries for newly created topics
+  const baseRetryDelay = 750; // Increased base delay
+  const retryDelay = baseRetryDelay * (retryCount + 1); // Progressive delay
 
   try {
-    console.log(`[fetchTopicDetails] Fetching topic by slug: ${paramTopicSlug} (attempt ${retryCount + 1})`);
+    console.log(`[fetchTopicDetails] Fetching topic by slug: ${paramTopicSlug} (attempt ${retryCount + 1}/${maxRetries + 1})`);
     
     const { data: topicData, error: topicError } = await supabase
       .from('forum_topics')
@@ -54,7 +55,7 @@ export const fetchTopicDetails = async (
     if (topicError) {
       console.error('[fetchTopicDetails] Topic fetch error from Supabase:', topicError);
       
-      // If it's a "not found" error and we haven't exceeded retries, try again
+      // If it's a "not found" error and we haven't exceeded retries, try again with progressive delay
       if ((topicError.code === 'PGRST116' || topicError.message.includes('JSON object requested, multiple') || topicError.message.includes('0 rows')) && retryCount < maxRetries) {
         console.log(`[fetchTopicDetails] Topic not found, retrying in ${retryDelay}ms (attempt ${retryCount + 1}/${maxRetries + 1})`);
         await delay(retryDelay);
@@ -110,7 +111,7 @@ export const fetchTopicDetails = async (
     if (!topicData) {
       console.warn('[fetchTopicDetails] Topic not found in DB for slug:', paramTopicSlug, '(topicData is null/undefined)');
       
-      // Retry if we haven't exceeded max retries
+      // Retry if we haven't exceeded max retries with progressive delay
       if (retryCount < maxRetries) {
         console.log(`[fetchTopicDetails] No topic data, retrying in ${retryDelay}ms (attempt ${retryCount + 1}/${maxRetries + 1})`);
         await delay(retryDelay);
@@ -127,10 +128,6 @@ export const fetchTopicDetails = async (
         let totalVotes = 0;
         processedTopicData.poll.options = processedTopicData.poll.options.map(opt => {
             const votesForOption = (opt as any).votes as ForumPollVote[] || [];
-            // Ensure vote_count from DB is used, if the trigger worked. Otherwise, calculate.
-            // The `vote_count` on `forum_poll_options` should be the source of truth.
-            // Here, we are primarily interested in the current user's vote.
-            // totalVotes += opt.vote_count; // This is now directly on the option from DB
             
             const userVoteOnThisOption = currentUserId ? votesForOption.find(v => v.user_id === currentUserId) : null;
             if (userVoteOnThisOption) {
@@ -164,9 +161,13 @@ export const fetchTopicDetails = async (
     
     if (err.message === 'Topic not found' || (err.details && err.details.includes('0 rows'))) {
       toastFn({ 
-        title: "Error loading topic",
-        description: "The topic could not be found. It may still be processing, please try refreshing the page.",
-        variant: "destructive"
+        title: "Topic Not Found",
+        description: "The topic you're looking for doesn't exist or is still being processed. Please try refreshing the page or check back in a moment.",
+        variant: "destructive",
+        action: {
+          altText: "Refresh Page",
+          onClick: () => window.location.reload(),
+        },
       });
       navigate('/members/forum', { replace: true });
     } else if (err.code !== 'PGRST201' && !err.message.includes("JSON object requested, single row returned") && !err.message.includes("multiple rows returned")) { 

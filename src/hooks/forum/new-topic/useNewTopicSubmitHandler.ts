@@ -111,33 +111,31 @@ export const useNewTopicSubmitHandler = ({
       console.log('🎯 [TOPIC_SUBMIT] createTopic result:', result);
       
       if (result && result.topic) {
-        const navigateToPath = `/members/forum/${category.slug}/${result.topic.slug}`;
-        console.log('🧭 [TOPIC_SUBMIT] Preparing to navigate to:', navigateToPath);
+        // Navigate to category page first (safer navigation)
+        const categoryPagePath = `/members/forum/${category.slug}`;
+        console.log('🧭 [TOPIC_SUBMIT] Navigating to category page:', categoryPagePath);
         
+        // Show success toast with "View Topic" action
+        const topicPagePath = `/members/forum/${category.slug}/${result.topic.slug}`;
         toast({ 
-          title: "Topic Created!", 
-          description: `Your new topic "${result.topic.title}" has been successfully created. Navigating to your topic...`,
-          variant: "default"
+          title: "Topic Created Successfully!", 
+          description: `Your new topic "${result.topic.title}" has been created.`,
+          variant: "default",
+          action: {
+            altText: "View Topic",
+            onClick: () => {
+              // Add a small delay before navigating to ensure database consistency
+              setTimeout(() => {
+                console.log('🧭 [TOPIC_SUBMIT] Navigating to topic via action button:', topicPagePath);
+                navigate(topicPagePath);
+              }, 1000);
+            },
+          },
         });
         
-        // Add a delay before navigation to allow database consistency
-        console.log('⏳ [TOPIC_SUBMIT] Adding delay before navigation for database consistency');
-        await new Promise(resolve => setTimeout(resolve, 750));
+        // Navigate to category page immediately
+        navigate(categoryPagePath);
         
-        try {
-          console.log('🧭 [TOPIC_SUBMIT] Executing navigation to:', navigateToPath);
-          navigate(navigateToPath);
-          console.log('✅ [TOPIC_SUBMIT] Navigation successful');
-        } catch (navError) {
-          console.error("❌ [TOPIC_SUBMIT] Navigation error:", navError);
-          toast({ 
-            title: "Navigation Issue", 
-            description: "Topic created successfully! Redirecting to category page.", 
-            variant: "default" 
-          });
-          // Fallback navigation to category page
-          navigate(`/members/forum/${category.slug}`);
-        }
       } else {
         console.error('❌ [TOPIC_SUBMIT] Topic creation failed:', result);
         if (!result) {
@@ -149,7 +147,7 @@ export const useNewTopicSubmitHandler = ({
         } else if (result && !result.topic) {
           toast({
             title: "Topic Data Missing",
-            description: "Topic was created but data is incomplete. Cannot navigate.",
+            description: "Topic was created but data is incomplete. Please refresh the page.",
             variant: "destructive"
           });
         }
