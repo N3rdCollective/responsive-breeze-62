@@ -1,7 +1,5 @@
 
 import React, { useEffect, useState } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { FeaturedArtist as FeaturedArtistType } from "@/components/news/types/newsTypes";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -44,8 +42,6 @@ const ArtistsPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      
       {/* Featured Artists of the Month section */}
       <RelatedArtists />
       
@@ -78,8 +74,6 @@ const ArtistsPage = () => {
           </div>
         )}
       </div>
-      
-      <Footer />
     </div>
   );
 };

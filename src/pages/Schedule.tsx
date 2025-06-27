@@ -1,7 +1,5 @@
 
 import { useQuery } from "@tanstack/react-query";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, parseISO, compareAsc, parse } from "date-fns";
@@ -95,7 +93,6 @@ const Schedule = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
       <main className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold text-black dark:text-[#FFD700] mb-8">Radio Schedule</h1>
@@ -173,7 +170,6 @@ const Schedule = () => {
           )}
         </div>
       </main>
-      <Footer />
     </div>
   );
 };

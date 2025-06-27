@@ -1,6 +1,4 @@
 
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,7 +30,6 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
       <div className="max-w-2xl mx-auto px-4 pt-24 pb-16">
         <div className="space-y-6">
           <div className="space-y-2 text-center">
@@ -87,9 +84,6 @@ const Contact = () => {
             </Button>
           </form>
         </div>
-      </div>
-      <div className="mb-20">
-        <Footer />
       </div>
     </div>
   );

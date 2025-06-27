@@ -1,8 +1,6 @@
 
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import NewsList from "@/components/news/NewsList";
 
@@ -17,7 +15,6 @@ const News = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
       <main className="pt-16">
         <section className="relative bg-muted text-foreground py-16 sm:py-20 lg:py-24">
           <div className="absolute inset-0">
@@ -64,7 +61,6 @@ const News = () => {
           </div>
         </section>
       </main>
-      <Footer />
     </div>
   );
 };

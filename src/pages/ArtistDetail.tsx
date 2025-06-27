@@ -3,8 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { FeaturedArtist } from '@/components/news/types/newsTypes';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ExternalLink, Instagram, Twitter, Youtube, Music } from 'lucide-react';
 import RelatedArtists from '@/components/artists/RelatedArtists';
@@ -44,8 +42,7 @@ const ArtistDetail = () => {
 
   if (isLoading) {
     return (
-      <>
-        <Navbar />
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12">
           <Skeleton className="h-12 w-2/3 mb-6" />
           <Skeleton className="h-64 w-full mb-6" />
@@ -58,28 +55,23 @@ const ArtistDetail = () => {
             <Skeleton className="h-8 w-8" />
           </div>
         </div>
-        <Footer />
-      </>
+      </div>
     );
   }
 
   if (!artist) {
     return (
-      <>
-        <Navbar />
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12 text-center">
           <h1 className="text-2xl font-bold mb-4">Artist Not Found</h1>
           <p>Sorry, we couldn't find the artist you're looking for.</p>
         </div>
-        <Footer />
-      </>
+      </div>
     );
   }
 
   return (
-    <>
-      <Navbar />
-      
+    <div className="min-h-screen bg-background">
       {/* Featured Artists Section at the top */}
       <RelatedArtists currentArtistId={id} />
       
@@ -161,8 +153,7 @@ const ArtistDetail = () => {
           </div>
         </div>
       </div>
-      <Footer />
-    </>
+    </div>
   );
 };
 

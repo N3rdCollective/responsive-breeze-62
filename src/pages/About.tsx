@@ -1,6 +1,5 @@
+
 import { useState, useEffect } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,7 +56,6 @@ const About = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
         <div className="max-w-3xl mx-auto text-center mb-16 animate-fadeIn">
           <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl mb-6">
@@ -119,7 +117,6 @@ const About = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };

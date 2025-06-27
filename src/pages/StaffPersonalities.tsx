@@ -1,6 +1,4 @@
 
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import StaffHeader from "@/components/staff/StaffHeader";
 import PersonalityEditor from "@/components/staff/personalities/PersonalityEditor";
 import { useStaffRole } from "@/hooks/useStaffRole";
@@ -42,7 +40,6 @@ const StaffPersonalities = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
       <div className="pt-16 pb-24">
         <div className="container mx-auto px-6">
           <StaffHeader staffName={staffName} isAdmin={userRole === "admin" || userRole === "super_admin"} />
@@ -51,7 +48,6 @@ const StaffPersonalities = () => {
         </div>
         <PersonalityEditor />
       </div>
-      <Footer />
     </div>
   );
 };

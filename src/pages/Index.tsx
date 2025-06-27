@@ -1,6 +1,5 @@
 
 import React, { useState } from "react";
-import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero"; 
 import LiveShowBanner from "@/components/LiveShowBanner";
 import HomeNewsSection from "@/components/home/HomeNewsSection";
@@ -8,7 +7,6 @@ import PersonalitySlider from "@/components/home/PersonalitySlider";
 import VideoGallery from "@/components/VideoGallery";
 import FeaturedArtistSection from "@/components/home/FeaturedArtistSection";
 import TitleUpdater from "@/components/TitleUpdater";
-import Footer from "@/components/Footer";
 import AuthModal from "@/components/auth/AuthModal";
 import PageLoader from "@/components/general/PageLoader";
 import StatsSection from "@/components/home/StatsSection";
@@ -44,7 +42,6 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <TitleUpdater />
-      <Navbar />
       
       {settings.show_hero && (
         <Hero
@@ -88,7 +85,6 @@ const Index = () => {
         buttonText={homepageContent.cta_button_text}
       />
 
-      <Footer />
       <AuthModal open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen} />
     </div>
   );
