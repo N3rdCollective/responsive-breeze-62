@@ -11,7 +11,6 @@ import AuthModal from "@/components/auth/AuthModal";
 import PageLoader from "@/components/general/PageLoader";
 import StatsSection from "@/components/home/StatsSection";
 import CtaSection from "@/components/home/CtaSection";
-import SongRequestWidget from "@/components/SongRequestWidget";
 import { useHomepageData } from "@/hooks/useHomepageData";
 
 const Index = () => {
@@ -72,10 +71,6 @@ const Index = () => {
           {showFeaturedArtist && <FeaturedArtistSection />}
           {settings.show_news_section && <HomeNewsSection onAuthModalOpen={handleAuthModalOpen} />}
           {settings.show_personalities && <PersonalitySlider />}
-          
-          <div className="w-full max-w-none">
-            <SongRequestWidget />
-          </div>
         </div>
       </div>
 
