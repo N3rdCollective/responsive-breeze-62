@@ -17,7 +17,7 @@ const ForumRichTextEditor: React.FC<ForumRichTextEditorProps> = ({
   id = 'forum-editor',
   label,
   height = 250,
-  placeholder,
+  placeholder = 'Click anywhere to start typing...',
 }) => {
   return (
     <RichTextEditor
