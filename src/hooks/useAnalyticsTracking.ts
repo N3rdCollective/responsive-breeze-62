@@ -16,6 +16,7 @@ interface AnalyticsEvent {
 export const useAnalyticsTracking = () => {
   const { user } = useAuth();
   const lastTrackedPage = useRef<string | null>(null);
+  const lastDetectedDevice = useRef<string | null>(null);
   const trackingQueue = useRef<AnalyticsEvent[]>([]);
   const isProcessing = useRef(false);
 
@@ -37,6 +38,8 @@ export const useAnalyticsTracking = () => {
 
     try {
       for (const event of events) {
+        console.log('Analytics: Processing event for', event.page_path, 'with device:', event.device_info);
+        
         const { error } = await supabase
           .from('analytics')
           .insert({
@@ -54,6 +57,8 @@ export const useAnalyticsTracking = () => {
           if (trackingQueue.current.length < 10) {
             trackingQueue.current.push(event);
           }
+        } else {
+          console.log('Analytics: Successfully tracked event');
         }
       }
     } catch (error) {
@@ -79,6 +84,16 @@ export const useAnalyticsTracking = () => {
 
     try {
       const deviceInfo = detectDevice();
+      const deviceKey = `${deviceInfo.type}-${deviceInfo.browser}-${deviceInfo.os}`;
+      
+      // Force new session if device type changed (helps with testing)
+      if (lastDetectedDevice.current && lastDetectedDevice.current !== deviceKey) {
+        localStorage.removeItem('analytics_session_id');
+        localStorage.removeItem('analytics_session_timestamp');
+        console.log('Analytics: Device changed, creating new session');
+      }
+      lastDetectedDevice.current = deviceKey;
+      
       const sessionId = getOrCreateSessionId();
       
       const event: AnalyticsEvent = {
@@ -100,7 +115,7 @@ export const useAnalyticsTracking = () => {
       // Process queue after a short delay to batch events
       setTimeout(processQueue, 1000);
       
-      console.log('Analytics: Page view tracked', pagePath);
+      console.log('Analytics: Page view queued for', pagePath, 'as', deviceInfo.type);
     } catch (error) {
       console.error('Error tracking page view:', error);
     }
