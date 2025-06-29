@@ -53,13 +53,6 @@ const NotFound = () => {
       return;
     }
     
-    // Handle old homepage content route
-    if (location.pathname === "/staff/homepage") {
-      console.log("Redirecting from /staff/homepage to /staff/home");
-      navigate("/staff/home");
-      return;
-    }
-    
     // Handle old activity logs route
     if (location.pathname === "/staff/activity") {
       console.log("Redirecting from /staff/activity to /staff/activity-logs");
