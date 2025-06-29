@@ -34,6 +34,8 @@ import StaffSystemSettings from "./pages/StaffSystemSettings";
 import StaffForumManagementPage from "./pages/StaffForumManagementPage";
 import StaffModerationPage from "./pages/StaffModerationPage";
 import StaffActivityLogs from "./pages/StaffActivityLogs";
+import StaffSponsors from "./pages/StaffSponsors";
+import StaffPersonalities from "./pages/StaffPersonalities";
 import ForumCategoryPage from "./pages/ForumCategoryPage";
 import ForumTopicPage from "./pages/ForumTopicPage";
 import NewForumTopicPage from "./pages/NewForumTopicPage";
@@ -62,6 +64,8 @@ function App() {
                       <Route path="news/editor/:id?" element={<NewsEditor />} />
                       <Route path="videos" element={<StaffVideosPage />} />
                       <Route path="users" element={<StaffUserManager />} />
+                      <Route path="sponsors" element={<StaffSponsors />} />
+                      <Route path="personalities" element={<StaffPersonalities />} />
                       <Route path="settings" element={<StaffSystemSettings />} />
                       <Route path="forum" element={<StaffForumManagementPage />} />
                       <Route path="moderation" element={<StaffModerationPage />} />

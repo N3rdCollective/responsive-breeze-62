@@ -24,7 +24,8 @@ import {
   MessageSquare,
   LogOut,
   ArrowLeft,
-  BarChart3
+  BarChart3,
+  Star
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -35,6 +36,7 @@ const mainNavigationItems = [
   { title: 'Featured Videos', href: '/staff/videos', icon: Video },
   { title: 'Shows', href: '/staff/shows', icon: Radio },
   { title: 'Users', href: '/staff/users', icon: Users },
+  { title: 'Sponsors', href: '/staff/sponsors', icon: Star },
   { title: 'Forum', href: '/staff/forum', icon: MessageSquare },
   { title: 'Moderation', href: '/staff/moderation', icon: ShieldCheck },
 ];

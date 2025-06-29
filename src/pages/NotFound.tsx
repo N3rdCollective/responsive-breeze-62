@@ -23,47 +23,47 @@ const NotFound = () => {
     // Handle specific route cases for news creation/editing
     if (location.pathname === "/staff/news/edit") {
       console.log("Redirecting from /staff/news/edit to /staff/news/editor");
-      navigate("/staff/news/editor"); // Corrected to /staff/news/editor
+      navigate("/staff/news/editor");
       return;
     }
     
     if (location.pathname === "/staff/news/new") {
       console.log("Redirecting from /staff/news/new to /staff/news/editor");
-      navigate("/staff/news/editor"); // Corrected to /staff/news/editor
+      navigate("/staff/news/editor");
       return;
     }
     
-    // Handle legacy routes for sponsors or system settings if needed
+    // Handle legacy routes for sponsors - redirect singular to plural
     if (location.pathname === "/staff/sponsor") {
       console.log("Redirecting from /staff/sponsor to /staff/sponsors");
-      navigate("/staff/sponsors"); // Ensure /staff/sponsors exists or remove
+      navigate("/staff/sponsors");
       return;
     }
 
     if (location.pathname === "/staff/settings") {
       console.log("Redirecting from /staff/settings to /staff/system-settings");
-      navigate("/staff/system-settings"); // Ensure /staff/system-settings exists or remove
+      navigate("/staff/system-settings");
       return;
     }
     
     // Handle old personalities route
     if (location.pathname === "/staff/personality") {
       console.log("Redirecting from /staff/personality to /staff/personalities");
-      navigate("/staff/personalities"); // Ensure /staff/personalities exists or remove
+      navigate("/staff/personalities");
       return;
     }
     
     // Handle old homepage content route
     if (location.pathname === "/staff/homepage") {
       console.log("Redirecting from /staff/homepage to /staff/home");
-      navigate("/staff/home"); // Ensure /staff/home exists or remove
+      navigate("/staff/home");
       return;
     }
     
     // Handle old activity logs route
     if (location.pathname === "/staff/activity") {
       console.log("Redirecting from /staff/activity to /staff/activity-logs");
-      navigate("/staff/activity-logs"); // Ensure /staff/activity-logs exists or remove
+      navigate("/staff/activity-logs");
       return;
     }
   }, [location.pathname, navigate]);
