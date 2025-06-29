@@ -25,6 +25,7 @@ const SponsorsManagement = () => {
     handleToggleActive,
     handleReorder,
     openAddDialog,
+    openEditDialog,
     closeAddDialog,
     closeEditDialog
   } = useSponsorOperations();
@@ -41,7 +42,7 @@ const SponsorsManagement = () => {
           <SponsorsList 
             sponsors={sponsors}
             isLoading={isLoading}
-            onEdit={openAddDialog}
+            onEdit={openEditDialog}
             onDelete={handleDeleteSponsor}
             onReorder={handleReorder}
             onToggleActive={handleToggleActive}

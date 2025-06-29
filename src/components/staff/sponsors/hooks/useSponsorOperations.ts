@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useSponsorsData } from "./useSponsorsData";
 import { useSponsorForm } from "./useSponsorForm";
