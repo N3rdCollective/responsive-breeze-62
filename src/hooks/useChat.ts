@@ -15,11 +15,16 @@ export const useChat = (roomId?: string) => {
   const [onlineUsers, setOnlineUsers] = useState<ChatPresence[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to bottom of messages
+  // Scroll to bottom of messages within the chat container
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (scrollAreaRef.current) {
+      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
+    }
   }, []);
 
   // Load chat rooms
@@ -197,7 +202,7 @@ export const useChat = (roomId?: string) => {
     isSending,
     sendMessage,
     setCurrentRoom,
-    messagesEndRef,
+    scrollAreaRef,
     isStaff
   };
 };

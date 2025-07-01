@@ -25,7 +25,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
     isLoading,
     isSending,
     sendMessage,
-    messagesEndRef,
+    scrollAreaRef,
     isStaff
   } = useChat(roomId);
 
@@ -91,7 +91,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
-        <ScrollArea className="flex-1">
+        <ScrollArea ref={scrollAreaRef} className="flex-1">
           <div className="p-2">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
@@ -113,7 +113,6 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
                     onDelete={handleDeleteMessage}
                   />
                 ))}
-                <div ref={messagesEndRef} />
               </div>
             )}
           </div>
