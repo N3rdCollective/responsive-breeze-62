@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -31,9 +30,9 @@ export const useChat = (roomId?: string) => {
   const loadRooms = useCallback(async () => {
     try {
       const roomsData = await fetchChatRooms();
-      setRooms(roomsData);
+      setRooms(roomsData || []);
       
-      if (roomsData.length > 0 && !currentRoom) {
+      if (roomsData && roomsData.length > 0 && !currentRoom) {
         const targetRoom = roomId ? roomsData.find(r => r.id === roomId) : roomsData[0];
         setCurrentRoom(targetRoom || roomsData[0]);
       }
@@ -54,10 +53,12 @@ export const useChat = (roomId?: string) => {
     try {
       setIsLoading(true);
       const messagesData = await fetchChatMessages(currentRoom.id);
-      setMessages(messagesData);
+      console.log('Loaded messages:', messagesData?.length || 0);
+      setMessages(messagesData || []);
       setTimeout(scrollToBottom, 100);
     } catch (error) {
       console.error('Error loading messages:', error);
+      setMessages([]); // Ensure messages is never undefined
       toast({
         title: "Error",
         description: "Failed to load messages",
@@ -92,6 +93,8 @@ export const useChat = (roomId?: string) => {
   useEffect(() => {
     if (!currentRoom || !user) return;
 
+    console.log('Setting up real-time subscriptions for room:', currentRoom.id);
+
     // Subscribe to new messages
     const messagesChannel = supabase
       .channel(`chat-messages-${currentRoom.id}`)
@@ -124,7 +127,10 @@ export const useChat = (roomId?: string) => {
             profile: profile || null
           } as ChatMessage;
           
-          setMessages(prev => [...prev, transformedMessage]);
+          setMessages(prev => {
+            const currentMessages = Array.isArray(prev) ? prev : [];
+            return [...currentMessages, transformedMessage];
+          });
           setTimeout(scrollToBottom, 100);
         }
       )
@@ -138,13 +144,25 @@ export const useChat = (roomId?: string) => {
         },
         (payload) => {
           console.log('Message updated:', payload.new);
-          setMessages(prev => 
-            prev.map(msg => 
-              msg.id === payload.new.id 
-                ? { ...msg, ...payload.new } as ChatMessage
-                : msg
-            )
-          );
+          
+          // If message is deleted, remove it from the list
+          if (payload.new.is_deleted) {
+            console.log('Message deleted, removing from list');
+            setMessages(prev => {
+              const currentMessages = Array.isArray(prev) ? prev : [];
+              return currentMessages.filter(msg => msg.id !== payload.new.id);
+            });
+          } else {
+            // Otherwise, update the message in place
+            setMessages(prev => {
+              const currentMessages = Array.isArray(prev) ? prev : [];
+              return currentMessages.map(msg => 
+                msg.id === payload.new.id 
+                  ? { ...msg, ...payload.new } as ChatMessage
+                  : msg
+              );
+            });
+          }
         }
       )
       .subscribe();
@@ -159,7 +177,7 @@ export const useChat = (roomId?: string) => {
           display_name: presence.display_name,
           online_at: presence.online_at || new Date().toISOString()
         })) as ChatPresence[];
-        setOnlineUsers(users);
+        setOnlineUsers(users || []);
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
         console.log('User joined:', key, newPresences);
@@ -179,6 +197,7 @@ export const useChat = (roomId?: string) => {
       });
 
     return () => {
+      console.log('Cleaning up subscriptions');
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(presenceChannel);
     };
@@ -195,9 +214,9 @@ export const useChat = (roomId?: string) => {
 
   return {
     rooms,
-    messages,
+    messages: Array.isArray(messages) ? messages : [], // Ensure messages is always an array
     currentRoom,
-    onlineUsers,
+    onlineUsers: Array.isArray(onlineUsers) ? onlineUsers : [], // Ensure onlineUsers is always an array
     isLoading,
     isSending,
     sendMessage,

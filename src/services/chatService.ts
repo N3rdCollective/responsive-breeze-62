@@ -3,81 +3,91 @@ import { supabase } from '@/integrations/supabase/client';
 import { ChatRoom, ChatMessage } from '@/types/chat';
 
 export const fetchChatRooms = async (): Promise<ChatRoom[]> => {
-  const { data, error } = await supabase
-    .from('chat_rooms')
-    .select('*')
-    .eq('is_active', true)
-    .order('created_at', { ascending: true });
+  try {
+    const { data, error } = await supabase
+      .from('chat_rooms')
+      .select('*')
+      .eq('is_active', true)
+      .order('created_at', { ascending: true });
 
-  if (error) {
-    console.error('Error fetching chat rooms:', error);
-    throw new Error('Failed to fetch chat rooms');
+    if (error) {
+      console.error('Error fetching chat rooms:', error);
+      throw new Error('Failed to fetch chat rooms');
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Unexpected error in fetchChatRooms:', error);
+    return [];
   }
-
-  return data || [];
 };
 
 export const fetchChatMessages = async (roomId: string, limit = 50): Promise<ChatMessage[]> => {
-  const { data, error } = await supabase
-    .from('chat_messages')
-    .select(`
-      id,
-      room_id,
-      user_id,
-      content,
-      created_at,
-      updated_at,
-      is_deleted
-    `)
-    .eq('room_id', roomId)
-    .eq('is_deleted', false)
-    .order('created_at', { ascending: false })
-    .limit(limit);
+  try {
+    const { data, error } = await supabase
+      .from('chat_messages')
+      .select(`
+        id,
+        room_id,
+        user_id,
+        content,
+        created_at,
+        updated_at,
+        is_deleted
+      `)
+      .eq('room_id', roomId)
+      .eq('is_deleted', false)
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
-  if (error) {
-    console.error('Error fetching chat messages:', error);
-    throw new Error('Failed to fetch chat messages');
-  }
+    if (error) {
+      console.error('Error fetching chat messages:', error);
+      throw new Error('Failed to fetch chat messages');
+    }
 
-  if (!data || data.length === 0) {
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    // Get unique user IDs
+    const userIds = [...new Set(data.map(msg => msg.user_id))];
+    
+    // Fetch profiles for these users
+    const { data: profiles, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, username, display_name, profile_picture')
+      .in('id', userIds);
+
+    if (profileError) {
+      console.error('Error fetching profiles:', profileError);
+      // Continue without profiles rather than failing completely
+    }
+
+    // Create a map of user_id to profile
+    const profileMap = new Map();
+    if (profiles) {
+      profiles.forEach(profile => {
+        profileMap.set(profile.id, profile);
+      });
+    }
+
+    // Transform the data to match our ChatMessage type
+    const transformedData = data.map(item => ({
+      id: item.id,
+      room_id: item.room_id,
+      user_id: item.user_id,
+      content: item.content,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+      is_deleted: item.is_deleted,
+      profile: profileMap.get(item.user_id) || null
+    }));
+
+    return transformedData.reverse() as ChatMessage[];
+  } catch (error) {
+    console.error('Unexpected error in fetchChatMessages:', error);
     return [];
   }
-
-  // Get unique user IDs
-  const userIds = [...new Set(data.map(msg => msg.user_id))];
-  
-  // Fetch profiles for these users
-  const { data: profiles, error: profileError } = await supabase
-    .from('profiles')
-    .select('id, username, display_name, profile_picture')
-    .in('id', userIds);
-
-  if (profileError) {
-    console.error('Error fetching profiles:', profileError);
-    // Continue without profiles rather than failing completely
-  }
-
-  // Create a map of user_id to profile
-  const profileMap = new Map();
-  if (profiles) {
-    profiles.forEach(profile => {
-      profileMap.set(profile.id, profile);
-    });
-  }
-
-  // Transform the data to match our ChatMessage type
-  const transformedData = data.map(item => ({
-    id: item.id,
-    room_id: item.room_id,
-    user_id: item.user_id,
-    content: item.content,
-    created_at: item.created_at,
-    updated_at: item.updated_at,
-    is_deleted: item.is_deleted,
-    profile: profileMap.get(item.user_id) || null
-  }));
-
-  return transformedData.reverse() as ChatMessage[];
 };
 
 export const sendChatMessage = async (roomId: string, content: string): Promise<ChatMessage> => {
@@ -126,6 +136,18 @@ export const sendChatMessage = async (roomId: string, content: string): Promise<
 };
 
 export const deleteChatMessage = async (messageId: string): Promise<void> => {
+  console.log('Attempting to delete message:', messageId);
+  
+  // Get current user to verify authentication
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  
+  if (userError || !userData.user) {
+    console.error('User not authenticated for deletion:', userError);
+    throw new Error('You must be logged in to delete messages');
+  }
+
+  console.log('Authenticated user:', userData.user.id);
+
   const { error } = await supabase
     .from('chat_messages')
     .update({ is_deleted: true })
@@ -133,6 +155,8 @@ export const deleteChatMessage = async (messageId: string): Promise<void> => {
 
   if (error) {
     console.error('Error deleting chat message:', error);
-    throw new Error('Failed to delete message');
+    throw new Error(`Failed to delete message: ${error.message}`);
   }
+
+  console.log('Message deletion successful');
 };
