@@ -22,7 +22,7 @@ export const fetchChatMessages = async (roomId: string, limit = 50): Promise<Cha
     .from('chat_messages')
     .select(`
       *,
-      profile:profiles!chat_messages_user_id_fkey (
+      profiles!inner (
         id,
         username,
         display_name,
@@ -39,7 +39,19 @@ export const fetchChatMessages = async (roomId: string, limit = 50): Promise<Cha
     throw new Error('Failed to fetch chat messages');
   }
 
-  return (data || []).reverse() as ChatMessage[];
+  // Transform the data to match our ChatMessage type
+  const transformedData = (data || []).map(item => ({
+    id: item.id,
+    room_id: item.room_id,
+    user_id: item.user_id,
+    content: item.content,
+    created_at: item.created_at,
+    updated_at: item.updated_at,
+    is_deleted: item.is_deleted,
+    profile: Array.isArray(item.profiles) ? item.profiles[0] : item.profiles
+  }));
+
+  return transformedData.reverse() as ChatMessage[];
 };
 
 export const sendChatMessage = async (roomId: string, content: string): Promise<ChatMessage> => {
@@ -52,7 +64,7 @@ export const sendChatMessage = async (roomId: string, content: string): Promise<
     })
     .select(`
       *,
-      profile:profiles!chat_messages_user_id_fkey (
+      profiles!inner (
         id,
         username,
         display_name,
@@ -66,7 +78,19 @@ export const sendChatMessage = async (roomId: string, content: string): Promise<
     throw new Error('Failed to send message');
   }
 
-  return data as ChatMessage;
+  // Transform the data to match our ChatMessage type
+  const transformedData = {
+    id: data.id,
+    room_id: data.room_id,
+    user_id: data.user_id,
+    content: data.content,
+    created_at: data.created_at,
+    updated_at: data.updated_at,
+    is_deleted: data.is_deleted,
+    profile: Array.isArray(data.profiles) ? data.profiles[0] : data.profiles
+  };
+
+  return transformedData as ChatMessage;
 };
 
 export const deleteChatMessage = async (messageId: string): Promise<void> => {

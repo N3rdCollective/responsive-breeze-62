@@ -106,7 +106,7 @@ export const useChat = (roomId?: string) => {
             .from('chat_messages')
             .select(`
               *,
-              profile:profiles!chat_messages_user_id_fkey (
+              profiles!inner (
                 id,
                 username,
                 display_name,
@@ -117,7 +117,18 @@ export const useChat = (roomId?: string) => {
             .single();
 
           if (data) {
-            setMessages(prev => [...prev, data as ChatMessage]);
+            const transformedMessage = {
+              id: data.id,
+              room_id: data.room_id,
+              user_id: data.user_id,
+              content: data.content,
+              created_at: data.created_at,
+              updated_at: data.updated_at,
+              is_deleted: data.is_deleted,
+              profile: Array.isArray(data.profiles) ? data.profiles[0] : data.profiles
+            } as ChatMessage;
+            
+            setMessages(prev => [...prev, transformedMessage]);
             setTimeout(scrollToBottom, 100);
           }
         }
