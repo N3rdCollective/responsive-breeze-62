@@ -46,7 +46,7 @@ const StaffAnalytics = () => {
     );
   }
 
-  if (!staffRole || !['admin', 'super_admin'].includes(staffRole)) {
+  if (!staffRole || !['admin', 'super_admin', 'moderator'].includes(staffRole)) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
