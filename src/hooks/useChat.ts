@@ -101,36 +101,26 @@ export const useChat = (roomId?: string) => {
         async (payload) => {
           console.log('New message received:', payload.new);
           
-          // Fetch the complete message with profile data
-          const { data } = await supabase
-            .from('chat_messages')
-            .select(`
-              *,
-              profiles!inner (
-                id,
-                username,
-                display_name,
-                profile_picture
-              )
-            `)
-            .eq('id', payload.new.id)
+          // Fetch the user's profile for the new message
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id, username, display_name, profile_picture')
+            .eq('id', payload.new.user_id)
             .single();
 
-          if (data) {
-            const transformedMessage = {
-              id: data.id,
-              room_id: data.room_id,
-              user_id: data.user_id,
-              content: data.content,
-              created_at: data.created_at,
-              updated_at: data.updated_at,
-              is_deleted: data.is_deleted,
-              profile: Array.isArray(data.profiles) ? data.profiles[0] : data.profiles
-            } as ChatMessage;
-            
-            setMessages(prev => [...prev, transformedMessage]);
-            setTimeout(scrollToBottom, 100);
-          }
+          const transformedMessage = {
+            id: payload.new.id,
+            room_id: payload.new.room_id,
+            user_id: payload.new.user_id,
+            content: payload.new.content,
+            created_at: payload.new.created_at,
+            updated_at: payload.new.updated_at,
+            is_deleted: payload.new.is_deleted,
+            profile: profile || null
+          } as ChatMessage;
+          
+          setMessages(prev => [...prev, transformedMessage]);
+          setTimeout(scrollToBottom, 100);
         }
       )
       .on(
