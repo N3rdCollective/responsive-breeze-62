@@ -25,6 +25,7 @@ import Auth from "./pages/Auth";
 import ProfilePage from "./pages/ProfilePage";
 import PublicProfilePage from "./pages/PublicProfilePage";
 import UnifiedMessagesPage from "./pages/UnifiedMessagesPage";
+import ChatPage from "./pages/ChatPage";
 import StaffPanel from "./pages/StaffPanel";
 import StaffAnalytics from "./pages/StaffAnalytics";
 import StaffNewsPage from "./pages/StaffNewsPage";
@@ -101,6 +102,7 @@ function App() {
                             <Route path="/forum/:categorySlug/new" element={<RedirectNewTopic />} />
                             <Route path="/forum/initiate-search" element={<ForumInitiateSearchPage />} />
                             <Route path="/forum/search" element={<ForumSearchResultsPage />} />
+                            <Route path="/chat" element={<ChatPage />} />
                             <Route path="/contact" element={<Contact />} />
                             <Route path="/auth" element={<Auth />} />
                             <Route path="/profile" element={<ProfilePage />} />

@@ -1,43 +1,26 @@
 
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import NavItem from './NavItem';
-import { useAuth } from '@/hooks/useAuth';
+import { Link } from "react-router-dom";
+import NavItem from "./NavItem";
 
 interface DesktopNavProps {
   isScrolled: boolean;
 }
 
 const DesktopNav = ({ isScrolled }: DesktopNavProps) => {
-  const location = useLocation();
-  const { user } = useAuth();
-
-  const navItems = [
-    { href: '/', label: 'Home' },
-    { href: '/news', label: 'News' },
-    { href: '/schedule', label: 'Schedule' },
-    { href: '/personalities', label: 'Personalities' },
-    { href: '/artists', label: 'Artists' },
-    { href: '/members', label: 'Forum' },
-    { href: '/about', label: 'About' },
-    { href: '/contact', label: 'Contact' },
-  ];
-
-  const isHomePage = location.pathname === "/";
-
   return (
-    <nav className="hidden md:flex items-center space-x-8">
-      {navItems.map((item) => (
-        <NavItem 
-          key={item.href} 
-          path={item.href} 
-          label={item.label}
-          isActive={location.pathname === item.href}
-          isHomePage={isHomePage}
-          isScrolled={isScrolled}
-        />
-      ))}
-    </nav>
+    <div className="hidden md:block">
+      <div className="ml-10 flex items-baseline space-x-4">
+        <NavItem to="/" isScrolled={isScrolled}>Home</NavItem>
+        <NavItem to="/about" isScrolled={isScrolled}>About</NavItem>
+        <NavItem to="/news" isScrolled={isScrolled}>News</NavItem>
+        <NavItem to="/schedule" isScrolled={isScrolled}>Schedule</NavItem>
+        <NavItem to="/personalities" isScrolled={isScrolled}>Personalities</NavItem>
+        <NavItem to="/artists" isScrolled={isScrolled}>Artists</NavItem>
+        <NavItem to="/members" isScrolled={isScrolled}>Forum</NavItem>
+        <NavItem to="/chat" isScrolled={isScrolled}>Chat</NavItem>
+        <NavItem to="/contact" isScrolled={isScrolled}>Contact</NavItem>
+      </div>
+    </div>
   );
 };
 

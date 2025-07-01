@@ -1,169 +1,229 @@
 
-import React from 'react';
-import { useLocation } from 'react-router-dom';
-import { useScrollToTopNavigation } from '@/hooks/useScrollToTopNavigation';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
-import { Menu, Mail, User, LogOut, Bell, LogIn, Settings } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/hooks/useAuth';
-import { useUnifiedMessages } from '@/hooks/useUnifiedMessages';
-import NotificationBell from '@/components/notifications/NotificationBell';
-import ThemeToggle from '@/components/navbar/ThemeToggle';
-import { Separator } from '@/components/ui/separator';
-import ScrollToTopLink from '@/components/ui/scroll-to-top-link';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useUnifiedMessages } from "@/hooks/useUnifiedMessages";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Menu, Mail, User, LogOut, Settings } from "lucide-react";
+import ListenButton from "./ListenButton";
+import ThemeToggle from "./ThemeToggle";
+import NotificationBell from "@/components/notifications/NotificationBell";
 
 interface MobileNavProps {
   isScrolled: boolean;
   isHomePage: boolean;
-  onAuthModalOpen?: () => void;
+  onAuthModalOpen: () => void;
 }
 
 const MobileNav = ({ isScrolled, isHomePage, onAuthModalOpen }: MobileNavProps) => {
-  const location = useLocation();
-  const navigate = useScrollToTopNavigation();
-  const { user, logout, isStaff } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+  const { user, logout: userLogout, isStaff } = useAuth();
   const { totalUnreadCount } = useUnifiedMessages();
-  const [open, setOpen] = React.useState(false);
-
-  const navItems = [
-    { href: '/', label: 'Home' },
-    { href: '/news', label: 'News' },
-    { href: '/schedule', label: 'Schedule' },
-    { href: '/personalities', label: 'Personalities' },
-    { href: '/artists', label: 'Artists' },
-    { href: '/members', label: 'Forum' },
-    { href: '/about', label: 'About' },
-    { href: '/contact', label: 'Contact' },
-  ];
 
   const handleLogout = async () => {
     try {
-      await logout();
-      setOpen(false);
-      navigate("/");
+      await userLogout();
+      setIsOpen(false);
     } catch (error) {
       console.error("Logout error:", error);
     }
   };
 
-  const handleAuthAction = () => {
-    setOpen(false);
-    if (onAuthModalOpen) {
-      onAuthModalOpen();
-    } else {
-      navigate('/auth');
-    }
+  const handleLinkClick = () => {
+    setIsOpen(false);
   };
 
-  const handleMessagesClick = () => {
-    navigate("/messages");
+  const getUserInitials = () => {
+    if (user?.email) {
+      return user.email.substring(0, 2).toUpperCase();
+    }
+    return "U";
   };
 
   return (
-    <div className="md:hidden flex items-center space-x-2">
-      {/* Mobile User Controls - Only for authenticated users */}
-      {user && (
-        <div className="flex items-center space-x-2">
-          <NotificationBell mobile isHomePage={isHomePage} isScrolled={isScrolled} />
-          
-          {/* Updated to use unified count */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleMessagesClick}
-            className={`relative h-9 w-9 transition-colors ${
+    <div className="md:hidden">
+      <div className="flex items-center space-x-2">
+        <ListenButton isScrolled={isScrolled} isHomePage={isHomePage} />
+        
+        {user && (
+          <>
+            <NotificationBell isHomePage={isHomePage} isScrolled={isScrolled} />
+            <Button
+              variant="ghost"
+              size="icon"
+              asChild
+              className={`relative transition-colors ${
+                isHomePage && !isScrolled 
+                  ? "text-white hover:text-primary hover:bg-white/10" 
+                  : "text-foreground hover:text-primary hover:bg-accent"
+              }`}
+            >
+              <Link to="/messages">
+                <Mail className="h-5 w-5" />
+                {totalUnreadCount > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-1 -right-1 h-4 w-4 min-w-[1rem] p-0 flex items-center justify-center text-xs rounded-full"
+                  >
+                    {totalUnreadCount > 9 ? '9+' : totalUnreadCount}
+                  </Badge>
+                )}
+              </Link>
+            </Button>
+          </>
+        )}
+
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className={`transition-colors ${
               isHomePage && !isScrolled 
                 ? "text-white hover:text-primary hover:bg-white/10" 
                 : "text-foreground hover:text-primary hover:bg-accent"
-            }`}
-          >
-            <Mail className="h-5 w-5" />
-            {totalUnreadCount > 0 && (
-              <Badge
-                variant="destructive"
-                className="absolute -top-1 -right-1 h-4 w-4 min-w-[1rem] p-0 flex items-center justify-center text-xs rounded-full"
+            }`}>
+              <Menu className="h-6 w-6" />
+              <span className="sr-only">Open menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+            <SheetHeader>
+              <SheetTitle>Menu</SheetTitle>
+            </SheetHeader>
+            <div className="mt-6 flex flex-col space-y-2">
+              <Link 
+                to="/" 
+                className="text-lg font-medium px-2 py-3 rounded-md hover:bg-accent transition-colors"
+                onClick={handleLinkClick}
               >
-                {totalUnreadCount > 9 ? '9+' : totalUnreadCount}
-              </Badge>
-            )}
-          </Button>
-        </div>
-      )}
+                Home
+              </Link>
+              <Link 
+                to="/about" 
+                className="text-lg font-medium px-2 py-3 rounded-md hover:bg-accent transition-colors"
+                onClick={handleLinkClick}
+              >
+                About
+              </Link>
+              <Link 
+                to="/news" 
+                className="text-lg font-medium px-2 py-3 rounded-md hover:bg-accent transition-colors"
+                onClick={handleLinkClick}
+              >
+                News
+              </Link>
+              <Link 
+                to="/schedule" 
+                className="text-lg font-medium px-2 py-3 rounded-md hover:bg-accent transition-colors"
+                onClick={handleLinkClick}
+              >
+                Schedule
+              </Link>
+              <Link 
+                to="/personalities" 
+                className="text-lg font-medium px-2 py-3 rounded-md hover:bg-accent transition-colors"
+                onClick={handleLinkClick}
+              >
+                Personalities
+              </Link>
+              <Link 
+                to="/artists" 
+                className="text-lg font-medium px-2 py-3 rounded-md hover:bg-accent transition-colors"
+                onClick={handleLinkClick}
+              >
+                Artists
+              </Link>
+              <Link 
+                to="/members" 
+                className="text-lg font-medium px-2 py-3 rounded-md hover:bg-accent transition-colors"
+                onClick={handleLinkClick}
+              >
+                Forum
+              </Link>
+              <Link 
+                to="/chat" 
+                className="text-lg font-medium px-2 py-3 rounded-md hover:bg-accent transition-colors"
+                onClick={handleLinkClick}
+              >
+                Chat
+              </Link>
+              <Link 
+                to="/contact" 
+                className="text-lg font-medium px-2 py-3 rounded-md hover:bg-accent transition-colors"
+                onClick={handleLinkClick}
+              >
+                Contact
+              </Link>
 
-      {/* Mobile Menu */}
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-9 w-9">
-            <Menu className="h-5 w-5" />
-            <span className="sr-only">Toggle menu</span>
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="w-64">
-          <nav className="flex flex-col gap-4 mt-6">
-            {navItems.map((item) => (
-              <ScrollToTopLink
-                key={item.href}
-                to={item.href}
-                onClick={() => setOpen(false)}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  location.pathname === item.href ? 'text-primary' : 'text-muted-foreground'
-                }`}
-              >
-                {item.label}
-              </ScrollToTopLink>
-            ))}
-            
-            <Separator />
-            
-            {user ? (
-              <>
-                <ScrollToTopLink
-                  to="/profile"
-                  onClick={() => setOpen(false)}
-                  className="flex items-center text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
-                >
-                  <User className="mr-2 h-4 w-4" />
-                  Profile
-                </ScrollToTopLink>
-                
-                {isStaff && (
-                  <ScrollToTopLink
-                    to="/staff/panel"
-                    onClick={() => setOpen(false)}
-                    className="flex items-center text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
-                  >
-                    <Settings className="mr-2 h-4 w-4" />
-                    Dashboard
-                  </ScrollToTopLink>
+              <div className="border-t pt-4 mt-4">
+                {user ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-3 px-2 py-2">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src="" alt={user.email || "User"} />
+                        <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                      </Avatar>
+                      <span className="font-medium truncate">{user.email}</span>
+                    </div>
+                    
+                    <Link 
+                      to="/profile" 
+                      className="flex items-center space-x-2 px-2 py-3 rounded-md hover:bg-accent transition-colors"
+                      onClick={handleLinkClick}
+                    >
+                      <User className="h-4 w-4" />
+                      <span>Profile</span>
+                    </Link>
+                    
+                    {isStaff && (
+                      <Link 
+                        to="/staff/panel" 
+                        className="flex items-center space-x-2 px-2 py-3 rounded-md hover:bg-accent transition-colors"
+                        onClick={handleLinkClick}
+                      >
+                        <Settings className="h-4 w-4" />
+                        <span>Dashboard</span>
+                      </Link>
+                    )}
+                    
+                    <ThemeToggle mobile />
+                    
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start px-2 py-3 h-auto"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      <span>Log out</span>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Button 
+                      onClick={() => {
+                        onAuthModalOpen();
+                        setIsOpen(false);
+                      }} 
+                      variant="outline" 
+                      className="w-full"
+                    >
+                      Sign In
+                    </Button>
+                    <ThemeToggle mobile />
+                  </div>
                 )}
-                
-                <ThemeToggle mobile isHomePage={isHomePage} isScrolled={isScrolled} />
-                
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center text-sm font-medium transition-colors hover:text-primary text-muted-foreground text-left"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Log out
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={handleAuthAction}
-                  className="flex items-center text-sm font-medium transition-colors hover:text-primary text-muted-foreground text-left"
-                >
-                  <LogIn className="mr-2 h-4 w-4" />
-                  Sign In / Sign Up
-                </button>
-                
-                <ThemeToggle mobile isHomePage={isHomePage} isScrolled={isScrolled} />
-              </>
-            )}
-          </nav>
-        </SheetContent>
-      </Sheet>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
     </div>
   );
 };
