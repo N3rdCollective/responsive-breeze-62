@@ -7,18 +7,20 @@ interface DesktopNavProps {
 }
 
 const DesktopNav = ({ isScrolled }: DesktopNavProps) => {
+  const isHomePage = false; // Desktop nav is not on home page context
+
   return (
     <div className="hidden md:block">
       <div className="ml-10 flex items-baseline space-x-4">
-        <NavItem to="/" isScrolled={isScrolled}>Home</NavItem>
-        <NavItem to="/about" isScrolled={isScrolled}>About</NavItem>
-        <NavItem to="/news" isScrolled={isScrolled}>News</NavItem>
-        <NavItem to="/schedule" isScrolled={isScrolled}>Schedule</NavItem>
-        <NavItem to="/personalities" isScrolled={isScrolled}>Personalities</NavItem>
-        <NavItem to="/artists" isScrolled={isScrolled}>Artists</NavItem>
-        <NavItem to="/members" isScrolled={isScrolled}>Forum</NavItem>
-        <NavItem to="/chat" isScrolled={isScrolled}>Chat</NavItem>
-        <NavItem to="/contact" isScrolled={isScrolled}>Contact</NavItem>
+        <NavItem path="/" label="Home" isActive={false} isHomePage={isHomePage} isScrolled={isScrolled} />
+        <NavItem path="/about" label="About" isActive={false} isHomePage={isHomePage} isScrolled={isScrolled} />
+        <NavItem path="/news" label="News" isActive={false} isHomePage={isHomePage} isScrolled={isScrolled} />
+        <NavItem path="/schedule" label="Schedule" isActive={false} isHomePage={isHomePage} isScrolled={isScrolled} />
+        <NavItem path="/personalities" label="Personalities" isActive={false} isHomePage={isHomePage} isScrolled={isScrolled} />
+        <NavItem path="/artists" label="Artists" isActive={false} isHomePage={isHomePage} isScrolled={isScrolled} />
+        <NavItem path="/members" label="Forum" isActive={false} isHomePage={isHomePage} isScrolled={isScrolled} />
+        <NavItem path="/chat" label="Chat" isActive={false} isHomePage={isHomePage} isScrolled={isScrolled} />
+        <NavItem path="/contact" label="Contact" isActive={false} isHomePage={isHomePage} isScrolled={isScrolled} />
       </div>
     </div>
   );

@@ -147,7 +147,12 @@ export const useChat = (roomId?: string) => {
     const presenceChannel = supabase.channel(`chat-presence-${currentRoom.id}`)
       .on('presence', { event: 'sync' }, () => {
         const newState = presenceChannel.presenceState();
-        const users = Object.values(newState).flat() as ChatPresence[];
+        const users = Object.values(newState).flat().map((presence: any) => ({
+          user_id: presence.user_id || '',
+          username: presence.username || 'User',
+          display_name: presence.display_name,
+          online_at: presence.online_at || new Date().toISOString()
+        })) as ChatPresence[];
         setOnlineUsers(users);
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {

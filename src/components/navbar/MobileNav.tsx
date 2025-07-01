@@ -193,7 +193,7 @@ const MobileNav = ({ isScrolled, isHomePage, onAuthModalOpen }: MobileNavProps) 
                       </Link>
                     )}
                     
-                    <ThemeToggle mobile />
+                    <ThemeToggle isHomePage={false} isScrolled={false} mobile />
                     
                     <Button
                       variant="ghost"
@@ -216,7 +216,7 @@ const MobileNav = ({ isScrolled, isHomePage, onAuthModalOpen }: MobileNavProps) 
                     >
                       Sign In
                     </Button>
-                    <ThemeToggle mobile />
+                    <ThemeToggle isHomePage={false} isScrolled={false} mobile />
                   </div>
                 )}
               </div>
