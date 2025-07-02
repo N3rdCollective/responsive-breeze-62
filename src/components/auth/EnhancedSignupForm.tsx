@@ -45,12 +45,17 @@ export const EnhancedSignupForm: React.FC<EnhancedSignupFormProps> = ({
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🔥 Create Account button clicked!', { formData });
     setLoading(true);
 
     try {
       // Validate form
+      console.log('🔍 Validating form...', { formData, emailExists, usernameExists });
       const validation = validateSignupForm(formData, emailExists, usernameExists);
+      console.log('✅ Validation result:', validation);
+      
       if (!validation.isValid) {
+        console.log('❌ Validation failed:', validation.errors);
         toast({
           title: "Validation Error",
           description: validation.errors.join(', '),
