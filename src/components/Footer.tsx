@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin, Shield } from "lucide-react";
+import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin, Shield, Briefcase } from "lucide-react";
 import SponsorsSection from "@/components/footer/SponsorsSection";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
 
@@ -87,6 +87,15 @@ const Footer = () => {
                   </a>
                 </div>
               )}
+              <div className="flex items-center gap-2 text-sm">
+                <Briefcase className="h-4 w-4 text-primary" />
+                <Link 
+                  to="/careers"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Careers
+                </Link>
+              </div>
             </div>
           </div>
 
