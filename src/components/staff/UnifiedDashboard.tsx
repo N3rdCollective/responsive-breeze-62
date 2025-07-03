@@ -135,6 +135,14 @@ const UnifiedDashboard = () => {
       path: "/staff/analytics",
       color: "purple",
       roles: ["admin", "super_admin"]
+    },
+    {
+      title: "Manage Jobs",
+      description: "Create and manage job postings and applications",
+      icon: Users,
+      path: "/staff/jobs",
+      color: "green",
+      roles: ["admin", "super_admin"]
     }
   ];
 

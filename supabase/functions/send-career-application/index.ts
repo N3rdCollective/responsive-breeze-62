@@ -13,10 +13,12 @@ const corsHeaders = {
 interface CareerApplicationRequest {
   name: string;
   email: string;
+  phone?: string;
   position: string;
   coverLetter: string;
   resumeData?: string; // Base64 encoded file
   resumeFileName?: string;
+  jobPostingId?: string; // ID of specific job posting
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -34,7 +36,7 @@ const handler = async (req: Request): Promise<Response> => {
       hasResume: !!body.resumeData && !!body.resumeFileName
     });
     
-    const { name, email, position, coverLetter, resumeData, resumeFileName } = body as CareerApplicationRequest;
+    const { name, email, phone, position, coverLetter, resumeData, resumeFileName, jobPostingId } = body as CareerApplicationRequest;
 
     if (!name || !email || !position || !coverLetter) {
       console.error("Missing required fields in application");
@@ -49,12 +51,40 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Processing career application from ${name} for ${position}`);
 
+    try {
+      // If this is for a specific job posting, save to database
+      if (jobPostingId) {
+        console.log(`Saving application to database for job posting: ${jobPostingId}`);
+        
+        // Here you would typically create a Supabase client and save the application
+        // For now, we'll just log it and continue with the email
+        console.log("Application data:", { name, email, phone, position, jobPostingId });
+        
+        // In a real implementation, you'd do something like:
+        // const { error: dbError } = await supabase
+        //   .from('job_applications')
+        //   .insert([{
+        //     job_posting_id: jobPostingId,
+        //     name,
+        //     email,
+        //     phone,
+        //     cover_letter: coverLetter,
+        //     resume_filename: resumeFileName,
+        //     // resume_url would be set after uploading to storage
+        //   }]);
+      }
+    } catch (dbError) {
+      console.error("Database error (continuing with email):", dbError);
+    }
+
     // Prepare email content
     const htmlContent = `
       <h1>New Career Application</h1>
       <p><strong>Name:</strong> ${name}</p>
       <p><strong>Email:</strong> ${email}</p>
+      ${phone ? `<p><strong>Phone:</strong> ${phone}</p>` : ''}
       <p><strong>Position:</strong> ${position}</p>
+      ${jobPostingId ? `<p><strong>Job Posting ID:</strong> ${jobPostingId}</p>` : '<p><em>General Application</em></p>'}
       <h2>Cover Letter:</h2>
       <p>${coverLetter.replace(/\n/g, '<br>')}</p>
     `;

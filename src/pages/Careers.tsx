@@ -8,16 +8,50 @@ import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import { Loader2, MapPin, Clock, DollarSign, Building } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { formatDistanceToNow } from "date-fns";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+
+interface JobPosting {
+  id: string;
+  title: string;
+  description: string;
+  requirements?: string;
+  location?: string;
+  employment_type: string;
+  department?: string;
+  salary_range?: string;
+  posted_date: string;
+  application_deadline?: string;
+}
 
 const Careers = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [resume, setResume] = useState<File | null>(null);
   const [position, setPosition] = useState("");
   const [coverLetter, setCoverLetter] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const { data: jobPostings = [], isLoading: jobsLoading } = useQuery({
+    queryKey: ['active-job-postings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('job_postings')
+        .select('*')
+        .eq('is_active', true)
+        .order('posted_date', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    }
+  });
 
   const validateForm = () => {
     if (!name) {
@@ -121,10 +155,12 @@ const Careers = () => {
         body: {
           name,
           email,
+          phone,
           position,
           coverLetter,
           resumeData,
-          resumeFileName
+          resumeFileName,
+          jobPostingId: selectedJobId
         }
       });
       
@@ -147,9 +183,11 @@ const Careers = () => {
       // Clear form
       setName("");
       setEmail("");
+      setPhone("");
       setPosition("");
       setCoverLetter("");
       setResume(null);
+      setSelectedJobId(null);
       
       // Reset file input
       const fileInput = document.getElementById('resume') as HTMLInputElement;
@@ -171,7 +209,7 @@ const Careers = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="max-w-4xl mx-auto px-4 pt-24 pb-16">
-        <div className="space-y-8">
+          <div className="space-y-8">
           <div className="space-y-4 text-center">
             <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl text-foreground">Join Our Team</h1>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -180,9 +218,100 @@ const Careers = () => {
             </p>
           </div>
 
+          {/* Current Job Openings */}
+          {jobsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : jobPostings.length > 0 && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-foreground">Current Openings</h2>
+                <p className="text-muted-foreground">Apply to specific positions below</p>
+              </div>
+              
+              <div className="grid gap-4 md:grid-cols-2">
+                {jobPostings.map((job: JobPosting) => (
+                  <Card 
+                    key={job.id} 
+                    className={`cursor-pointer transition-all hover:shadow-md ${
+                      selectedJobId === job.id ? 'ring-2 ring-primary' : ''
+                    }`}
+                    onClick={() => {
+                      setSelectedJobId(job.id);
+                      setPosition(job.title);
+                    }}
+                  >
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <CardTitle className="text-lg">{job.title}</CardTitle>
+                          <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                            {job.department && (
+                              <div className="flex items-center gap-1">
+                                <Building className="h-3 w-3" />
+                                {job.department}
+                              </div>
+                            )}
+                            {job.location && (
+                              <>
+                                {job.department && <span>•</span>}
+                                <div className="flex items-center gap-1">
+                                  <MapPin className="h-3 w-3" />
+                                  {job.location}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        <Badge variant="secondary">{job.employment_type}</Badge>
+                      </div>
+                    </CardHeader>
+                    
+                    <CardContent className="space-y-3">
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {job.description}
+                      </p>
+                      
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          Posted {formatDistanceToNow(new Date(job.posted_date))} ago
+                        </div>
+                        {job.salary_range && (
+                          <div className="flex items-center gap-1">
+                            <DollarSign className="h-3 w-3" />
+                            {job.salary_range}
+                          </div>
+                        )}
+                      </div>
+
+                      {job.application_deadline && (
+                        <div className="text-xs text-muted-foreground">
+                          Deadline: {new Date(job.application_deadline).toLocaleDateString()}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              
+              <Separator />
+            </div>
+          )}
+
           <div className="grid gap-8 md:grid-cols-2">
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-foreground">Why Join Us?</h2>
+              <h2 className="text-2xl font-semibold text-foreground">
+                {selectedJobId ? 'Apply for this Position' : 'General Application'}
+              </h2>
+              {!selectedJobId && (
+                <p className="text-sm text-muted-foreground">
+                  Don't see a specific opening? Submit a general application and we'll keep you in mind for future opportunities.
+                </p>
+              )}
+              
+              <h3 className="text-lg font-semibold text-foreground">Why Join Us?</h3>
               <ul className="space-y-2 text-muted-foreground">
                 <li>• Creative and dynamic work environment</li>
                 <li>• Opportunity to reach millions of listeners</li>
@@ -216,6 +345,18 @@ const Careers = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="(555) 123-4567"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                     disabled={isSubmitting}
                   />
                 </div>

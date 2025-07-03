@@ -841,6 +841,119 @@ export type Database = {
         }
         Relationships: []
       }
+      job_applications: {
+        Row: {
+          application_status: string
+          applied_at: string
+          cover_letter: string
+          created_at: string
+          email: string
+          id: string
+          job_posting_id: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          resume_filename: string | null
+          resume_url: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          application_status?: string
+          applied_at?: string
+          cover_letter: string
+          created_at?: string
+          email: string
+          id?: string
+          job_posting_id?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          resume_filename?: string | null
+          resume_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          application_status?: string
+          applied_at?: string
+          cover_letter?: string
+          created_at?: string
+          email?: string
+          id?: string
+          job_posting_id?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          resume_filename?: string | null
+          resume_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_applications_job_posting_id_fkey"
+            columns: ["job_posting_id"]
+            isOneToOne: false
+            referencedRelation: "job_postings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_postings: {
+        Row: {
+          application_deadline: string | null
+          created_at: string
+          created_by: string
+          department: string | null
+          description: string
+          employment_type: string
+          id: string
+          is_active: boolean
+          location: string | null
+          posted_date: string
+          requirements: string | null
+          salary_range: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          application_deadline?: string | null
+          created_at?: string
+          created_by: string
+          department?: string | null
+          description: string
+          employment_type?: string
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          posted_date?: string
+          requirements?: string | null
+          salary_range?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          application_deadline?: string | null
+          created_at?: string
+          created_by?: string
+          department?: string | null
+          description?: string
+          employment_type?: string
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          posted_date?: string
+          requirements?: string | null
+          salary_range?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       log_edits: {
         Row: {
           created_at: string

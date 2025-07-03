@@ -36,6 +36,7 @@ import StaffForumManagementPage from "./pages/StaffForumManagementPage";
 import StaffModerationPage from "./pages/StaffModerationPage";
 import StaffActivityLogs from "./pages/StaffActivityLogs";
 import StaffSponsors from "./pages/StaffSponsors";
+import StaffJobsPage from "./pages/StaffJobsPage";
 import StaffPersonalities from "./pages/StaffPersonalities";
 import StaffHomePage from "./pages/StaffHomePage";
 import ForumCategoryPage from "./pages/ForumCategoryPage";
@@ -75,6 +76,7 @@ function App() {
                       <Route path="forum" element={<StaffForumManagementPage />} />
                       <Route path="moderation" element={<StaffModerationPage />} />
                       <Route path="activity" element={<StaffActivityLogs />} />
+                      <Route path="jobs" element={<StaffJobsPage />} />
                     </Route>
 
                     {/* Regular routes with navbar and footer */}
