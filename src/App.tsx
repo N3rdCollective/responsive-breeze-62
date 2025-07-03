@@ -50,6 +50,7 @@ import NewsPost from "./pages/NewsPost";
 import NewsEditor from "./pages/NewsEditor";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import Careers from "./pages/Careers";
 
 function App() {
   return (
@@ -108,6 +109,7 @@ function App() {
                             <Route path="/forum/search" element={<ForumSearchResultsPage />} />
                             <Route path="/chat" element={<ChatPage />} />
                             <Route path="/contact" element={<Contact />} />
+                            <Route path="/careers" element={<Careers />} />
                             <Route path="/auth" element={<Auth />} />
                             <Route path="/profile" element={<ProfilePage />} />
                             <Route path="/profile/:userId" element={<PublicProfilePage />} />
