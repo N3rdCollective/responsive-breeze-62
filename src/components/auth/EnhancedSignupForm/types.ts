@@ -15,8 +15,6 @@ export interface SignupFormData {
   password: string;
   confirmPassword: string;
   username: string;
-  firstName: string;
-  lastName: string;
 }
 
 export interface ValidationErrors {

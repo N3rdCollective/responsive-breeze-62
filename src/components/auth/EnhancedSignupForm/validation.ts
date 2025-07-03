@@ -54,8 +54,6 @@ export interface SignupFormData {
   password: string;
   confirmPassword: string;
   username: string;
-  firstName: string;
-  lastName: string;
 }
 
 export const validateSignupForm = (
@@ -85,9 +83,7 @@ export const validateSignupForm = (
     errors.push('Passwords do not match');
   }
 
-  // Validate required fields
-  if (!formData.firstName.trim()) errors.push('First name is required');
-  if (!formData.lastName.trim()) errors.push('Last name is required');
+  // Validate required fields (username already validated above)
 
   return {
     isValid: errors.length === 0,
