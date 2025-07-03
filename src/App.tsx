@@ -47,6 +47,8 @@ import ArtistsArchivePage from "./pages/ArtistsArchivePage";
 import ArtistDetail from "./pages/ArtistDetail";
 import NewsPost from "./pages/NewsPost";
 import NewsEditor from "./pages/NewsEditor";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 
 function App() {
   return (
@@ -108,6 +110,8 @@ function App() {
                             <Route path="/profile" element={<ProfilePage />} />
                             <Route path="/profile/:userId" element={<PublicProfilePage />} />
                             <Route path="/messages" element={<UnifiedMessagesPage />} />
+                            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                            <Route path="/terms-of-service" element={<TermsOfService />} />
                             <Route path="*" element={<RouteErrorElement />} />
                           </Routes>
                         </main>
