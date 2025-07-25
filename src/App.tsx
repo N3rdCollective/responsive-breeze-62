@@ -90,7 +90,7 @@ function App() {
                             <Route path="/" element={<Index />} />
                             <Route path="/about" element={<About />} />
                             <Route path="/news" element={<News />} />
-                            <Route path="/news/:slug" element={<NewsPost />} />
+                            <Route path="/news/:id" element={<NewsPost />} />
                             <Route path="/schedule" element={<Schedule />} />
                             <Route path="/personalities" element={<Personalities />} />
                             <Route path="/artists" element={<ArtistsPage />} />
