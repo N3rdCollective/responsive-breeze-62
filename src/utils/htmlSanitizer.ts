@@ -45,7 +45,15 @@ export const sanitizeHtml = (htmlString: string): string => {
     FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur', 'onchange', 'onsubmit']
   };
   
-  return DOMPurify.sanitize(htmlString, config);
+  const sanitized = DOMPurify.sanitize(htmlString, config);
+  
+  // Log if content was modified during sanitization
+  if (sanitized !== htmlString && typeof window !== 'undefined') {
+    // Content was sanitized - could indicate XSS attempt
+    console.warn('Content was sanitized during HTML cleaning, possible XSS attempt detected');
+  }
+  
+  return sanitized;
 };
 
 /**
