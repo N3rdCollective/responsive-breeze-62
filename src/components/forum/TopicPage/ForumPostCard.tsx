@@ -8,6 +8,7 @@ import { MessageSquareText, ThumbsUp, Edit3, Trash2, Lock, QuoteIcon, History, M
 import { ForumPost } from '@/types/forum';
 import type { User } from '@supabase/supabase-js';
 import ForumUserProfileInfo from '@/components/forum/ForumUserProfileInfo';
+import { createSafeHtml } from '@/utils/htmlSanitizer';
 
 interface ForumPostCardProps {
   post: ForumPost;
@@ -100,7 +101,7 @@ const ForumPostCard: React.FC<ForumPostCardProps> = ({
         </div>
       </CardHeader>
       <CardContent className="p-4 prose prose-sm dark:prose-invert max-w-none break-words">
-        <div dangerouslySetInnerHTML={{ __html: post.content }} />
+        <div dangerouslySetInnerHTML={createSafeHtml(post.content)} />
         {post.profile?.forum_signature && (
           <div className="mt-4 pt-4 border-t border-border/50">
             <p className="text-sm italic text-muted-foreground whitespace-pre-wrap">{post.profile.forum_signature}</p>

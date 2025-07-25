@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Calendar, User, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
+import { createSafeHtml } from "@/utils/htmlSanitizer";
 
 interface Post {
   id: string;
@@ -178,7 +179,7 @@ const NewsPost = () => {
       
       <div 
         className="prose prose-lg max-w-none dark:prose-invert mb-8"
-        dangerouslySetInnerHTML={{ __html: post.content }}
+        dangerouslySetInnerHTML={createSafeHtml(post.content)}
       />
       
       <style>

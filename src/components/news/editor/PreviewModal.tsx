@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Calendar, User, Tag } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { createSafeHtml } from "@/utils/htmlSanitizer";
 
 interface PreviewModalProps {
   isOpen: boolean;
@@ -93,7 +94,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
           {content ? (
             <div 
               className="prose prose-lg max-w-none dark:prose-invert"
-              dangerouslySetInnerHTML={{ __html: content }}
+              dangerouslySetInnerHTML={createSafeHtml(content)}
             />
           ) : (
             <p className="text-muted-foreground">No content yet. Start writing to see a preview.</p>
