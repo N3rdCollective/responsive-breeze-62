@@ -17,7 +17,7 @@ export const sanitizeHtml = (htmlString: string): string => {
       // Lists
       'ul', 'ol', 'li',
       // Links and media
-      'a', 'img', 'video', 'audio', 'source',
+      'a', 'img', 'video', 'audio', 'source', 'iframe',
       // Tables
       'table', 'thead', 'tbody', 'tr', 'th', 'td',
       // Quotes and code
@@ -30,10 +30,13 @@ export const sanitizeHtml = (htmlString: string): string => {
     ALLOWED_ATTR: [
       // Safe attributes for links
       'href', 'title', 'target', 'rel',
-      // Safe attributes for media
+      // Safe attributes for media and iframes
       'src', 'alt', 'width', 'height', 'controls', 'autoplay', 'muted',
+      'frameborder', 'allowfullscreen', 'allow',
       // Safe formatting attributes
       'class', 'style',
+      // Video embed attributes
+      'data-video',
       // Table attributes
       'colspan', 'rowspan',
       // Other safe attributes
@@ -41,9 +44,38 @@ export const sanitizeHtml = (htmlString: string): string => {
     ],
     ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
     // Remove any scripts, event handlers, or dangerous content
-    FORBID_TAGS: ['script', 'object', 'embed', 'iframe', 'form', 'input', 'textarea', 'button'],
+    FORBID_TAGS: ['script', 'object', 'embed', 'form', 'input', 'textarea', 'button'],
     FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur', 'onchange', 'onsubmit']
   };
+
+  // Add custom hook to validate iframe sources
+  DOMPurify.addHook('beforeSanitizeElements', function (node) {
+    if (node.nodeName === 'IFRAME') {
+      const element = node as Element;
+      const src = element.getAttribute('src');
+      if (src) {
+        // Only allow iframes from trusted video platforms
+        const trustedDomains = [
+          'https://www.youtube.com/embed/',
+          'https://player.vimeo.com/video/',
+          'https://youtube.com/embed/',
+          'https://vimeo.com/embed/'
+        ];
+        
+        const isTrusted = trustedDomains.some(domain => src.startsWith(domain));
+        
+        if (!isTrusted) {
+          console.warn('Blocked iframe from untrusted source:', src);
+          element.remove();
+          return;
+        }
+      } else {
+        // Remove iframes without src attribute
+        element.remove();
+        return;
+      }
+    }
+  });
   
   const sanitized = DOMPurify.sanitize(htmlString, config);
   
