@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useRateLimiting } from "@/hooks/security/useRateLimiting";
 import { useSecurityEventLogger } from "@/hooks/security/useSecurityEventLogger";
+import TitleUpdater from "@/components/TitleUpdater";
 
 const RequestPasswordResetPage = () => {
   const [email, setEmail] = useState("");
@@ -83,6 +84,7 @@ const RequestPasswordResetPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <TitleUpdater title="Reset Password" />
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl">Reset Password</CardTitle>

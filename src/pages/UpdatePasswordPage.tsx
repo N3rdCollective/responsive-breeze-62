@@ -10,6 +10,7 @@ import { AlertCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
+import TitleUpdater from "@/components/TitleUpdater";
 
 const UpdatePasswordPage = () => {
   const [password, setPassword] = useState("");
@@ -127,6 +128,7 @@ const UpdatePasswordPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <TitleUpdater title="Update Password" />
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl">Set New Password</CardTitle>

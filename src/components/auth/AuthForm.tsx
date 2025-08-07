@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -114,6 +114,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                   onChange={(e) => setLoginPassword(e.target.value)}
                   required
                 />
+              </div>
+              
+              <div className="flex justify-end">
+                <Link to="/request-password-reset" className="text-xs text-primary hover:underline">
+                  Forgot password?
+                </Link>
               </div>
               
               <Button type="submit" className="w-full" disabled={loading}>

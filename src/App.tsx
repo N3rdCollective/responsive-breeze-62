@@ -52,6 +52,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Careers from "./pages/Careers";
 import JobPostingDetail from "./pages/JobPostingDetail";
+import RequestPasswordResetPage from "./pages/RequestPasswordResetPage";
+import UpdatePasswordPage from "./pages/UpdatePasswordPage";
 
 function App() {
   return (
@@ -113,6 +115,8 @@ function App() {
                             <Route path="/careers" element={<Careers />} />
                             <Route path="/careers/:id" element={<JobPostingDetail />} />
                             <Route path="/auth" element={<Auth />} />
+                            <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
+                            <Route path="/update-password" element={<UpdatePasswordPage />} />
                             <Route path="/profile" element={<ProfilePage />} />
                             <Route path="/profile/:userId" element={<PublicProfilePage />} />
                             <Route path="/messages" element={<UnifiedMessagesPage />} />
