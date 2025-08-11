@@ -18,6 +18,8 @@ export const sanitizeHtml = (htmlString: string): string => {
       'ul', 'ol', 'li',
       // Links and media
       'a', 'img', 'video', 'audio', 'source', 'iframe',
+
+
       // Tables
       'table', 'thead', 'tbody', 'tr', 'th', 'td',
       // Quotes and code

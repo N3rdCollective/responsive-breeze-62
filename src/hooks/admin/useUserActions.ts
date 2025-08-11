@@ -39,21 +39,23 @@ export const useUserActions = () => {
   const deleteUser = async (userId: string) => {
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.admin.deleteUser(userId);
-
-      if (error) throw error;
+      // Soft-delete: mark the user as deactivated instead of calling admin API from the client
+      const result = await updateUserStatus(userId, 'deactivated');
+      if (!result?.success) {
+        throw new Error('Failed to mark user as deactivated');
+      }
 
       toast({
-        title: "Success",
-        description: "User deleted successfully",
+        title: "User marked for deactivation",
+        description: "An administrator can complete deletion securely via the backend.",
       });
 
-      return { success: true };
+      return { success: true, softDeleted: true };
     } catch (error) {
-      console.error('Error deleting user:', error);
+      console.error('Error soft-deleting user:', error);
       toast({
         title: "Error",
-        description: "Failed to delete user",
+        description: "Failed to update user status",
         variant: "destructive",
       });
       return { success: false, error };

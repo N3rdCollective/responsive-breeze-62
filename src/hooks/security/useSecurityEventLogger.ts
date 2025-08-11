@@ -39,6 +39,11 @@ export const useSecurityEventLogger = () => {
       
       // Get user agent and other client info
       const userAgent = navigator.userAgent;
+
+      // Sanitize URL to avoid logging tokens or query params
+      const safeUrl = (typeof window !== 'undefined' && window.location)
+        ? `${window.location.origin}${window.location.pathname}`
+        : null;
       
       const { error } = await supabase.rpc('log_security_event', {
         p_event_type: eventType,
@@ -48,7 +53,7 @@ export const useSecurityEventLogger = () => {
         p_details: {
           ...details,
           timestamp: new Date().toISOString(),
-          url: window.location.href
+          url: safeUrl
         },
         p_severity: severity
       });
