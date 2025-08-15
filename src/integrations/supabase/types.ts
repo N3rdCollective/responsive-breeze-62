@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -1733,10 +1733,10 @@ export type Database = {
     Functions: {
       check_rate_limit: {
         Args: {
-          p_email: string
           p_attempt_type: string
-          p_time_window?: unknown
+          p_email: string
           p_max_attempts?: number
+          p_time_window?: unknown
         }
         Returns: boolean
       }
@@ -1746,57 +1746,57 @@ export type Database = {
       }
       create_activity_log: {
         Args: {
-          p_staff_id: string
           p_action_type: string
           p_description: string
-          p_entity_type?: string
-          p_entity_id?: string
           p_details?: Json
+          p_entity_id?: string
+          p_entity_type?: string
           p_ip_address?: string
+          p_staff_id: string
         }
         Returns: string
       }
       create_forum_topic_with_post: {
         Args: {
           p_category_id: string
-          p_title: string
-          p_slug: string
           p_content: string
+          p_slug: string
+          p_title: string
         }
         Returns: Json
       }
       get_analytics_summary: {
-        Args: { start_date: string; end_date: string }
+        Args: { end_date: string; start_date: string }
         Returns: {
+          device_breakdown: Json
+          page_path: string
           total_visits: number
           unique_visitors: number
-          page_path: string
           visit_count: number
-          device_breakdown: Json
         }[]
       }
       get_content_reports_with_details: {
         Args: Record<PropertyKey, never>
         Returns: {
-          id: string
-          content_type: string
+          action_created_at: string
+          action_note: string
+          action_type: string
           content_id: string
           content_preview: string
-          report_reason: string
-          status: string
+          content_type: string
           created_at: string
-          updated_at: string
-          reporter_name: string
-          reporter_avatar: string
+          id: string
+          moderator_name: string
+          report_reason: string
+          reported_user_avatar: string
           reported_user_id: string
           reported_user_name: string
-          reported_user_avatar: string
+          reporter_avatar: string
+          reporter_name: string
+          status: string
           topic_id: string
           topic_title: string
-          moderator_name: string
-          action_type: string
-          action_note: string
-          action_created_at: string
+          updated_at: string
         }[]
       }
       get_conversations_with_unread_status: {
@@ -1805,9 +1805,9 @@ export type Database = {
       }
       get_post_page_and_index: {
         Args: {
-          p_topic_id: string
-          p_post_id: string
           p_items_per_page: number
+          p_post_id: string
+          p_topic_id: string
         }
         Returns: {
           page_number: number
@@ -1837,28 +1837,28 @@ export type Database = {
       }
       log_security_event: {
         Args: {
-          p_event_type: string
-          p_user_id?: string
-          p_ip_address?: unknown
-          p_user_agent?: string
           p_details?: Json
+          p_event_type: string
+          p_ip_address?: unknown
           p_severity?: string
+          p_user_agent?: string
+          p_user_id?: string
         }
         Returns: string
       }
       staff_has_permission: {
-        Args: { user_id: string; permission_name: string }
+        Args: { permission_name: string; user_id: string }
         Returns: boolean
       }
       staff_has_role: {
-        Args: { user_id: string; required_roles: string[] }
+        Args: { required_roles: string[]; user_id: string }
         Returns: boolean
       }
       validate_staff_action: {
         Args: {
-          staff_id: string
           action_type: string
           resource_type?: string
+          staff_id: string
           target_id?: string
         }
         Returns: boolean
