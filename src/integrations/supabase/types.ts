@@ -846,6 +846,33 @@ export type Database = {
         }
         Relationships: []
       }
+      job_application_rate_limits: {
+        Row: {
+          email: string
+          first_submission_at: string | null
+          id: string
+          ip_address: unknown | null
+          last_submission_at: string | null
+          submission_count: number | null
+        }
+        Insert: {
+          email: string
+          first_submission_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          last_submission_at?: string | null
+          submission_count?: number | null
+        }
+        Update: {
+          email?: string
+          first_submission_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          last_submission_at?: string | null
+          submission_count?: number | null
+        }
+        Relationships: []
+      }
       job_applications: {
         Row: {
           application_status: string
@@ -1731,6 +1758,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_job_application_rate_limit: {
+        Args: { applicant_email: string }
+        Returns: boolean
+      }
       check_rate_limit: {
         Args: {
           p_attempt_type: string
