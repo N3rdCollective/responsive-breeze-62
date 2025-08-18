@@ -1826,6 +1826,18 @@ export type Database = {
           username: string
         }[]
       }
+      get_public_profile_safe: {
+        Args: { profile_user_id: string }
+        Returns: {
+          bio: string
+          created_at: string
+          display_name: string
+          forum_post_count: number
+          id: string
+          profile_picture: string
+          username: string
+        }[]
+      }
       get_user_role_simple: {
         Args: { user_id: string }
         Returns: string
