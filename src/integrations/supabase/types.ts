@@ -1916,6 +1916,10 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
+      log_profile_access: {
+        Args: { action_description: string; target_profile_id: string }
+        Returns: undefined
+      }
       log_security_event: {
         Args: {
           p_details?: Json
