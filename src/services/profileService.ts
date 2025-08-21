@@ -105,16 +105,16 @@ export interface PublicUserProfileData {
   forum_post_count: number;
 }
 
-// New function to fetch a public user profile by username
+// New function to fetch a public user profile by username - SECURE VERSION
 export const fetchPublicUserProfileByUsername = async (
   username: string
 ): Promise<PublicUserProfileData | null> => {
-  console.log(`Service: Fetching public profile for username: ${username}`);
+  console.log(`Service: Fetching public profile for username: ${username} (using secure function)`);
+  
+  // Use the secure database function that only returns safe, non-sensitive data
   const { data, error } = await supabase
-    .from('profiles')
-    .select('id, username, display_name, bio, profile_picture, role, created_at, is_public, forum_signature, forum_post_count') // Select new fields
-    .eq('username', username)
-    .single(); 
+    .rpc('get_public_profile_by_username', { p_username: username })
+    .maybeSingle();
 
   if (error) {
     console.error("Service: Error fetching public profile by username:", error.message);
@@ -125,31 +125,55 @@ export const fetchPublicUserProfileByUsername = async (
   }
 
   if (data) {
-    console.log("Service: Public profile data found:", data);
-    if (!data.is_public) {
-      return {
-        id: data.id,
-        username: data.username,
-        display_name: data.display_name, 
-        bio: null,
-        avatar_url: null, 
-        role: null,
-        created_at: data.created_at,
-        is_public: false,
-        forum_signature: null, // Don't show signature for private profiles
-        forum_post_count: data.forum_post_count || 0, // Post count can be public
-      };
-    }
+    console.log("Service: Secure public profile data found:", data);
     return {
       id: data.id,
       username: data.username,
       display_name: data.display_name,
       bio: data.bio,
       avatar_url: data.profile_picture, 
-      role: data.role,
+      role: null, // Role is not exposed in public profiles for security
       created_at: data.created_at,
-      is_public: data.is_public,
-      forum_signature: data.forum_signature || null,
+      is_public: true, // If data is returned, profile is public
+      forum_signature: null, // Signature not exposed for security
+      forum_post_count: data.forum_post_count || 0,
+    };
+  }
+
+  return null;
+};
+
+// New function to fetch a public user profile by ID - SECURE VERSION
+export const fetchPublicUserProfileById = async (
+  userId: string
+): Promise<PublicUserProfileData | null> => {
+  console.log(`Service: Fetching public profile for user ID: ${userId} (using secure function)`);
+  
+  // Use the secure database function that only returns safe, non-sensitive data
+  const { data, error } = await supabase
+    .rpc('get_public_profile_by_id', { p_id: userId })
+    .maybeSingle();
+
+  if (error) {
+    console.error("Service: Error fetching public profile by ID:", error.message);
+    if (error.code === 'PGRST116') {
+        return null; 
+    }
+    throw error;
+  }
+
+  if (data) {
+    console.log("Service: Secure public profile data found:", data);
+    return {
+      id: data.id,
+      username: data.username,
+      display_name: data.display_name,
+      bio: data.bio,
+      avatar_url: data.profile_picture, 
+      role: null, // Role is not exposed in public profiles for security
+      created_at: data.created_at,
+      is_public: true, // If data is returned, profile is public
+      forum_signature: null, // Signature not exposed for security
       forum_post_count: data.forum_post_count || 0,
     };
   }
