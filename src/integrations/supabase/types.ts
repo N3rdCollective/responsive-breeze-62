@@ -1899,6 +1899,24 @@ export type Database = {
           username: string
         }[]
       }
+      get_security_events_with_audit: {
+        Args: {
+          p_event_type_filter?: string
+          p_limit?: number
+          p_offset?: number
+          p_severity_filter?: string
+        }
+        Returns: {
+          created_at: string
+          details: Json
+          event_type: string
+          id: string
+          ip_address: unknown
+          severity: string
+          user_agent: string
+          user_id: string
+        }[]
+      }
       get_user_role_simple: {
         Args: { user_id: string }
         Returns: string
