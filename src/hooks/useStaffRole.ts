@@ -8,7 +8,7 @@ export const useStaffRole = () => {
     userRole: staffRole,
     isAuthenticated: isStaff,
     isLoading,
-    staffName: user?.user_metadata?.display_name || user?.user_metadata?.first_name || user?.email || 'Staff Member',
+    staffName: user?.user_metadata?.display_name || user?.user_metadata?.first_name || 'Staff Member', // No email access for security
     isAdmin: staffRole === 'admin' || staffRole === 'super_admin',
     staffId: user?.id || null,
   };

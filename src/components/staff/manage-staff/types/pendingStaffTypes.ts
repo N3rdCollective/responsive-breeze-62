@@ -8,12 +8,14 @@ export interface PendingStaffMember {
 
 export interface StaffMember {
   id: string;
-  email: string;
+  email: string; // Will be placeholder for security
   role: string;
-  display_name: string | null;
-  first_name: string | null;
-  last_name: string | null;
+  display_name?: string | null; // Not available in secure list
+  first_name?: string | null; // Not available in secure list
+  last_name?: string | null; // Not available in secure list
   created_at: string;
+  updated_at: string;
+  hr_permissions: boolean;
 }
 
 export interface PendingStaffTableProps {

@@ -1026,6 +1026,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "log_edits_edited_by_fkey"
+            columns: ["edited_by"]
+            isOneToOne: false
+            referencedRelation: "staff_own_profile"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "log_edits_log_id_fkey"
             columns: ["log_id"]
             isOneToOne: false
@@ -1548,7 +1555,56 @@ export type Database = {
             referencedRelation: "staff"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "staff_activity_logs_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff_own_profile"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      staff_data_audit: {
+        Row: {
+          access_granted: boolean | null
+          access_reason: string | null
+          access_type: string
+          accessed_fields: string[] | null
+          accessor_id: string | null
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          session_info: Json | null
+          target_staff_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          access_granted?: boolean | null
+          access_reason?: string | null
+          access_type: string
+          accessed_fields?: string[] | null
+          accessor_id?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          session_info?: Json | null
+          target_staff_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          access_granted?: boolean | null
+          access_reason?: string | null
+          access_type?: string
+          accessed_fields?: string[] | null
+          accessor_id?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          session_info?: Json | null
+          target_staff_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
       }
       staff_permissions: {
         Row: {
@@ -1758,7 +1814,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      staff_own_profile: {
+        Row: {
+          created_at: string | null
+          hr_permissions: boolean | null
+          id: string | null
+          role: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          hr_permissions?: boolean | null
+          id?: string | null
+          role?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          hr_permissions?: boolean | null
+          id?: string | null
+          role?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       check_job_application_rate_limit: {
@@ -1917,6 +1996,23 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_staff_management_list: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          hr_permissions: boolean
+          id: string
+          role: string
+          updated_at: string
+        }[]
+      }
+      get_staff_sensitive_data: {
+        Args: { target_staff_id: string }
+        Returns: {
+          created_at: string
+          email: string
+        }[]
+      }
       get_user_role_simple: {
         Args: { user_id: string }
         Returns: string
@@ -1925,11 +2021,19 @@ export type Database = {
         Args: { user_id: string }
         Returns: string
       }
+      get_user_staff_role_secure: {
+        Args: { user_id: string }
+        Returns: string
+      }
       increment_topic_view_count: {
         Args: { topic_id_param: string }
         Returns: undefined
       }
       is_user_staff_member: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
+      is_user_staff_member_secure: {
         Args: { user_id: string }
         Returns: boolean
       }
