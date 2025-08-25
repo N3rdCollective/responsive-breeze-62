@@ -2192,6 +2192,10 @@ export type Database = {
         Args: { p_access_type?: string; p_target_profile_id: string }
         Returns: boolean
       }
+      check_staff_profile_access_secure: {
+        Args: { p_access_type: string; p_profile_id: string }
+        Returns: boolean
+      }
       check_user_role: {
         Args: { required_role: string }
         Returns: boolean
