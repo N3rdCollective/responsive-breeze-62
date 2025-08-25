@@ -51,16 +51,19 @@ const JobApplicationsDialog = ({ open, onOpenChange, job, onSuccess }: JobApplic
     queryFn: async () => {
       if (!job?.id) return [];
       
-      const { data, error } = await supabase
-        .from('job_applications')
-        .select('*')
-        .eq('job_posting_id', job.id)
-        .order('applied_at', { ascending: false });
+      // Use the secure function to get HR job applications
+      const { data, error } = await supabase.rpc('get_job_applications_for_hr');
 
       if (error) throw error;
-      return data || [];
+      
+      // Filter by job posting ID if specified
+      const filteredData = job?.id 
+        ? (data || []).filter(app => app.job_posting_id === job.id)
+        : (data || []);
+        
+      return filteredData;
     },
-    enabled: !!job?.id && open
+    enabled: !!job?.id && open && hasHRAccess
   });
 
   const updateApplicationStatus = async (applicationId: string, status: string) => {
@@ -69,6 +72,7 @@ const JobApplicationsDialog = ({ open, onOpenChange, job, onSuccess }: JobApplic
       .update({ 
         application_status: status,
         reviewed_at: new Date().toISOString(),
+        reviewed_by: (await supabase.auth.getUser()).data.user?.id,
         notes: notes || undefined
       })
       .eq('id', applicationId);

@@ -41,16 +41,23 @@ const StaffJobsPage = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('job_postings')
-        .select(`
-          *,
-          application_count:job_applications(count)
-        `)
+        .select('*')
         .order('posted_date', { ascending: false });
 
       if (error) throw error;
+      
+      // Get application counts separately using the secure function
+      let applicationsData = [];
+      try {
+        const { data: appsData } = await supabase.rpc('get_job_applications_for_hr');
+        applicationsData = appsData || [];
+      } catch (error) {
+        console.log('No HR access for application counts');
+      }
+      
       return data.map(job => ({
         ...job,
-        application_count: job.application_count?.[0]?.count || 0
+        application_count: applicationsData.filter(app => app.job_posting_id === job.id).length
       }));
     }
   });
