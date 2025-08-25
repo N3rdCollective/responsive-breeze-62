@@ -178,6 +178,51 @@ export type Database = {
         }
         Relationships: []
       }
+      comprehensive_audit_log: {
+        Row: {
+          action_type: string
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          new_values: Json | null
+          old_values: Json | null
+          record_id: string | null
+          risk_level: string | null
+          session_info: Json | null
+          table_name: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          risk_level?: string | null
+          session_info?: Json | null
+          table_name?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          risk_level?: string | null
+          session_info?: Json | null
+          table_name?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       content_reports: {
         Row: {
           content_id: string
@@ -2155,6 +2200,10 @@ export type Database = {
         Args: { p_retention_days?: number }
         Returns: number
       }
+      cleanup_security_logs: {
+        Args: { retention_days?: number }
+        Returns: number
+      }
       create_activity_log: {
         Args: {
           p_action_type: string
@@ -2175,6 +2224,19 @@ export type Database = {
           p_title: string
         }
         Returns: Json
+      }
+      emergency_security_lockdown: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      enhanced_rate_limit_check: {
+        Args: {
+          p_action_type: string
+          p_max_attempts?: number
+          p_time_window?: unknown
+          p_user_id: string
+        }
+        Returns: boolean
       }
       get_analytics_summary: {
         Args: { end_date: string; start_date: string }
@@ -2232,6 +2294,18 @@ export type Database = {
           resume_url: string
           reviewed_at: string
           reviewed_by: string
+        }[]
+      }
+      get_job_applications_secure: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          application_status: string
+          applied_at: string
+          department: string
+          id: string
+          job_posting_id: string
+          job_title: string
+          name: string
         }[]
       }
       get_own_profile: {
@@ -2364,6 +2438,16 @@ export type Database = {
           severity: string
           user_agent: string
           user_id: string
+        }[]
+      }
+      get_staff_list_secure: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          hr_permissions: boolean
+          id: string
+          role: string
+          updated_at: string
         }[]
       }
       get_staff_management_list: {
