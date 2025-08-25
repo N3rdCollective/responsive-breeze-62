@@ -11,7 +11,8 @@ import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
-import { Download, Mail, Phone, Eye, FileText } from "lucide-react";
+import { Download, Mail, Phone, Eye, FileText, Shield } from "lucide-react";
+import { useHRPermissions } from "@/hooks/staff/useHRPermissions";
 
 interface JobPosting {
   id: string;
@@ -41,6 +42,7 @@ interface JobApplicationsDialogProps {
 
 const JobApplicationsDialog = ({ open, onOpenChange, job, onSuccess }: JobApplicationsDialogProps) => {
   const { toast } = useToast();
+  const { hasHRAccess, isLoading: hrLoading } = useHRPermissions();
   const [selectedApplication, setSelectedApplication] = useState<JobApplication | null>(null);
   const [notes, setNotes] = useState("");
 
@@ -119,9 +121,18 @@ const JobApplicationsDialog = ({ open, onOpenChange, job, onSuccess }: JobApplic
           <DialogTitle>Applications for {job.title}</DialogTitle>
         </DialogHeader>
 
-        {isLoading ? (
+        {hrLoading || isLoading ? (
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : !hasHRAccess ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <Shield className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">HR Access Required</h3>
+            <p className="text-muted-foreground max-w-md">
+              You need HR permissions to view job applications containing sensitive personal information. 
+              Please contact a super admin to request HR access.
+            </p>
           </div>
         ) : applications.length === 0 ? (
           <div className="text-center py-8">
