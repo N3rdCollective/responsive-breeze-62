@@ -846,6 +846,57 @@ export type Database = {
         }
         Relationships: []
       }
+      job_application_audit: {
+        Row: {
+          access_reason: string | null
+          access_type: string
+          accessed_fields: string[] | null
+          accessor_id: string | null
+          application_id: string | null
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          user_agent: string | null
+        }
+        Insert: {
+          access_reason?: string | null
+          access_type: string
+          accessed_fields?: string[] | null
+          accessor_id?: string | null
+          application_id?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+        }
+        Update: {
+          access_reason?: string | null
+          access_type?: string
+          accessed_fields?: string[] | null
+          accessor_id?: string | null
+          application_id?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_application_audit_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "job_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_application_audit_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "job_applications_hr_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_application_rate_limits: {
         Row: {
           email: string
@@ -1023,13 +1074,6 @@ export type Database = {
             columns: ["edited_by"]
             isOneToOne: false
             referencedRelation: "staff"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "log_edits_edited_by_fkey"
-            columns: ["edited_by"]
-            isOneToOne: false
-            referencedRelation: "staff_own_profile"
             referencedColumns: ["id"]
           },
           {
@@ -1555,13 +1599,6 @@ export type Database = {
             referencedRelation: "staff"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "staff_activity_logs_staff_id_fkey"
-            columns: ["staff_id"]
-            isOneToOne: false
-            referencedRelation: "staff_own_profile"
-            referencedColumns: ["id"]
-          },
         ]
       }
       staff_data_audit: {
@@ -1814,32 +1851,44 @@ export type Database = {
       }
     }
     Views: {
-      staff_own_profile: {
+      job_applications_hr_view: {
         Row: {
-          created_at: string | null
-          hr_permissions: boolean | null
+          application_status: string | null
+          applied_at: string | null
+          cover_letter: string | null
+          department: string | null
+          email: string | null
           id: string | null
-          role: string | null
-          updated_at: string | null
+          job_posting_id: string | null
+          job_title: string | null
+          name: string | null
+          notes: string | null
+          phone: string | null
+          resume_filename: string | null
+          resume_url: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
         }
-        Insert: {
-          created_at?: string | null
-          hr_permissions?: boolean | null
-          id?: string | null
-          role?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          hr_permissions?: boolean | null
-          id?: string | null
-          role?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "job_applications_job_posting_id_fkey"
+            columns: ["job_posting_id"]
+            isOneToOne: false
+            referencedRelation: "job_postings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
+      check_application_rate_limit: {
+        Args: { p_email: string; p_ip_address?: unknown }
+        Returns: boolean
+      }
+      check_hr_access_with_audit: {
+        Args: { p_access_type?: string; p_application_id: string }
+        Returns: boolean
+      }
       check_job_application_rate_limit: {
         Args: { applicant_email: string }
         Returns: boolean
@@ -2040,6 +2089,15 @@ export type Database = {
       is_user_staff_simple: {
         Args: { user_id: string }
         Returns: boolean
+      }
+      log_job_application_access_secure: {
+        Args: {
+          p_access_reason?: string
+          p_access_type: string
+          p_accessed_fields?: string[]
+          p_application_id: string
+        }
+        Returns: undefined
       }
       log_profile_access: {
         Args: { action_description: string; target_profile_id: string }
