@@ -1470,6 +1470,7 @@ export type Database = {
           display_name: string | null
           email: string
           first_name: string | null
+          hr_permissions: boolean
           id: string
           last_name: string | null
           profile_picture: string | null
@@ -1481,6 +1482,7 @@ export type Database = {
           display_name?: string | null
           email: string
           first_name?: string | null
+          hr_permissions?: boolean
           id: string
           last_name?: string | null
           profile_picture?: string | null
@@ -1492,6 +1494,7 @@ export type Database = {
           display_name?: string | null
           email?: string
           first_name?: string | null
+          hr_permissions?: boolean
           id?: string
           last_name?: string | null
           profile_picture?: string | null
