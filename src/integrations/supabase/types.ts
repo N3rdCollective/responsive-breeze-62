@@ -251,10 +251,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "conversations_participant1_id_fkey"
+            columns: ["participant1_id"]
+            isOneToOne: false
+            referencedRelation: "safe_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "conversations_participant2_id_fkey"
             columns: ["participant2_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_participant2_id_fkey"
+            columns: ["participant2_id"]
+            isOneToOne: false
+            referencedRelation: "safe_public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -413,6 +427,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "forum_notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "safe_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "forum_notifications_post_id_fkey"
             columns: ["post_id"]
             isOneToOne: false
@@ -424,6 +445,13 @@ export type Database = {
             columns: ["recipient_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "safe_public_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -511,6 +539,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "forum_poll_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "safe_public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       forum_polls: {
@@ -559,6 +594,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "forum_polls_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "safe_public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       forum_post_edit_history: {
@@ -599,6 +641,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_post_edit_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "safe_public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -678,6 +727,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "forum_posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "safe_public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       forum_topics: {
@@ -739,10 +795,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "forum_topics_last_post_user_id_fkey"
+            columns: ["last_post_user_id"]
+            isOneToOne: false
+            referencedRelation: "safe_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "forum_topics_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_topics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "safe_public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1128,10 +1198,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "messages_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "safe_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "messages_sender_id_fkey"
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "safe_public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1328,6 +1412,13 @@ export type Database = {
             columns: ["target_profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_access_audit_target_profile_id_fkey"
+            columns: ["target_profile_id"]
+            isOneToOne: false
+            referencedRelation: "safe_public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1860,6 +1951,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "timeline_posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "safe_public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_actions: {
@@ -1926,6 +2024,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "user_conversation_read_status_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "safe_public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_messages: {
@@ -1966,7 +2071,39 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      safe_public_profiles: {
+        Row: {
+          bio: string | null
+          created_at: string | null
+          display_name: string | null
+          forum_post_count: number | null
+          id: string | null
+          profile_picture: string | null
+          social_links: Json | null
+          username: string | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          forum_post_count?: number | null
+          id?: string | null
+          profile_picture?: string | null
+          social_links?: Json | null
+          username?: string | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          forum_post_count?: number | null
+          id?: string | null
+          profile_picture?: string | null
+          social_links?: Json | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       check_application_rate_limit: {
@@ -1983,6 +2120,10 @@ export type Database = {
       }
       check_profile_access_rate_limit: {
         Args: { user_id?: string }
+        Returns: boolean
+      }
+      check_profile_access_rate_limit_enhanced: {
+        Args: { max_accesses?: number; time_window?: unknown; user_id?: string }
         Returns: boolean
       }
       check_rate_limit: {
@@ -2093,6 +2234,25 @@ export type Database = {
           reviewed_by: string
         }[]
       }
+      get_own_profile: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          bio: string
+          created_at: string
+          display_name: string
+          email: string
+          first_name: string
+          forum_post_count: number
+          id: string
+          is_public: boolean
+          last_name: string
+          profile_picture: string
+          role: string
+          social_links: Json
+          updated_at: string
+          username: string
+        }[]
+      }
       get_post_page_and_index: {
         Args: {
           p_items_per_page: number
@@ -2131,6 +2291,19 @@ export type Database = {
           username: string
         }[]
       }
+      get_public_profile_by_username_secure: {
+        Args: { p_username: string }
+        Returns: {
+          bio: string
+          created_at: string
+          display_name: string
+          forum_post_count: number
+          id: string
+          profile_picture: string
+          social_links: Json
+          username: string
+        }[]
+      }
       get_public_profile_data: {
         Args: { profile_id: string }
         Returns: {
@@ -2139,6 +2312,19 @@ export type Database = {
           display_name: string
           id: string
           profile_picture: string
+          username: string
+        }[]
+      }
+      get_safe_public_profile: {
+        Args: { p_user_id: string }
+        Returns: {
+          bio: string
+          created_at: string
+          display_name: string
+          forum_post_count: number
+          id: string
+          profile_picture: string
+          social_links: Json
           username: string
         }[]
       }
