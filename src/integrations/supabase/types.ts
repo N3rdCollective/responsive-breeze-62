@@ -888,13 +888,6 @@ export type Database = {
             referencedRelation: "job_applications"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "job_application_audit_application_id_fkey"
-            columns: ["application_id"]
-            isOneToOne: false
-            referencedRelation: "job_applications_hr_view"
-            referencedColumns: ["id"]
-          },
         ]
       }
       job_application_rate_limits: {
@@ -1851,34 +1844,7 @@ export type Database = {
       }
     }
     Views: {
-      job_applications_hr_view: {
-        Row: {
-          application_status: string | null
-          applied_at: string | null
-          cover_letter: string | null
-          department: string | null
-          email: string | null
-          id: string | null
-          job_posting_id: string | null
-          job_title: string | null
-          name: string | null
-          notes: string | null
-          phone: string | null
-          resume_filename: string | null
-          resume_url: string | null
-          reviewed_at: string | null
-          reviewed_by: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "job_applications_job_posting_id_fkey"
-            columns: ["job_posting_id"]
-            isOneToOne: false
-            referencedRelation: "job_postings"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       check_application_rate_limit: {
@@ -1964,6 +1930,26 @@ export type Database = {
       get_conversations_with_unread_status: {
         Args: { p_user_id: string }
         Returns: Json
+      }
+      get_job_applications_for_hr: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          application_status: string
+          applied_at: string
+          cover_letter: string
+          department: string
+          email: string
+          id: string
+          job_posting_id: string
+          job_title: string
+          name: string
+          notes: string
+          phone: string
+          resume_filename: string
+          resume_url: string
+          reviewed_at: string
+          reviewed_by: string
+        }[]
       }
       get_post_page_and_index: {
         Args: {
