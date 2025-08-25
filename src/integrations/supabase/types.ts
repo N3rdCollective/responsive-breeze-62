@@ -1433,6 +1433,51 @@ export type Database = {
           },
         ]
       }
+      security_event_access_audit: {
+        Row: {
+          access_duration_ms: number | null
+          access_timestamp: string | null
+          accessor_id: string | null
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          is_bulk_access: boolean | null
+          query_filters: Json | null
+          records_accessed: number | null
+          session_id: string | null
+          suspicious_indicators: Json | null
+          user_agent: string | null
+        }
+        Insert: {
+          access_duration_ms?: number | null
+          access_timestamp?: string | null
+          accessor_id?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          is_bulk_access?: boolean | null
+          query_filters?: Json | null
+          records_accessed?: number | null
+          session_id?: string | null
+          suspicious_indicators?: Json | null
+          user_agent?: string | null
+        }
+        Update: {
+          access_duration_ms?: number | null
+          access_timestamp?: string | null
+          accessor_id?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          is_bulk_access?: boolean | null
+          query_filters?: Json | null
+          records_accessed?: number | null
+          session_id?: string | null
+          suspicious_indicators?: Json | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       security_events: {
         Row: {
           created_at: string | null
@@ -1463,6 +1508,39 @@ export type Database = {
           severity?: string | null
           user_agent?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      security_query_rate_limits: {
+        Row: {
+          blocked_until: string | null
+          created_at: string | null
+          first_query_at: string | null
+          id: string
+          last_query_at: string | null
+          query_count: number | null
+          user_id: string
+          violation_count: number | null
+        }
+        Insert: {
+          blocked_until?: string | null
+          created_at?: string | null
+          first_query_at?: string | null
+          id?: string
+          last_query_at?: string | null
+          query_count?: number | null
+          user_id: string
+          violation_count?: number | null
+        }
+        Update: {
+          blocked_until?: string | null
+          created_at?: string | null
+          first_query_at?: string | null
+          id?: string
+          last_query_at?: string | null
+          query_count?: number | null
+          user_id?: string
+          violation_count?: number | null
         }
         Relationships: []
       }
@@ -1916,6 +1994,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      check_security_query_rate_limit: {
+        Args: {
+          p_max_queries?: number
+          p_time_window?: unknown
+          p_user_id: string
+        }
+        Returns: boolean
+      }
       check_staff_profile_access: {
         Args: { p_access_type?: string; p_target_profile_id: string }
         Returns: boolean
@@ -1923,6 +2009,10 @@ export type Database = {
       check_user_role: {
         Args: { required_role: string }
         Returns: boolean
+      }
+      cleanup_old_security_events: {
+        Args: { p_retention_days?: number }
+        Returns: number
       }
       create_activity_log: {
         Args: {
@@ -2058,6 +2148,26 @@ export type Database = {
           p_limit?: number
           p_offset?: number
           p_severity_filter?: string
+        }
+        Returns: {
+          created_at: string
+          details: Json
+          event_type: string
+          id: string
+          ip_address: unknown
+          severity: string
+          user_agent: string
+          user_id: string
+        }[]
+      }
+      get_security_events_with_enhanced_audit: {
+        Args: {
+          p_event_type_filter?: string
+          p_limit?: number
+          p_offset?: number
+          p_session_id?: string
+          p_severity_filter?: string
+          p_user_agent?: string
         }
         Returns: {
           created_at: string
