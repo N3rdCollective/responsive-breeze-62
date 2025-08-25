@@ -1903,6 +1903,10 @@ export type Database = {
         Args: { applicant_email: string }
         Returns: boolean
       }
+      check_profile_access_rate_limit: {
+        Args: { user_id?: string }
+        Returns: boolean
+      }
       check_rate_limit: {
         Args: {
           p_attempt_type: string
