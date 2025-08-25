@@ -2536,6 +2536,10 @@ export type Database = {
         Args: { required_roles: string[]; user_id: string }
         Returns: boolean
       }
+      validate_security_setup: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       validate_staff_action: {
         Args: {
           action_type: string
