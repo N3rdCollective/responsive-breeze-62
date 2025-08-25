@@ -1288,6 +1288,50 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_access_audit: {
+        Row: {
+          access_reason: string | null
+          access_type: string
+          accessed_fields: string[] | null
+          accessor_id: string | null
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          target_profile_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          access_reason?: string | null
+          access_type: string
+          accessed_fields?: string[] | null
+          accessor_id?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          target_profile_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          access_reason?: string | null
+          access_type?: string
+          accessed_fields?: string[] | null
+          accessor_id?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          target_profile_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_access_audit_target_profile_id_fkey"
+            columns: ["target_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           bio: string | null
@@ -1868,6 +1912,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      check_staff_profile_access: {
+        Args: { p_access_type?: string; p_target_profile_id: string }
+        Returns: boolean
+      }
       check_user_role: {
         Args: { required_role: string }
         Returns: boolean
@@ -2000,19 +2048,6 @@ export type Database = {
           username: string
         }[]
       }
-      get_public_profile_safe: {
-        Args: { profile_user_id: string }
-        Returns: {
-          bio: string
-          created_at: string
-          display_name: string
-          forum_post_count: number
-          id: string
-          profile_picture: string
-          social_links: Json
-          username: string
-        }[]
-      }
       get_security_events_with_audit: {
         Args: {
           p_event_type_filter?: string
@@ -2087,6 +2122,15 @@ export type Database = {
       }
       log_profile_access: {
         Args: { action_description: string; target_profile_id: string }
+        Returns: undefined
+      }
+      log_profile_access_secure: {
+        Args: {
+          p_access_reason?: string
+          p_access_type: string
+          p_accessed_fields?: string[]
+          p_target_profile_id: string
+        }
         Returns: undefined
       }
       log_security_event: {
