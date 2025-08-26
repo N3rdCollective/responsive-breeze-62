@@ -11,10 +11,10 @@ interface QueryProviderProps {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 0, // Force fresh queries after RLS fixes
       gcTime: 10 * 60 * 1000, // 10 minutes (replaces cacheTime in v5)
-      refetchOnWindowFocus: false,
-      retry: 2,
+      refetchOnWindowFocus: true, // Refetch when window regains focus
+      retry: 1, // Reduce retries since RLS is fixed
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     },
     mutations: {
