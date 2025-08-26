@@ -2666,7 +2666,7 @@ export type Database = {
           p_user_agent?: string
           p_user_id?: string
         }
-        Returns: string
+        Returns: undefined
       }
       staff_has_permission: {
         Args: { permission_name: string; user_id: string }
