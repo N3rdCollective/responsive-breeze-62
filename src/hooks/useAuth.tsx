@@ -24,43 +24,57 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isStaff, setIsStaff] = useState(false);
   const [staffRole, setStaffRole] = useState<string | null>(null);
 
-  // Check if user is staff member
+  // Check if user is staff member using secure RPC functions
   const checkStaffStatus = async () => {
     if (!user || !user.id) {
+      console.log('🔐 [DEBUG] No user found, setting staff status to false');
       setIsStaff(false);
       setStaffRole(null);
       return;
     }
 
     try {
-      console.log('🔐 [CLEAN] Checking staff status after RLS cleanup for user:', user.id);
+      console.log('🔐 [DEBUG] Checking staff status using RPC functions for user:', user.id);
       
-      const { data, error } = await supabase
-        .from('staff')
-        .select('role')
-        .eq('id', user.id)
-        .single();
+      // Use the new security definer functions to avoid RLS recursion
+      const { data: isStaffResult, error: staffCheckError } = await supabase
+        .rpc('is_user_staff_member', { user_id: user.id });
 
-      if (error) {
-        // Handle specific permission errors gracefully
-        if (error.code === '42501') {
-          console.log('🔐 [INFO] No staff permissions - user is not a staff member:', user.id);
-        } else {
-          console.log('🔐 [INFO] Staff check error (expected for non-staff):', error.message);
-        }
+      if (staffCheckError) {
+        console.error('🔐 [ERROR] Staff check function error:', staffCheckError);
         setIsStaff(false);
         setStaffRole(null);
-      } else if (!data) {
-        console.log('🔐 [INFO] User is not staff member after RLS cleanup:', user.id);
-        setIsStaff(false);
-        setStaffRole(null);
-      } else {
-        console.log('🔐 [SUCCESS] Staff status confirmed after RLS cleanup:', { userId: user.id, role: data.role });
-        setIsStaff(true);
-        setStaffRole(data.role);
+        return;
       }
+
+      const isStaff = isStaffResult || false;
+      console.log('🔐 [DEBUG] Staff check result:', isStaff);
+
+      if (!isStaff) {
+        console.log('🔐 [INFO] User is not a staff member:', user.id);
+        setIsStaff(false);
+        setStaffRole(null);
+        return;
+      }
+
+      // Get user's role if they are staff
+      const { data: roleResult, error: roleError } = await supabase
+        .rpc('get_user_staff_role', { user_id: user.id });
+
+      if (roleError) {
+        console.error('🔐 [ERROR] Role check function error:', roleError);
+        setIsStaff(false);
+        setStaffRole(null);
+        return;
+      }
+
+      const role = roleResult || null;
+      console.log('🔐 [SUCCESS] Staff status confirmed:', { userId: user.id, role: role });
+      setIsStaff(true);
+      setStaffRole(role);
+      
     } catch (error) {
-      console.log('🔐 [INFO] Error checking staff status (expected for non-staff users):', error);
+      console.error('🔐 [ERROR] Unexpected error checking staff status:', error);
       setIsStaff(false);
       setStaffRole(null);
     }
@@ -74,35 +88,50 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Check staff status when user signs in
+        // Check staff status when user signs in using secure functions
         if (event === 'SIGNED_IN' && session?.user?.id) {
           setTimeout(async () => {
             try {
-              const { data, error } = await supabase
-                .from('staff')
-                .select('role')
-                .eq('id', session.user.id)
-                .single();
+              console.log('🔐 [DEBUG] Auth state SIGNED_IN - checking staff status for:', session.user.id);
+              
+              const { data: isStaffResult, error: staffCheckError } = await supabase
+                .rpc('is_user_staff_member', { user_id: session.user.id });
 
-              if (error) {
-                if (error.code === '42501') {
-                  console.log('🔐 [INFO] No staff permissions - user is not a staff member:', session.user.id);
-                } else {
-                  console.log('🔐 [INFO] Staff check error (expected for non-staff):', error.message);
-                }
+              if (staffCheckError) {
+                console.error('🔐 [ERROR] Staff check function error:', staffCheckError);
                 setIsStaff(false);
                 setStaffRole(null);
-              } else if (!data) {
-                console.log('🔐 [INFO] User is not staff member after RLS cleanup:', session.user.id);
-                setIsStaff(false);
-                setStaffRole(null);
-              } else {
-                console.log('🔐 [SUCCESS] Staff status confirmed after RLS cleanup:', { userId: session.user.id, role: data.role });
-                setIsStaff(true);
-                setStaffRole(data.role);
+                return;
               }
+
+              const isStaff = isStaffResult || false;
+              console.log('🔐 [DEBUG] Staff check result on signin:', isStaff);
+
+              if (!isStaff) {
+                console.log('🔐 [INFO] User is not a staff member on signin:', session.user.id);
+                setIsStaff(false);
+                setStaffRole(null);
+                return;
+              }
+
+              // Get user's role if they are staff
+              const { data: roleResult, error: roleError } = await supabase
+                .rpc('get_user_staff_role', { user_id: session.user.id });
+
+              if (roleError) {
+                console.error('🔐 [ERROR] Role check function error:', roleError);
+                setIsStaff(false);
+                setStaffRole(null);
+                return;
+              }
+
+              const role = roleResult || null;
+              console.log('🔐 [SUCCESS] Staff status confirmed on signin:', { userId: session.user.id, role: role });
+              setIsStaff(true);
+              setStaffRole(role);
+              
             } catch (error) {
-              console.log('🔐 [INFO] Error checking staff status (expected for non-staff users):', error);
+              console.error('🔐 [ERROR] Unexpected error checking staff status on signin:', error);
               setIsStaff(false);
               setStaffRole(null);
             }
@@ -125,31 +154,46 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (currentSession?.user?.id) {
           setTimeout(async () => {
             try {
-              const { data, error } = await supabase
-                .from('staff')
-                .select('role')
-                .eq('id', currentSession.user.id)
-                .single();
+              console.log('🔐 [DEBUG] Initial session check - checking staff status for:', currentSession.user.id);
+              
+              const { data: isStaffResult, error: staffCheckError } = await supabase
+                .rpc('is_user_staff_member', { user_id: currentSession.user.id });
 
-              if (error) {
-                if (error.code === '42501') {
-                  console.log('🔐 [INFO] No staff permissions - user is not a staff member:', currentSession.user.id);
-                } else {
-                  console.log('🔐 [INFO] Staff check error (expected for non-staff):', error.message);
-                }
+              if (staffCheckError) {
+                console.error('🔐 [ERROR] Initial staff check function error:', staffCheckError);
                 setIsStaff(false);
                 setStaffRole(null);
-              } else if (!data) {
-                console.log('🔐 [INFO] User is not staff member after RLS cleanup:', currentSession.user.id);
-                setIsStaff(false);
-                setStaffRole(null);
-              } else {
-                console.log('🔐 [SUCCESS] Staff status confirmed after RLS cleanup:', { userId: currentSession.user.id, role: data.role });
-                setIsStaff(true);
-                setStaffRole(data.role);
+                return;
               }
+
+              const isStaff = isStaffResult || false;
+              console.log('🔐 [DEBUG] Initial staff check result:', isStaff);
+
+              if (!isStaff) {
+                console.log('🔐 [INFO] User is not a staff member on initial check:', currentSession.user.id);
+                setIsStaff(false);
+                setStaffRole(null);
+                return;
+              }
+
+              // Get user's role if they are staff
+              const { data: roleResult, error: roleError } = await supabase
+                .rpc('get_user_staff_role', { user_id: currentSession.user.id });
+
+              if (roleError) {
+                console.error('🔐 [ERROR] Initial role check function error:', roleError);
+                setIsStaff(false);
+                setStaffRole(null);
+                return;
+              }
+
+              const role = roleResult || null;
+              console.log('🔐 [SUCCESS] Staff status confirmed on initial check:', { userId: currentSession.user.id, role: role });
+              setIsStaff(true);
+              setStaffRole(role);
+              
             } catch (error) {
-              console.log('🔐 [INFO] Error checking staff status (expected for non-staff users):', error);
+              console.error('🔐 [ERROR] Unexpected error during initial staff status check:', error);
               setIsStaff(false);
               setStaffRole(null);
             }
