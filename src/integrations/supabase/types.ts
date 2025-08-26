@@ -318,6 +318,62 @@ export type Database = {
           },
         ]
       }
+      enhanced_profile_access_audit: {
+        Row: {
+          access_purpose: string | null
+          access_reason: string | null
+          access_type: string
+          accessed_fields: string[] | null
+          accessor_id: string
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          justification_id: string | null
+          risk_level: string | null
+          session_info: Json | null
+          target_profile_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          access_purpose?: string | null
+          access_reason?: string | null
+          access_type: string
+          accessed_fields?: string[] | null
+          accessor_id: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          justification_id?: string | null
+          risk_level?: string | null
+          session_info?: Json | null
+          target_profile_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          access_purpose?: string | null
+          access_reason?: string | null
+          access_type?: string
+          accessed_fields?: string[] | null
+          accessor_id?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          justification_id?: string | null
+          risk_level?: string | null
+          session_info?: Json | null
+          target_profile_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enhanced_profile_access_audit_justification_id_fkey"
+            columns: ["justification_id"]
+            isOneToOne: false
+            referencedRelation: "profile_access_justifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       featured_artists: {
         Row: {
           archived_at: string | null
@@ -1483,6 +1539,42 @@ export type Database = {
           },
         ]
       }
+      profile_access_justifications: {
+        Row: {
+          access_purpose: string
+          access_reason: string
+          accessor_id: string
+          approved_by: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          target_profile_id: string
+        }
+        Insert: {
+          access_purpose: string
+          access_reason: string
+          accessor_id: string
+          approved_by?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          target_profile_id: string
+        }
+        Update: {
+          access_purpose?: string
+          access_reason?: string
+          accessor_id?: string
+          approved_by?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          target_profile_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           bio: string | null
@@ -2186,6 +2278,10 @@ export type Database = {
         Args: { max_accesses?: number; time_window?: unknown; user_id?: string }
         Returns: boolean
       }
+      check_profile_field_access: {
+        Args: { p_field_name: string; p_profile_id: string }
+        Returns: boolean
+      }
       check_rate_limit: {
         Args: {
           p_attempt_type: string
@@ -2256,6 +2352,16 @@ export type Database = {
           p_user_id: string
         }
         Returns: boolean
+      }
+      generate_profile_access_report: {
+        Args: { p_end_date?: string; p_start_date?: string }
+        Returns: {
+          access_count: number
+          accessor_email: string
+          high_risk_access_count: number
+          last_access: string
+          staff_role: string
+        }[]
       }
       get_analytics_summary: {
         Args: { end_date: string; start_date: string }
@@ -2529,6 +2635,17 @@ export type Database = {
       }
       log_profile_access: {
         Args: { action_description: string; target_profile_id: string }
+        Returns: undefined
+      }
+      log_profile_access_enhanced: {
+        Args: {
+          p_access_purpose?: string
+          p_access_reason?: string
+          p_access_type: string
+          p_accessed_fields?: string[]
+          p_justification_id?: string
+          p_target_profile_id: string
+        }
         Returns: undefined
       }
       log_profile_access_secure: {
