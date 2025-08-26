@@ -26,7 +26,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Check if user is staff member
   const checkStaffStatus = async () => {
-    if (!user) {
+    if (!user || !user.id) {
       setIsStaff(false);
       setStaffRole(null);
       return;
@@ -41,7 +41,16 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         .eq('id', user.id)
         .single();
 
-      if (error || !data) {
+      if (error) {
+        // Handle specific permission errors gracefully
+        if (error.code === '42501') {
+          console.log('🔐 [INFO] No staff permissions - user is not a staff member:', user.id);
+        } else {
+          console.log('🔐 [INFO] Staff check error (expected for non-staff):', error.message);
+        }
+        setIsStaff(false);
+        setStaffRole(null);
+      } else if (!data) {
         console.log('🔐 [INFO] User is not staff member after RLS cleanup:', user.id);
         setIsStaff(false);
         setStaffRole(null);
@@ -51,7 +60,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         setStaffRole(data.role);
       }
     } catch (error) {
-      console.error('🔐 [ERROR] Error checking staff status after RLS cleanup:', error);
+      console.log('🔐 [INFO] Error checking staff status (expected for non-staff users):', error);
       setIsStaff(false);
       setStaffRole(null);
     }
@@ -66,7 +75,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         setLoading(false);
         
         // Check staff status when user signs in
-        if (event === 'SIGNED_IN' && session?.user) {
+        if (event === 'SIGNED_IN' && session?.user?.id) {
           setTimeout(async () => {
             try {
               const { data, error } = await supabase
@@ -75,7 +84,15 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
                 .eq('id', session.user.id)
                 .single();
 
-              if (error || !data) {
+              if (error) {
+                if (error.code === '42501') {
+                  console.log('🔐 [INFO] No staff permissions - user is not a staff member:', session.user.id);
+                } else {
+                  console.log('🔐 [INFO] Staff check error (expected for non-staff):', error.message);
+                }
+                setIsStaff(false);
+                setStaffRole(null);
+              } else if (!data) {
                 console.log('🔐 [INFO] User is not staff member after RLS cleanup:', session.user.id);
                 setIsStaff(false);
                 setStaffRole(null);
@@ -85,7 +102,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
                 setStaffRole(data.role);
               }
             } catch (error) {
-              console.error('🔐 [ERROR] Error checking staff status after RLS cleanup:', error);
+              console.log('🔐 [INFO] Error checking staff status (expected for non-staff users):', error);
               setIsStaff(false);
               setStaffRole(null);
             }
@@ -105,7 +122,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(currentSession?.user ?? null);
         setLoading(false);
         
-        if (currentSession?.user) {
+        if (currentSession?.user?.id) {
           setTimeout(async () => {
             try {
               const { data, error } = await supabase
@@ -114,7 +131,15 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
                 .eq('id', currentSession.user.id)
                 .single();
 
-              if (error || !data) {
+              if (error) {
+                if (error.code === '42501') {
+                  console.log('🔐 [INFO] No staff permissions - user is not a staff member:', currentSession.user.id);
+                } else {
+                  console.log('🔐 [INFO] Staff check error (expected for non-staff):', error.message);
+                }
+                setIsStaff(false);
+                setStaffRole(null);
+              } else if (!data) {
                 console.log('🔐 [INFO] User is not staff member after RLS cleanup:', currentSession.user.id);
                 setIsStaff(false);
                 setStaffRole(null);
@@ -124,7 +149,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
                 setStaffRole(data.role);
               }
             } catch (error) {
-              console.error('🔐 [ERROR] Error checking staff status after RLS cleanup:', error);
+              console.log('🔐 [INFO] Error checking staff status (expected for non-staff users):', error);
               setIsStaff(false);
               setStaffRole(null);
             }
