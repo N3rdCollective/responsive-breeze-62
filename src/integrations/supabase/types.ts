@@ -2487,6 +2487,10 @@ export type Database = {
         Args: { topic_id_param: string }
         Returns: undefined
       }
+      is_post_published: {
+        Args: { post_status: string }
+        Returns: boolean
+      }
       is_user_staff_member: {
         Args: { user_id: string }
         Returns: boolean
