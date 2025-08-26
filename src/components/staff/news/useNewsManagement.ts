@@ -16,6 +16,16 @@ export const useNewsManagement = () => {
     queryKey: ["staff-news-posts"],
     queryFn: async () => {
       console.log("Fetching posts from Supabase");
+      
+      // Debug authentication context
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("Current session:", session?.user?.id);
+      
+      // Check if user is staff
+      const { data: staffCheck, error: staffError } = await supabase
+        .rpc('is_user_staff_member_secure', { user_id: session?.user?.id });
+      console.log("Staff check result:", staffCheck, "Staff error:", staffError);
+      
       const { data, error } = await supabase
         .from("posts")
         .select("*")
