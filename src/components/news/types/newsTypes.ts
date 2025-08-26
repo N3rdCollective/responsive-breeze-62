@@ -16,7 +16,7 @@ export interface Post {
   created_at: string;
   updated_at: string;
   tags?: string[];
-  featured_artist_id?: string | null;
+  excerpt?: string | null;
 }
 
 export interface FeaturedArtist {

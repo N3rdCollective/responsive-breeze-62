@@ -80,7 +80,21 @@ export const useNewsData = () => {
       
       let query = supabase
         .from("posts")
-        .select("*")
+        .select(`
+          id,
+          title,
+          content,
+          featured_image,
+          post_date,
+          category,
+          author,
+          author_name,
+          status,
+          created_at,
+          updated_at,
+          tags,
+          excerpt
+        `)
         .eq("status", "published")
         .order("post_date", { ascending: false });
         
