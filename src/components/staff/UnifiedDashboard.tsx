@@ -73,6 +73,14 @@ const UnifiedDashboard = () => {
       roles: ["admin", "super_admin", "moderator"]
     },
     {
+      title: "Manage Personalities",
+      description: "Edit radio personalities and their details",
+      icon: UserCog,
+      path: "/staff/personalities",
+      color: "purple",
+      roles: ["admin", "super_admin", "moderator"]
+    },
+    {
       title: "Manage Forum",
       description: "Moderate forum topics and posts",
       icon: MessageSquare,
