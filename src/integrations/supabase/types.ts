@@ -2262,6 +2262,10 @@ export type Database = {
         Args: { p_email: string; p_ip_address?: unknown }
         Returns: boolean
       }
+      check_email_availability: {
+        Args: { p_email: string }
+        Returns: boolean
+      }
       check_hr_access_with_audit: {
         Args: { p_access_type?: string; p_application_id: string }
         Returns: boolean

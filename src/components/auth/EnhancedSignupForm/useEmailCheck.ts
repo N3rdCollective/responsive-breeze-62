@@ -21,20 +21,16 @@ export const useEmailCheck = () => {
     setEmailAvailable(null);
     
     try {
-      // Check if email exists in profiles table (which is populated from auth.users)
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('email')
-        .ilike('email', email)
-        .single();
+      // Use secure RPC function that doesn't expose email addresses
+      const { data: isAvailable, error: rpcError } = await supabase
+        .rpc('check_email_availability', { p_email: email });
 
       // Only process if this is still the latest request
       if (emailCheckRef.current === email) {
-        if (profileError && profileError.code !== 'PGRST116') {
-          console.error('Error checking email in profiles:', profileError);
+        if (rpcError) {
+          console.error('Error checking email availability:', rpcError);
           setEmailAvailable(null);
         } else {
-          const isAvailable = !profileData;
           setEmailAvailable(isAvailable);
         }
       }
