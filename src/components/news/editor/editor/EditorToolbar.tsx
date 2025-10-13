@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Editor } from '@tiptap/react';
 import { 
   Bold, 
@@ -16,12 +16,17 @@ import {
   Code,
   Quote,
   Undo,
-  Redo
+  Redo,
+  Music,
+  FileText,
+  Share2,
+  Map
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Toggle } from '@/components/ui/toggle';
 import { Separator } from '@/components/ui/separator';
+import { EmbedDialog } from '../components/EmbedDialog';
 
 interface EditorToolbarProps {
   editor: Editor;
@@ -29,6 +34,9 @@ interface EditorToolbarProps {
 }
 
 const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor, disabled = false }) => {
+  const [embedDialogOpen, setEmbedDialogOpen] = useState(false);
+  const [embedType, setEmbedType] = useState<'social' | 'audio' | 'code' | 'interactive' | 'document'>('social');
+
   if (!editor) {
     return null;
   }
@@ -64,6 +72,41 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor, disabled = false 
     
     // update link
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+  };
+
+  const openEmbedDialog = (type: 'social' | 'audio' | 'code' | 'interactive' | 'document') => {
+    setEmbedType(type);
+    setEmbedDialogOpen(true);
+  };
+
+  const handleEmbedInsert = (data: any) => {
+    switch (embedType) {
+      case 'social':
+        if (data.url && data.platform) {
+          editor.chain().focus().setSocialMedia({ url: data.url, platform: data.platform }).run();
+        }
+        break;
+      case 'audio':
+        if (data.url) {
+          editor.chain().focus().setAudio({ url: data.url, platform: data.platform }).run();
+        }
+        break;
+      case 'code':
+        if (data.code && data.language) {
+          editor.chain().focus().setSyntaxCode({ code: data.code, language: data.language }).run();
+        }
+        break;
+      case 'interactive':
+        if (data.url && data.platform) {
+          editor.chain().focus().setInteractive({ url: data.url, type: data.platform }).run();
+        }
+        break;
+      case 'document':
+        if (data.url && data.platform) {
+          editor.chain().focus().setDocument({ url: data.url, type: data.platform }).run();
+        }
+        break;
+    }
   };
 
   return (
@@ -215,6 +258,51 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor, disabled = false 
         >
           <Youtube className="h-4 w-4" />
         </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => openEmbedDialog('audio')}
+          disabled={disabled}
+          aria-label="Insert Audio"
+        >
+          <Music className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => openEmbedDialog('social')}
+          disabled={disabled}
+          aria-label="Insert Social Media"
+        >
+          <Share2 className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => openEmbedDialog('code')}
+          disabled={disabled}
+          aria-label="Insert Code Block"
+        >
+          <Code className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => openEmbedDialog('interactive')}
+          disabled={disabled}
+          aria-label="Insert Interactive"
+        >
+          <Map className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => openEmbedDialog('document')}
+          disabled={disabled}
+          aria-label="Insert Document"
+        >
+          <FileText className="h-4 w-4" />
+        </Button>
       </div>
 
       <Separator orientation="vertical" className="mx-1 h-6" />
@@ -239,6 +327,13 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor, disabled = false 
           <Redo className="h-4 w-4" />
         </Button>
       </div>
+
+      <EmbedDialog
+        open={embedDialogOpen}
+        onClose={() => setEmbedDialogOpen(false)}
+        onInsert={handleEmbedInsert}
+        type={embedType}
+      />
     </div>
   );
 };
