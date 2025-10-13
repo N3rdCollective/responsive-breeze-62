@@ -34,11 +34,13 @@ export const sanitizeHtml = (htmlString: string): string => {
       'href', 'title', 'target', 'rel',
       // Safe attributes for media and iframes
       'src', 'alt', 'width', 'height', 'controls', 'autoplay', 'muted',
-      'frameborder', 'allowfullscreen', 'allow',
+      'frameborder', 'allowfullscreen', 'allow', 'loading', 'sandbox',
       // Safe formatting attributes
       'class', 'style',
-      // Video embed attributes
-      'data-video',
+      // Embed data attributes
+      'data-video', 'data-social-media', 'data-platform', 'data-audio-embed',
+      'data-interactive-embed', 'data-document-embed', 'data-type',
+      'data-code-block', 'data-language', 'data-code', 'onclick', 'innerHTML',
       // Table attributes
       'colspan', 'rowspan',
       // Other safe attributes
@@ -56,12 +58,33 @@ export const sanitizeHtml = (htmlString: string): string => {
       const element = node as Element;
       const src = element.getAttribute('src');
       if (src) {
-        // Only allow iframes from trusted video platforms
+        // Allow iframes from trusted platforms
         const trustedDomains = [
+          // Video platforms
           'https://www.youtube.com/embed/',
           'https://player.vimeo.com/video/',
           'https://youtube.com/embed/',
-          'https://vimeo.com/embed/'
+          'https://vimeo.com/embed/',
+          // Social media platforms
+          'https://platform.twitter.com/embed/',
+          'https://www.instagram.com/p/',
+          'https://www.facebook.com/plugins/',
+          'https://www.tiktok.com/embed/',
+          // Audio platforms
+          'https://open.spotify.com/embed/',
+          'https://w.soundcloud.com/player/',
+          'https://embed.music.apple.com/',
+          // Interactive platforms
+          'https://www.google.com/maps/embed/',
+          'https://codepen.io/embed/',
+          'https://jsfiddle.net/',
+          'https://codesandbox.io/embed/',
+          // Document platforms
+          'https://docs.google.com/viewer',
+          'https://docs.google.com/document/',
+          'https://docs.google.com/spreadsheets/',
+          'https://docs.google.com/presentation/',
+          'https://www.slideshare.net/'
         ];
         
         const isTrusted = trustedDomains.some(domain => src.startsWith(domain));

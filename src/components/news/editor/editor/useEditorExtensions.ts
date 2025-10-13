@@ -8,6 +8,11 @@ import Color from '@tiptap/extension-color';
 import TextAlign from '@tiptap/extension-text-align';
 import Mention from '@tiptap/extension-mention';
 import { Video } from './VideoExtension';
+import { SocialMedia } from './SocialMediaExtension';
+import { Audio } from './AudioExtension';
+import { SyntaxCode } from './CodeBlockExtension';
+import { Interactive } from './InteractiveExtension';
+import { Document } from './DocumentExtension';
 import { supabase } from '@/integrations/supabase/client';
 import { ReactRenderer } from '@tiptap/react';
 import tippy, { type Instance as TippyInstance, type Props as TippyProps } from 'tippy.js';
@@ -58,6 +63,11 @@ export const useEditorExtensions = (props?: EditorExtensionsProps) => {
         class: 'w-full h-auto',
       },
     }),
+    SocialMedia,
+    Audio,
+    SyntaxCode,
+    Interactive,
+    Document,
     TextStyle,
     Color,
     TextAlign.configure({
