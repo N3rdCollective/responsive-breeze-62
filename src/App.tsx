@@ -38,6 +38,10 @@ import StaffSponsors from "./pages/StaffSponsors";
 import StaffJobsPage from "./pages/StaffJobsPage";
 import StaffPersonalities from "./pages/StaffPersonalities";
 import StaffHomePage from "./pages/StaffHomePage";
+import StaffShowsManager from "./pages/StaffShowsManager";
+import { SubmissionForm } from "./components/staff/shows/submissions/SubmissionForm";
+import { MySubmissions } from "./components/staff/shows/submissions/MySubmissions";
+import { SubmissionReviewQueue } from "./components/staff/shows/review/SubmissionReviewQueue";
 import ForumCategoryPage from "./pages/ForumCategoryPage";
 import ForumTopicPage from "./pages/ForumTopicPage";
 import NewForumTopicPage from "./pages/NewForumTopicPage";
@@ -80,6 +84,10 @@ function App() {
                       <Route path="moderation" element={<StaffModerationPage />} />
                       <Route path="activity" element={<StaffActivityLogs />} />
                       <Route path="jobs" element={<StaffJobsPage />} />
+                      <Route path="shows" element={<StaffShowsManager />} />
+                      <Route path="shows/submit" element={<SubmissionForm />} />
+                      <Route path="shows/submissions" element={<MySubmissions />} />
+                      <Route path="shows/review" element={<SubmissionReviewQueue />} />
                     </Route>
 
                     {/* Regular routes with navbar and footer */}
