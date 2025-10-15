@@ -39,6 +39,7 @@ import StaffJobsPage from "./pages/StaffJobsPage";
 import StaffPersonalities from "./pages/StaffPersonalities";
 import StaffHomePage from "./pages/StaffHomePage";
 import StaffShowsManager from "./pages/StaffShowsManager";
+import StaffUserEditor from "./pages/StaffUserEditor";
 import { SubmissionForm } from "./components/staff/shows/submissions/SubmissionForm";
 import { MySubmissions } from "./components/staff/shows/submissions/MySubmissions";
 import { SubmissionReviewQueue } from "./components/staff/shows/review/SubmissionReviewQueue";
@@ -76,6 +77,7 @@ function App() {
                       <Route path="news/editor/:id?" element={<NewsEditor />} />
                       <Route path="videos" element={<Navigate to="/staff/homepage" replace />} />
                       <Route path="users" element={<StaffUserManager />} />
+                      <Route path="users/edit/:userId" element={<StaffUserEditor />} />
                       <Route path="sponsors" element={<StaffSponsors />} />
                       <Route path="personalities" element={<StaffPersonalities />} />
                       <Route path="homepage" element={<StaffHomePage />} />
