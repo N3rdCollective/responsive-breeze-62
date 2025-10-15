@@ -31,8 +31,7 @@ export const useHomeSettingsData = () => {
         const { data: videoData, error: videoError } = await supabase
           .from("featured_videos")
           .select("*")
-          .order("display_order", { ascending: true })
-          .eq("is_active", true);
+          .order("display_order", { ascending: true });
           
         if (videoError) throw videoError;
         

@@ -71,8 +71,7 @@ export const HomeSettingsProvider: React.FC<{ children: ReactNode }> = ({ childr
         const { data: videosData, error: videosError } = await supabase
           .from("featured_videos")
           .select("*")
-          .order("display_order", { ascending: true })
-          .eq("is_active", true);
+          .order("display_order", { ascending: true });
 
         if (videosError) {
           console.error("Error fetching featured videos:", videosError);
