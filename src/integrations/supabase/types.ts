@@ -2608,6 +2608,14 @@ export type Database = {
         Args: { user_id: string }
         Returns: string
       }
+      get_user_staff_role_simple: {
+        Args: { user_id: string }
+        Returns: string
+      }
+      has_hr_permissions: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
       increment_topic_view_count: {
         Args: { topic_id_param: string }
         Returns: undefined
