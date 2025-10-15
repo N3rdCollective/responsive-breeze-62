@@ -1787,15 +1787,93 @@ export type Database = {
         }
         Relationships: []
       }
+      show_submissions: {
+        Row: {
+          artwork_url: string | null
+          audio_file_url: string
+          created_at: string | null
+          downloaded_at: string | null
+          downloaded_by: string | null
+          duration_seconds: number | null
+          episode_description: string | null
+          episode_title: string | null
+          id: string
+          proposed_days: string[]
+          proposed_end_time: string
+          proposed_start_time: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewer_notes: string | null
+          show_description: string | null
+          show_title: string
+          status: string
+          submission_notes: string | null
+          submitted_at: string | null
+          submitted_by: string
+          updated_at: string | null
+        }
+        Insert: {
+          artwork_url?: string | null
+          audio_file_url: string
+          created_at?: string | null
+          downloaded_at?: string | null
+          downloaded_by?: string | null
+          duration_seconds?: number | null
+          episode_description?: string | null
+          episode_title?: string | null
+          id?: string
+          proposed_days: string[]
+          proposed_end_time: string
+          proposed_start_time: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          show_description?: string | null
+          show_title: string
+          status?: string
+          submission_notes?: string | null
+          submitted_at?: string | null
+          submitted_by: string
+          updated_at?: string | null
+        }
+        Update: {
+          artwork_url?: string | null
+          audio_file_url?: string
+          created_at?: string | null
+          downloaded_at?: string | null
+          downloaded_by?: string | null
+          duration_seconds?: number | null
+          episode_description?: string | null
+          episode_title?: string | null
+          id?: string
+          proposed_days?: string[]
+          proposed_end_time?: string
+          proposed_start_time?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          show_description?: string | null
+          show_title?: string
+          status?: string
+          submission_notes?: string | null
+          submitted_at?: string | null
+          submitted_by?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       shows: {
         Row: {
           artwork_url: string | null
           created_at: string | null
+          created_from_submission_id: string | null
           days: string[]
           description: string | null
           end_time: string
           external_id: string | null
+          host_id: string | null
           id: string
+          is_active: boolean | null
           personality_id: string | null
           start_time: string
           title: string
@@ -1804,11 +1882,14 @@ export type Database = {
         Insert: {
           artwork_url?: string | null
           created_at?: string | null
+          created_from_submission_id?: string | null
           days: string[]
           description?: string | null
           end_time: string
           external_id?: string | null
+          host_id?: string | null
           id?: string
+          is_active?: boolean | null
           personality_id?: string | null
           start_time: string
           title: string
@@ -1817,17 +1898,27 @@ export type Database = {
         Update: {
           artwork_url?: string | null
           created_at?: string | null
+          created_from_submission_id?: string | null
           days?: string[]
           description?: string | null
           end_time?: string
           external_id?: string | null
+          host_id?: string | null
           id?: string
+          is_active?: boolean | null
           personality_id?: string | null
           start_time?: string
           title?: string
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "shows_created_from_submission_id_fkey"
+            columns: ["created_from_submission_id"]
+            isOneToOne: false
+            referencedRelation: "show_submissions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "shows_personality_id_fkey"
             columns: ["personality_id"]
@@ -2258,6 +2349,14 @@ export type Database = {
       }
     }
     Functions: {
+      approve_submission_and_create_show: {
+        Args: { reviewer_notes?: string; submission_id: string }
+        Returns: string
+      }
+      can_delete_submission_file: {
+        Args: { submission_id: string }
+        Returns: boolean
+      }
       check_application_rate_limit: {
         Args: { p_email: string; p_ip_address?: unknown }
         Returns: boolean
