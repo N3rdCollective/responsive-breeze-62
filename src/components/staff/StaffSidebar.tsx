@@ -34,7 +34,6 @@ const mainNavigationItems = [
   { title: 'Dashboard', href: '/staff/panel', icon: LayoutDashboard },
   { title: 'Analytics', href: '/staff/analytics', icon: BarChart3 },
   { title: 'News', href: '/staff/news', icon: Newspaper },
-  { title: 'Featured Videos', href: '/staff/videos', icon: Video },
   { title: 'Shows', href: '/staff/shows', icon: Radio },
   { title: 'Personalities', href: '/staff/personalities', icon: UserCircle },
   { title: 'Users', href: '/staff/users', icon: Users },

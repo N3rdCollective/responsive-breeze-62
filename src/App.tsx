@@ -1,6 +1,6 @@
 
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import MusicPlayer from "./components/MusicPlayer";
@@ -29,7 +29,6 @@ import ChatPage from "./pages/ChatPage";
 import StaffPanel from "./pages/StaffPanel";
 import StaffAnalytics from "./pages/StaffAnalytics";
 import StaffNewsPage from "./pages/StaffNewsPage";
-import StaffVideosPage from "./pages/StaffVideosPage";
 import StaffUserManager from "./pages/StaffUserManager";
 import StaffSystemSettings from "./pages/StaffSystemSettings";
 import StaffForumManagementPage from "./pages/StaffForumManagementPage";
@@ -71,7 +70,7 @@ function App() {
                       <Route path="analytics" element={<StaffAnalytics />} />
                       <Route path="news" element={<StaffNewsPage />} />
                       <Route path="news/editor/:id?" element={<NewsEditor />} />
-                      <Route path="videos" element={<StaffVideosPage />} />
+                      <Route path="videos" element={<Navigate to="/staff/homepage" replace />} />
                       <Route path="users" element={<StaffUserManager />} />
                       <Route path="sponsors" element={<StaffSponsors />} />
                       <Route path="personalities" element={<StaffPersonalities />} />
