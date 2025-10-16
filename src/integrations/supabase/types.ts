@@ -2642,6 +2642,10 @@ export type Database = {
           username: string
         }[]
       }
+      get_resume_signed_url: {
+        Args: { p_access_reason: string; p_application_id: string }
+        Returns: string
+      }
       get_safe_public_profile: {
         Args: { p_user_id: string }
         Returns: {
