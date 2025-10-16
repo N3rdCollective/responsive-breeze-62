@@ -2567,6 +2567,31 @@ export type Database = {
           total_topic_posts: number
         }[]
       }
+      get_profile_sensitive_fields: {
+        Args: {
+          p_access_purpose?: string
+          p_access_reason: string
+          p_target_profile_id: string
+        }
+        Returns: {
+          email: string
+          first_name: string
+          last_name: string
+        }[]
+      }
+      get_profiles_contact_info_bulk: {
+        Args: {
+          p_access_purpose?: string
+          p_access_reason: string
+          p_profile_ids: string[]
+        }
+        Returns: {
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+        }[]
+      }
       get_public_profile_by_id: {
         Args: { p_id: string }
         Returns: {
