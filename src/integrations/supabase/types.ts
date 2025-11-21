@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "13.0.5"
   }
   public: {
     Tables: {
@@ -92,7 +92,7 @@ export type Database = {
           attempted_at: string | null
           email: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           success: boolean | null
         }
         Insert: {
@@ -100,7 +100,7 @@ export type Database = {
           attempted_at?: string | null
           email: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           success?: boolean | null
         }
         Update: {
@@ -108,7 +108,7 @@ export type Database = {
           attempted_at?: string | null
           email?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           success?: boolean | null
         }
         Relationships: []
@@ -183,7 +183,7 @@ export type Database = {
           action_type: string
           created_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_values: Json | null
           old_values: Json | null
           record_id: string | null
@@ -197,7 +197,7 @@ export type Database = {
           action_type: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           record_id?: string | null
@@ -211,7 +211,7 @@ export type Database = {
           action_type?: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           record_id?: string | null
@@ -327,7 +327,7 @@ export type Database = {
           accessor_id: string
           created_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           justification_id: string | null
           risk_level: string | null
           session_info: Json | null
@@ -342,7 +342,7 @@ export type Database = {
           accessor_id: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           justification_id?: string | null
           risk_level?: string | null
           session_info?: Json | null
@@ -357,7 +357,7 @@ export type Database = {
           accessor_id?: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           justification_id?: string | null
           risk_level?: string | null
           session_info?: Json | null
@@ -1026,7 +1026,7 @@ export type Database = {
           application_id: string | null
           created_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           user_agent: string | null
         }
         Insert: {
@@ -1037,7 +1037,7 @@ export type Database = {
           application_id?: string | null
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
         }
         Update: {
@@ -1048,7 +1048,7 @@ export type Database = {
           application_id?: string | null
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
         }
         Relationships: [
@@ -1066,7 +1066,7 @@ export type Database = {
           email: string
           first_submission_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           last_submission_at: string | null
           submission_count: number | null
         }
@@ -1074,7 +1074,7 @@ export type Database = {
           email: string
           first_submission_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           last_submission_at?: string | null
           submission_count?: number | null
         }
@@ -1082,7 +1082,7 @@ export type Database = {
           email?: string
           first_submission_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           last_submission_at?: string | null
           submission_count?: number | null
         }
@@ -1496,7 +1496,7 @@ export type Database = {
           accessor_id: string | null
           created_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           target_profile_id: string | null
           user_agent: string | null
         }
@@ -1507,7 +1507,7 @@ export type Database = {
           accessor_id?: string | null
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           target_profile_id?: string | null
           user_agent?: string | null
         }
@@ -1518,7 +1518,7 @@ export type Database = {
           accessor_id?: string | null
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           target_profile_id?: string | null
           user_agent?: string | null
         }
@@ -1683,7 +1683,7 @@ export type Database = {
           accessor_id: string | null
           created_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           is_bulk_access: boolean | null
           query_filters: Json | null
           records_accessed: number | null
@@ -1697,7 +1697,7 @@ export type Database = {
           accessor_id?: string | null
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_bulk_access?: boolean | null
           query_filters?: Json | null
           records_accessed?: number | null
@@ -1711,7 +1711,7 @@ export type Database = {
           accessor_id?: string | null
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_bulk_access?: boolean | null
           query_filters?: Json | null
           records_accessed?: number | null
@@ -1727,7 +1727,7 @@ export type Database = {
           details: Json | null
           event_type: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           severity: string | null
           user_agent: string | null
           user_id: string | null
@@ -1737,7 +1737,7 @@ export type Database = {
           details?: Json | null
           event_type: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           severity?: string | null
           user_agent?: string | null
           user_id?: string | null
@@ -1747,7 +1747,7 @@ export type Database = {
           details?: Json | null
           event_type?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           severity?: string | null
           user_agent?: string | null
           user_id?: string | null
@@ -2059,7 +2059,7 @@ export type Database = {
           accessor_id: string | null
           created_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           session_info: Json | null
           target_staff_id: string | null
           user_agent: string | null
@@ -2072,7 +2072,7 @@ export type Database = {
           accessor_id?: string | null
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           session_info?: Json | null
           target_staff_id?: string | null
           user_agent?: string | null
@@ -2085,7 +2085,7 @@ export type Database = {
           accessor_id?: string | null
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           session_info?: Json | null
           target_staff_id?: string | null
           user_agent?: string | null
@@ -2361,10 +2361,7 @@ export type Database = {
         Args: { p_email: string; p_ip_address?: unknown }
         Returns: boolean
       }
-      check_email_availability: {
-        Args: { p_email: string }
-        Returns: boolean
-      }
+      check_email_availability: { Args: { p_email: string }; Returns: boolean }
       check_hr_access_with_audit: {
         Args: { p_access_type?: string; p_application_id: string }
         Returns: boolean
@@ -2410,10 +2407,7 @@ export type Database = {
         Args: { p_access_type: string; p_profile_id: string }
         Returns: boolean
       }
-      check_user_role: {
-        Args: { required_role: string }
-        Returns: boolean
-      }
+      check_user_role: { Args: { required_role: string }; Returns: boolean }
       cleanup_old_security_events: {
         Args: { p_retention_days?: number }
         Returns: number
@@ -2443,10 +2437,7 @@ export type Database = {
         }
         Returns: Json
       }
-      emergency_security_lockdown: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      emergency_security_lockdown: { Args: never; Returns: boolean }
       enhanced_rate_limit_check: {
         Args: {
           p_action_type: string
@@ -2477,7 +2468,7 @@ export type Database = {
         }[]
       }
       get_content_reports_with_details: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           action_created_at: string
           action_note: string
@@ -2505,7 +2496,7 @@ export type Database = {
         Returns: Json
       }
       get_job_applications_for_hr: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           application_status: string
           applied_at: string
@@ -2525,7 +2516,7 @@ export type Database = {
         }[]
       }
       get_job_applications_secure: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           application_status: string
           applied_at: string
@@ -2537,7 +2528,7 @@ export type Database = {
         }[]
       }
       get_own_profile: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           bio: string
           created_at: string
@@ -2698,7 +2689,7 @@ export type Database = {
         }[]
       }
       get_staff_list_secure: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           hr_permissions: boolean
@@ -2708,7 +2699,7 @@ export type Database = {
         }[]
       }
       get_staff_management_list: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           hr_permissions: boolean
@@ -2724,46 +2715,22 @@ export type Database = {
           email: string
         }[]
       }
-      get_user_role_simple: {
-        Args: { user_id: string }
-        Returns: string
-      }
-      get_user_staff_role: {
-        Args: { user_id: string }
-        Returns: string
-      }
-      get_user_staff_role_secure: {
-        Args: { user_id: string }
-        Returns: string
-      }
-      get_user_staff_role_simple: {
-        Args: { user_id: string }
-        Returns: string
-      }
-      has_hr_permissions: {
-        Args: { user_id: string }
-        Returns: boolean
-      }
+      get_user_role_simple: { Args: { user_id: string }; Returns: string }
+      get_user_staff_role: { Args: { user_id: string }; Returns: string }
+      get_user_staff_role_secure: { Args: { user_id: string }; Returns: string }
+      get_user_staff_role_simple: { Args: { user_id: string }; Returns: string }
+      has_hr_permissions: { Args: { user_id: string }; Returns: boolean }
       increment_topic_view_count: {
         Args: { topic_id_param: string }
         Returns: undefined
       }
-      is_post_published: {
-        Args: { post_status: string }
-        Returns: boolean
-      }
-      is_user_staff_member: {
-        Args: { user_id: string }
-        Returns: boolean
-      }
+      is_post_published: { Args: { post_status: string }; Returns: boolean }
+      is_user_staff_member: { Args: { user_id: string }; Returns: boolean }
       is_user_staff_member_secure: {
         Args: { user_id: string }
         Returns: boolean
       }
-      is_user_staff_simple: {
-        Args: { user_id: string }
-        Returns: boolean
-      }
+      is_user_staff_simple: { Args: { user_id: string }; Returns: boolean }
       log_job_application_access_secure: {
         Args: {
           p_access_reason?: string
@@ -2816,10 +2783,7 @@ export type Database = {
         Args: { required_roles: string[]; user_id: string }
         Returns: boolean
       }
-      validate_security_setup: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      validate_security_setup: { Args: never; Returns: Json }
       validate_staff_action: {
         Args: {
           action_type: string
